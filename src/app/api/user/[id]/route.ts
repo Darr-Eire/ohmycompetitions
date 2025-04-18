@@ -3,12 +3,11 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const prisma = new PrismaClient()
 
-// Properly typed context object for App Router dynamic route
 export async function GET(
   req: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
-  const userId = context.params.id
+  const userId = params.id
 
   try {
     const user = await prisma.user.findUnique({
@@ -29,4 +28,3 @@ export async function GET(
     return NextResponse.json({ error: 'Failed to fetch user' }, { status: 500 })
   }
 }
-
