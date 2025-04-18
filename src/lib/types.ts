@@ -1,10 +1,12 @@
 export interface Competition {
     id: string
     title: string
-    imageUrl: string
     slug: string
-    endDate: string // or Date, depending on your usage
+    imageUrl: string
     ticketsToSell: number
-    entryFee: number // 👈 add this
+    entryFee: number
+    endDate: string | Date  // ← Fix red underline by allowing both string and Date
+    createdAt: string | Date
+    updatedAt: string | Date
   }
   
