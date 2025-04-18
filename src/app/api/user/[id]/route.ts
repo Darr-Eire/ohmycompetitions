@@ -9,6 +9,10 @@ export async function GET(
 ) {
   const userId = params.id
 
+  if (!userId) {
+    return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
+  }
+
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -24,7 +28,10 @@ export async function GET(
     }
 
     return NextResponse.json(user)
-  } catch {
-    return NextResponse.json({ error: 'Failed to fetch user' }, { status: 500 })
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Failed to fetch user' },
+      { status: 500 }
+    )
   }
 }
