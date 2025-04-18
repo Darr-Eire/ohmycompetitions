@@ -21,7 +21,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     }
 
     return new Response(JSON.stringify(user), { status: 200 })
-  } catch (error) {
-    return new Response(JSON.stringify({ error: 'Something went wrong' }), { status: 500 })
+} catch {
+    return new Response("Something went wrong", { status: 500 })
   }
+  
 }
