@@ -1,25 +1,30 @@
 import './globals.css'
-import { ReactNode } from 'react'
+import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import Header from '@/components/Header'
+import Footer from '@/components/Footer'
 
-export const metadata = {
+const inter = Inter({ subsets: ['latin'] })
+
+export const metadata: Metadata = {
   title: 'OhMyCompetitions',
-  description: 'Win Pi giveaways daily!',
+  description: 'Compete, win, and use your Pi!',
 }
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
     <html lang="en">
-      <head>
-        {/* Pi SDK */}
-        <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `Pi.init({ version: "2.0", sandbox: true });`,
-          }}
-        />
-      </head>
-      <body className="flex flex-col min-h-screen bg-white text-gray-800">
-        {children}
+      <body className={inter.className}>
+        <Header />
+        <main className="flex flex-col min-h-screen">{children}</main>
+        <Footer />
+
+        {/* ✅ Removed synchronous script - replace with async if needed */}
+        {/* <script src="/some-script.js" async></script> */}
       </body>
     </html>
   )
