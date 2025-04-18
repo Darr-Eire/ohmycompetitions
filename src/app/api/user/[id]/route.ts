@@ -1,40 +1,22 @@
-// src/app/api/user/[id]/route.ts
+import { prisma } from '@/lib/prisma'
+import { NextRequest } from 'next/server'
 
-import { PrismaClient } from '@prisma/client'
-import { NextRequest, NextResponse } from 'next/server'
-
-const prisma = new PrismaClient()
-
-// ✅ CORRECT CONTEXT TYPE for App Router dynamic route
-export async function GET(
-  req: NextRequest,
-  context: { params: { id: string } }
-) {
-  const userId = context.params?.id
-
-  if (!userId) {
-    return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
-  }
+export async function GET(req: NextRequest, context: { params: { id: string } }) {
+  const userId = context.params.id
 
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      include: {
-        entries: {
-          include: {
-            competition: true
-          }
-        }
-      }
+      include: { entries: true },
     })
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      return new Response(JSON.stringify({ error: 'User not found' }), { status: 404 })
     }
 
-    return NextResponse.json(user)
-  } catch (err) {
-    console.error('Error fetching user:', err)
-    return NextResponse.json({ error: 'Failed to fetch user' }, { status: 500 })
+    return new Response(JSON.stringify(user), { status: 200 })
+  } catch (error) {
+    return new Response(JSON.stringify({ error: 'Something went wrong' }), { status: 500 })
   }
 }
+
