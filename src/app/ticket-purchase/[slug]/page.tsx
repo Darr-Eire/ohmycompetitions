@@ -29,16 +29,16 @@ export default function TicketPurchasePage() {
       return
     }
 
-    setLoading(true)
     const res = await fetch('/api/entries', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId: session.user.id,
-        competitionId: competition.id,
-        quantity: Number(quantity),
-      }),
-    })
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: session.user.id,
+          competitionId: competition.id,
+          quantity: Number(quantity),
+        }),
+      })
+      
 
     const result = await res.json()
     setLoading(false)

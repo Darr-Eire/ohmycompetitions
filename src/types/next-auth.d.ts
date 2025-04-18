@@ -1,4 +1,4 @@
-// import NextAuth from 'next-auth'
+// import NextAuth from 'next-auth'  ← you can leave this commented or delete it
 
 import NextAuth from 'next-auth'
 
@@ -12,3 +12,6 @@ declare module 'next-auth' {
     }
   }
 }
+export {}
+
+  
