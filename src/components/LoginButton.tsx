@@ -1,34 +1,30 @@
 'use client'
 
 import { useEffect } from 'react'
-import type { PiUser } from '@/types/PiUser' // Make sure this file exists
 
 export default function LoginButton() {
-  const handleLogin = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault()
-
+  const handleLogin = async () => {
     if (typeof window !== 'undefined' && window.Pi) {
-      const scopes = ['payments']
-
-      function onIncompletePaymentFound(payment: unknown) {
-        console.log('⚠️ Found incomplete payment:', payment)
-      }
-
       try {
+        const scopes = ['username', 'payments']
+        const onIncompletePaymentFound = (payment: any) => {
+          console.log('🟡 Incomplete payment found:', payment)
+        }
+
         const auth = await window.Pi.authenticate(scopes, onIncompletePaymentFound)
-        const piUser = auth as PiUser
+        console.log('✅ Authenticated Pi User:', auth)
 
-        console.log('✅ Pi Auth Success:', auth)
-        console.log('✅ Authenticated Pi User:', piUser) // 🟨 This is what you asked for!
+        // (Optional) Verify on server using /me
+        const me = await fetch('/api/pi-auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(auth),
+        })
 
-        // Optional: send to backend
-        // await fetch('/api/pi-auth', {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify(auth),
-        // })
+        const meResult = await me.json()
+        console.log('🧠 Verified Pi User from server:', meResult)
       } catch (error) {
-        console.error('❌ Pi Auth Error:', error)
+        console.error('❌ Pi Auth error:', error)
       }
     } else {
       alert('⚠️ Pi Network SDK not available. Please open in Pi Browser.')
@@ -36,14 +32,11 @@ export default function LoginButton() {
   }
 
   useEffect(() => {
-    console.log('✅ LoginButton mounted')
+    console.log('🔄 LoginButton mounted')
   }, [])
 
   return (
-    <button
-      className="bg-yellow-400 hover:bg-yellow-300 text-black px-4 py-2 rounded"
-      onClick={handleLogin}
-    >
+    <button className="bg-yellow-400 hover:bg-yellow-300 px-4 py-2 rounded" onClick={handleLogin}>
       Login with Pi
     </button>
   )
