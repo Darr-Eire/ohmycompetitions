@@ -1,29 +1,23 @@
 import { PrismaClient } from '@prisma/client'
-import type { NextApiRequest, NextApiResponse } from 'next'
+import { NextRequest, NextResponse } from 'next/server'
 
 const prisma = new PrismaClient()
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const {
-    query: { slug },
-    method,
-  } = req
-
-  if (method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' })
-  }
+export async function GET(req: NextRequest, { params }: { params: { slug: string } }) {
+  const { slug } = params
 
   try {
     const competition = await prisma.competition.findUnique({
-      where: { slug: slug as string },
+      where: { slug },
     })
 
     if (!competition) {
-      return res.status(404).json({ error: 'Competition not found' })
+      return NextResponse.json({ error: 'Competition not found' }, { status: 404 })
     }
 
-    return res.status(200).json(competition)
-  } catch (error) {
-    return res.status(500).json({ error: 'Something went wrong' })
+    return NextResponse.json(competition)
+  } catch (err) {
+    console.error('Error fetching competition:', err)
+    return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })
   }
 }
