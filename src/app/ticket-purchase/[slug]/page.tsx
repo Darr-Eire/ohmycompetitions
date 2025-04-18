@@ -8,9 +8,9 @@ export default function TicketPurchasePage() {
   const params = useParams()
   const slug = params?.slug as string
 
-  const router = useRouter()
-  const { data: session } = useSession()
-  const [competition, setCompetition] = useState<any>(null)
+
+  const [competition, setCompetition] = useState<Record<string, any> | null>(null)
+
 
   useEffect(() => {
     if (!slug) return
