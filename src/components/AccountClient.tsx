@@ -41,7 +41,6 @@ export default function AccountClient() {
   return (
     <div className="p-6 max-w-3xl mx-auto space-y-6">
       <h1 className="text-2xl font-bold">My Entries</h1>
-
       {entries.length === 0 ? (
         <p>No entries yet.</p>
       ) : (
