@@ -1,6 +1,6 @@
 // import NextAuth from 'next-auth'  ← you can leave this commented or delete it
 
-import NextAuth from 'next-auth'
+
 
 declare module 'next-auth' {
   interface Session {
