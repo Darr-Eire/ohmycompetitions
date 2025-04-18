@@ -4,7 +4,10 @@ export const dynamic = 'force-dynamic'
 import { useSession } from 'next-auth/react'
 import { useEffect, useState } from 'react'
 
-// ... rest of the code
+// ...rest of your component
+
+
+
 
 interface Entry {
   id: string
