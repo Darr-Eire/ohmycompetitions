@@ -1,12 +1,9 @@
 'use client'
-
 export const dynamic = 'force-dynamic'
+
 
 import { useSession } from 'next-auth/react'
 import { useEffect, useState } from 'react'
-
-// ... rest of your code
-
 
 interface Entry {
   id: string
@@ -63,6 +60,3 @@ export default function AccountPage() {
     </div>
   )
 }
-
-export const generateStaticParams = async () => []
-
