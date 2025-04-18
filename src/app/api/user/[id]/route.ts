@@ -5,9 +5,9 @@ const prisma = new PrismaClient()
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
-  const userId = params.id
+  const userId = context.params?.id
 
   if (!userId) {
     return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
@@ -18,7 +18,9 @@ export async function GET(
       where: { id: userId },
       include: {
         entries: {
-          include: { competition: true },
+          include: {
+            competition: true,
+          },
         },
       },
     })
@@ -29,9 +31,7 @@ export async function GET(
 
     return NextResponse.json(user)
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to fetch user' },
-      { status: 500 }
-    )
+    console.error('Failed to fetch user:', error) // ✅ This line resolves the ESLint error
+    return NextResponse.json({ error: 'Failed to fetch user' }, { status: 500 })
   }
 }
