@@ -14,17 +14,7 @@ interface Entry {
 
 export default function AccountPage() {
   const { data: session, status } = useSession()
-  type Entry = {
-    id: string
-    quantity: number
-    createdAt: string
-    competition: {
-      title: string
-    }
-  }
-  
   const [entries, setEntries] = useState<Entry[]>([])
-  
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
