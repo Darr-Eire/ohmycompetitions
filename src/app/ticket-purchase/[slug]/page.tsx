@@ -1,19 +1,29 @@
 'use client'
 
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { useSession } from 'next-auth/react'
+
+interface Competition {
+  id: string
+  title: string
+  description?: string
+  image?: string
+  prize?: string
+  ticketsSold: number
+  totalTickets: number
+  entryFee: string
+  endDate?: string
+}
 
 export default function TicketPurchasePage() {
   const params = useParams()
   const slug = params?.slug as string
 
-
-  const [competition, setCompetition] = useState<Record<string, any> | null>(null)
-
+  const [competition, setCompetition] = useState<Competition | null>(null)
 
   useEffect(() => {
     if (!slug) return
+
     const fetchCompetition = async () => {
       try {
         const res = await fetch(`/api/competition/${slug}`)
@@ -32,7 +42,7 @@ export default function TicketPurchasePage() {
   return (
     <div className="p-6 max-w-2xl mx-auto space-y-4">
       <h1 className="text-3xl font-bold">{competition.title}</h1>
-      <p>{competition.description}</p>
+      {competition.description && <p>{competition.description}</p>}
       <p>🎟️ Tickets Available: {competition.totalTickets - competition.ticketsSold}</p>
       <p>💰 Entry Fee: {competition.entryFee} π</p>
       <button className="bg-blue-500 text-white px-4 py-2 rounded">Enter Now</button>
