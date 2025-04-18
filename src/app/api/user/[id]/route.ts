@@ -1,8 +1,11 @@
+// src/app/api/user/[id]/route.ts
+
 import { PrismaClient } from '@prisma/client'
 import { NextRequest, NextResponse } from 'next/server'
 
 const prisma = new PrismaClient()
 
+// ✅ CORRECT CONTEXT TYPE for App Router dynamic route
 export async function GET(
   req: NextRequest,
   context: { params: { id: string } }
@@ -19,10 +22,10 @@ export async function GET(
       include: {
         entries: {
           include: {
-            competition: true,
-          },
-        },
-      },
+            competition: true
+          }
+        }
+      }
     })
 
     if (!user) {
@@ -30,8 +33,8 @@ export async function GET(
     }
 
     return NextResponse.json(user)
-  } catch (error) {
-    console.error('Failed to fetch user:', error)
+  } catch (err) {
+    console.error('Error fetching user:', err)
     return NextResponse.json({ error: 'Failed to fetch user' }, { status: 500 })
   }
 }
