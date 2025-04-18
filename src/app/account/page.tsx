@@ -4,9 +4,7 @@ export const dynamic = 'force-dynamic'
 import { useSession } from 'next-auth/react'
 import { useEffect, useState } from 'react'
 
-// ...rest of your component
-
-
+// rest of your component...
 
 
 interface Entry {
