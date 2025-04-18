@@ -11,11 +11,11 @@ export default function AboutPage() {
         </h1>
 
         <p className="text-lg">
-          Yo! 👋 We’re just two pioneers who’ve been mining Pi for over <strong>6 years</strong> — believing in it long before there were any apps, wallets, or talk of Mainnet.
+          Yo! 👋 We&#39;re just two pioneers who&#39;ve been mining Pi for over <strong>6 years</strong> — believing in it long before there were any apps, wallets, or talk of Mainnet.
         </p>
 
         <p className="text-lg">
-          When we first started, we had <strong>no clue</strong> how to build an app. Zero. Nada. What's Next.js? What's Prisma? What's a Pi SDK? 🫠 We didn’t even know where to click, let alone how to connect to Pi or write backend logic.
+          When we first started, we had <strong>no clue</strong> how to build an app. Zero. Nada. What&#39;s Next.js? What&#39;s Prisma? What&#39;s a Pi SDK? 🫠 We didn&#39;t even know where to click, let alone how to connect to Pi or write backend logic.
         </p>
 
         <p className="text-lg">
@@ -27,11 +27,11 @@ export default function AboutPage() {
         </p>
 
         <p className="text-lg">
-          It’s our way of giving back to the Pi community — a fun way to earn, play, compete, and support real builders in the ecosystem.
+          It&#39;s our way of giving back to the Pi community — a fun way to earn, play, compete, and support real builders in the ecosystem.
         </p>
 
         <p className="text-lg">
-          We're still learning, still building, and still figuring it out. But hey — we’re here, it works, and you’re part of it. That’s what matters.
+          We&#39;re still learning, still building, and still figuring it out. But hey — we&#39;re here, it works, and you&#39;re part of it. That&#39;s what matters.
         </p>
 
         <p className="text-md text-gray-700 text-center mt-6 italic">
