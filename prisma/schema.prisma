@@ -8,33 +8,34 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(cuid())
-  username  String    @unique
-  createdAt DateTime  @default(now())
+  id        String   @id @default(cuid())
+  username  String   @unique
+  createdAt DateTime @default(now())
   entries   Entry[]
 }
 
 model Competition {
-  id           String     @id @default(cuid())
-  title        String
-  slug         String     @unique
-  image        String
-  prize        String
-  entryFee     Float
-  totalTickets Int
-  ticketsSold  Int        @default(0)
-  endsAt       DateTime
-  createdAt    DateTime   @default(now())
-  entries      Entry[]
+  id            String   @id @default(uuid())
+  title         String
+  slug          String   @unique
+  imageUrl      String   // ✅ This must exist
+  ticketsToSell Int
+  ticketsSold   Int
+  entryFee      Float
+  endDate       DateTime
+  description   String
+  entries       Entry[]
 }
 
+
 model Entry {
-  id            String    @id @default(cuid())
+  id        String   @id @default(cuid())
+  quantity  Int
+  createdAt DateTime @default(now())
+
   userId        String
   competitionId String
-  quantity      Int
-  createdAt     DateTime  @default(now())
 
-  user          User       @relation(fields: [userId], references: [id])
-  competition   Competition @relation(fields: [competitionId], references: [id])
+  user        User        @relation(fields: [userId], references: [id])
+  competition Competition @relation(fields: [competitionId], references: [id])
 }

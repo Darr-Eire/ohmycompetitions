@@ -46,6 +46,7 @@ export default function ThousandPiCompetitionCard({ competition }: Props) {
 
       <div className="p-4 space-y-2">
         <h2 className="text-xl font-bold text-blue-600">{competition.title}</h2>
+        <p className="text-sm text-gray-600">{competition.description}</p> {/* ✅ Added */}
         <div className="text-sm text-black font-semibold">⏳ {timeLeft}</div>
 
         <div className="flex items-center justify-between text-sm">
