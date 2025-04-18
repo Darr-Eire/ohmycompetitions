@@ -3,9 +3,28 @@
 import { useSession } from 'next-auth/react'
 import { useEffect, useState } from 'react'
 
+interface Entry {
+  id: string
+  quantity: number
+  createdAt: string
+  competition?: {
+    title: string
+  }
+}
+
 export default function AccountPage() {
   const { data: session, status } = useSession()
-  const [entries, setEntries] = useState<any[]>([])
+  type Entry = {
+    id: string
+    quantity: number
+    createdAt: string
+    competition: {
+      title: string
+    }
+  }
+  
+  const [entries, setEntries] = useState<Entry[]>([])
+  
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
