@@ -1,11 +1,11 @@
 export interface Competition {
-  id: string
+  id?: string
   title: string
   slug: string
   imageUrl: string
-  endDate: string | Date
   ticketsToSell: number
   ticketsSold: number
   entryFee: number
-  description: string // ✅ this is important
+  endDate: Date  // ✅ This must be `Date`, not `string`
+  description?: string
 }
