@@ -2,12 +2,13 @@ export {}
 
 declare global {
   interface Window {
-    Pi: {
+    Pi?: {
       authenticate: (
         scopes: string[],
-        onIncompletePaymentFound: (payment: any) => void
-      ) => Promise<any>
-      createPayment: Function
+        onIncompletePaymentFound: (payment: unknown) => void
+      ) => Promise<unknown>
+      createPayment?: unknown // extend as needed
     }
+    
   }
 }

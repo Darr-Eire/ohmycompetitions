@@ -5,7 +5,11 @@ export default function Document() {
   return (
     <Html>
       <Head>
-        <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+      <script
+  src="https://sdk.minepi.com/pi-sdk.js"
+  async
+></script>
+
         <script dangerouslySetInnerHTML={{
           __html: `Pi.init({ version: "2.0" })`
         }} />

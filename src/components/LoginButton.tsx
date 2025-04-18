@@ -10,12 +10,16 @@ export default function LoginButton() {
     if (typeof window !== 'undefined' && window.Pi) {
       const scopes = ['payments']
 
-      function onIncompletePaymentFound(payment: any) {
+      function onIncompletePaymentFound(payment: unknown)
+      {
         console.log('⚠️ Found incomplete payment:', payment)
       }
 
       try {
-        const auth: PiUser = await window.Pi.authenticate(scopes, onIncompletePaymentFound)
+        const auth = await window.Pi.authenticate(scopes, onIncompletePaymentFound)
+        // If you already created PiUser, then cast:
+        const piUser = auth as PiUser
+        
         console.log('✅ Pi Auth Success:', auth)
 
         // Optional: send to your backend for session
