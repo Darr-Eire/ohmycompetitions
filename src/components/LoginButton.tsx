@@ -10,19 +10,18 @@ export default function LoginButton() {
     if (typeof window !== 'undefined' && window.Pi) {
       const scopes = ['payments']
 
-      function onIncompletePaymentFound(payment: unknown)
-      {
+      function onIncompletePaymentFound(payment: unknown) {
         console.log('⚠️ Found incomplete payment:', payment)
       }
 
       try {
         const auth = await window.Pi.authenticate(scopes, onIncompletePaymentFound)
-        // If you already created PiUser, then cast:
         const piUser = auth as PiUser
-        
-        console.log('✅ Pi Auth Success:', auth)
 
-        // Optional: send to your backend for session
+        console.log('✅ Pi Auth Success:', auth)
+        console.log('✅ Authenticated Pi User:', piUser) // 🟨 This is what you asked for!
+
+        // Optional: send to backend
         // await fetch('/api/pi-auth', {
         //   method: 'POST',
         //   headers: { 'Content-Type': 'application/json' },
