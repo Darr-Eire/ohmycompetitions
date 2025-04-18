@@ -62,3 +62,6 @@ export default function AccountPage() {
     </div>
   )
 }
+
+export const generateStaticParams = async () => []
+
