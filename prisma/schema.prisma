@@ -15,17 +15,21 @@ model User {
 }
 
 model Competition {
-  id            String   @id @default(uuid())
+  id            String   @id @default(cuid())
   title         String
-  slug          String   @unique
-  imageUrl      String   // ✅ This must exist
-  ticketsToSell Int
-  ticketsSold   Int
-  entryFee      Float
-  endDate       DateTime
   description   String
+  imageUrl      String
+  entryFee      Float
+  ticketsToSell Int
+  ticketsSold   Int      @default(0)
+  endDate       DateTime
+  createdAt     DateTime @default(now())  // ✅ Make sure this exists!
+ updatedAt DateTime @updatedAt // ✅ this will auto-fill the value
+
+
   entries       Entry[]
 }
+
 
 
 model Entry {
