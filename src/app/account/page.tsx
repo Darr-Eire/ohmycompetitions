@@ -1,7 +1,4 @@
-import dynamic from 'next/dynamic'
-
-// Dynamically import the client component to avoid build-time SSR issues
-const AccountClient = dynamic(() => import('@/components/AccountClient'), { ssr: false })
+import AccountClient from '@/components/AccountClient'
 
 export default function AccountPage() {
   return <AccountClient />
