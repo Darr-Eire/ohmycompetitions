@@ -6,7 +6,7 @@ export default function LoginButton() {
   const handleLogin = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
     if (typeof window !== 'undefined' && window.Pi) {
-      window.Pi.authenticate(['username'], function (piUser: any) {
+      window.Pi.authenticate(['username'], function (piUser: unknown) {
         console.log('Authenticated Pi user:', piUser)
       })
     } else {
