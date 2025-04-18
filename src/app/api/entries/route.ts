@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     })
 
     return NextResponse.json({ entry })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to create entry' }, { status: 500 })
   }
 }

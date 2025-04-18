@@ -21,7 +21,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     }
 
     return NextResponse.json(user)
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch user' }, { status: 500 })
   }
 }
