@@ -4,13 +4,13 @@ import { useState } from 'react'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 
-// Optional: You can move this PiPaymentAPI type to src/types/global.d.ts later
+// ✅ PiPaymentAPI type — move this to src/types/global.d.ts later if you like
 type PiPaymentAPI = {
   createPayment: (
     paymentData: {
       amount: number
       memo: string
-      metadata: Record<string, any>
+      metadata: Record<string, string | number>
     },
     callbacks: {
       onReadyForServerApproval: (paymentId: string) => void
@@ -26,35 +26,35 @@ export default function ThousandPiDetailsPage() {
 
   const handlePay = () => {
     if (!window.Pi) {
-      alert("Pi SDK not available. Please open in Pi Browser.")
+      alert('Pi SDK not available. Please open in Pi Browser.')
       return
     }
 
     const total = 0.314 * quantity
 
     const paymentData = {
-      amount: parseFloat(total.toFixed(3)), // Round to 3 decimals for Pi
+      amount: parseFloat(total.toFixed(3)),
       memo: `Entry for 1000 Pi Giveaway (${quantity} ticket${quantity > 1 ? 's' : ''})`,
       metadata: {
-        competitionId: "1000-pi-giveaway",
+        competitionId: '1000-pi-giveaway',
         tickets: quantity,
       },
     }
 
     const callbacks = {
       onReadyForServerApproval: (paymentId: string) => {
-        console.log("🛡️ Ready for server approval", paymentId)
+        console.log('🛡️ Ready for server approval', paymentId)
         // TODO: Send paymentId to your backend for approval
       },
       onReadyForServerCompletion: (paymentId: string, txid: string) => {
-        console.log("✅ Ready for server completion", paymentId, txid)
-        // TODO: Send paymentId and txid to backend for finalizing entry
+        console.log('✅ Ready for server completion', paymentId, txid)
+        // TODO: Send paymentId and txid to backend to finalize the ticket purchase
       },
       onCancel: (paymentId: string) => {
-        console.warn("❌ Payment cancelled", paymentId)
+        console.warn('❌ Payment cancelled', paymentId)
       },
       onError: (error: Error) => {
-        console.error("❌ Payment error", error)
+        console.error('❌ Payment error', error)
       },
     }
 
