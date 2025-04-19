@@ -24,9 +24,12 @@
 
     "plugins": [{ "name": "next" }]
   },
-  "include": [
-    "next-env.d.ts",
-    "src"
-  ],
+"include": [
+  "next-env.d.ts",
+  "src/types/**/*",
+  "**/*.ts",
+  "**/*.tsx"
+],
+
   "exclude": ["node_modules"]
 }
