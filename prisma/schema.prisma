@@ -15,30 +15,28 @@ model User {
 }
 
 model Competition {
-  id           String    @id @default(cuid())
-  slug         String    @unique
-  title        String
-  description  String?
-  image        String?
-  prize        String?
-  totalTickets Int       @default(1000)
-  ticketsSold  Int       @default(0)
-  entryFee     String
-  endDate      DateTime?
-  entries      Entry[]   @relation("CompetitionEntries")
-  updatedAt    DateTime  @default(now()) @updatedAt
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  image         String
+  entryFee      Float
+  ticketsToSell Int
+  ticketsSold   Int
+  endDate       DateTime?
+  entries       Entry[]  @relation("CompetitionEntries")
+  updatedAt     DateTime @default(now()) @updatedAt
 }
+
 
 model Entry {
-  id            String   @id @default(cuid())
-  userId        String
-  competitionId String
-  paymentId     String   @unique
-  txid          String?
-  status        String   @default("pending")
-  quantity      Int      @default(1)  // 👈 Add this line
-  createdAt     DateTime @default(now())
+  id             String      @id @default(cuid())
+  userId         String
+  competitionId  String
+  quantity       Int
 
-  user        User        @relation("UserEntries", fields: [userId], references: [id])
-  competition Competition @relation("CompetitionEntries", fields: [competitionId], references: [id])
+  user           User        @relation("UserEntries", fields: [userId], references: [id])
+  competition    Competition @relation("CompetitionEntries", fields: [competitionId], references: [id])
+
+  createdAt      DateTime    @default(now())
 }
+
