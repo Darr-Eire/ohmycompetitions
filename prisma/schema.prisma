@@ -15,17 +15,19 @@ model User {
 }
 
 model Competition {
-  id            String   @id @default(cuid())
-  name          String
+  id            String   @id @default(uuid())
+  title         String   // 👈 Add this line
   slug          String   @unique
-  image         String
   entryFee      Float
-  ticketsToSell Int
   ticketsSold   Int
-  endDate       DateTime?
+  totalTickets  Int
+  endDate       DateTime
+  description   String?
+  image         String?
+  updatedAt     DateTime @updatedAt
   entries       Entry[]  @relation("CompetitionEntries")
-  updatedAt     DateTime @default(now()) @updatedAt
 }
+
 
 
 model Entry {

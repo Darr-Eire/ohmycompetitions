@@ -8,18 +8,19 @@ async function main() {
   })
 
   // ✅ Now safely seed it
-  await prisma.competition.create({
-    data: {
-      slug: '1000-pi-giveaway',
-      title: '1000 Pi Giveaway',
+  const competitions = [
+    {
+      title: "1000 Pi Giveaway",
       ticketsSold: 0,
       totalTickets: 1000,
-      entryFee: "0.314", // 👈 Fix here
+      entryFee: 0.314, // ✅ FIXED — number not string
       endDate: new Date('2025-05-01T15:14:00Z'),
       description: 'Enter now to win 1000 Pi! One lucky winner will be announced after the competition ends.',
       image: '/pi.jpeg',
-    },
-  })
+      slug: '1000-pi-giveaway'
+    }
+  ]
+  
   
 
   console.log('Seeded: 1000 Pi Giveaway ✅')
