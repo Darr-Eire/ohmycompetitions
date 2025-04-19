@@ -8,9 +8,40 @@ export default function ThousandPiDetailsPage() {
   const [quantity, setQuantity] = useState(1)
 
   const handlePay = () => {
+    if (!window.Pi) {
+      alert("Pi SDK not available. Please open in Pi Browser.")
+      return
+    }
+
     const total = 0.314 * quantity
-    alert(`Simulating Pi payment of ${total.toFixed(3)}π for ${quantity} tickets`)
-    // Replace alert with Pi payment logic
+
+    const paymentData = {
+      amount: parseFloat(total.toFixed(3)), // Round to 3 decimals for Pi
+      memo: `Entry for 1000 Pi Giveaway (${quantity} ticket${quantity > 1 ? 's' : ''})`,
+      metadata: {
+        competitionId: "1000-pi-giveaway",
+        tickets: quantity,
+      },
+    }
+
+    const callbacks = {
+      onReadyForServerApproval: (paymentId: string) => {
+        console.log("🛡️ Ready for server approval", paymentId)
+        // TODO: Send paymentId to your backend for approval
+      },
+      onReadyForServerCompletion: (paymentId: string, txid: string) => {
+        console.log("✅ Ready for server completion", paymentId, txid)
+        // TODO: Send paymentId and txid to backend for finalizing entry
+      },
+      onCancel: (paymentId: string) => {
+        console.warn("❌ Payment cancelled", paymentId)
+      },
+      onError: (error: Error) => {
+        console.error("❌ Payment error", error)
+      },
+    }
+
+    window.Pi.createPayment(paymentData, callbacks)
   }
 
   return (
@@ -38,7 +69,7 @@ export default function ThousandPiDetailsPage() {
 
         <button
           onClick={handlePay}
-          className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition"
+          className="bg-yellow-400 text-black px-6 py-2 rounded hover:bg-yellow-300 transition"
         >
           Pay with Pi
         </button>
