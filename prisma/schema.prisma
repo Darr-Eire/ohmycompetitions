@@ -16,17 +16,22 @@ model User {
 
 model Competition {
   id           String    @id @default(cuid())
+  slug         String    @unique                      // ✅ Add this line
   title        String
   description  String?
   image        String?
   prize        String?
-  totalTickets Int       @default(1000) // ✅ Choose a sensible default
+  totalTickets Int       @default(1000)
   ticketsSold  Int       @default(0)
   entryFee     String
   endDate      DateTime?
-  entries      Entry[]   @relation("CompetitionEntries") // ✅ define relation name
+  entries      Entry[]   @relation("CompetitionEntries")
   updatedAt    DateTime  @default(now()) @updatedAt
 }
+
+
+
+
 model Entry {
   id            String   @id @default(cuid())
   userId        String
