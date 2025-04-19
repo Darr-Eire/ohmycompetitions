@@ -2,8 +2,14 @@
 
 import { useEffect, useState } from 'react'
 
+// Define the PiUser type directly or import it
+type PiUser = {
+  uid: string
+  username: string
+}
+
 export default function AccountPage() {
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState<PiUser | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -23,7 +29,7 @@ export default function AccountPage() {
         if (!res.ok) throw new Error('Unauthorized')
         return res.json()
       })
-      .then((data) => {
+      .then((data: PiUser) => {
         console.log('✅ Pi user verified:', data)
         setUser(data)
       })
