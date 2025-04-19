@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 
-// ✅ PiPaymentAPI type — move this to src/types/global.d.ts later if you like
+// ✅ PiPaymentAPI type — move this to src/types/global.d.ts later if needed
 type PiPaymentAPI = {
   createPayment: (
     paymentData: {
@@ -30,6 +30,12 @@ export default function ThousandPiDetailsPage() {
       return
     }
 
+    const userId = localStorage.getItem('pi_user_uid')
+    if (!userId) {
+      alert('Please log in with Pi before making a payment.')
+      return
+    }
+
     const total = 0.314 * quantity
 
     const paymentData = {
@@ -38,21 +44,51 @@ export default function ThousandPiDetailsPage() {
       metadata: {
         competitionId: '1000-pi-giveaway',
         tickets: quantity,
+        userId,
       },
     }
 
     const callbacks = {
-      onReadyForServerApproval: (paymentId: string) => {
+      onReadyForServerApproval: async (paymentId: string) => {
         console.log('🛡️ Ready for server approval', paymentId)
-        // TODO: Send paymentId to your backend for approval
+        try {
+          const res = await fetch('/api/pi/approve-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              paymentId,
+              userId,
+              competitionId: '1000-pi-giveaway',
+              quantity,
+            }),
+          })
+          const result = await res.json()
+          console.log('✅ Server approved:', result)
+        } catch (err) {
+          console.error('❌ Approval failed:', err)
+        }
       },
-      onReadyForServerCompletion: (paymentId: string, txid: string) => {
+
+      onReadyForServerCompletion: async (paymentId: string, txid: string) => {
         console.log('✅ Ready for server completion', paymentId, txid)
-        // TODO: Send paymentId and txid to backend to finalize the ticket purchase
+        try {
+          const res = await fetch('/api/pi/complete-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId, txid }),
+          })
+          const result = await res.json()
+          console.log('🎉 Server completed:', result)
+          alert('🎉 Entry confirmed! Good luck!')
+        } catch (err) {
+          console.error('❌ Completion failed:', err)
+        }
       },
+
       onCancel: (paymentId: string) => {
         console.warn('❌ Payment cancelled', paymentId)
       },
+
       onError: (error: Error) => {
         console.error('❌ Payment error', error)
       },

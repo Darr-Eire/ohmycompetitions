@@ -10,37 +10,33 @@ datasource db {
 model User {
   id        String   @id @default(cuid())
   username  String   @unique
+  entries   Entry[]  @relation("UserEntries") // ✅ define relation name
   createdAt DateTime @default(now())
-  entries   Entry[]
 }
 
 model Competition {
-  id             String     @id @default(cuid())
-  title          String
-  slug           String     @unique
-  imageUrl       String
-  description    String
-  ticketsToSell  Int
-  ticketsSold    Int
-  entryFee       Float
-  endDate        DateTime
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt @default(now()) // ✅ add @default(now())
-  entries        Entry[]
+  id           String    @id @default(cuid())
+  title        String
+  description  String?
+  image        String?
+  prize        String?
+  totalTickets Int       @default(1000) // ✅ Choose a sensible default
+  ticketsSold  Int       @default(0)
+  entryFee     String
+  endDate      DateTime?
+  entries      Entry[]   @relation("CompetitionEntries") // ✅ define relation name
+  updatedAt    DateTime  @default(now()) @updatedAt
 }
-
-
-
-
-
 model Entry {
-  id        String   @id @default(cuid())
-  quantity  Int
-  createdAt DateTime @default(now())
-
+  id            String   @id @default(cuid())
   userId        String
   competitionId String
+  paymentId     String   @unique
+  txid          String?
+  status        String   @default("pending")
+  createdAt     DateTime @default(now())
 
-  user        User        @relation(fields: [userId], references: [id])
-  competition Competition @relation(fields: [competitionId], references: [id])
+  user        User        @relation("UserEntries", fields: [userId], references: [id])
+  competition Competition @relation("CompetitionEntries", fields: [competitionId], references: [id])
 }
+
