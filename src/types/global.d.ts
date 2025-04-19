@@ -1,26 +1,32 @@
-export {}
+export {};
 
 declare global {
   interface Window {
     Pi: {
       authenticate: (
         scopes: string[],
-        onIncompletePaymentFound: (payment: any) => void
-      ) => Promise<any>
+        onIncompletePaymentFound: (payment: unknown) => void
+      ) => Promise<{
+        accessToken: string;
+        user: {
+          uid: string;
+          username: string;
+        };
+      }>;
 
       createPayment: (
         paymentData: {
-          amount: string
-          memo: string
-          metadata: object
+          amount: number;
+          memo: string;
+          metadata: Record<string, string>;
         },
         callbacks: {
-          onReadyForServerApproval: (paymentId: string) => void
-          onReadyForServerCompletion: (paymentId: string, txid: string) => void
-          onCancel: (paymentId: string) => void
-          onError: (error: Error) => void
+          onReadyForServerApproval: (paymentId: string) => void;
+          onReadyForServerCompletion: (paymentId: string, txid: string) => void;
+          onCancel: () => void;
+          onError: (error: Error) => void;
         }
-      ) => void
-    }
+      ) => void;
+    };
   }
 }
