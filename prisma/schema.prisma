@@ -10,30 +10,24 @@ datasource db {
 model User {
   id        String   @id @default(cuid())
   username  String   @unique
-  entries   Entry[]  @relation("UserEntries") // ✅ define relation name
+  entries   Entry[]  @relation("UserEntries")
   createdAt DateTime @default(now())
 }
 
 model Competition {
-  id            String    @id @default(cuid())
-  title         String
-  description   String?
-  image         String?
-  prize         String?
-  slug          String    @unique
-  totalTickets  Int       @default(1000)
-  ticketsSold   Int       @default(0)
-  entryFee      String
-  endDate       DateTime?
-  createdAt     DateTime  @default(now())  // ✅ Add this line
-  updatedAt     DateTime  @default(now()) @updatedAt
-  entries       Entry[]   @relation("CompetitionEntries")
+  id           String    @id @default(cuid())
+  slug         String    @unique
+  title        String
+  description  String?
+  image        String?
+  prize        String?
+  totalTickets Int       @default(1000)
+  ticketsSold  Int       @default(0)
+  entryFee     String
+  endDate      DateTime?
+  entries      Entry[]   @relation("CompetitionEntries")
+  updatedAt    DateTime  @default(now()) @updatedAt
 }
-
-
-
-
-
 
 model Entry {
   id            String   @id @default(cuid())
@@ -42,9 +36,9 @@ model Entry {
   paymentId     String   @unique
   txid          String?
   status        String   @default("pending")
+  quantity      Int      @default(1)  // 👈 Add this line
   createdAt     DateTime @default(now())
 
   user        User        @relation("UserEntries", fields: [userId], references: [id])
   competition Competition @relation("CompetitionEntries", fields: [competitionId], references: [id])
 }
-
