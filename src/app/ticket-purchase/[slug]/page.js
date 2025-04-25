@@ -1,26 +1,21 @@
 'use client';
 
-import Header from '../../../../components/Header';
-import TicketPurchaseForm from '../../../../components/TicketPurchaseForm';
+import Header from '../../../components/Header';
+import TicketPurchaseForm from '../../../components/TicketPurchaseForm';
 
 const competition = {
-  slug: 'everyday-pioneer',
-  title: 'Everyday Pioneer',
-  entryFee: 0.314,
-  currency: 'π',
+  title: 'My Competition',
+  slug: 'my-competition',
+  // …other props…
 };
 
-export default function TicketPage({ params }) {
-  const handleSuccess = () => {
-    window.location.href = '/success';
-  };
-
+export default function Page({ params }) {
   return (
     <>
       <Header />
-      <main className="flex flex-col items-center p-4 bg-gray-100 min-h-screen">
-        <h1 className="text-2xl font-bold mb-4">{competition.title}</h1>
-        <TicketPurchaseForm competition={competition} onSuccess={handleSuccess} />
+      <main className="container mx-auto p-6">
+        <h1 className="text-3xl font-bold mb-4">{competition.title}</h1>
+        <TicketPurchaseForm competition={competition} />
       </main>
     </>
   );

@@ -1,3 +1,5 @@
+"use client";
+
 import { useRouter } from 'next/navigation';
 
 export default function CompetitionCard({ competition }) {
@@ -12,7 +14,10 @@ export default function CompetitionCard({ competition }) {
       <p className="mb-4">
         Entry Fee: {competition.entryFee} {competition.currency}
       </p>
-      <button onClick={handleEnter} className="px-4 py-2 bg-green-500 text-white rounded">
+      <button
+        onClick={handleEnter}
+        className="px-4 py-2 bg-green-500 text-white rounded"
+      >
         Enter Now
       </button>
     </div>

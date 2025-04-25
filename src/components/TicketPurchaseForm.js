@@ -2,43 +2,48 @@
 
 import { useState } from 'react';
 
-export default function TicketPurchaseForm({ competition, onSuccess }) {
+export default function TicketPurchaseForm({ competition }) {
   const [quantity, setQuantity] = useState(1);
 
-  const handlePay = async () => {
-    try {
-      const res = await fetch('/api/payment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: competition.entryFee * quantity,
-          currency: competition.currency,
-        }),
-      });
-      const { paymentUrl } = await res.json();
-      window.location.href = paymentUrl;
-      onSuccess();
-    } catch (err) {
-      console.error('Payment failed', err);
-    }
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // TODO: replace with real purchase logic (e.g. API call)
+    console.log(`Purchasing ${quantity} ticket(s) for ${competition.slug}`);
+    alert(`Purchased ${quantity} ticket(s) for ${competition.title}!`);
   };
 
   return (
-    <div className="bg-white p-6 rounded shadow-md">
-      <p className="mb-4">Price per ticket: {competition.entryFee} {competition.currency}</p>
-      <div className="mb-4">
-        <label className="mr-2">Quantity:</label>
-        <select
-          value={quantity}
-          onChange={(e) => setQuantity(Number(e.target.value))}
-          className="border p-1 rounded"
+    <form
+      onSubmit={handleSubmit}
+      className="max-w-md mx-auto space-y-6 bg-white p-6 rounded shadow"
+    >
+      <div>
+        <label
+          htmlFor="quantity"
+          className="block text-sm font-medium text-gray-700"
         >
-          {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
-            <option key={num} value={num}>{num}</option>
-          ))}
-        </select>
+          Quantity
+        </label>
+        <input
+          id="quantity"
+          type="number"
+          min="1"
+          value={quantity}
+          onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))}
+          className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+        />
       </div>
-      <button onClick={handlePay} className="px-4 py-2 bg-blue-600 text-white rounded">
+
+      <div className="text-lg font-semibold">
+        Total: {quantity * competition.entryFee} {competition.currency}
+      </div>
+
+      <button
+        type="submit"
+        className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded"
+      >
         Pay {quantity * competition.entryFee} {competition.currency}
       </button>
-    </div>
+    </form>
+  );
+}
