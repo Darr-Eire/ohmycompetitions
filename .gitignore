@@ -1,0 +1,9 @@
+cat >> .gitignore <<EOF
+# local env files
+.env.local
+.env.local.example
+# dependencies
+node_modules/
+# build output
+.next/
+EOF
