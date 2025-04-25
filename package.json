@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@pinetwork-js/api-typing": "^0.7.0",
     "@pinetwork-js/sdk": "^0.7.0",
     "autoprefixer": "^10.4.14",
     "connect-mongodb-session": "^3.1.1",
