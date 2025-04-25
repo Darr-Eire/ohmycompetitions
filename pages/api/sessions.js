@@ -1,5 +1,7 @@
+// pages/api/sessions.js
+
 import nextConnect from 'next-connect';
-import { sessionMiddleware } from '../../src/lib/session';
+import { sessionMiddleware } from './session';  // now in pages/api/session.js
 
 const handler = nextConnect();
 handler.use(sessionMiddleware);
