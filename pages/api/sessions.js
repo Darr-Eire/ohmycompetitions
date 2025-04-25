@@ -1,5 +1,5 @@
 import nextConnect from 'next-connect';
-import { sessionMiddleware } from '../../../lib/session';
+import { sessionMiddleware } from '../../src/lib/session';
 
 const handler = nextConnect();
 handler.use(sessionMiddleware);
