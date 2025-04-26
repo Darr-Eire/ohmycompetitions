@@ -1,0 +1,19 @@
+/* styles/globals.css */
+
+/* If you’re using Tailwind: */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Otherwise, your own CSS: */
+body {
+  margin: 0;
+  font-family: sans-serif;
+}
+
+/* Example blue header/footer background */
+header, footer {
+  background: linear-gradient(to right, #3b82f6, #2563eb); /* blue-500 to blue-600 */
+  color: white;
+  padding: 1rem;
+}
