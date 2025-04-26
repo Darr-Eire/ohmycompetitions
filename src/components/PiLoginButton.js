@@ -1,57 +1,62 @@
-'use client';
+// PiLoginButton.js
+import { fetchWithTimeout } from './fetchWithTimeout.js';
 
-import { useState } from 'react';
+export class PiLoginButton {
+  constructor({ apiBaseUrl, container }) {
+    this.apiBaseUrl = apiBaseUrl.replace(/\/+$/, ''); // trim trailing slash
+    this.container = container;
+    this.button = document.createElement('button');
+    this.button.textContent = 'Login with Pi';
+    this.button.addEventListener('click', () => this.handleLogin());
+    this.container.appendChild(this.button);
+  }
 
-export default function PiLoginButton() {
-  const [loading, setLoading] = useState(false);
+  async handleLogin() {
+    this.setLoading(true);
 
-  const handleLogin = async () => {
-    setLoading(true);
     try {
-      const { Pi } = await import('@pinetwork-js/sdk');
-      if (!window.__PiInitialized) {
-        Pi.init({
-          version: '2.0',
-          sandbox: true,
-          appId: process.env.NEXT_PUBLIC_PI_APP_ID,
-          sandboxHost: process.env.NEXT_PUBLIC_PI_SANDBOX_URL,
-        });
-        window.__PiInitialized = true;
-      }
-
-      console.log('Starting Pi authentication');
-      const auth = await Pi.authenticate(['payments'], () => {});
-      console.log('Pi auth response:', auth);
-
-      const res = await fetch('/api/auth/pi-login', {
+      // 1) Kick off login request
+      const res = await fetchWithTimeout(`${this.apiBaseUrl}/pi/login`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(auth),
-      });
+      }, /* timeout ms */ 10000);
 
+      // 2) Must check HTTP status
+      let body;
       if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`API Error ${res.status}: ${errorText}`);
+        // parse any JSON error payload
+        body = await res.json().catch(() => ({}));
+        throw new Error(body.error?.message || `HTTP ${res.status}`);
       }
 
-      console.log('API login successful');
-      window.location.reload();
-    } catch (error) {
-      console.error('Pi login failed:', error);
-      alert(`Login failed: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+      // 3) Parse JSON on success
+      body = await res.json();
 
-  return (
-    <button
-      type="button"
-      onClick={handleLogin}
-      disabled={loading}
-      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
-    >
-      {loading ? 'Connecting...' : 'Login with Pi'}
-    </button>
-  );
+      // 4) If the API signals an error wrapper
+      if (body.error) {
+        // Ensure message exists
+        const msg = typeof body.error.message === 'string'
+          ? body.error.message
+          : 'Unknown server error';
+        throw new Error(msg);
+      }
+
+      // 5) Everything good—redirect or update UI
+      window.location.href = body.redirectUrl;
+    }
+    catch (err) {
+      // err is always an Error instance here
+      console.error('[PiLoginButton] error:', err);
+      alert(`Login failed: ${err.message}`);
+    }
+    finally {
+      this.setLoading(false);
+    }
+  }
+
+  setLoading(isLoading) {
+    this.button.disabled = isLoading;
+    this.button.textContent = isLoading ? 'Loading…' : 'Login with Pi';
+  }
 }
