@@ -5,9 +5,7 @@ import CompetitionCard from '../src/components/CompetitionCard'
 export default function Home() {
   return (
     <div className="page p-6">
-      <h1 className="text-xl mb-6">Oh My Competitions</h1>
-
-      <CompetitionCard
+       <CompetitionCard
         title="Everyday Pioneer"
         prize="1,000 PI Giveaways"
         fee="0.314 PI"
