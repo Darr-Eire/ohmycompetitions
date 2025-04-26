@@ -1,7 +1,7 @@
 // pages/competitions/everyday-pioneer.js
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Header from '../../src/components/Header'
 import Footer from '../../src/components/footer'
 
@@ -10,6 +10,34 @@ export default function EverydayPioneer() {
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState(null)
 
+  // === MOCK Pi SDK for non-Pi browsers ===
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !window.Pi) {
+      window.Pi = {
+        createPayment: async ({ amount, memo, metadata }) => {
+          console.log('🛠️ Mock createPayment', { amount, memo, metadata })
+          return {
+            onReadyForServerApproval: cb => {
+              console.log('🛠️ Mock onReadyForServerApproval')
+              setTimeout(() => cb({ paymentID: 'mock-123' }), 500)
+            },
+            onReadyForServerCompletion: cb => {
+              console.log('🛠️ Mock onReadyForServerCompletion')
+              setTimeout(() => cb({
+                paymentID: 'mock-123',
+                transaction: { txid: 'tx-mock-456' }
+              }), 1500)
+            },
+            serverApproved: () => console.log('🛠️ Mock serverApproved'),
+            serverCompleted: () => console.log('🛠️ Mock serverCompleted'),
+            open: () => console.log('🛠️ Mock payment.open()'),
+          }
+        }
+      }
+      console.log('🛠️ Pi SDK mocked')
+    }
+  }, [])
+
   const entryFeePerTicket = 0.314
   const totalCost         = (tickets * entryFeePerTicket).toFixed(3)
 
@@ -17,24 +45,21 @@ export default function EverydayPioneer() {
     setError(null)
     setLoading(true)
 
-    // 1) Ensure SDK loaded
     if (!window.Pi || typeof window.Pi.createPayment !== 'function') {
-      setError('Please open this page in the Pi Browser to pay with Pi.')
+      alert('Please open this page in the Pi Browser to pay with Pi.')
       setLoading(false)
       return
     }
 
     try {
-      // 2) Create the payment
       const payment = await window.Pi.createPayment({
         amount: totalCost,
         memo: `Everyday Pioneer: ${tickets} ticket${tickets > 1 ? 's' : ''}`,
         metadata: { competition: 'everyday-pioneer', tickets },
       })
 
-      // 3) When ready for server approval
       payment.onReadyForServerApproval(async ({ paymentID }) => {
-        // call your backend to approve
+        console.log('Server approval for', paymentID)
         await fetch('/api/pi/approve-payment', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -43,9 +68,8 @@ export default function EverydayPioneer() {
         payment.serverApproved()
       })
 
-      // 4) When ready for server completion
       payment.onReadyForServerCompletion(async ({ paymentID, transaction }) => {
-        // call your backend to complete
+        console.log('Server completion for', paymentID, transaction)
         await fetch('/api/pi/complete-payment', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -55,7 +79,6 @@ export default function EverydayPioneer() {
         alert('🎉 Purchase successful!')
       })
 
-      // 5) Open the Pi payment UI
       payment.open()
     } catch (e) {
       console.error(e)
