@@ -1,17 +1,29 @@
-// pages/api/auth/logout.js
-import { serialize } from 'cookie';
+// src/components/layout.js
+import { useState } from 'react'
+import Header from './header'
+import Footer from './footer'
 
-export default function handler(req, res) {
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', ['POST']);
-    return res.status(405).end();
+export default function Layout({ children }) {
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  const handleLogin = () => {
+    setIsLoggedIn(true)
   }
 
-  res.setHeader('Set-Cookie', serialize('session', '', {
-    httpOnly: true,
-    path: '/',
-    maxAge: 0,
-  }));
+  const handleLogout = () => {
+    // your logout logic here (e.g. clear tokens/cookies)
+    setIsLoggedIn(false)
+  }
 
-  res.status(204).end();
+  return (
+    <div className="layout">
+      <Header 
+        isLoggedIn={isLoggedIn} 
+        onLogin={handleLogin} 
+        onLogout={handleLogout} 
+      />
+      <main className="content">{children}</main>
+      <Footer />
+    </div>
+  )
 }

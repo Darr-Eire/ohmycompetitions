@@ -1,14 +1,16 @@
-// src/components/header.js
-export default function Header({ isLoggedIn, onLogout }) {
+export default function Header({ isLoggedIn, onLogin, onLogout }) {
   return (
     <header>
       <button className="menu-button">Menu</button>
-
       <nav className="nav-links">
         <a href="/">Home</a>
         <a href="/about">About</a>
-        {/* show logout when logged in */}
-        {isLoggedIn && (
+
+        {!isLoggedIn ? (
+          <button className="login-button" onClick={onLogin}>
+            Log In
+          </button>
+        ) : (
           <button className="logout-button" onClick={onLogout}>
             Log Out
           </button>
