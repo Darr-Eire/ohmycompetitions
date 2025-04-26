@@ -7,25 +7,21 @@ export default async function handler(req, res) {
     return res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 
-  const { code } = req.query;
-  if (!code || typeof code !== 'string') {
-    return res.status(400).json({ error: 'Missing code' });
+  const { accessToken } = req.query;
+  if (!accessToken || typeof accessToken !== 'string') {
+    return res.status(400).json({ error: 'Missing accessToken' });
   }
 
   try {
-    // TODO: exchange the 'code' for an access token via Pi’s backend
-    // const token = await fetchPiTokenExchange(code);
+    // TODO: optionally validate accessToken with Pi’s backend
 
-    // For now, we skip that and mock a user session
     const user = { uid: '123', username: 'pi_user' };
-
-    // Set an HTTP-only cookie
     res.setHeader(
       'Set-Cookie',
       serialize('session', JSON.stringify(user), {
         httpOnly: true,
         path: '/',
-        maxAge: 60 * 60 * 24 * 7, // 1 week
+        maxAge: 60 * 60 * 24 * 7,
         sameSite: 'lax',
         secure: process.env.NODE_ENV === 'production',
       })
@@ -37,4 +33,3 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Internal error' });
   }
 }
-
