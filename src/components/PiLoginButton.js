@@ -8,35 +8,37 @@ export default function PiLoginButton() {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      // Dynamically load the browser-only SDK
       const { Pi } = await import('@pinetwork-js/sdk');
-
-      // Initialize once
       if (!window.__PiInitialized) {
-        Pi.init({ version: '2.0' });
+        Pi.init({
+          version: '2.0',
+          sandbox: true,
+          appId: process.env.NEXT_PUBLIC_PI_APP_ID,
+          sandboxHost: process.env.NEXT_PUBLIC_PI_SANDBOX_URL,
+        });
         window.__PiInitialized = true;
       }
 
-      // Kick off Pi Browser auth
+      console.log('Starting Pi authentication');
       const auth = await Pi.authenticate(['payments'], () => {});
-      console.log('[PiLoginButton] auth received:', auth);
+      console.log('Pi auth response:', auth);
 
-      // Send it to your backend
       const res = await fetch('/api/auth/pi-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(auth),
       });
+
       if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Login API failed: ${res.status} – ${text}`);
+        const errorText = await res.text();
+        throw new Error(`API Error ${res.status}: ${errorText}`);
       }
 
-      // Success: reload to pick up session
+      console.log('API login successful');
       window.location.reload();
-    } catch (err) {
-      console.error('[PiLoginButton] error:', err);
-      alert(`Login failed: ${err.message}`);
+    } catch (error) {
+      console.error('Pi login failed:', error);
+      alert(`Login failed: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -53,4 +55,3 @@ export default function PiLoginButton() {
     </button>
   );
 }
-
