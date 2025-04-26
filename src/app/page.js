@@ -1,54 +1,51 @@
-// src/app/page.js
 'use client';
+
 import { useState, useEffect } from 'react';
 import PiLoginButton from '../components/PiLoginButton';
+import CompetitionCard from '../components/CompetitionCard';
 
 export default function HomePage() {
   const [user, setUser] = useState(null);
-  const [amount, setAmount] = useState(1);
+  const [comps, setComps] = useState([]);
 
   useEffect(() => {
-    fetch('/api/sessions').then(r => r.json()).then(data => setUser(data.user));
-  }, []);
+    // 1. Who’s logged in?
+    fetch('/api/sessions')
+      .then((r) => r.json())
+      .then((data) => setUser(data.user))
+      .catch(console.error);
 
-  const handlePay = async () => {
-    const res = await fetch('/api/payment/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount, memo: 'Test transaction' }),
-    });
-    const { paymentUrl } = await res.json();
-    window.location.href = paymentUrl;
-  };
+    // 2. Always load the competitions
+    fetch('/api/competitions')
+      .then((r) => r.json())
+      .then((data) => setComps(data.competitions || []))
+      .catch(console.error);
+  }, []);
 
   return (
     <div className="container mx-auto p-6">
-      {!user ? (
-        <PiLoginButton />
-      ) : (
-        <div>
-          <p>Logged in as: {user.publicAddress}</p>
-          <div className="flex items-center space-x-4">
-            <label className="flex items-center space-x-2">
-              <span>Amount:</span>
-              <input
-                type="number"
-                min="0.01"
-                step="0.01"
-                value={amount}
-                onChange={e => setAmount(parseFloat(e.target.value) || 0)}
-                className="border rounded p-1 w-24"
-              />
-            </label>
-            <button
-              onClick={handlePay}
-              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded"
-            >
-              Pay with Pi
-            </button>
-          </div>
+      {/* Show login button if not yet authenticated */}
+      {!user && (
+        <div className="mb-6">
+          <PiLoginButton />
         </div>
       )}
+
+      {/* Competition cards always */}
+      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        {comps.length > 0 ? (
+          comps.map((c) => (
+            <CompetitionCard key={c.slug} competition={c} />
+          ))
+        ) : (
+          <p className="col-span-full text-center text-gray-500">
+            No competitions available.
+          </p>
+        )}
+      </div>
+
+      {/* If you want to show purchase UI below for logged-in users, you can add it here */}
     </div>
   );
 }
+
