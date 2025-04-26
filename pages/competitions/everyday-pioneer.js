@@ -2,7 +2,7 @@
 'use client'
 
 import { useState } from 'react'
-import Header from '../../src/components/Header'    // lowercase path
+import Header from '../../src/components/Header'
 import Footer from '../../src/components/footer'
 
 export default function EverydayPioneer() {
@@ -17,6 +17,7 @@ export default function EverydayPioneer() {
     setError(null)
     setLoading(true)
 
+    // 1) Ensure SDK loaded
     if (!window.Pi || typeof window.Pi.createPayment !== 'function') {
       setError('Please open this page in the Pi Browser to pay with Pi.')
       setLoading(false)
@@ -24,13 +25,16 @@ export default function EverydayPioneer() {
     }
 
     try {
+      // 2) Create the payment
       const payment = await window.Pi.createPayment({
         amount: totalCost,
-        memo: `Everyday Pioneer: ${tickets} ticket${tickets>1?'s':''}`,
+        memo: `Everyday Pioneer: ${tickets} ticket${tickets > 1 ? 's' : ''}`,
         metadata: { competition: 'everyday-pioneer', tickets },
       })
 
+      // 3) When ready for server approval
       payment.onReadyForServerApproval(async ({ paymentID }) => {
+        // call your backend to approve
         await fetch('/api/pi/approve-payment', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -39,7 +43,9 @@ export default function EverydayPioneer() {
         payment.serverApproved()
       })
 
+      // 4) When ready for server completion
       payment.onReadyForServerCompletion(async ({ paymentID, transaction }) => {
+        // call your backend to complete
         await fetch('/api/pi/complete-payment', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -49,6 +55,7 @@ export default function EverydayPioneer() {
         alert('🎉 Purchase successful!')
       })
 
+      // 5) Open the Pi payment UI
       payment.open()
     } catch (e) {
       console.error(e)
@@ -64,7 +71,6 @@ export default function EverydayPioneer() {
 
       <main className="page p-6 max-w-lg mx-auto">
         <h1 className="text-2xl font-bold mb-4">Everyday Pioneer</h1>
-
         <p className="mb-2"><strong>Prize:</strong> 1,000 PI Giveaways</p>
         <p className="mb-4"><strong>Entry fee:</strong> {entryFeePerTicket} PI per ticket</p>
 
@@ -83,7 +89,7 @@ export default function EverydayPioneer() {
         {error && <p className="text-red-500 mb-4">{error}</p>}
 
         <button
-          type="button"                                   /* ensure it’s a button */
+          type="button"
           onClick={handlePurchase}
           disabled={loading}
           className="px-4 py-2 bg-pi-purple text-white rounded"

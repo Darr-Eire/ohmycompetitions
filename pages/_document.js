@@ -1,19 +1,13 @@
 // pages/_document.js
-import Document, { Html, Head, Main, NextScript } from 'next/document'
-
-export default class MyDocument extends Document {
-  render() {
-    return (
-      <Html>
-        <Head>
-          {/* Pi Network Browser SDK */}
-          <script src="https://cdn.jsdelivr.net/npm/pi-js@latest/dist/pi.min.js"></script>
-        </Head>
-        <body>
-          <Main />
-          <NextScript />
-        </body>
-      </Html>
-    )
-  }
+import { Html, Head, Main, NextScript } from 'next/document'
+export default function Document() {
+  return (
+    <Html>
+      <Head>
+        <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+        <script dangerouslySetInnerHTML={{ __html: `Pi.init({ version: "2.0" });` }} />
+      </Head>
+      <body><Main /><NextScript /></body>
+    </Html>
+  )
 }
