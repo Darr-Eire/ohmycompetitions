@@ -5,14 +5,15 @@ export default function Head() {
         <title>OhMyCompetitions</title>
         <meta name="description" content="Pi Network competition platform" />
   
-        {/* Pi SDK: must be loaded in Pi Browser only */}
-        <script src="https://sdk.minepi.com/pi-sdk.js" async defer></script>
+        {/* Load the official Pi Apps SDK synchronously */}
+        <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+  
+        {/* Immediately initialize it */}
         <script
-          // Inline init; use sandbox flag in dev if you like
           dangerouslySetInnerHTML={{
             __html: `
-              if (window.Pi && typeof window.Pi.init === 'function') {
-                Pi.init({ version: "2.0" });
+              if (typeof Pi !== 'undefined' && typeof Pi.init === 'function') {
+                Pi.init({ version: '2.0' });
               }
             `,
           }}
