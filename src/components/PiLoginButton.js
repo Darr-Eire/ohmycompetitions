@@ -10,13 +10,31 @@ export default function PiLoginButton({ apiBaseUrl = '/api' }) {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      // 1) Acquire the Pi auth data first
-      const { token, signature, publicAddress } = await window.Pi?.authenticate?.();
-      if (!token || !publicAddress) {
-        throw new Error('Failed to acquire Pi auth data');
+      if (typeof window.Pi?.authenticate !== 'function') {
+        throw new Error(
+          'Pi SDK not available. Are you in the Pi Browser or did you include the SDK script?'
+        );
       }
 
-      // 2) Then send it to your API
+      // 1) Call the Pi SDK
+      console.log('[PiLoginButton] calling Pi.authenticate()');
+      const resp = await window.Pi.authenticate();
+      console.log('[PiLoginButton] got resp:', resp);
+
+      // 2) Guard against undefined
+      if (!resp) {
+        throw new Error('No response object from Pi.authenticate()');
+      }
+
+      // 3) Now destructure safely
+      const { token, signature, publicAddress } = resp;
+      if (!token || !publicAddress) {
+        throw new Error(
+          `Incomplete auth data: ${JSON.stringify(resp, null, 2)}`
+        );
+      }
+
+      // 4) Send to your backend
       const res = await fetchWithTimeout(`${apiBaseUrl}/auth/login`, {
         method: 'POST',
         credentials: 'include',
@@ -31,7 +49,7 @@ export default function PiLoginButton({ apiBaseUrl = '/api' }) {
 
       alert('Login successful!');
     } catch (err) {
-      console.error('[PiLoginButton]', err);
+      console.error('[PiLoginButton] error:', err);
       alert(`Login failed: ${err.message}`);
     } finally {
       setLoading(false);
