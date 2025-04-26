@@ -24,7 +24,6 @@ header {
   font-size: 1rem;
   background-color: #0070f3; /* Next.js blue */
   color: #ffffff;
-  position: relative;
 }
 
 /* Menu button in top-left */
@@ -35,17 +34,14 @@ header {
   font-size: 1rem;
   cursor: pointer;
   padding: 0.25rem 0.5rem;
-  margin-right: 1rem;
 }
 
-/* Navigation links container */
-.nav-links {
-  display: flex;
-  gap: 1rem;
-  margin-left: auto; /* push links (and login/logout) to the right */
+/* Spacer to push login/logout to the right */
+.nav-spacer {
+  flex: 1;
 }
 
-/* Log In button */
+/* Log In / Log Out button */
 .login-button,
 .logout-button {
   background: transparent;
@@ -55,12 +51,19 @@ header {
   font-size: 0.9rem;
   cursor: pointer;
   border-radius: 4px;
-  margin-left: 1rem; /* space from other links */
+  margin-left: 0.5rem;
 }
 
 .login-button:hover,
 .logout-button:hover {
   background: rgba(255,255,255,0.2);
+}
+
+/* Optional welcome text styling */
+.welcome-text {
+  margin-left: 0.5rem;
+  font-size: 0.9rem;
+  color: #ffffff;
 }
 
 /* 4. Shrinked, blue footer */
