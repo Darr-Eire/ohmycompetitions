@@ -17,34 +17,51 @@ export default function EverydayPioneer() {
     setError(null)
     setLoading(true)
 
-    if (typeof window.Pi?.transact !== 'function') {
-      setError('Please open this page in the Pi Browser to pay with Pi.')
+    if (!window.Pi || typeof window.Pi.createPayment !== 'function') {
+      setError('Please open in Pi Browser.')
       setLoading(false)
       return
     }
 
     try {
-      const tx = await window.Pi.transact({
+      // Phase I: createPayment
+      const payment = await window.Pi.createPayment({
         amount: totalCost,
-        memo: `Everyday Pioneer: ${tickets} ticket${tickets > 1 ? 's' : ''}`,
-        metadata: { competition: 'everyday-pioneer', tickets },
+        memo: `Everyday Pioneer: ${tickets} ticket${tickets>1?'s':''}`,
+        metadata: { competition: 'everyday-pioneer', tickets }
       })
 
-      const res = await fetch(
-        '/api/competitions/everyday-pioneer/entry',
-        {
+      // Immediately called when SDK is ready for your server to approve
+      payment.onReadyForServerApproval(async ({ paymentID }) => {
+        // 1) send paymentID to your server to approve
+        await fetch('/api/pi/approve-payment', {
           method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ transaction: tx, tickets }),
-        }
-      )
-      if (!res.ok) throw new Error(`Server error (${res.status})`)
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ paymentID })
+        })
+        // tell SDK to continue
+        payment.serverApproved()
+      })
 
-      alert('🎉 Purchase successful!')
+      // Phase II: user signs and submits the blockchain tx (handled in Pi Wallet)
+
+      // Phase III: after blockchain tx, SDK calls:
+      payment.onReadyForServerCompletion(async ({ paymentID, transaction }) => {
+        // 2) send to your server to complete
+        await fetch('/api/pi/complete-payment', {
+          method: 'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ paymentID, txid: transaction.txid })
+        })
+        payment.serverCompleted()
+        alert('🎉 Purchase successful!')
+      })
+
+      // finally, tell SDK to open the payment UI
+      payment.open()
     } catch (e) {
       console.error(e)
-      setError(e.message || 'Transaction failed')
+      setError(e.message || 'Payment failed')
     } finally {
       setLoading(false)
     }
@@ -53,38 +70,17 @@ export default function EverydayPioneer() {
   return (
     <>
       <Header />
-
       <main className="page p-6 max-w-lg mx-auto">
-        <h1 className="text-2xl font-bold mb-4">Everyday Pioneer</h1>
-        <p className="mb-2"><strong>Prize:</strong> 1,000 PI Giveaways</p>
-        <p className="mb-4"><strong>Entry fee:</strong> {entryFeePerTicket} PI per ticket</p>
-
-        <label className="block mb-2">
-          Number of tickets:
-          <input
-            type="number"
-            min="1"
-            value={tickets}
-            onChange={e => setTickets(Math.max(1, Number(e.target.value)))}
-            className="ml-2 w-16 border rounded px-2 py-1"
-          />
-        </label>
-
-        <p className="mb-4"><strong>Total cost:</strong> {totalCost} PI</p>
-
-        {error && <p className="text-red-500 mb-4">{error}</p>}
-
+        {/* ... your form ... */}
         <button
-          onClick={handlePurchase}
           disabled={loading}
+          onClick={handlePurchase}
           className="px-4 py-2 bg-pi-purple text-white rounded"
         >
           {loading ? 'Processing…' : `Pay with Pi (${totalCost} PI)`}
         </button>
       </main>
-
       <Footer />
     </>
   )
 }
-
