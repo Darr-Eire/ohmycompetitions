@@ -1,9 +1,9 @@
 // src/app/page.js
 export default function HomePage() {
     return (
-      <main style={{ padding: '2rem' }}>
+      <main>
         <h1>Welcome to OhMyCompetitions</h1>
-        <p><a href="/dashboard">Go to Dashboard</a></p>
+        <p>Use the Pi-Login button in the header to authenticate.</p>
       </main>
     );
   }
