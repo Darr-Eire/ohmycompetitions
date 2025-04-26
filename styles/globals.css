@@ -134,4 +134,39 @@ footer {
   background-color: #005bb5;
 }
 
-/* 10. Any additional global styles below */
+/* 10. Footer social icons and policy links */
+.social-icons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.social-icons a {
+  color: #ffffff;
+  font-size: 1.25rem;
+  transition: color 0.2s ease;
+}
+
+.social-icons a:hover {
+  color: #e0e0e0;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.footer-links a {
+  color: #ffffff;
+  text-decoration: underline;
+  font-size: 0.9rem;
+}
+
+.footer-links a:hover {
+  color: #e0e0e0;
+}
+
+/* 11. Any additional global styles below */
