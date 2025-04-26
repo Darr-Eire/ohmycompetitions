@@ -173,6 +173,7 @@ footer {
 .bg-pi-purple {
   background-color: #8e44ad; /* Pi purple */
   color: #ffffff;
+  transition: background-color 0.2s ease;
 }
 
 .bg-pi-purple:hover {

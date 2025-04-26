@@ -10,43 +10,45 @@ export default function EverydayPioneer() {
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState(null)
 
-  const entryFeePerTicket = 0.314  // PI per ticket
+  const entryFeePerTicket = 0.314
   const totalCost         = (tickets * entryFeePerTicket).toFixed(3)
 
   const handlePurchase = async () => {
     setError(null)
     setLoading(true)
 
+    // 1) Ensure Pi SDK is available
     if (typeof window.Pi?.transact !== 'function') {
-      setError('Pi Wallet SDK not available. Please open in Pi Browser.')
+      setError('Please open this page in the Pi Browser to pay with Pi.')
       setLoading(false)
       return
     }
 
     try {
-      // 1) Trigger Pi Wallet payment
+      // 2) Trigger Pi Wallet payment UI
       const tx = await window.Pi.transact({
         amount: totalCost,
-        memo: `Entry to Everyday Pioneer (${tickets} ticket${tickets > 1 ? 's' : ''})`,
+        memo: `Everyday Pioneer entry: ${tickets} ticket${tickets > 1 ? 's' : ''}`,
         metadata: { competition: 'everyday-pioneer', tickets },
       })
 
-      // 2) Send transaction to backend for verification & recording
-      const res = await fetch(
-        `/api/competitions/everyday-pioneer/entry`,
-        {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ transaction: tx, tickets }),
-        }
-      )
-      if (!res.ok) throw new Error(`Server error (${res.status})`)
+      // 3) Send transaction to your backend for verification & record-keeping
+      const res = await fetch('/api/competitions/everyday-pioneer/entry', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transaction: tx, tickets }),
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body.message || `Server error (${res.status})`)
+      }
 
-      alert('🎉 Purchase successful! Good luck!')
+      // 4) On success
+      alert('🎉 Your purchase was successful!')
     } catch (e) {
       console.error(e)
-      setError(e.message || 'Transaction failed')
+      setError(e.message || 'Purchase failed')
     } finally {
       setLoading(false)
     }
