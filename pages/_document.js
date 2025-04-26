@@ -1,18 +1,21 @@
 // pages/_document.js
-import { Html, Head, Main, NextScript } from 'next/document';
+import { Html, Head, Main, NextScript } from 'next/document'
 
 export default function Document() {
   return (
     <Html>
       <Head>
-        {/* Load the Pi Browser SDK */}
-        <script src="https://sdk.minepi.com/pi-sdk.js" />
-        {/* Initialize it immediately */}
+        {/* Pi SDK */}
         <script
+          async
+          src="https://sdk.minepi.com/pi-sdk.js"
+        />
+        <script
+          // once pi-sdk.js is loaded, initialize it
           dangerouslySetInnerHTML={{
             __html: `
-              if (typeof Pi !== 'undefined' && Pi.init) {
-                Pi.init({ version: "2.0" });
+              if (typeof Pi !== 'undefined') {
+                Pi.init({ version: '2.0' });
               }
             `,
           }}
@@ -23,5 +26,5 @@ export default function Document() {
         <NextScript />
       </body>
     </Html>
-  );
+  )
 }
