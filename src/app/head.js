@@ -2,10 +2,13 @@
 export default function Head() {
     return (
       <>
-        {/* INJECTED-BY-HEAD.JS */}
         <title>OhMyCompetitions</title>
         <meta name="description" content="Pi Network competition platform" />
-        <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+  
+        {/* Pi Browser SDK */}
+        <script src="https://sdk.minepi.com/pi-sdk.js" />
+  
+        {/* Initialize the Pi SDK */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
