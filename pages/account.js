@@ -1,3 +1,4 @@
+// pages/account.js
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 
@@ -10,7 +11,7 @@ export default function AccountPage() {
     fetch('/api/auth/me', { credentials: 'include' })
       .then(res => {
         if (res.status === 401) {
-          // Not logged in, go back home
+          // Not logged in → back to home
           router.replace('/')
           return null
         }
@@ -22,36 +23,55 @@ export default function AccountPage() {
       .catch(() => {
         router.replace('/')
       })
-      .finally(() => setLoading(false))
+      .finally(() => {
+        setLoading(false)
+      })
   }, [router])
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', {
       method: 'POST',
-      credentials: 'include'
+      credentials: 'include',
     })
     router.replace('/')
   }
 
-  if (loading) return <p>Loading your account…</p>
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p>Loading your account…</p>
+      </div>
+    )
+  }
 
   return (
-    <div className="max-w-lg mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Welcome, {user.username}!</h1>
+    <div className="max-w-lg mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-6">
+        Welcome, {user.username}!
+      </h1>
 
-      <ul className="space-y-2 mb-6">
+      <ul className="space-y-4 mb-8">
         <li>
-          <a href="/dashboard" className="text-blue-600 hover:underline">
+          <a
+            href="/dashboard"
+            className="text-blue-600 hover:underline"
+          >
             📊 Your Dashboard
           </a>
         </li>
         <li>
-          <a href="/settings" className="text-blue-600 hover:underline">
+          <a
+            href="/settings"
+            className="text-blue-600 hover:underline"
+          >
             ⚙️ Account Settings
           </a>
         </li>
         <li>
-          <a href="/competitions" className="text-blue-600 hover:underline">
+          <a
+            href="/competitions"
+            className="text-blue-600 hover:underline"
+          >
             🎉 Browse Competitions
           </a>
         </li>
