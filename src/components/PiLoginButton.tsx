@@ -1,69 +1,44 @@
-// src/components/PiLoginButton.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
-
-type AuthResult = {
-  accessToken: string;
-  user: { uid: string; username: string };
-};
-
-declare global {
-  interface Window {
-    Pi?: {
-      init: (opts: { version: string; sandbox?: boolean }) => void;
-      authenticate: (
-        scopes: string[],
-        onIncompletePaymentFound?: (p: any) => void
-      ) => Promise<AuthResult>;
-    };
-  }
-}
+import { useState } from 'react';
+import { useRouter } from 'next/router';
 
 export default function PiLoginButton() {
   const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState<string | null>(null);
-  const [sdkReady, setSdkReady] = useState(false);
-
-  // Poll for Pi.init having run in the head
-  useEffect(() => {
-    const id = setInterval(() => {
-      if (window.Pi && typeof window.Pi.authenticate === 'function') {
-        setSdkReady(true);
-        clearInterval(id);
-      }
-    }, 100);
-    return () => clearInterval(id);
-  }, []);
+  const [error, setError]     = useState<string | null>(null);
+  const router = useRouter();
 
   const handleLogin = async () => {
     setError(null);
     setLoading(true);
 
-    if (!sdkReady) {
-      setError('Waiting for Pi SDK to initialize…');
+    if (typeof window.Pi?.authenticate !== 'function') {
+      setError('Pi SDK not available. Open in Pi Browser.');
       setLoading(false);
       return;
     }
 
     try {
-      // TS now knows Pi is defined:
-      const { accessToken, user } = await window.Pi!.authenticate(
-        ['username', 'wallet_address'],
-        (payment) => console.warn('Incomplete payment:', payment)
-      );
+      // 1) Authenticate via Pi SDK
+      const { accessToken, user } = await window.Pi.authenticate([
+        'username',
+        'wallet_address',
+      ]);
 
+      // 2) Send token to our backend to set a session cookie
       const res = await fetch(
-        `/api/auth/pi-login?accessToken=${encodeURIComponent(accessToken)}`,
+        `/api/auth/pi-login?accessToken=${encodeURIComponent(
+          accessToken
+        )}`,
         { method: 'GET', credentials: 'include' }
       );
       if (!res.ok) throw new Error(`Login failed (${res.status})`);
 
-      // redirect on success:
-      window.location.href = '/account';
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || 'Login failed');
+      // *** Redirect to /account ***
+      router.push('/account');
+    } catch (e: any) {
+      console.error(e);
+      setError(e.message || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -72,14 +47,10 @@ export default function PiLoginButton() {
   return (
     <button
       onClick={handleLogin}
-      disabled={loading || !sdkReady}
-      className="btn-blue"
+      disabled={loading}
+      className="px-4 py-2 bg-blue-600 text-white rounded"
     >
-      {loading
-        ? 'Loading…'
-        : !sdkReady
-        ? 'Initializing Pi SDK…'
-        : error ?? 'Login with Pi Network'}
+      {loading ? 'Loading…' : error ?? 'Login with Pi Network'}
     </button>
   );
 }
