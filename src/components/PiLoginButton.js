@@ -9,44 +9,31 @@ export default function PiLoginButton({ apiBaseUrl = '/api' }) {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      // On Pi Browser, window.Pi is provided automatically.
-      // In other browsers, we mock for dev.
       if (typeof window.Pi?.authenticate !== 'function') {
-        // Detect Pi Browser by user agent substring
-        const ua = navigator.userAgent || '';
-        const inPiBrowser = ua.includes('PiBrowser');
-        if (!inPiBrowser) {
-          // Dev mock outside Pi Browser
-          window.Pi = {
-            authenticate: async () => ({
-              token: 'dev-token',
-              signature: 'dev-sig',
-              publicAddress: '0xDEADBEEF',
-            }),
-          };
-        } else {
-          throw new Error('Pi.authenticate() not found in Pi Browser');
-        }
+        throw new Error('Pi SDK not available. Please open in the Pi Browser.');
       }
 
-      // Now we can call it
-      const resp = await window.Pi.authenticate();
-      const { token, signature, publicAddress } = resp;
-      if (!token || !publicAddress) {
-        throw new Error('Incomplete auth data from Pi SDK');
-      }
+      // Request username & wallet_address
+      const scopes = ['username', 'wallet_address'];
+      const auth = await Pi.authenticate(scopes);
 
-      // Send to your backend…
-      await fetch(`${apiBaseUrl}/auth/login`, {
+      // auth is { accessToken, user: { uid, username, wallet_address } }
+      console.log('Authenticated:', auth);
+
+      // Send the accessToken to your backend for your /api/auth/login
+      const res = await fetch(`${apiBaseUrl}/auth/login`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, signature, publicAddress }),
+        body: JSON.stringify({ accessToken: auth.accessToken }),
       });
 
-      alert('Login successful!');
+      if (!res.ok) {
+        throw new Error(`Login API failed: ${res.status}`);
+      }
+      alert('Logged in!');
     } catch (err) {
-      console.error('[PiLoginButton]', err);
+      console.error(err);
       alert(`Login failed: ${err.message}`);
     } finally {
       setLoading(false);
