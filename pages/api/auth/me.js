@@ -1,19 +1,10 @@
-import nextConnect from 'next-connect';
-import { sessionMiddleware } from '../session';
+import { parse } from 'cookie';
 
-const handler = nextConnect();
-handler.use(sessionMiddleware);
-
-handler.get((req, res) => {
-  if (req.session.user) {
-    return res.status(200).json({ user: req.session.user });
+export default function handler(req, res) {
+  const { session } = parse(req.headers.cookie || '');
+  if (!session) {
+    return res.status(401).json({ error: 'Not authenticated' });
   }
-  res.status(401).json({ error: 'Not logged in' });
-});
-
-handler.all((req, res) => {
-  res.setHeader('Allow', ['GET']);
-  res.status(405).end(`Method ${req.method} Not Allowed`);
-});
-
-export default handler;
+  const user = JSON.parse(session);
+  res.status(200).json(user);
+}
