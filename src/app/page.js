@@ -9,43 +9,38 @@ export default function HomePage() {
   const [comps, setComps] = useState([]);
 
   useEffect(() => {
-    // 1. Who’s logged in?
-    fetch('/api/sessions')
-      .then((r) => r.json())
-      .then((data) => setUser(data.user))
-      .catch(console.error);
-
-    // 2. Always load the competitions
     fetch('/api/competitions')
       .then((r) => r.json())
-      .then((data) => setComps(data.competitions || []))
+      .then((data) => {
+        console.log('Fetched competitions:', data.competitions);
+        setComps(data.competitions || []);
+      })
       .catch(console.error);
   }, []);
+  
 
   return (
     <div className="container mx-auto p-6">
-      {/* Show login button if not yet authenticated */}
-      {!user && (
-        <div className="mb-6">
-          <PiLoginButton />
-        </div>
+      {/* Always show login button */}
+      <div className="mb-6">
+        <PiLoginButton />
+      </div>
+
+      {/* If you want, show a welcome message when logged in */}
+      {user && (
+        <p className="mb-4 text-green-600">Logged in as: {user.publicAddress}</p>
       )}
 
-      {/* Competition cards always */}
+      {/* Competitions grid */}
       <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {comps.length > 0 ? (
-          comps.map((c) => (
-            <CompetitionCard key={c.slug} competition={c} />
-          ))
+          comps.map(c => <CompetitionCard key={c.slug} competition={c} />)
         ) : (
           <p className="col-span-full text-center text-gray-500">
             No competitions available.
           </p>
         )}
       </div>
-
-      {/* If you want to show purchase UI below for logged-in users, you can add it here */}
     </div>
   );
 }
-
