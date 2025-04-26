@@ -1,7 +1,7 @@
 // PiLoginButton.js
 import { fetchWithTimeout } from '../utils/fetchWithTimeout.js';
 
-export class PiLoginButton {
+export default class PiLoginButton {
   constructor({ apiBaseUrl, container }) {
     this.apiBaseUrl = apiBaseUrl.replace(/\/+$/, ''); // trim trailing slash
     this.container = container;
