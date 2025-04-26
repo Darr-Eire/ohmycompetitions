@@ -3,7 +3,6 @@ import {
     FaTwitter,
     FaFacebookF,
     FaInstagram,
-    FaLinkedinIn,
     FaDiscord,
   } from 'react-icons/fa'
   
@@ -50,7 +49,7 @@ import {
           <a href="/privacy">Privacy Policy</a>
         </div>
   
-        <p>© {new Date().getFullYear()} Your Company</p>
+        <p>© {new Date().getFullYear()} OhMyCompetitions </p>
       </footer>
     )
   }
