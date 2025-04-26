@@ -1,11 +1,10 @@
-// src/app/page.tsx (or pages/index.tsx)
 import PiLoginButton from '../src/components/PiLoginButton'
 
-export default function HomePage() {
+export default function Home() {
   return (
-    <main>
-      {/* …other content… */}
+    <main className="p-4">
+      <h1>OhMyCompetitions</h1>
       <PiLoginButton />
     </main>
-  );
+  )
 }
