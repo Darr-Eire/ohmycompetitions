@@ -5,13 +5,15 @@ export default function Document() {
   return (
     <Html>
       <Head>
-        {/* Pi Network SDK */}
+        {/* Load the Pi Browser SDK */}
         <script src="https://sdk.minepi.com/pi-sdk.js" />
+        {/* Initialize it immediately */}
         <script
-          // the dangerouslySetInnerHTML is required in Next.js _document
           dangerouslySetInnerHTML={{
             __html: `
-              Pi.init({ version: "2.0" });
+              if (typeof Pi !== 'undefined' && Pi.init) {
+                Pi.init({ version: "2.0" });
+              }
             `,
           }}
         />
@@ -21,5 +23,5 @@ export default function Document() {
         <NextScript />
       </body>
     </Html>
-  )
+  );
 }
