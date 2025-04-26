@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/router'
+import CompetitionCard from '../src/components/CompetitionCard'
 
 export default function Home() {
   const [loading, setLoading] = useState(false)
@@ -29,7 +30,6 @@ export default function Home() {
       )
       if (!res.ok) throw new Error(`Login failed (${res.status})`)
 
-      // Stay here, just show success
       alert(`Welcome, ${user.username}!`)
     } catch (e) {
       console.error(e)
@@ -40,15 +40,28 @@ export default function Home() {
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-xl mb-4">Oh My Competitions</h1>
+    <div className="page p-6">
+      <h1 className="text-xl mb-6">Oh My Competitions</h1>
+
+      {/* Pi Login Button */}
       <button
         onClick={handleLogin}
         disabled={loading}
-        className="px-4 py-2 bg-blue-600 text-white rounded"
+        className="px-4 py-2 bg-blue-600 text-white rounded mb-8"
       >
         {loading ? 'Loading…' : error ?? 'Login with Pi Network'}
       </button>
+
+      {/* Competition Card */}
+      <CompetitionCard
+        title="Everyday Pioneer"
+        prize="1,000 PI Giveaways"
+        fee="0.314 PI"
+        onEnter={() => {
+          // Example: redirect to entry page
+          router.push('/competitions/everyday-pioneer')
+        }}
+      />
     </div>
   )
 }

@@ -1,23 +1,18 @@
-"use client";
-
-import { useRouter } from 'next/navigation';
-
-export default function CompetitionCard({ competition }) {
-  const router = useRouter();
-  const handleEnter = () => {
-    router.push(`/ticket-purchase/${competition.slug}`);
-  };
-
+// src/components/CompetitionCard.js
+export default function CompetitionCard({
+  title = "Everyday Pioneer",
+  prize = "1,000 PI Giveaways",
+  fee = "0.314 PI",
+  onEnter = () => alert("Entered!"),
+}) {
   return (
-    <div className="bg-white p-6 rounded shadow-md max-w-sm text-center">
-      <h2 className="text-2xl font-semibold mb-2">{competition.title}</h2>
-      <p className="mb-4">
-        Entry Fee: {competition.entryFee} {competition.currency}
+    <div className="competition-card">
+      <h2 className="comp-title">{title}</h2>
+      <p className="comp-prize">{prize}</p>
+      <p className="comp-fee">
+        Entry fee: <strong>{fee}</strong>
       </p>
-      <button
-        onClick={handleEnter}
-        className="px-4 py-2 bg-green-500 text-white rounded"
-      >
+      <button className="comp-button" onClick={onEnter}>
         Enter Now
       </button>
     </div>
