@@ -8,7 +8,6 @@ export default function Account() {
   const router = useRouter()
 
   useEffect(() => {
-    // Fetch /api/auth/me to see if we’re logged in
     fetch('/api/auth/me', { credentials: 'include' })
       .then(res => {
         if (res.status === 401) {
@@ -19,9 +18,12 @@ export default function Account() {
         return res.json()
       })
       .then(data => {
-        if (data) setUser(data)
+        if (data) {
+          setUser(data)
+        }
       })
       .catch(() => {
+        // On error, bounce back
         router.replace('/')
       })
       .finally(() => {
@@ -30,19 +32,27 @@ export default function Account() {
   }, [router])
 
   if (loading) return <p>Loading…</p>
-  if (!user) return null // will have redirected
+  if (!user) return null  // we’ve redirected already
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Welcome, {user.username}</h1>
+    <div className="p-6 max-w-md mx-auto">
+      <h1 className="text-2xl font-bold mb-4">
+        Welcome, {user.username}
+      </h1>
       <ul className="space-y-2">
         <li>
-          <a href="/profile" className="text-blue-600 hover:underline">
+          <a
+            href="/profile"
+            className="text-blue-600 hover:underline"
+          >
             Your profile
           </a>
         </li>
         <li>
-          <a href="/settings" className="text-blue-600 hover:underline">
+          <a
+            href="/settings"
+            className="text-blue-600 hover:underline"
+          >
             Settings
           </a>
         </li>
