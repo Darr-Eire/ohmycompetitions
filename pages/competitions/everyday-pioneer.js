@@ -24,14 +24,12 @@ export default function EverydayPioneer() {
     }
 
     try {
-      // 1) Open Pi Wallet payment prompt
       const tx = await window.Pi.transact({
         amount: totalCost,
         memo: `Everyday Pioneer: ${tickets} ticket${tickets > 1 ? 's' : ''}`,
         metadata: { competition: 'everyday-pioneer', tickets },
       })
 
-      // 2) Send tx object to backend stub for now
       const res = await fetch(
         '/api/competitions/everyday-pioneer/entry',
         {
@@ -89,3 +87,4 @@ export default function EverydayPioneer() {
     </>
   )
 }
+
