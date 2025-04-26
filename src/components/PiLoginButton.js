@@ -1,62 +1,47 @@
-// PiLoginButton.js
-import { fetchWithTimeout } from '../utils/fetchWithTimeout.js';
+// src/components/PiLoginButton.js
+'use client';
 
-export default class PiLoginButton {
-  constructor({ apiBaseUrl, container }) {
-    this.apiBaseUrl = apiBaseUrl.replace(/\/+$/, ''); // trim trailing slash
-    this.container = container;
-    this.button = document.createElement('button');
-    this.button.textContent = 'Login with Pi';
-    this.button.addEventListener('click', () => this.handleLogin());
-    this.container.appendChild(this.button);
-  }
+import { useState } from 'react';
+import { fetchWithTimeout } from '../utils/fetchWithTimeout';
 
-  async handleLogin() {
-    this.setLoading(true);
+export default function PiLoginButton({ apiBaseUrl = '/api' }) {
+  const [loading, setLoading] = useState(false);
 
+  const handleLogin = async () => {
+    setLoading(true);
     try {
-      // 1) Kick off login request
-      const res = await fetchWithTimeout(`${this.apiBaseUrl}/pi/login`, {
+      const res = await fetchWithTimeout(`${apiBaseUrl}/pi/login`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-      }, /* timeout ms */ 10000);
+      }, 10000);
 
-      // 2) Must check HTTP status
-      let body;
       if (!res.ok) {
-        // parse any JSON error payload
-        body = await res.json().catch(() => ({}));
-        throw new Error(body.error?.message || `HTTP ${res.status}`);
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(errBody.error?.message || `HTTP ${res.status}`);
       }
 
-      // 3) Parse JSON on success
-      body = await res.json();
-
-      // 4) If the API signals an error wrapper
+      const body = await res.json();
       if (body.error) {
-        // Ensure message exists
-        const msg = typeof body.error.message === 'string'
-          ? body.error.message
-          : 'Unknown server error';
-        throw new Error(msg);
+        throw new Error(
+          typeof body.error.message === 'string'
+            ? body.error.message
+            : 'Unknown server error'
+        );
       }
 
-      // 5) Everything good—redirect or update UI
       window.location.href = body.redirectUrl;
-    }
-    catch (err) {
-      // err is always an Error instance here
-      console.error('[PiLoginButton] error:', err);
+    } catch (err) {
+      console.error('[PiLoginButton]', err);
       alert(`Login failed: ${err.message}`);
+    } finally {
+      setLoading(false);
     }
-    finally {
-      this.setLoading(false);
-    }
-  }
+  };
 
-  setLoading(isLoading) {
-    this.button.disabled = isLoading;
-    this.button.textContent = isLoading ? 'Loading…' : 'Login with Pi';
-  }
+  return (
+    <button disabled={loading} onClick={handleLogin}>
+      {loading ? 'Loading…' : 'Login with Pi'}
+    </button>
+  );
 }
