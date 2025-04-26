@@ -4,43 +4,34 @@
 import { useState } from 'react';
 import { fetchWithTimeout } from '../utils/fetchWithTimeout';
 
-export default function PiLoginButton({ apiBaseUrl = '/api' }) {
+export default function PiLoginButton() {
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
+  async function handleLogin() {
     setLoading(true);
     try {
-      const res = await fetchWithTimeout(`${apiBaseUrl}/pi/login`, {
+      const res = await fetchWithTimeout('/api/auth/login', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, signature, publicAddress }),
       }, 10000);
 
-      if (!res.ok) {
-        const errBody = await res.json().catch(() => ({}));
-        throw new Error(errBody.error?.message || `HTTP ${res.status}`);
-      }
-
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const body = await res.json();
-      if (body.error) {
-        throw new Error(
-          typeof body.error.message === 'string'
-            ? body.error.message
-            : 'Unknown server error'
-        );
-      }
+      if (body.error) throw new Error(body.error);
 
-      window.location.href = body.redirectUrl;
+      // success—redirect or update UI
     } catch (err) {
-      console.error('[PiLoginButton]', err);
+      console.error('Login failed:', err);
       alert(`Login failed: ${err.message}`);
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   return (
-    <button disabled={loading} onClick={handleLogin}>
+    <button onClick={handleLogin} disabled={loading}>
       {loading ? 'Loading…' : 'Login with Pi'}
     </button>
   );
