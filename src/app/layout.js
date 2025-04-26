@@ -1,4 +1,6 @@
+// src/app/layout.js
 import '../globals.css';
+import Script from 'next/script';
 
 export const metadata = {
   title: 'OhMyCompetitions',
@@ -8,6 +10,13 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        {/* Pi widget SDK ― makes window.Pi.authenticate() available */}
+        <Script
+          src="https://sdk.minepi.com/widget.js"
+          strategy="beforeInteractive"
+        />
+      </head>
       <body className="min-h-screen flex flex-col">
         {/* Header */}
         <header className="bg-blue-600 text-white p-4">
@@ -31,3 +40,4 @@ export default function RootLayout({ children }) {
     </html>
   );
 }
+
