@@ -1,20 +1,20 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "target": "esnext",
+    "module": "esnext",
+    "jsx": "preserve",
+    "moduleResolution": "node",
+    "strict": true,
+    "esModuleInterop": true,
     "lib": [
       "dom",
       "dom.iterable",
       "esnext"
     ],
-    "jsx": "preserve",
-    "strict": true,
     "allowJs": true,
     "skipLibCheck": true,
     "noEmit": true,
     "incremental": true,
-    "module": "esnext",
-    "esModuleInterop": true,
-    "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "plugins": [
@@ -22,14 +22,13 @@
         "name": "next"
       }
     ]
-    // … your other options …
+    // …other options…
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    "global.d.ts",
-    "next-env.d.ts" // <-- add this line
-    ,
+    "next-env.d.ts",
+    "src/global.d.ts",
     ".next/types/**/*.ts"
   ],
   "exclude": [
