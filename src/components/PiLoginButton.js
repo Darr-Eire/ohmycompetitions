@@ -1,48 +1,41 @@
-'use client';
-import { useState } from 'react';
+// src/components/PiLoginButton.js
+'use client'
+import { useState } from 'react'
 
 export default function PiLoginButton() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
   const handleLogin = async () => {
-    setError(null);
-    setLoading(true);
+    setError(null)
+    setLoading(true)
 
     if (typeof window.Pi?.authenticate !== 'function') {
-      setError('Pi SDK not available. Open in Pi Browser.');
-      setLoading(false);
-      return;
+      setError('Pi SDK not available. Open in Pi Browser.')
+      setLoading(false)
+      return
     }
 
     try {
       const auth = await window.Pi.authenticate({
         version: '2.0',
         permissions: ['username', 'wallet_address'],
-      });
-
-      if (!auth.accessToken) {
-        throw new Error('No access token returned');
-      }
+      })
+      if (!auth.accessToken) throw new Error('No access token returned')
 
       const resp = await fetch(
-        `/api/auth/pi-login?accessToken=${encodeURIComponent(
-          auth.accessToken
-        )}`,
+        `/api/auth/pi-login?accessToken=${encodeURIComponent(auth.accessToken)}`,
         { method: 'GET', credentials: 'include' }
-      );
-      if (!resp.ok) {
-        throw new Error(`Login API failed: ${resp.status}`);
-      }
+      )
+      if (!resp.ok) throw new Error(`Login API failed: ${resp.status}`)
 
-      alert('Logged in!');
+      alert('Logged in!')
     } catch (e) {
-      // e is any thrown value; if it's an Error it has a message
-      setError(e?.message || 'Unknown error');
+      setError(e.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <button
@@ -56,5 +49,5 @@ export default function PiLoginButton() {
         ? error
         : 'Login with Pi Network'}
     </button>
-  );
+  )
 }
