@@ -50,6 +50,9 @@ export default function Header() {
     <header>
       <button className="menu-button">Menu</button>
 
+      {/* Site title */}
+      <h1 className="site-title">Oh My Competitions</h1>
+
       <div className="nav-spacer" />
 
       {!isLoggedIn ? (

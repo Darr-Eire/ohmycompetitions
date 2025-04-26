@@ -26,6 +26,15 @@ header {
   color: #ffffff;
 }
 
+/* Site title in header */
+.site-title {
+  margin: 0;
+  margin-left: 0.75rem;    /* space after the Menu button */
+  font-size: 1.25rem;       /* slightly larger */
+  color: #ffffff;           /* white text */
+  font-weight: normal;
+}
+
 /* Menu button in top-left */
 .menu-button {
   background: transparent;
