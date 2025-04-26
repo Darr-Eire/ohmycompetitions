@@ -1,4 +1,4 @@
-/* File: src/app/page.js */
+// src/app/page.js
 'use client';
 import { useState, useEffect } from 'react';
 import PiLoginButton from '../components/PiLoginButton';
@@ -8,26 +8,17 @@ export default function HomePage() {
   const [amount, setAmount] = useState(1);
 
   useEffect(() => {
-    fetch('/api/sessions')
-      .then(res => res.json())
-      .then(data => setUser(data.user))
-      .catch(console.error);
+    fetch('/api/sessions').then(r => r.json()).then(data => setUser(data.user));
   }, []);
 
   const handlePay = async () => {
-    try {
-      const res = await fetch('/api/payment/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount, memo: 'Test transaction' }),
-      });
-      if (!res.ok) throw new Error('Payment API failed');
-      const { paymentId } = await res.json();
-      alert(`Payment requested: ${paymentId}`);
-    } catch (err) {
-      console.error(err);
-      alert('Payment failed');
-    }
+    const res = await fetch('/api/payment/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount, memo: 'Test transaction' }),
+    });
+    const { paymentUrl } = await res.json();
+    window.location.href = paymentUrl;
   };
 
   return (
@@ -36,7 +27,7 @@ export default function HomePage() {
         <PiLoginButton />
       ) : (
         <div>
-          <p className="mb-4">Logged in as: {user.publicAddress}</p>
+          <p>Logged in as: {user.publicAddress}</p>
           <div className="flex items-center space-x-4">
             <label className="flex items-center space-x-2">
               <span>Amount:</span>
