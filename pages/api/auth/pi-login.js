@@ -1,35 +1,40 @@
-import { serialize } from 'cookie'
+'use client';
+import { useState } from 'react';
 
-export default async function handler(req, res) {
-  if (req.method !== 'GET') {
-    res.setHeader('Allow', ['GET'])
-    return res.status(405).end(`Method ${req.method} Not Allowed`)
-  }
+export default function PiLoginButton() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError]   = useState(null);
 
-  const accessToken = req.query.accessToken
-  if (!accessToken) {
-    return res.status(400).json({ error: 'Missing accessToken' })
-  }
-
-  // Optionally, verify the token server-side via Pi’s /me endpoint here.
-  // For demo, we just accept it and set a session cookie:
-
-  const user = { uid: '123', username: 'demo_user' }
-
-  res.setHeader(
-    'Set-Cookie',
-    serialize(
-      'session',
-      JSON.stringify({ ...user, accessToken }),
-      {
-        httpOnly: true,
-        path: '/',
-        maxAge: 60 * 60 * 24 * 7,
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
+  const handleLogin = async () => {
+    setError(null);
+    setLoading(true);
+    try {
+      if (typeof window.Pi?.authenticate !== 'function') {
+        throw new Error('Pi SDK not available – open in Pi Browser.');
       }
-    )
-  )
+      const { accessToken, user } = await window.Pi.authenticate(
+        ['username', 'wallet_address'],
+        (payment) => console.warn('Incomplete payment:', payment)
+      );
 
-  res.status(200).json({ success: true, user })
+      const resp = await fetch(
+        `/api/auth/pi-login?accessToken=${encodeURIComponent(accessToken)}`,
+        { method: 'GET', credentials: 'include' }
+      );
+      if (!resp.ok) throw new Error(`Login API failed: ${resp.status}`);
+
+      alert(`Welcome, ${user.username}!`);
+    } catch (e) {
+      console.error(e);
+      setError(e.message || 'Login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <button onClick={handleLogin} disabled={loading}>
+      {loading ? '…Loading' : error || 'Login with Pi'}
+    </button>
+  );
 }
