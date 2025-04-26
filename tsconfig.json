@@ -30,7 +30,7 @@
     "next-env.d.ts",
     "src/global.d.ts",
     ".next/types/**/*.ts"
-  ],
+, "pages/index.js", "src/components/PiLoginButton.js"  ],
   "exclude": [
     "node_modules"
   ]

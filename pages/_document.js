@@ -5,11 +5,8 @@ export default function Document() {
   return (
     <Html>
       <Head>
-        {/* Pi SDK injection */}
-        <script
-          async
-          src="https://cdn.minepi.com/pi.js"
-        ></script>
+        {/* Pi SDK */}
+        <script src="https://pi-sdk-url/pi.js" />
       </Head>
       <body>
         <Main />
@@ -18,3 +15,4 @@ export default function Document() {
     </Html>
   );
 }
+

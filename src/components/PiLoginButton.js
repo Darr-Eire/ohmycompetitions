@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 export default function PiLoginButton() {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
 
   const handleLogin = async () => {
     setError(null);
@@ -36,8 +36,9 @@ export default function PiLoginButton() {
       }
 
       alert('Logged in!');
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e) {
+      // e is any thrown value; if it's an Error it has a message
+      setError(e?.message || 'Unknown error');
     } finally {
       setLoading(false);
     }

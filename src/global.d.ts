@@ -1,18 +1,12 @@
 // src/global.d.ts
+export {};
 
-interface PiAuthResponse {
-    accessToken: string;
-    username?: string;
-    wallet_address?: string;
+declare global {
+  interface Window {
+    Pi?: {
+      authenticate: (
+        opts: { version: string; permissions: string[] }
+      ) => Promise<{ accessToken: string }>;
+    };
   }
-  
-  interface PiSDK {
-    authenticate(opts: { version: string; permissions: string[] }): Promise<PiAuthResponse>;
-  }
-  
-  declare global {
-    interface Window {
-      Pi?: PiSDK;
-    }
-  }
-  
+}

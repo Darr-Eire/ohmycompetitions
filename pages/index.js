@@ -1,5 +1,4 @@
-// pages/index.js
-import PiLoginButton from '../src/components/PiLoginButton';
+import PiLoginButton from '../components/PiLoginButton'
 
 export default function Home() {
   return (
