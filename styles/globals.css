@@ -24,7 +24,7 @@ header {
   font-size: 1rem;
   background-color: #0070f3; /* Next.js blue */
   color: #ffffff;
-  position: relative; /* for absolute / relative positioning */
+  position: relative;
 }
 
 /* Menu button in top-left */
@@ -38,31 +38,48 @@ header {
   margin-right: 1rem;
 }
 
-/* Navigation links */
+/* Navigation links container */
 .nav-links {
   display: flex;
   gap: 1rem;
+  margin-left: auto; /* push links (and logout) to the right */
+}
+
+/* Log Out button */
+.logout-button {
+  background: transparent;
+  border: 1px solid #ffffff;
+  color: #ffffff;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-left: 1rem; /* space from other links */
+}
+
+.logout-button:hover {
+  background: rgba(255,255,255,0.2);
 }
 
 /* 4. Shrinked, blue footer */
 footer {
-  margin-top: auto;        /* push to bottom if content is short */
+  margin-top: auto;
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
   text-align: center;
-  background-color: #0070f3; /* match header */
+  background-color: #0070f3;
   color: #ffffff;
 }
 
 /* 5. Competition card box */
 .competition-card {
-  border: 2px solid #0070f3;    /* blue border to match header/footer */
+  border: 2px solid #0070f3;
   border-radius: 8px;
   padding: 1rem;
   max-width: 320px;
   background: #ffffff;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  margin: 1rem auto;            /* center and spacing */
+  margin: 1rem auto;
   text-align: center;
 }
 
