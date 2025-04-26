@@ -17,7 +17,6 @@ export default function EverydayPioneer() {
     setError(null)
     setLoading(true)
 
-    // 1) Ensure Pi SDK is available
     if (typeof window.Pi?.transact !== 'function') {
       setError('Please open this page in the Pi Browser to pay with Pi.')
       setLoading(false)
@@ -25,30 +24,29 @@ export default function EverydayPioneer() {
     }
 
     try {
-      // 2) Trigger Pi Wallet payment UI
+      // 1) Open Pi Wallet payment prompt
       const tx = await window.Pi.transact({
         amount: totalCost,
-        memo: `Everyday Pioneer entry: ${tickets} ticket${tickets > 1 ? 's' : ''}`,
+        memo: `Everyday Pioneer: ${tickets} ticket${tickets > 1 ? 's' : ''}`,
         metadata: { competition: 'everyday-pioneer', tickets },
       })
 
-      // 3) Send transaction to your backend for verification & record-keeping
-      const res = await fetch('/api/competitions/everyday-pioneer/entry', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transaction: tx, tickets }),
-      })
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}))
-        throw new Error(body.message || `Server error (${res.status})`)
-      }
+      // 2) Send tx object to backend stub for now
+      const res = await fetch(
+        '/api/competitions/everyday-pioneer/entry',
+        {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transaction: tx, tickets }),
+        }
+      )
+      if (!res.ok) throw new Error(`Server error (${res.status})`)
 
-      // 4) On success
-      alert('🎉 Your purchase was successful!')
+      alert('🎉 Purchase successful!')
     } catch (e) {
       console.error(e)
-      setError(e.message || 'Purchase failed')
+      setError(e.message || 'Transaction failed')
     } finally {
       setLoading(false)
     }
