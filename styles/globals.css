@@ -42,10 +42,11 @@ header {
 .nav-links {
   display: flex;
   gap: 1rem;
-  margin-left: auto; /* push links (and logout) to the right */
+  margin-left: auto; /* push links (and login/logout) to the right */
 }
 
-/* Log Out button */
+/* Log In button */
+.login-button,
 .logout-button {
   background: transparent;
   border: 1px solid #ffffff;
@@ -57,6 +58,7 @@ header {
   margin-left: 1rem; /* space from other links */
 }
 
+.login-button:hover,
 .logout-button:hover {
   background: rgba(255,255,255,0.2);
 }
