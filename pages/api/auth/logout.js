@@ -1,18 +1,50 @@
-// pages/api/auth/logout.js
+import { useState } from 'react'
+import Header from './Header'
+import Footer from './footer'
 
-export default function handler(req, res) {
-  // Only allow POST or GET as needed
-  if (req.method !== 'POST' && req.method !== 'GET') {
-    res.setHeader('Allow', ['POST', 'GET'])
-    return res.status(405).end(`Method ${req.method} Not Allowed`)
+export default function Layout({ children }) {
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [username, setUsername] = useState(null)
+
+  const handleLogin = async () => {
+    // your Pi login logic here
+    try {
+      const { accessToken, user } = await window.Pi.authenticate(
+        ['username', 'wallet_address']
+      )
+      // call your backend to set cookies/session
+      const res = await fetch(
+        `/api/auth/pi-login?accessToken=${encodeURIComponent(accessToken)}`,
+        { method: 'GET', credentials: 'include' }
+      )
+      if (!res.ok) throw new Error(`Login failed (${res.status})`)
+
+      // success!
+      setUsername(user.username)
+      setIsLoggedIn(true)
+    } catch (e) {
+      console.error(e)
+      alert(e.message || 'Login failed')
+    }
   }
 
-  // Clear authentication cookies
-  res.setHeader('Set-Cookie', [
-    // Adjust the cookie name/path as needed for your auth setup
-    `token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Lax`,
-  ])
+  const handleLogout = async () => {
+    // call your logout API
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+    setIsLoggedIn(false)
+    setUsername(null)
+  }
 
-  // You can redirect or just return JSON
-  return res.status(200).json({ message: 'Logged out' })
+  return (
+    <div className="layout">
+      <Header
+        isLoggedIn={isLoggedIn}
+        username={username}
+        onLogin={handleLogin}
+        onLogout={handleLogout}
+      />
+      <main className="content">{children}</main>
+      <Footer />
+    </div>
+  )
 }
