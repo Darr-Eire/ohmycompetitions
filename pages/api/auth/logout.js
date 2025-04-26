@@ -1,29 +1,18 @@
-// src/components/layout.js
-import { useState } from 'react'
-import Header from './header'
-import Footer from './footer'
+// pages/api/auth/logout.js
 
-export default function Layout({ children }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-
-  const handleLogin = () => {
-    setIsLoggedIn(true)
+export default function handler(req, res) {
+  // Only allow POST or GET as needed
+  if (req.method !== 'POST' && req.method !== 'GET') {
+    res.setHeader('Allow', ['POST', 'GET'])
+    return res.status(405).end(`Method ${req.method} Not Allowed`)
   }
 
-  const handleLogout = () => {
-    // your logout logic here (e.g. clear tokens/cookies)
-    setIsLoggedIn(false)
-  }
+  // Clear authentication cookies
+  res.setHeader('Set-Cookie', [
+    // Adjust the cookie name/path as needed for your auth setup
+    `token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Lax`,
+  ])
 
-  return (
-    <div className="layout">
-      <Header 
-        isLoggedIn={isLoggedIn} 
-        onLogin={handleLogin} 
-        onLogout={handleLogout} 
-      />
-      <main className="content">{children}</main>
-      <Footer />
-    </div>
-  )
+  // You can redirect or just return JSON
+  return res.status(200).json({ message: 'Logged out' })
 }
