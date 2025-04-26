@@ -1,38 +1,48 @@
 // src/components/PiLoginButton.js
 'use client'
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
+
+function loadPiSdk() {
+  return new Promise((resolve, reject) => {
+    if (window.Pi) return resolve(window.Pi)
+    const s = document.createElement('script')
+    s.src = 'https://sdk.minepi.com/pi-sdk.js'
+    s.async = true
+    s.onload = () => {
+      if (window.Pi?.init) {
+        window.Pi.init({ version: '2.0' })
+        resolve(window.Pi)
+      } else {
+        reject(new Error('Pi SDK did not initialize'))
+      }
+    }
+    s.onerror = () => reject(new Error('Failed to load Pi SDK'))
+    document.head.appendChild(s)
+  })
+}
 
 export default function PiLoginButton({ apiBaseUrl = '/api' }) {
-  const [sdkReady, setSdkReady] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [PiSdk, setPiSdk] = useState(null)
 
-  // Poll for window.Pi
   useEffect(() => {
-    if (window.Pi?.authenticate) {
-      setSdkReady(true)
-      return
-    }
-    const interval = setInterval(() => {
-      if (window.Pi?.authenticate) {
-        setSdkReady(true)
-        clearInterval(interval)
-      }
-    }, 100)
-    return () => clearInterval(interval)
+    loadPiSdk()
+      .then(sdk => setPiSdk(sdk))
+      .catch(err => console.error(err))
   }, [])
 
   const handleLogin = async () => {
     setLoading(true)
     try {
-      const scopes = ['username', 'wallet_address']
-      const auth = await Pi.authenticate(scopes)
+      if (!PiSdk) throw new Error('Pi SDK not ready')
+      const auth = await PiSdk.authenticate(['username','wallet_address'])
       const res = await fetch(`${apiBaseUrl}/auth/login`, {
         method: 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type':'application/json' },
         body: JSON.stringify({ accessToken: auth.accessToken }),
       })
-      if (!res.ok) throw new Error(`Login API failed: ${res.status}`)
+      if (!res.ok) throw new Error(`API failed: ${res.status}`)
       alert('Logged in!')
     } catch (err) {
       console.error(err)
@@ -42,13 +52,9 @@ export default function PiLoginButton({ apiBaseUrl = '/api' }) {
     }
   }
 
-  if (!sdkReady) {
-    return <button disabled>Loading Pi SDK…</button>
-  }
-
   return (
-    <button onClick={handleLogin} disabled={loading}>
-      {loading ? 'Logging in…' : 'Login with Pi'}
+    <button onClick={handleLogin} disabled={loading || !PiSdk}>
+      {loading ? 'Logging in…' : PiSdk ? 'Login with Pi' : 'Loading Pi…'}
     </button>
   )
 }
