@@ -1,7 +1,7 @@
 // src/pages/api/auth/pi-login.js
 import nextConnect from 'next-connect';
 import { sessionMiddleware } from '../session'; // adjust path if needed
-import fetch from 'node-fetch';
+
 
 const handler = nextConnect();
 
