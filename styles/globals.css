@@ -118,7 +118,7 @@ footer {
   color: #333;
 }
 
-/* 9. Enter button */
+/* 9. Enter button (legacy) */
 .comp-button {
   background-color: #0070f3;
   color: #fff;
@@ -169,4 +169,14 @@ footer {
   color: #e0e0e0;
 }
 
-/* 11. Any additional global styles below */
+/* 11. Pay with Pi button styling */
+.bg-pi-purple {
+  background-color: #8e44ad; /* Pi purple */
+  color: #ffffff;
+}
+
+.bg-pi-purple:hover {
+  background-color: #732d91;
+}
+
+/* 12. Any additional global styles below */

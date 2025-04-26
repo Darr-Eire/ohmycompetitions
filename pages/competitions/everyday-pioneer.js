@@ -7,11 +7,48 @@ export default function EverydayPioneer() {
   const [tickets, setTickets]   = useState(1)
   const [loading, setLoading]   = useState(false)
   const [error, setError]       = useState(null)
-  const entryFeePerTicket       = 0.314
+
+  const entryFeePerTicket       = 0.314  // PI per ticket
   const totalCost               = (tickets * entryFeePerTicket).toFixed(3)
 
   const handlePurchase = async () => {
-    // ... your existing transact logic ...
+    setError(null)
+    setLoading(true)
+
+    // Ensure Pi SDK is available
+    if (typeof window.Pi?.transact !== 'function') {
+      setError('Pi Wallet SDK not available. Please open in Pi Browser.')
+      setLoading(false)
+      return
+    }
+
+    try {
+      // Initiate Pi transaction
+      const tx = await window.Pi.transact({
+        amount: totalCost,
+        memo: `Entry to Everyday Pioneer (${tickets} ticket${tickets > 1 ? 's' : ''})`,
+        metadata: { competition: 'everyday-pioneer', tickets },
+      })
+
+      // Send transaction object to your backend to verify & record
+      const res = await fetch(
+        `/api/competitions/everyday-pioneer/entry`,
+        {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transaction: tx, tickets }),
+        }
+      )
+      if (!res.ok) throw new Error(`Server error (${res.status})`)
+
+      alert('🎉 Purchase successful! Good luck!')
+    } catch (e) {
+      console.error(e)
+      setError(e.message || 'Transaction failed')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -31,18 +68,16 @@ export default function EverydayPioneer() {
         />
       </label>
 
-      <p className="mb-4">
-        <strong>Total cost:</strong> {totalCost} PI
-      </p>
+      <p className="mb-4"><strong>Total cost:</strong> {totalCost} PI</p>
 
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
       <button
         onClick={handlePurchase}
         disabled={loading}
-        className="px-4 py-2 bg-blue-600 text-white rounded"
+        className="px-4 py-2 bg-pi-purple text-white rounded"
       >
-        {loading ? 'Processing…' : `Pay ${totalCost} PI`}
+        {loading ? 'Processing…' : `Pay with Pi (${totalCost} PI)`}
       </button>
     </main>
   )
