@@ -1,15 +1,15 @@
+// src/app/head.js
 export default function Head() {
     return (
       <>
+        {/* INJECTED-BY-HEAD.JS */}
         <title>OhMyCompetitions</title>
         <meta name="description" content="Pi Network competition platform" />
-        {/* 1️⃣ Load the official Pi SDK synchronously */}
         <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-        {/* 2️⃣ Immediately initialize it */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              if (typeof Pi !== 'undefined' && typeof Pi.init === 'function') {
+              if (window.Pi?.init) {
                 Pi.init({ version: '2.0' });
               }
             `,
