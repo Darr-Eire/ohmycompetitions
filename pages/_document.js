@@ -1,22 +1,20 @@
 // pages/_document.js
-import { Html, Head, Main, NextScript } from 'next/document';
+import { Html, Head, Main, NextScript } from 'next/document'
 
-export default class Document extends React.Component {
-  render() {
-    return (
-      <Html>
-        <Head>
-          {/* Pi SDK loader */}
-          <script
-            async
-            src="https://sdk.minepi.com/pi.js"
-          ></script>
-        </Head>
-        <body>
-          <Main />
-          <NextScript />
-        </body>
-      </Html>
-    );
-  }
+export default function Document() {
+  return (
+    <Html>
+      <Head>
+        {/* Pi Browser SDK */}
+        <script
+          async
+          src="https://cdn.minepi.com/sdk.js"
+        ></script>
+      </Head>
+      <body>
+        <Main />
+        <NextScript />
+      </body>
+    </Html>
+  )
 }
