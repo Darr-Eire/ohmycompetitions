@@ -18,10 +18,30 @@ html, body, #__next {
 
 /* 3. Shrinked, blue header */
 header {
+  display: flex;
+  align-items: center;
   padding: 0.5rem 1rem;
   font-size: 1rem;
   background-color: #0070f3; /* Next.js blue */
   color: #ffffff;
+  position: relative; /* for absolute / relative positioning */
+}
+
+/* Menu button in top-left */
+.menu-button {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  margin-right: 1rem;
+}
+
+/* Navigation links */
+.nav-links {
+  display: flex;
+  gap: 1rem;
 }
 
 /* 4. Shrinked, blue footer */
