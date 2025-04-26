@@ -1,63 +1,54 @@
 // src/components/PiLoginButton.js
-'use client';
-
-import { useState, useEffect } from 'react';
+'use client'
+import { useEffect, useState } from 'react'
 
 export default function PiLoginButton({ apiBaseUrl = '/api' }) {
-  const [loading, setLoading] = useState(false);
-  const [sdkReady, setSdkReady] = useState(false);
+  const [sdkReady, setSdkReady] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  // Poll for Pi SDK to load
+  // Poll for window.Pi
   useEffect(() => {
-    let interval = setInterval(() => {
-      if (typeof window.Pi?.authenticate === 'function') {
-        clearInterval(interval);
-        setSdkReady(true);
+    if (window.Pi?.authenticate) {
+      setSdkReady(true)
+      return
+    }
+    const interval = setInterval(() => {
+      if (window.Pi?.authenticate) {
+        setSdkReady(true)
+        clearInterval(interval)
       }
-    }, 100);
-    return () => clearInterval(interval);
-  }, []);
+    }, 100)
+    return () => clearInterval(interval)
+  }, [])
 
   const handleLogin = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
-      if (!sdkReady) {
-        throw new Error('Pi SDK not yet ready—please try again in a moment.');
-      }
-
-      const scopes = ['username', 'wallet_address'];
-      const auth = await window.Pi.authenticate(scopes);
-
+      const scopes = ['username', 'wallet_address']
+      const auth = await Pi.authenticate(scopes)
       const res = await fetch(`${apiBaseUrl}/auth/login`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ accessToken: auth.accessToken }),
-      });
-
-      if (!res.ok) {
-        throw new Error(`Login API failed: ${res.status}`);
-      }
-
-      alert('Logged in!');
+      })
+      if (!res.ok) throw new Error(`Login API failed: ${res.status}`)
+      alert('Logged in!')
     } catch (err) {
-      console.error(err);
-      alert(`Login failed: ${err.message}`);
+      console.error(err)
+      alert(`Login failed: ${err.message}`)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
+
+  if (!sdkReady) {
+    return <button disabled>Loading Pi SDK…</button>
+  }
 
   return (
-    <button
-      onClick={handleLogin}
-      disabled={loading || !sdkReady}
-    >
-      {loading
-        ? 'Loading…'
-        : sdkReady
-        ? 'Login with Pi'
-        : 'Waiting for Pi SDK…'}
+    <button onClick={handleLogin} disabled={loading}>
+      {loading ? 'Logging in…' : 'Login with Pi'}
     </button>
-  );
+  )
 }
