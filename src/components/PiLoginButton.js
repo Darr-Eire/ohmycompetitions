@@ -1,5 +1,5 @@
 // PiLoginButton.js
-import { fetchWithTimeout } from './fetchWithTimeout.js';
+import { fetchWithTimeout } from '../utils/fetchWithTimeout.js';
 
 export class PiLoginButton {
   constructor({ apiBaseUrl, container }) {
