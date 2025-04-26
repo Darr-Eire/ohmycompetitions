@@ -1,31 +1,35 @@
-import nextConnect from 'next-connect';
-import { sessionMiddleware } from '../session';
+// pages/api/auth/pi-login.js
+import { serialize } from 'cookie';
 
-const handler = nextConnect();
-handler.use(sessionMiddleware);
+export default async function handler(req, res) {
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', ['GET']);
+    return res.status(405).end(`Method ${req.method} Not Allowed`);
+  }
 
-handler.post(async (req, res) => {
-  const { accessToken } = req.body;
-  if (!accessToken) return res.status(400).json({ error: 'Missing accessToken' });
+  const { accessToken } = req.query;
+  if (!accessToken || typeof accessToken !== 'string') {
+    return res.status(400).json({ error: 'Missing accessToken' });
+  }
 
-  // Verify token with Pi Platform
-  const piRes = await fetch('https://api.minepi.com/v2/me', {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
-  if (!piRes.ok) return res.status(401).json({ error: 'Invalid access token' });
+  try {
+    // TODO: validate the accessToken with Pi’s backend if needed
 
-  const { user } = await piRes.json();
-  req.session.user = user;
-  req.session.save(err => {
-    if (err) return res.status(500).json({ error: 'Session save failed' });
-    res.status(200).json({ ok: true, user });
-  });
-});
+    // For demo, we mock a user session
+    const user = { uid: '123', username: 'pi_user' };
 
-// Reject other methods
-handler.all((req, res) => {
-  res.setHeader('Allow', ['POST']);
-  res.status(405).end(`Method ${req.method} Not Allowed`);
-});
+    // Set an HTTP-only cookie
+    res.setHeader('Set-Cookie', serialize('session', JSON.stringify(user), {
+      httpOnly: true,
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7, // 1 week
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+    }));
 
-export default handler;
+    return res.status(200).json({ success: true, user });
+  } catch (err) {
+    console.error('Login error:', err);
+    return res.status(500).json({ error: 'Internal error' });
+  }
+}
