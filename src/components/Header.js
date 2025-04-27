@@ -34,7 +34,12 @@ export default function Header() {
     }
 
     try {
-      const { accessToken, user } = await window.Pi.authenticate(['username', 'wallet_address'])
+      // FIX: Add 'payments' scope
+      const { accessToken, user } = await window.Pi.authenticate([
+        'username',
+        'wallet_address',
+        'payments' // 👈 THIS is what was missing
+      ])
 
       const res = await fetch(`/api/auth/pi-login?accessToken=${encodeURIComponent(accessToken)}`, {
         method: 'GET',
