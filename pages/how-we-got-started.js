@@ -2,40 +2,44 @@
 
 export default function HowWeGotStarted() {
     return (
-      <main className="page p-6 max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6 text-center text-blue-500">How We Got Started 🚀</h1>
+      <main className="page flex flex-col items-center justify-start min-h-screen p-6 pt-8">
+        {/* Photo Banner Placeholder */}
+        <div className="w-full max-w-2xl h-48 bg-gray-200 flex items-center justify-center rounded-lg mb-8 shadow-md">
+          <span className="text-gray-500">[ Add a cool banner image here 📸 ]</span>
+        </div>
   
-        <p className="mb-4">
-          Hey Pioneers! 👋
-        </p>
+        {/* Title */}
+        <h1 className="text-3xl font-bold text-blue-500 mb-6 text-center">
+          🚀 How We Got Started
+        </h1>
   
-        <p className="mb-4">
-          I've been mining Pi since way back — 6 years strong! 🔥  
-          All that time I dreamed about building something cool for the Pi community...  
-          but there was just one problem: I had absolutely ZERO knowledge about making apps or connecting to the Pi Network. 😅
-        </p>
+        {/* Content */}
+        <div className="max-w-2xl text-center text-gray-700 space-y-6">
+          <p>Hey Pioneers! 👋</p>
   
-        <p className="mb-4">
-          Fast forward to now... after tons of trial and error, late nights, and a whole lotta coffee ☕,  
-          OhMyCompetitions was born! 🎉  
-          Built from scratch with love, hustle, and a massive passion for Pi.
-        </p>
+          <p>
+            I've been mining Pi since way back — 6 years strong! 🔥  
+            All that time I dreamed about building something cool for the Pi community...  
+            but there was just one problem: I had absolutely ZERO knowledge about making apps or connecting to the Pi Network. 😅
+          </p>
   
-        <p className="mb-4">
-          The goal?  
-          👉 Bring the Pi community together.  
-          👉 Give back to fellow Pioneers.  
-          👉 Actually use Pi in fun, exciting ways!
-        </p>
+          <p>
+            Fast forward to now... after tons of trial and error, late nights, and a whole lotta coffee ☕,  
+            OhMyCompetitions was born! 🛠️ Built from scratch with love, hustle, and a massive passion for Pi.
+          </p>
   
-        <p className="mb-8">
-          And this is only the beginning... 🚀💜
-        </p>
+          <p>
+            The goal? 👉 Bring the Pi community together.  
+            👉 Give back to fellow Pioneers.  
+            👉 Actually use Pi in fun, exciting ways!
+          </p>
   
-        <p className="text-center font-semibold text-lg">
-          Thanks for being part of the journey!  
-          Let's keep building the Pi future together! 🌍
-        </p>
+          <p>
+            And this is only the beginning... 🚀💜  
+            Thanks for being part of the journey!  
+            Let's keep building the Pi future together! 🌍
+          </p>
+        </div>
       </main>
     )
   }
