@@ -211,8 +211,8 @@ footer {
   justify-content: center;
   align-items: flex-start;
   gap: 1rem;
-  /* added extra top padding so cards sit further down */
-  padding: 4rem 1rem 1rem;
+  /* bump this top padding until cards sit comfortably below header */
+  padding: 8rem 1rem 1rem;   /* <-- increase the top padding */
 }
 
 .competition-card {
