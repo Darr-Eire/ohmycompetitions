@@ -29,55 +29,9 @@ export default function EverydayPioneer() {
   const entryFeePerTicket = 0.314
   const totalCost = (tickets * entryFeePerTicket).toFixed(3)
 
-  const handlePurchase = async () => {
-    if (!sdkReady) return
-    setError(null)
-    setLoading(true)
-
-    if (!window.Pi || typeof window.Pi.createPayment !== 'function') {
-      alert('Please open in Pi Browser')
-      setLoading(false)
-      return
-    }
-
-    try {
-      await window.Pi.createPayment({
-        amount: totalCost,
-        memo: `Everyday Pioneer: ${tickets} ticket${tickets > 1 ? 's' : ''}`,
-        metadata: { competition: 'everyday-pioneer', tickets },
-        onReadyForServerApproval: async ({ paymentId }) => {
-          await fetch('/api/pi/approve-payment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paymentId }),
-          })
-          window.Pi.openPayment(paymentId)
-        },
-        onReadyForServerCompletion: async ({ paymentId, txid }) => {
-          await fetch('/api/pi/complete-payment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paymentId, txid }),
-          })
-          alert('🎉 Payment successful!')
-        },
-        onCancel: () => {
-          alert('Payment was cancelled.')
-        },
-        onError: (error) => {
-          console.error(error)
-          setError(error.message || 'Payment error')
-        },
-        onIncompletePaymentFound: (payment) => {
-          console.warn('Incomplete payment found', payment)
-        },
-      })
-    } catch (e) {
-      console.error(e)
-      setError(e.message || 'Payment failed')
-    } finally {
-      setLoading(false)
-    }
+  const handleEnter = () => {
+    // replace with actual navigation or payment flow
+    alert(`Proceed to enter with ${tickets} ticket(s) costing ${totalCost} π`)
   }
 
   return (
@@ -102,11 +56,11 @@ export default function EverydayPioneer() {
         )}
 
         <button
-          onClick={handlePurchase}
-          disabled={loading || !sdkReady}
+          onClick={handleEnter}
+          disabled={loading}
           className="comp-button"
         >
-          {loading ? 'Processing…' : `Pay with Pi (${totalCost} π)`}
+          Enter Now
         </button>
       </div>
     </main>

@@ -211,7 +211,8 @@ footer {
   justify-content: center;
   align-items: flex-start;
   gap: 1rem;
-  padding: 2rem;
+  /* added extra top padding so cards sit further down */
+  padding: 4rem 1rem 1rem;
 }
 
 .competition-card {
@@ -223,7 +224,7 @@ footer {
   padding: 1.5rem;
   text-align: center;
   transition: transform 0.2s ease;
-  margin: 0; /* handled by .page gap */
+  margin: 2; /* gap is handled by .page */
 }
 .competition-card:hover {
   transform: scale(1.03);
