@@ -10,7 +10,6 @@ export default function Header() {
   const [error, setError] = useState(null)
   const [menuOpen, setMenuOpen] = useState(false)
 
-  // Restore login from localStorage on page load
   useEffect(() => {
     const savedToken = localStorage.getItem('accessToken')
     const savedUsername = localStorage.getItem('username')
@@ -20,7 +19,6 @@ export default function Header() {
     }
   }, [])
 
-  // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (!e.target.closest('.menu-button') && !e.target.closest('.dropdown-menu')) {
@@ -52,7 +50,6 @@ export default function Header() {
       })
       if (!res.ok) throw new Error(`Login failed (${res.status})`)
 
-      // Save accessToken and username to localStorage
       localStorage.setItem('accessToken', accessToken)
       localStorage.setItem('username', user.username)
 
@@ -68,11 +65,8 @@ export default function Header() {
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
-
-    // Clear localStorage
     localStorage.removeItem('accessToken')
     localStorage.removeItem('username')
-
     setIsLoggedIn(false)
     setUsername('')
   }
@@ -87,6 +81,10 @@ export default function Header() {
         <div className="dropdown-menu">
           <Link href="/" className="dropdown-link">Home</Link>
           <Link href="/competitions" className="dropdown-link">All Competitions</Link>
+          <Link href="/try-your-luck" className="dropdown-link">Try Your Luck</Link>
+          <Link href="/future" className="dropdown-link">The Future</Link>
+          <Link href="/forums" className="dropdown-link">Forums</Link>
+          <Link href="/help-support" className="dropdown-link">Help / Support</Link>
         </div>
       )}
 

@@ -7,10 +7,10 @@ export default function EverydayPioneer() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [sdkReady, setSdkReady] = useState(false)
-  const [showPaymentForm, setShowPaymentForm] = useState(false)
-  const [timeLeft, setTimeLeft] = useState('')
 
-  const isPiBrowser = typeof navigator !== 'undefined' && /Pi Browser/i.test(navigator.userAgent)
+  // Detect Pi Browser
+  const isPiBrowser =
+    typeof navigator !== 'undefined' && /Pi Browser/i.test(navigator.userAgent)
 
   useEffect(() => {
     if (isPiBrowser && !window.Pi) {
@@ -29,32 +29,13 @@ export default function EverydayPioneer() {
   const entryFeePerTicket = 0.314
   const totalCost = (tickets * entryFeePerTicket).toFixed(3)
 
-  const updateCountdown = () => {
-    const now = new Date()
-    const nextDraw = new Date(now)
-    nextDraw.setUTCHours(15, 14, 0, 0) // 3:14 PM UTC
-    if (now > nextDraw) {
-      nextDraw.setUTCDate(nextDraw.getUTCDate() + 1)
-    }
-    const diffMs = nextDraw - now
-    const hours = Math.floor(diffMs / 1000 / 60 / 60)
-    const minutes = Math.floor((diffMs / 1000 / 60) % 60)
-    setTimeLeft(`${hours}h ${minutes}m`)
-  }
-
-  useEffect(() => {
-    updateCountdown()
-    const interval = setInterval(updateCountdown, 60000)
-    return () => clearInterval(interval)
-  }, [])
-
   const handlePurchase = async () => {
     if (!sdkReady) return
     setError(null)
     setLoading(true)
 
     if (!window.Pi || typeof window.Pi.createPayment !== 'function') {
-      alert('Please open this page in the Pi Browser to pay with Pi.')
+      alert('Please open in Pi Browser')
       setLoading(false)
       return
     }
@@ -64,7 +45,6 @@ export default function EverydayPioneer() {
         amount: totalCost,
         memo: `Everyday Pioneer: ${tickets} ticket${tickets > 1 ? 's' : ''}`,
         metadata: { competition: 'everyday-pioneer', tickets },
-
         onReadyForServerApproval: async ({ paymentId }) => {
           await fetch('/api/pi/approve-payment', {
             method: 'POST',
@@ -73,27 +53,23 @@ export default function EverydayPioneer() {
           })
           window.Pi.openPayment(paymentId)
         },
-
         onReadyForServerCompletion: async ({ paymentId, txid }) => {
           await fetch('/api/pi/complete-payment', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ paymentId, txid }),
           })
-          alert('🎉 Payment completed successfully!')
+          alert('🎉 Payment successful!')
         },
-
+        onCancel: () => {
+          alert('Payment was cancelled.')
+        },
+        onError: (error) => {
+          console.error(error)
+          setError(error.message || 'Payment error')
+        },
         onIncompletePaymentFound: (payment) => {
           console.warn('Incomplete payment found', payment)
-        },
-
-        onCancel: () => {
-          alert('Payment was cancelled')
-        },
-
-        onError: (error) => {
-          console.error('Payment error', error)
-          setError(error.message || 'Payment error')
         },
       })
     } catch (e) {
@@ -105,69 +81,34 @@ export default function EverydayPioneer() {
   }
 
   return (
-    <main className="page p-6 flex justify-center items-center min-h-screen bg-gray-100">
-      <div className="bg-white border-2 border-blue-500 rounded-lg shadow-lg p-6 max-w-md w-full text-center">
-        
-        {/* Image placeholder */}
-        <div className="w-full h-40 bg-gray-200 rounded mb-4 flex items-center justify-center">
-          <span className="text-gray-500">Add Image Here</span>
+    <main className="page">
+      <div className="competition-card">
+        <div className="competition-top-banner">Everyday Pioneer</div>
+
+        <div className="competition-image-placeholder">
+          Add Image Here
         </div>
 
-        {/* Competition Info */}
-        <h1 className="text-2xl font-bold text-blue-600 mb-2">Everyday Pioneer</h1>
-        <p className="text-lg mb-1"><strong>Prize:</strong> 1,000 PI Giveaway</p>
-        <p className="text-md mb-1"><strong>Entry Fee:</strong> {entryFeePerTicket} PI per ticket</p>
-        <p className="text-md mb-4 text-gray-700"><strong>Draw ends in:</strong> {timeLeft}</p>
+        <div className="competition-info">
+          <p><strong>Draw ends in:</strong> 13h 58m</p>
+          <p>📊 <strong>Total Tickets:</strong> 1000</p>
+          <p>✅ <strong>Sold:</strong> 300</p>
+          <p>🎟️ <strong>Available:</strong> 700</p>
+          <p>🏅 <strong>Entry Fee:</strong> 0.314 π</p>
+        </div>
 
-        {/* Show "Enter Now" or the Payment Form */}
-        {!showPaymentForm ? (
-          <button
-            type="button"
-            onClick={() => setShowPaymentForm(true)}
-            className="px-6 py-3 bg-blue-500 text-white font-semibold rounded hover:bg-blue-700 transition"
-          >
-            Enter Now
-          </button>
-        ) : (
-          <>
-            <label className="block mb-4 mt-4">
-              <span className="text-sm font-semibold">Tickets:</span>
-              <input
-                type="number"
-                min="1"
-                value={tickets}
-                onChange={(e) => setTickets(Math.max(1, Number(e.target.value)))}
-                className="ml-2 w-20 border rounded px-2 py-1 text-center"
-              />
-            </label>
-
-            <p className="text-md mb-4">
-              <strong>Total:</strong> {totalCost} PI
-            </p>
-
-            {error && <p className="text-red-500 mb-4">{error}</p>}
-
-            <button
-              type="button"
-              onClick={handlePurchase}
-              disabled={loading || !sdkReady}
-              className="px-6 py-3 bg-pi-purple text-white font-semibold rounded hover:bg-purple-700 transition mb-4"
-            >
-              {loading ? 'Processing…' : `Pay with Pi (${totalCost} PI)`}
-            </button>
-
-            {/* Back Button */}
-            <button
-              type="button"
-              onClick={() => setShowPaymentForm(false)}
-              className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition"
-            >
-              Back
-            </button>
-          </>
+        {error && (
+          <p className="text-red-500 mb-4">{error}</p>
         )}
+
+        <button
+          onClick={handlePurchase}
+          disabled={loading || !sdkReady}
+          className="comp-button"
+        >
+          {loading ? 'Processing…' : `Pay with Pi (${totalCost} π)`}
+        </button>
       </div>
     </main>
   )
 }
-

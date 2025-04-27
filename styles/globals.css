@@ -87,7 +87,7 @@ footer {
   color: #ffffff;
 }
 
-/* 5. Competition card box */
+/* 5. Competition card (simple old version) */
 .competition-card {
   border: 2px solid #0070f3;
   border-radius: 8px;
@@ -182,11 +182,11 @@ footer {
   background-color: #732d91;
 }
 
-/* 12. Dropdown Menu (improved position and mobile friendly) */
+/* 12. Dropdown Menu (fixed nice mobile position) */
 .dropdown-menu {
   position: absolute;
-  top: 2.8rem; /* moved up */
-  left: 0.25rem; /* moved closer left */
+  top: 2.8rem;
+  left: 0.25rem;
   background-color: #0070f3;
   border: 1px solid #ffffff;
   border-radius: 4px;
@@ -194,10 +194,10 @@ footer {
   display: flex;
   flex-direction: column;
   z-index: 1100;
-  min-width: 150px; /* make dropdown wider for better mobile click */
+  min-width: 150px;
+  animation: dropdown-fade 0.2s ease forwards;
 }
 
-/* Dropdown links */
 .dropdown-link {
   color: #ffffff;
   text-decoration: none;
@@ -210,14 +210,62 @@ footer {
   background-color: rgba(255, 255, 255, 0.2);
 }
 
-/* 13. Smooth opening effect (optional, make it look pro) */
-.dropdown-menu {
-  animation: dropdown-fade 0.2s ease forwards;
-}
-
 @keyframes dropdown-fade {
   from { opacity: 0; transform: translateY(-10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* 14. Any additional global styles below */
+/* 13. Updated Competition Card Styling (new fancy version) */
+.page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  padding: 1rem;
+}
+
+.competition-card {
+  border: 2px solid #0070f3;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  max-width: 320px;
+  width: 100%;
+  padding: 1.5rem;
+  text-align: center;
+  transition: transform 0.2s ease;
+  margin: 1rem auto;
+}
+
+.competition-card:hover {
+  transform: scale(1.03);
+}
+
+.competition-top-banner {
+  background: linear-gradient(to right, #3b82f6, #2563eb);
+  color: white;
+  font-weight: bold;
+  padding: 0.5rem;
+  margin: -1.5rem -1.5rem 1rem;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  font-size: 1.2rem;
+}
+
+.competition-image-placeholder {
+  background: #eee;
+  height: 150px;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  border-radius: 8px;
+}
+
+.competition-info {
+  text-align: left;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  color: #333;
+}
