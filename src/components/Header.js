@@ -84,7 +84,31 @@ export default function Header() {
           <Link href="/try-your-luck" className="dropdown-link">Try Your Luck</Link>
           <Link href="/future" className="dropdown-link">The Future</Link>
           <Link href="/forums" className="dropdown-link">Forums</Link>
-          <Link href="/help-support" className="dropdown-link">Help / Support</Link>
+          <Link href="/help-support" className="dropdown-link">Help & Support</Link>
+          <Link href="/how-we-got-started" className="dropdown-link">How We Got Started</Link>
+
+          {/* Divider */}
+          <div style={{ borderTop: '1px solid #ffffff', margin: '0.5rem 0' }} />
+
+          {/* Login/Logout button at bottom */}
+          {!isLoggedIn ? (
+            <button
+              className="login-button"
+              onClick={handleLogin}
+              disabled={loading}
+              style={{ margin: '0 auto' }}
+            >
+              {loading ? 'Loading…' : 'Log In'}
+            </button>
+          ) : (
+            <button
+              className="logout-button"
+              onClick={handleLogout}
+              style={{ margin: '0 auto' }}
+            >
+              Log Out
+            </button>
+          )}
         </div>
       )}
 
@@ -93,24 +117,6 @@ export default function Header() {
 
       {/* Spacer */}
       <div className="nav-spacer" />
-
-      {/* Login/Logout */}
-      {!isLoggedIn ? (
-        <button
-          className="login-button"
-          onClick={handleLogin}
-          disabled={loading}
-        >
-          {loading ? 'Loading…' : 'Log In'}
-        </button>
-      ) : (
-        <>
-          <span className="welcome-text">Welcome, {username}!</span>
-          <button className="logout-button" onClick={handleLogout}>
-            Log Out
-          </button>
-        </>
-      )}
     </header>
   )
 }
