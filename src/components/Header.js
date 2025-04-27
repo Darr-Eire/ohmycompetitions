@@ -10,6 +10,16 @@ export default function Header() {
   const [error, setError] = useState(null)
   const [menuOpen, setMenuOpen] = useState(false)
 
+  // Restore login from localStorage on page load
+  useEffect(() => {
+    const savedToken = localStorage.getItem('accessToken')
+    const savedUsername = localStorage.getItem('username')
+    if (savedToken && savedUsername) {
+      setIsLoggedIn(true)
+      setUsername(savedUsername)
+    }
+  }, [])
+
   // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -34,18 +44,17 @@ export default function Header() {
     }
 
     try {
-      // FIX: Add 'payments' scope
-      const { accessToken, user } = await window.Pi.authenticate([
-        'username',
-        'wallet_address',
-        'payments' // 👈 THIS is what was missing
-      ])
+      const { accessToken, user } = await window.Pi.authenticate(['username', 'payments', 'wallet_address'])
 
       const res = await fetch(`/api/auth/pi-login?accessToken=${encodeURIComponent(accessToken)}`, {
         method: 'GET',
         credentials: 'include',
       })
       if (!res.ok) throw new Error(`Login failed (${res.status})`)
+
+      // Save accessToken and username to localStorage
+      localStorage.setItem('accessToken', accessToken)
+      localStorage.setItem('username', user.username)
 
       setUsername(user.username)
       setIsLoggedIn(true)
@@ -59,6 +68,11 @@ export default function Header() {
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+
+    // Clear localStorage
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('username')
+
     setIsLoggedIn(false)
     setUsername('')
   }
