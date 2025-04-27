@@ -1,3 +1,4 @@
+// Small change to trigger rebuild
 // pages/how-we-got-started.js
 'use client'
 
