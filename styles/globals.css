@@ -25,6 +25,7 @@ header {
   background-color: #0070f3; /* Next.js blue */
   color: #ffffff;
   position: relative; /* Make dropdown absolute inside */
+  z-index: 1000;
 }
 
 /* Site title in header */
@@ -119,7 +120,7 @@ footer {
   color: #333;
 }
 
-/* 9. Enter button (legacy) */
+/* 9. Enter button */
 .comp-button {
   background-color: #0070f3;
   color: #fff;
@@ -181,28 +182,42 @@ footer {
   background-color: #732d91;
 }
 
-/* 12. Dropdown Menu for Menu Button */
+/* 12. Dropdown Menu (improved position and mobile friendly) */
 .dropdown-menu {
   position: absolute;
-  top: 3.5rem;
-  left: 1rem;
+  top: 2.8rem; /* moved up */
+  left: 0.25rem; /* moved closer left */
   background-color: #0070f3;
   border: 1px solid #ffffff;
   border-radius: 4px;
   padding: 0.5rem;
   display: flex;
   flex-direction: column;
-  z-index: 1000;
+  z-index: 1100;
+  min-width: 150px; /* make dropdown wider for better mobile click */
 }
 
+/* Dropdown links */
 .dropdown-link {
   color: #ffffff;
   text-decoration: none;
-  padding: 0.5rem 0;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  border-radius: 4px;
 }
 
 .dropdown-link:hover {
   background-color: rgba(255, 255, 255, 0.2);
 }
 
-/* 13. Any additional global styles below */
+/* 13. Smooth opening effect (optional, make it look pro) */
+.dropdown-menu {
+  animation: dropdown-fade 0.2s ease forwards;
+}
+
+@keyframes dropdown-fade {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* 14. Any additional global styles below */
