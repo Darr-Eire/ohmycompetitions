@@ -16,8 +16,6 @@ export default function CompetitionCard({
     <div className="competition-card">
       {/* Banner */}
       <div className="competition-top-banner">{title}</div>
-
-      {/* Image from public/pi.jpeg */}
       <div className="competition-image-placeholder">
         <Image
           src="/pi.jpeg"
@@ -27,6 +25,7 @@ export default function CompetitionCard({
           className="object-cover rounded"
         />
       </div>
+      <br/>
 
       {/* Info */}
       <div className="competition-info">

@@ -177,8 +177,8 @@ footer {
 /* 12. Dropdown Menu (fixed nice mobile position) */
 .dropdown-menu {
   position: absolute;
-  top: 2.8rem;
-  left: 0.25rem;
+  top: 2.7rem;
+  left: 0rem;
   background-color: #0070f3;
   border: 1px solid #ffffff;
   border-radius: 4px;
@@ -220,7 +220,7 @@ footer {
   border-radius: 12px;
   background: white;
   box-shadow: 0 4px 12px #0070f3;
-  width: 320px;
+  width: 270px;
   padding: 1.5rem;
   text-align: center;
   transition: transform 0.2s ease;
@@ -255,6 +255,6 @@ footer {
 .competition-info {
   text-align: left;
   margin-bottom: 1rem;
-  font-size: 0.95rem;
+  font-size: 1.15rem;
   color: #333;
 }

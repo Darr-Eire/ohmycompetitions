@@ -4,12 +4,11 @@
 export default function TryYourLuck() {
   return (
     <main className="flex flex-col items-center justify-start min-h-screen p-6">
-      {/* Title */}
-      <h1 className="text-3xl font-bold text-blue-600 text-center mb-8 mt-8">
-        🎲 Try Your Luck!
-      </h1>
-
-      {/* Game Cards */}
+    {/* Title */}
+    <h1 className="text-4xl font-bold text-blue-500 text-center mb-8 mt-8">
+      🎲 Try Your Luck!
+    </h1>
+   {/* Game Cards */}
       <div className="flex flex-col md:flex-row md:justify-center gap-6">
         {/* Scratch Card */}
         <div className="competition-card">
