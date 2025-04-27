@@ -7,10 +7,12 @@ export default function HelpSupport() {
   return (
     <main className="page">
       <div className="competition-card max-w-2xl w-full">
-        {/* Top Banner */}
-        <div className="competition-top-banner">
-          🛠️ Help & Support
+         {/* Banner */}
+         <div className="competition-top-banner">
+          🚀 Help and Support
         </div>
+           {/* Divider */}
+           <div className="h-1 w-24 bg-blue-300 mx-auto rounded mb-6" />
 
         {/* Body */}
         <div className="p-6 space-y-6">

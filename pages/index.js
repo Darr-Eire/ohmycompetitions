@@ -51,11 +51,11 @@ export default function Home() {
       <div className="w-full max-w-md">
         <CompetitionCard
           title="Everyday Pioneer"
-          imagePlaceholder="Add Image Here"
+          imagePlaceholder="/public/pi.jpeg"
           stats={[
-            { emoji: '📊', label: 'Total Tickets', value: 1000 },
-            { emoji: '✅', label: 'Sold', value: 300 },
-            { emoji: '🎟️', label: 'Available', value: 700 },
+            { emoji: '📊', label: 'Total Tickets', value: 5000 },
+            { emoji: '✅', label: 'Sold', value: 0 },
+            { emoji: '🎟️', label: 'Available', value: 5000 },
             { emoji: '⏳', label: 'Draw ends in', value: '13h 58m' },
           ]}
           entryFee={entryFeePerTicket}
