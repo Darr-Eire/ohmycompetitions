@@ -24,9 +24,11 @@ export default function Layout({ children }) {
         onLogin={handleLogin}
         onLogout={handleLogout}
       />
+
       <main className="content">
         {children}
       </main>
+
       <Footer />
     </div>
   )

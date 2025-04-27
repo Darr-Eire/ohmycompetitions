@@ -64,7 +64,6 @@ header {
   border-radius: 4px;
   margin-left: 0.5rem;
 }
-
 .login-button:hover,
 .logout-button:hover {
   background: rgba(255,255,255,0.2);
@@ -131,7 +130,6 @@ footer {
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
-
 .comp-button:hover {
   background-color: #005bb5;
 }
@@ -143,30 +141,25 @@ footer {
   gap: 1rem;
   margin-bottom: 0.75rem;
 }
-
 .social-icons a {
   color: #ffffff;
   font-size: 1.25rem;
   transition: color 0.2s ease;
 }
-
 .social-icons a:hover {
   color: #e0e0e0;
 }
-
 .footer-links {
   display: flex;
   justify-content: center;
   gap: 1rem;
   margin-bottom: 0.75rem;
 }
-
 .footer-links a {
   color: #ffffff;
   text-decoration: underline;
   font-size: 0.9rem;
 }
-
 .footer-links a:hover {
   color: #e0e0e0;
 }
@@ -177,7 +170,6 @@ footer {
   color: #ffffff;
   transition: background-color 0.2s ease;
 }
-
 .bg-pi-purple:hover {
   background-color: #732d91;
 }
@@ -197,7 +189,6 @@ footer {
   min-width: 150px;
   animation: dropdown-fade 0.2s ease forwards;
 }
-
 .dropdown-link {
   color: #ffffff;
   text-decoration: none;
@@ -205,11 +196,9 @@ footer {
   font-size: 1rem;
   border-radius: 4px;
 }
-
 .dropdown-link:hover {
   background-color: rgba(255, 255, 255, 0.2);
 }
-
 @keyframes dropdown-fade {
   from { opacity: 0; transform: translateY(-10px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -218,10 +207,11 @@ footer {
 /* 13. Updated Competition Card Styling (new fancy version) */
 .page {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
-  align-items: center;
-  min-height: 80vh;
-  padding: 1rem;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 2rem;
 }
 
 .competition-card {
@@ -229,14 +219,12 @@ footer {
   border-radius: 12px;
   background: white;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  max-width: 320px;
-  width: 100%;
+  width: 320px;
   padding: 1.5rem;
   text-align: center;
   transition: transform 0.2s ease;
-  margin: 1rem auto;
+  margin: 0; /* handled by .page gap */
 }
-
 .competition-card:hover {
   transform: scale(1.03);
 }
@@ -244,12 +232,12 @@ footer {
 .competition-top-banner {
   background: linear-gradient(to right, #3b82f6, #2563eb);
   color: white;
-  font-weight: bold;
   padding: 0.5rem;
   margin: -1.5rem -1.5rem 1rem;
   border-top-left-radius: 12px;
   border-top-right-radius: 12px;
   font-size: 1.2rem;
+  font-weight: bold;
 }
 
 .competition-image-placeholder {
