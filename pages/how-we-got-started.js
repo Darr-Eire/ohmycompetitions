@@ -2,19 +2,19 @@
 
 export default function HowWeGotStarted() {
     return (
-      <main className="page flex flex-col items-center justify-start min-h-screen p-6 pt-8">
-        {/* Photo Banner Placeholder */}
-        <div className="w-full max-w-2xl h-48 bg-gray-200 flex items-center justify-center rounded-lg mb-8 shadow-md">
-          <span className="text-gray-500">[ Add a cool banner image here 📸 ]</span>
-        </div>
-  
+      <main className="page flex flex-col items-center min-h-screen p-6 pt-8">
         {/* Title */}
-        <h1 className="text-3xl font-bold text-blue-500 mb-6 text-center">
+        <h1 className="text-4xl font-bold text-blue-500 mb-6 text-center">
           🚀 How We Got Started
         </h1>
   
-        {/* Content */}
-        <div className="max-w-2xl text-center text-gray-700 space-y-6">
+        {/* Photo Banner Placeholder */}
+        <div className="w-full max-w-3xl h-48 bg-gray-200 flex items-center justify-center rounded-lg mb-10 shadow-md">
+          <span className="text-gray-500">[ Add a cool banner image here 📸 ]</span>
+        </div>
+  
+        {/* Story Content */}
+        <div className="flex flex-col items-center text-center max-w-2xl space-y-6 text-gray-800">
           <p>Hey Pioneers! 👋</p>
   
           <p>
