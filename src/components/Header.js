@@ -80,7 +80,7 @@ export default function Header() {
       {menuOpen && (
         <div className="dropdown-menu">
           <Link href="/" className="dropdown-link">Home</Link>
-          <Link href="/competitions" className="dropdown-link">All Competitions</Link>
+          <Link href="/all-competitions" className="dropdown-link">All Competitions</Link>
           <Link href="/try-your-luck" className="dropdown-link">Try Your Luck</Link>
           <Link href="/future" className="dropdown-link">The Future</Link>
           <Link href="/forums" className="dropdown-link">Forums</Link>
