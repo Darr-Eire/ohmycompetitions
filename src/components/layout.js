@@ -29,15 +29,16 @@ export default function Layout({ children }) {
 
       <main className="content">
         {children}
+{/* Back to Home button */}
+<div className="mt-8 flex justify-center">
+  <Link href="/" legacyBehavior>
+    <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded">
+      ← Back to Home
+    </button>
+  </Link>
+</div>
 
-        {/* Back to Home button */}
-        <div className="mt-8 flex justify-center">
-          <Link href="/" legacyBehavior>
-            <a className="inline-block px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded">
-              ← Back to Home
-            </a>
-          </Link>
-        </div>
+
       </main>
 
       <Footer />
