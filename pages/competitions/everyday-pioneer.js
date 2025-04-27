@@ -4,14 +4,16 @@
 import { useState, useEffect } from 'react'
 
 export default function EverydayPioneer() {
-  const [tickets, setTickets] = useState(1)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+  const [tickets, setTickets]   = useState(1)
+  const [loading, setLoading]   = useState(false)
+  const [error, setError]       = useState(null)
   const [sdkReady, setSdkReady] = useState(false)
 
+  // Detect Pi Browser
   const isPiBrowser =
     typeof navigator !== 'undefined' && /Pi Browser/i.test(navigator.userAgent)
 
+  // Load Pi SDK dynamically
   useEffect(() => {
     if (isPiBrowser && !window.Pi) {
       const script = document.createElement('script')
@@ -22,12 +24,12 @@ export default function EverydayPioneer() {
       }
       document.head.appendChild(script)
     } else {
-      setSdkReady(true)
+      setSdkReady(true) // Allow testing outside Pi Browser
     }
   }, [isPiBrowser])
 
   const entryFeePerTicket = 0.314
-  const totalCost = (tickets * entryFeePerTicket).toFixed(3)
+  const totalCost         = (tickets * entryFeePerTicket).toFixed(3)
 
   const handlePurchase = async () => {
     if (!sdkReady) return
@@ -41,47 +43,48 @@ export default function EverydayPioneer() {
     }
 
     try {
-      const payment = await window.Pi.createPayment({
+      await window.Pi.createPayment({
         amount: totalCost,
         memo: `Everyday Pioneer: ${tickets} ticket${tickets > 1 ? 's' : ''}`,
-        metadata: { competition: 'everyday-pioneer', tickets }
+        metadata: { competition: 'everyday-pioneer', tickets },
+
+        // Attach all required callbacks here directly
+        onReadyForServerApproval: async ({ paymentId }) => {
+          await fetch('/api/pi/approve-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId }),
+          })
+          window.Pi.openPayment(paymentId)
+        },
+
+        onReadyForServerCompletion: async ({ paymentId, txid }) => {
+          await fetch('/api/pi/complete-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId, txid }),
+          })
+          alert('🎉 Payment completed successfully!')
+        },
+
+        onIncompletePaymentFound: (payment) => {
+          console.warn('Incomplete payment found', payment)
+          // Optional: Try recovering
+        },
+
+        onCancel: () => {
+          alert('Payment was cancelled')
+        },
+
+        onError: (error) => {
+          console.error('Payment error', error)
+          setError(error.message || 'Payment error')
+        },
       })
-
-      payment.onReadyForServerApproval(async ({ paymentID }) => {
-        await fetch('/api/pi/approve-payment', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ paymentID }),
-        })
-        payment.serverApproved()
-      })
-
-      payment.onReadyForServerCompletion(async ({ paymentID, transaction }) => {
-        await fetch('/api/pi/complete-payment', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ paymentID, txid: transaction.txid }),
-        })
-        payment.serverCompleted()
-        alert('🎉 Purchase successful!')
-      })
-
-      payment.onCancel(() => {
-        console.log('User cancelled the payment.')
-        setLoading(false)
-      })
-
-      payment.onError((err) => {
-        console.error('Payment error:', err)
-        setError('Payment failed, please try again.')
-        setLoading(false)
-      })
-
-      payment.open()
-
     } catch (e) {
       console.error(e)
       setError(e.message || 'Payment failed')
+    } finally {
       setLoading(false)
     }
   }
@@ -89,8 +92,12 @@ export default function EverydayPioneer() {
   return (
     <main className="page p-6 max-w-lg mx-auto">
       <h1 className="text-2xl font-bold mb-4">Everyday Pioneer</h1>
-      <p className="mb-2"><strong>Prize:</strong> 1,000 PI Giveaway</p>
-      <p className="mb-4"><strong>Entry fee:</strong> {entryFeePerTicket} PI per ticket</p>
+      <p className="mb-2">
+        <strong>Prize:</strong> 1,000 PI Giveaway
+      </p>
+      <p className="mb-4">
+        <strong>Entry fee:</strong> {entryFeePerTicket} PI per ticket
+      </p>
 
       <label className="block mb-4">
         Tickets:
@@ -103,7 +110,10 @@ export default function EverydayPioneer() {
         />
       </label>
 
-      <p className="mb-4"><strong>Total cost:</strong> {totalCost} PI</p>
+      <p className="mb-4">
+        <strong>Total cost:</strong> {totalCost} PI
+      </p>
+
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
       <button
