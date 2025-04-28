@@ -72,11 +72,12 @@ export default function EverydayPioneer() {
           console.warn('Incomplete payment found', payment)
         },
       })
-    }  catch (e) {
-         console.error(e)
-         setError(e.message || 'Payment failed')
-      } finally {
+    } catch (e) {
+      console.error(e)
+      setError(e.message || 'Payment failed')
+    } finally {
       setLoading(false)
+    
     }
   }
 
