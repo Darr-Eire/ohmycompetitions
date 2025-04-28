@@ -16,32 +16,46 @@ export function PiLoginButton() {
       setLoading(false);
       return;
     }
-    window.Pi.init({ version: '1.0.0' });
+    window.Pi.init({ version: '1.0.0', sandbox: false });
 
-    // 2) Kick off a payment instead of authenticate
+    // 2) Prepare payment data
     const paymentData: PaymentData = {
       amount: 1.23,
       memo: 'My purchase',
       metadata: { foo: 'bar' },
     };
 
+    // 3) Define lifecycle callbacks
     const callbacks: PaymentCallbacks = {
       onReadyForServerApproval(paymentId) {
-        console.log('Approve on server:', paymentId);
+        // Call your backend to approve the payment
+        fetch('/api/pi/approve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ paymentId }),
+        });
       },
       onReadyForServerCompletion(paymentId, txid) {
-        console.log('Completed:', paymentId, txid);
+        // Call your backend to complete the payment
+        fetch('/api/pi/complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ paymentId, txid }),
+        }).finally(() => {
+          setLoading(false);
+        });
       },
       onCancel(paymentId) {
         setError('Payment canceled.');
         setLoading(false);
       },
       onError(err) {
-        setError(err.message);
+        setError(err.message ?? 'Unknown error');
         setLoading(false);
       },
     };
 
+    // 4) Kick off the payment
     if (typeof window.Pi.createPayment !== 'function') {
       setError('Pi.createPayment not available.');
       setLoading(false);
@@ -52,8 +66,17 @@ export function PiLoginButton() {
   };
 
   return (
-    <button onClick={handleClick} disabled={loading}>
-      {loading ? 'Loading…' : 'Pay with Pi'}
+    <button
+      onClick={handleClick}
+      disabled={loading}
+      className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
+    >
+      {loading ? 'Processing…' : 'Pay with Pi'}
+      {error && (
+        <div className="mt-2 text-red-500 text-sm">
+          {error}
+        </div>
+      )}
     </button>
   );
 }
