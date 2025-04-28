@@ -1,80 +1,73 @@
+// pages/competitions/everyday-pioneer.js
 'use client'
 
 import { useState, useEffect } from 'react'
 
 export default function EverydayPioneer() {
-  const [tickets, setTickets] = useState(1)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState(null)
   const [sdkReady, setSdkReady] = useState(false)
 
-  // detect Pi Browser
-  const isPiBrowser =
-    typeof navigator !== 'undefined' && /Pi Browser/i.test(navigator.userAgent)
-
+  // Load Pi SDK once on mount
   useEffect(() => {
-    if (isPiBrowser && !window.Pi) {
-      const s = document.createElement('script')
-      s.src = 'https://sdk.minepi.com/pi-sdk.js'
-      s.onload = () => {
-        window.Pi.init({ version: '2.0' })
+    const initPi = async () => {
+      if (typeof window !== 'undefined' && window.Pi == null) {
+        const script = document.createElement('script')
+        script.src = 'https://sdk.minepi.com/pi-sdk.js'
+        script.onload = () => {
+          window.Pi.init({ version: '2.0' })
+          setSdkReady(true)
+        }
+        document.head.appendChild(script)
+      } else {
         setSdkReady(true)
       }
-      document.head.appendChild(s)
-    } else {
-      setSdkReady(true)
     }
-  }, [isPiBrowser])
+    initPi()
+  }, [])
 
-  const entryFee = 0.314
-  const totalCost = (tickets * entryFee).toFixed(3)
-
-  const handlePurchase = async () => {
-    if (!sdkReady) return
-    setError(null)
-    setLoading(true)
-
-    if (!window.Pi || typeof window.Pi.createPayment !== 'function') {
-      setError('Please open this in the Pi Browser')
-      setLoading(false)
+  const handlePayment = async () => {
+    if (!sdkReady || !window.Pi?.createPayment) {
+      alert('Please open in Pi Browser')
       return
     }
 
+    setLoading(true)
+    setError(null)
+
     try {
-      await window.Pi.createPayment({
-        amount: totalCost,
-        memo: `Everyday Pioneer: ${tickets} ticket${tickets > 1 ? 's' : ''}`,
-        metadata: { competition: 'everyday-pioneer', tickets },
-        onReadyForServerApproval: async ({ paymentId }) => {
-          await fetch('/api/pi/approve-payment', {
+      window.Pi.createPayment({
+        amount: 0.314,
+        memo: 'Everyday Pioneer — 1 ticket',
+        metadata: { competition: 'everyday-pioneer', tickets: 1 },
+
+        onReadyForServerApproval: (paymentId) => {
+          // your server approval endpoint
+          fetch('/api/pi/approve-payment', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ paymentId }),
           })
           window.Pi.openPayment(paymentId)
         },
-        onReadyForServerCompletion: async ({ paymentId, txid }) => {
-          await fetch('/api/pi/complete-payment', {
+        onReadyForServerCompletion: ({ paymentId, txid }) => {
+          // your completion endpoint
+          fetch('/api/pi/complete-payment', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ paymentId, txid }),
           })
           alert('🎉 Payment successful!')
         },
-        onCancel: () => {
-          alert('Payment cancelled.')
-        },
-        onError: (e) => {
-          console.error(e)
-          setError(e.message || 'Payment error')
-        },
-        onIncompletePaymentFound: (payment) => {
-          console.warn('Incomplete payment found', payment)
+        onCancel: () => alert('Payment cancelled'),
+        onError: (err) => {
+          console.error(err)
+          setError(err.message || 'Payment error')
         },
       })
     } catch (e) {
       console.error(e)
-      setError(e.message || 'Payment failed')
+      setError(e.message || 'Unexpected error')
     } finally {
       setLoading(false)
     }
@@ -84,7 +77,7 @@ export default function EverydayPioneer() {
     <main className="page">
       <div className="competition-card">
         <div className="competition-top-banner">Everyday Pioneer</div>
-        <div className="competition-image-placeholder">Add Image Here</div>
+        <div className="competition-image-placeholder">[Image]</div>
         <div className="competition-info">
           <p><strong>Draw ends in:</strong> 13h 58m</p>
           <p>📊 <strong>Total Tickets:</strong> 1000</p>
@@ -96,13 +89,11 @@ export default function EverydayPioneer() {
         {error && <p className="text-red-500 mb-4">{error}</p>}
 
         <button
-          onClick={handlePurchase}
+          onClick={handlePayment}
           disabled={loading || !sdkReady}
           className="comp-button"
         >
-          {loading
-            ? 'Processing…'
-            : `Pay with Pi (${totalCost} π)`}
+          {loading ? 'Processing…' : 'Pay with Pi'}
         </button>
       </div>
     </main>
