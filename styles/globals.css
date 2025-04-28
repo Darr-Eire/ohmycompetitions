@@ -206,56 +206,56 @@ footer {
 }
 
 /* 13. Updated Competition Card Styling (new fancy version) */
+/* …everything up through the dropdown-menu rules stays the same… */
+
+/* 13. Updated Competition Card Styling (new fancy version) */
 .page {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   align-items: flex-start;
   gap: 1rem;
-  /* bump this top padding until cards sit comfortably below header */
-  padding: 0.5rem 1rem 1rem;   /* <-- increase the top padding */
+  /* Bump this top padding so cards sit comfortably below the header */
+  padding: 4rem 1rem 1rem; /* ↑ increased from 0.5rem to 4rem */
 }
 
 .competition-card {
-  border: 4px solid #0070f3;
+  border: 4px solid #3b82f6;           /* stronger blue border */
   border-radius: 12px;
-  background: white;
-  box-shadow: 0 4px 12px #0070f3;
-  width: 270px;
+  background: #f0f8ff;                 /* very light blue background */
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); /* blue-tinted shadow */
+  width: 280px;                        /* a touch wider */
   padding: 1.5rem;
   text-align: center;
-  transition: transform 0.2s ease;
-  margin: 2; /* gap is handled by .page */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin: 1rem; /* gaps handled by .page */
 }
 .competition-card:hover {
   transform: scale(1.03);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5);
 }
 
 .competition-top-banner {
-  background: linear-gradient(to right, #3b82f6, #2563eb);
-  color: white;
-  padding: 0.5rem;
+  background: linear-gradient(to right, #60a5fa, #3b82f6);
+  color: #fff;
+  padding: 0.75rem;
   margin: -1.5rem -1.5rem 1rem;
   border-top-left-radius: 12px;
   border-top-right-radius: 12px;
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   font-weight: bold;
 }
 
 .competition-image-placeholder {
-  background: #eee;
-  height: 150px;
+  background: url('/pi.jpeg') center/cover no-repeat;
+  height: 180px;   /* taller image area */
   margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #666;
   border-radius: 8px;
 }
 
 .competition-info {
   text-align: left;
-  margin-bottom: 1rem;
-  font-size: 1.15rem;
-  color: #333;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+  color: #1e293b; /* darker text */
 }
