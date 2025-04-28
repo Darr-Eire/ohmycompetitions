@@ -259,3 +259,27 @@ footer {
   font-size: 1rem;
   color: #1e293b; /* darker text */
 }
+/* ——— Daily competitions horizontal scroll strip ——— */
+.daily-carousel {
+  display: flex;                /* lay cards out in a row */
+  overflow-x: auto;             /* enable horizontal scrolling */
+  gap: 1rem;                    /* space between cards */
+  padding-bottom: 1rem;         /* room for scroll “bounce” */
+  scroll-snap-type: x mandatory;/* snap to each card */
+  scrollbar-width: none;        /* hide Firefox scrollbar */
+}
+.daily-carousel::-webkit-scrollbar {
+  display: none;                /* hide WebKit scrollbar */
+}
+/* ensure each card snaps and doesn’t shrink */
+.daily-carousel > .competition-card {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+/* ——— Optional “small” variant for tighter cards ——— */
+.competition-card--small {
+  flex: 0 0 240px;   /* fixed width so you see partial next card */
+  padding: 0.75rem;  /* slightly less padding than full card */
+  margin-right: 1rem;
+}

@@ -1,4 +1,6 @@
 // src/components/PiLoginButton.tsx
+'use client';
+
 import React, { useState } from 'react';
 import type { PaymentData, PaymentCallbacks } from '@/types/pi-sdk';
 
