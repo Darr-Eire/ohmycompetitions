@@ -9,17 +9,17 @@ export default function AllCompetitions() {
       prize: '1,000 PI Giveaway',
       fee: '0.314 π',
     },
-    // …other comps
+    // ← you can add more competitions here
   ]
 
   return (
-    <main className="pt-20 pb-12 px-4">
-      {/* Page Title */}
-      <h1 className="text-4xl font-extrabold text-blue-600 text-center mb-12">
+    <main className="page">
+      {/* Page title */}
+      <h1 className="text-4xl font-bold text-blue-600 text-center mb-12">
         All Competitions
       </h1>
 
-      {/* Card Grid */}
+      {/* Cards grid */}
       <div className="flex flex-wrap justify-center gap-6">
         {comps.map(c => (
           <CompetitionCard
