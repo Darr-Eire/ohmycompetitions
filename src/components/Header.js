@@ -2,11 +2,26 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
-
+import { useState, useRef, useEffect } from 'react'
 
 export default function Header({ isLoggedIn, onLogin, onLogout }) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef(null)
+
+  // Close menu on outside click
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false)
+      }
+    }
+    if (menuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [menuOpen])
 
   return (
     <header>
@@ -20,30 +35,19 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
       <h1 className="site-title">
         <Link href="/">Oh My Competitions</Link>
       </h1>
-
-      {/* spacer */}
       <div className="nav-spacer" />
-
-      {/* always show login/logout in top right */}
       {isLoggedIn ? (
-        <button
-          className="logout-button"
-          onClick={onLogout}
-        >
+        <button className="logout-button" onClick={onLogout}>
           Log Out
         </button>
       ) : (
-        <button
-          className="login-button"
-          onClick={onLogin}
-        >
+        <button className="login-button" onClick={onLogin}>
           Log In
         </button>
       )}
 
-      {/* slide‐out menu */}
       {menuOpen && (
-        <nav className="dropdown-menu">
+        <nav ref={menuRef} className="dropdown-menu">
           <Link href="/" className="dropdown-link">Home</Link>
           <Link href="/competitions" className="dropdown-link">All Competitions</Link>
           <Link href="/try-your-luck" className="dropdown-link">Try Your Luck</Link>
@@ -68,3 +72,4 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
     </header>
   )
 }
+

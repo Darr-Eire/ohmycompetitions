@@ -9,21 +9,17 @@ export default function AllCompetitions() {
       prize: '1,000 PI Giveaway',
       fee: '0.314 π',
     },
-    {
-      title: 'Weekly Miner',
-      href: '/competitions/weekly-miner',
-      prize: '500 PI Giveaway',
-      fee: '0.100 π',
-    },
-    // …add more as needed
+    // …other comps
   ]
 
   return (
-    <main className="page">
-      <h1 className="text-3xl font-bold text-center text-blue-600 mb-8">
+    <main className="pt-20 pb-12 px-4">
+      {/* Page Title */}
+      <h1 className="text-4xl font-extrabold text-blue-600 text-center mb-12">
         All Competitions
       </h1>
 
+      {/* Card Grid */}
       <div className="flex flex-wrap justify-center gap-6">
         {comps.map(c => (
           <CompetitionCard
