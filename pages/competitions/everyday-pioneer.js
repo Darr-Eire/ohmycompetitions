@@ -77,7 +77,6 @@ export default function EverydayPioneer() {
       setError(e.message || 'Payment failed')
     } finally {
       setLoading(false)
-    
     }
   }
 
