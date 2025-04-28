@@ -6,29 +6,46 @@ export function PiLoginButton() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleClick = () => {
+  const handleClick = async () => {
     setError(null);
     setLoading(true);
 
-    // 1) Ensure SDK loaded & initialized
+    // 1) Ensure SDK is loaded
     if (typeof window.Pi?.init !== 'function') {
       setError('Pi SDK not available. Open in Pi Browser.');
       setLoading(false);
       return;
     }
-    window.Pi.init({ version: '1.0.0', sandbox: false });
+    window.Pi.init({ version: '1.0.0', sandbox: true });
 
-    // 2) Prepare payment data
+    // 2) Authenticate with the 'payments' scope
+    if (typeof window.Pi.authenticate !== 'function') {
+      setError('Pi.authenticate not available.');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // For older SDKs, you may need:
+      // await new Promise((res, rej) =>
+      //   window.Pi.authenticate(['payments'], (err) => (err ? rej(err) : res(undefined)))
+      // );
+      await window.Pi.authenticate({ scopes: ['payments'] });
+    } catch (err: any) {
+      setError('Authorization failed: ' + (err.message || err));
+      setLoading(false);
+      return;
+    }
+
+    // 3) Now you can create the payment
     const paymentData: PaymentData = {
       amount: 1.23,
       memo: 'My purchase',
       metadata: { foo: 'bar' },
     };
 
-    // 3) Define lifecycle callbacks
     const callbacks: PaymentCallbacks = {
       onReadyForServerApproval(paymentId) {
-        // Call your backend to approve the payment
         fetch('/api/pi/approve', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -36,14 +53,11 @@ export function PiLoginButton() {
         });
       },
       onReadyForServerCompletion(paymentId, txid) {
-        // Call your backend to complete the payment
         fetch('/api/pi/complete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ paymentId, txid }),
-        }).finally(() => {
-          setLoading(false);
-        });
+        }).finally(() => setLoading(false));
       },
       onCancel(paymentId) {
         setError('Payment canceled.');
@@ -55,28 +69,13 @@ export function PiLoginButton() {
       },
     };
 
-    // 4) Kick off the payment
-    if (typeof window.Pi.createPayment !== 'function') {
-      setError('Pi.createPayment not available.');
-      setLoading(false);
-      return;
-    }
-
     window.Pi.createPayment(paymentData, callbacks);
   };
 
   return (
-    <button
-      onClick={handleClick}
-      disabled={loading}
-      className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
-    >
+    <button onClick={handleClick} disabled={loading}>
       {loading ? 'Processing…' : 'Pay with Pi'}
-      {error && (
-        <div className="mt-2 text-red-500 text-sm">
-          {error}
-        </div>
-      )}
+      {error && <div className="mt-2 text-red-500 text-sm">{error}</div>}
     </button>
   );
 }
