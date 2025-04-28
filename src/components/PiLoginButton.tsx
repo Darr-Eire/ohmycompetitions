@@ -1,46 +1,59 @@
-'use client';
-
+// src/components/PiLoginButton.tsx
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import type { PaymentData, PaymentCallbacks } from '@/types/pi-sdk';
 
-export default function PiLoginButton(){
+export function PiLoginButton() {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string|null>(null);
-  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
 
-  const handleLogin = async () => {
+  const handleClick = () => {
     setError(null);
     setLoading(true);
-    if (typeof window.Pi?.authenticate !== 'function') {
+
+    // 1) Ensure SDK loaded & initialized
+    if (typeof window.Pi?.init !== 'function') {
       setError('Pi SDK not available. Open in Pi Browser.');
       setLoading(false);
       return;
     }
-    try {
-      const { accessToken, user } = await window.Pi.authenticate(
-        ['username','wallet_address']
-      );
-      const res = await fetch(
-        `/api/auth/pi-login?accessToken=${encodeURIComponent(accessToken)}`,
-        { method:'GET', credentials:'include' }
-      );
-      if (!res.ok) throw new Error(`Login failed ${res.status}`);
-      alert(`Welcome, ${user.username}!`);
-      router.push('/account');
-    } catch (e:any) {
-      setError(e.message||'Login failed');
-    } finally {
+    window.Pi.init({ version: '1.0.0' });
+
+    // 2) Kick off a payment instead of authenticate
+    const paymentData: PaymentData = {
+      amount: 1.23,
+      memo: 'My purchase',
+      metadata: { foo: 'bar' },
+    };
+
+    const callbacks: PaymentCallbacks = {
+      onReadyForServerApproval(paymentId) {
+        console.log('Approve on server:', paymentId);
+      },
+      onReadyForServerCompletion(paymentId, txid) {
+        console.log('Completed:', paymentId, txid);
+      },
+      onCancel(paymentId) {
+        setError('Payment canceled.');
+        setLoading(false);
+      },
+      onError(err) {
+        setError(err.message);
+        setLoading(false);
+      },
+    };
+
+    if (typeof window.Pi.createPayment !== 'function') {
+      setError('Pi.createPayment not available.');
       setLoading(false);
+      return;
     }
+
+    window.Pi.createPayment(paymentData, callbacks);
   };
 
   return (
-    <button
-      onClick={handleLogin}
-      disabled={loading}
-      className="btn-blue"
-    >
-      {loading ? 'Loading…' : error ?? 'Login with Pi'}
+    <button onClick={handleClick} disabled={loading}>
+      {loading ? 'Loading…' : 'Pay with Pi'}
     </button>
   );
 }
