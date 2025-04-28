@@ -35,11 +35,13 @@ export default function HelpSupport() {
               </li>
               <li>
                 <strong>Phone:</strong>{' '}
-                <span className="text-blue-600">+353 87 1365782</span>
+                <span className="text-blue-600"><br/>
+                +353 87 1365782</span>
               </li>
               <li>
                 <strong>Address:</strong>{' '}
-                <span className="text-blue-600">Dublin, Ireland</span>
+                <span className="text-blue-600"><br/>
+                Dublin, Ireland</span>
               </li>
             </ul>
           </div>
