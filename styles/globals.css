@@ -175,11 +175,11 @@ footer {
   background-color: #732d91;
 }
 
-/* 12. Dropdown Menu */
+/* 12. Dropdown Menu (fixed nice mobile position) */
 .dropdown-menu {
   position: absolute;
   top: 2.7rem;
-  left: 0;
+  left: 0rem;
   background-color: #0070f3;
   border: 1px solid #ffffff;
   border-radius: 4px;
@@ -213,7 +213,7 @@ footer {
   align-items: flex-start;
   gap: 1rem;
   /* bump this top padding until cards sit comfortably below header */
-  padding: 2.5rem 1rem 1rem;   /* <-- increased top padding from 0.5rem to 2.5rem */
+  padding: 0.5rem 1rem 1rem;   /* <-- increase the top padding */
 }
 
 .competition-card {
@@ -225,7 +225,7 @@ footer {
   padding: 1.5rem;
   text-align: center;
   transition: transform 0.2s ease;
-  margin: 0; /* gap is handled by .page */
+  margin: 2; /* gap is handled by .page */
 }
 .competition-card:hover {
   transform: scale(1.03);
