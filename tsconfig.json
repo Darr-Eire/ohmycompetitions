@@ -15,11 +15,18 @@
     "jsx": "preserve",
     "incremental": true,
     "types": ["node", "react"],
-    "baseUrl": ".",                   
-    "paths": {                        
+    "baseUrl": ".",
+    "paths": {
       "@/*": ["src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.js",
+    "**/*.jsx",
+    "**/*.d.ts"
+  ],
   "exclude": ["node_modules"]
 }
