@@ -1,5 +1,5 @@
 // src/components/PiLoginButton.tsx
-import { useState } from 'react';
+import React, { useState } from 'react';
 import type { PaymentData, PaymentCallbacks } from '@/types/pi-sdk';
 
 export function PiLoginButton() {
@@ -26,11 +26,13 @@ export function PiLoginButton() {
     }
 
     try {
-      // For older SDKs, you may need:
-      // await new Promise((res, rej) =>
-      //   window.Pi.authenticate(['payments'], (err) => (err ? rej(err) : res(undefined)))
-      // );
-      await window.Pi.authenticate({ scopes: ['payments'] });
+      // Correct signature: (scopes: string[], onIncompletePaymentFound?: fn) => Promise
+      await window.Pi.authenticate(
+        ['payments'],
+        (incompletePayment) => {
+          console.log('Found incomplete payment:', incompletePayment);
+        }
+      );
     } catch (err: any) {
       setError('Authorization failed: ' + (err.message || err));
       setLoading(false);
@@ -73,7 +75,11 @@ export function PiLoginButton() {
   };
 
   return (
-    <button onClick={handleClick} disabled={loading}>
+    <button
+      onClick={handleClick}
+      disabled={loading}
+      className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
+    >
       {loading ? 'Processing…' : 'Pay with Pi'}
       {error && <div className="mt-2 text-red-500 text-sm">{error}</div>}
     </button>
