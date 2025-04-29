@@ -15,11 +15,6 @@ export default function TryYourLuck() {
       href: '/try-your-luck/slot-machine',
     },
     {
-      title: '🚀 Launch Pi to the Moon',
-      description: 'Time your launch perfectly!',
-      href: '/try-your-luck/launch-pi',
-    },
-    {
       title: '🔒 Hack the Vault',
       description: 'Solve the daily riddle!',
       href: '/try-your-luck/hack-the-vault',

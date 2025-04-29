@@ -3,96 +3,99 @@
 import { useState, useEffect } from 'react'
 import Confetti from 'react-confetti'
 import { useWindowSize } from '@uidotdev/usehooks'
-import { updateDailyStreak, getStreak } from '@/lib/streak'
 
-export default function SlotMachine() {
-  const [reels, setReels] = useState(["", "", ""])
+const symbols = ['🥧', '⭐', '🔥', '🔒', '🪙', '🎁']
+
+export default function PiSlotMachine() {
+  const [reels, setReels] = useState(['?', '?', '?'])
   const [spinning, setSpinning] = useState(false)
   const [result, setResult] = useState(null)
-  const [prize, setPrize] = useState(null)
+  const [played, setPlayed] = useState(false)
   const { width, height } = useWindowSize()
 
-  const symbols = ["🛸", "🚀", "🌕", "🔥", "🎯", "💎"]
-
   useEffect(() => {
-    const playedToday = localStorage.getItem('slotMachinePlayed')
-    if (playedToday) {
-      setResult('You already played today! Come back tomorrow 🎰')
+    const stored = localStorage.getItem('slotMachinePlayed')
+    if (stored === new Date().toDateString()) {
+      setPlayed(true)
     }
   }, [])
 
-  const handleSpin = () => {
-    if (result) return
+  const spin = () => {
+    if (played || spinning) return
 
-    setSpinning(true)
     setResult(null)
-    setPrize(null)
+    setSpinning(true)
 
-    const newReels = [
-      symbols[Math.floor(Math.random() * symbols.length)],
-      symbols[Math.floor(Math.random() * symbols.length)],
-      symbols[Math.floor(Math.random() * symbols.length)],
-    ]
+    let spinIntervals = []
 
+    for (let i = 0; i < 3; i++) {
+      spinIntervals[i] = setInterval(() => {
+        setReels(prev => {
+          const newReels = [...prev]
+          newReels[i] = symbols[Math.floor(Math.random() * symbols.length)]
+          return newReels
+        })
+      }, 100)
+    }
+
+    // Stop reels one by one
+    setTimeout(() => clearInterval(spinIntervals[0]), 2000)
+    setTimeout(() => clearInterval(spinIntervals[1]), 2500)
+    setTimeout(() => clearInterval(spinIntervals[2]), 3000)
+
+    // After all stop
     setTimeout(() => {
-      setReels(newReels)
       setSpinning(false)
-
-      const allMatch = newReels[0] === newReels[1] && newReels[1] === newReels[2]
-
-      if (allMatch) {
-        const rewards = [
-          '🎟️ Jackpot Ticket!',
-          '✨ Bonus 0.314 Pi!',
-          '🏆 Slot Master Badge!',
-          '🎯 Extra Daily Spin!',
-        ]
-        const randomPrize = rewards[Math.floor(Math.random() * rewards.length)]
-        const streak = updateDailyStreak()
-        const bonus = streak % 3 === 0 ? ' 🎁 + Streak Bonus!' : ''
-
-        setResult('🎰 JACKPOT! All 3 matched!')
-        setPrize(`${randomPrize}${bonus}`)
-      } else {
-        setResult('No match. Try again tomorrow!')
-      }
-
+      checkResult()
       localStorage.setItem('slotMachinePlayed', new Date().toDateString())
-    }, 2000)
+      setPlayed(true)
+    }, 3200)
+  }
+
+  const checkResult = () => {
+    if (reels[0] === reels[1] && reels[1] === reels[2]) {
+      setResult('🎉 Jackpot! You matched all 3!')
+    } else {
+      setResult('❌ No match. Try again tomorrow!')
+    }
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-yellow-100 via-red-100 to-pink-100 p-6">
-      {result?.includes('JACKPOT') && <Confetti width={width} height={height} />}
-      <p className="streak-banner">🔥 Daily Streak: {getStreak()} days</p>
+    <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-yellow-100 via-pink-100 to-purple-100 p-6">
+      <h1 className="text-4xl font-bold text-purple-800 mb-8">
+        🎰 Pi Slot Machine
+      </h1>
 
-      <h1 className="text-3xl font-bold mb-4 text-purple-700">🎰 Pi Slot Machine</h1>
+      {result?.includes('Jackpot') && <Confetti width={width} height={height} />}
 
-      <div className="bg-white shadow-xl p-8 rounded-xl text-center space-y-6 w-full max-w-md">
-        <div className="flex justify-center space-x-6 text-6xl font-bold">
-          {reels.map((symbol, idx) => (
-            <div key={idx} className={`transition transform ${spinning ? 'animate-bounce' : ''}`}>
-              {symbol || "❓"}
-            </div>
-          ))}
-        </div>
-
-        {!spinning && !result && (
-          <button
-            onClick={handleSpin}
-            className="bg-purple-600 text-white font-semibold py-3 px-6 rounded hover:bg-purple-700"
-          >
-            Spin!
-          </button>
-        )}
-
-        {result && (
-          <div className="space-y-2">
-            <p className="text-lg font-bold">{result}</p>
-            {prize && <p className="text-pink-600 text-xl">{prize}</p>}
+      {/* Slot Machine */}
+      <div className="slot-machine mb-8">
+        {reels.map((symbol, index) => (
+          <div key={index} className="reel">
+            {symbol}
           </div>
-        )}
+        ))}
       </div>
+
+      {/* Spin Button */}
+      <button
+        onClick={spin}
+        disabled={played || spinning}
+        className={`px-8 py-4 rounded-full font-bold text-lg transition ${
+          spinning
+            ? 'bg-gray-400 cursor-not-allowed'
+            : 'bg-green-500 hover:bg-green-600 text-white'
+        }`}
+      >
+        {spinning ? 'Spinning...' : played ? 'Already Played Today' : 'SPIN!'}
+      </button>
+
+      {/* Result */}
+      {result && (
+        <p className="mt-6 text-2xl font-bold text-purple-700 text-center">
+          {result}
+        </p>
+      )}
     </main>
   )
 }
