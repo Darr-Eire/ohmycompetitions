@@ -3,6 +3,7 @@
 
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import Link from 'next/link'
 
 export default function CompetitionCard({
   title = "Everyday Pioneer",
@@ -38,12 +39,11 @@ export default function CompetitionCard({
       </div>
 
       {/* Enter button */}
-      <button
-        className="comp-button"
-        onClick={() => router.push(href)}
-      >
-        Enter Now
-      </button>
+      <Link href={`/ticket-purchase/${comp.slug}`}>
+  <button className="mt-2 btn btn-secondary w-full">
+      Enter Now
+    </button>
+  </Link>
     </div>
   )
 }
