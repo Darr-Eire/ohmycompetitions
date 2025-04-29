@@ -1,8 +1,8 @@
 'use client'
 
-import { useRef, useEffect, useState } from 'react'
 import { useSession, signIn, signOut } from 'next-auth/react'
 import Link from 'next/link'
+import { useRef, useEffect, useState } from 'react'
 import CompetitionCard from '@/components/CompetitionCard'
 
 export default function AllCompetitions() {
