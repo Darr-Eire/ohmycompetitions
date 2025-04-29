@@ -2952,7 +2952,7 @@ mongodb@4.x:
     "@aws-sdk/credential-providers" "^3.186.0"
     "@mongodb-js/saslprep" "^1.1.0"
 
-mongoose@^6.10.0:
+mongoose@^6.13.8:
   version "6.13.8"
   resolved "https://registry.npmjs.org/mongoose/-/mongoose-6.13.8.tgz"
   integrity sha512-JHKco/533CyVrqCbyQsnqMpLn8ZCiKrPDTd2mvo2W7ygIvhygWjX2wj+RPjn6upZZgw0jC6U51RD7kUsyK8NBg==
