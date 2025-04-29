@@ -1,6 +1,8 @@
 // pages/api/competitions/[id].js
 import clientPromise from '../../../src/lib/mongodb';
 
+// redeploy trigger: no-op
+
 export default async function handler(req, res) {
   const { id } = req.query;
 
