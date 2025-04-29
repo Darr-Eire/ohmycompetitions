@@ -1,27 +1,17 @@
-// src/lib/mongodb.js
-import { MongoClient } from 'mongodb';
+// scripts/test-mongo.js
+import clientPromise from './src/lib/mongodb.js';
 
-const uri = process.env.MONGODB_URI;
-const options = {};
-
-if (!uri) {
-  throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
-}
-
-let client;
-let clientPromise;
-
-if (process.env.NODE_ENV === 'development') {
-  // Reuse global promise in dev for HMR safety
-  if (!global._mongoClientPromise) {
-    client = new MongoClient(uri, options);
-    global._mongoClientPromise = client.connect();
+async function test() {
+  try {
+    const client = await clientPromise;
+    const db = client.db();
+    const collections = await db.listCollections().toArray();
+    console.log('Collections:', collections.map((c) => c.name));
+    process.exit(0);
+  } catch (err) {
+    console.error('Connection test failed:', err);
+    process.exit(1);
   }
-  clientPromise = global._mongoClientPromise;
-} else {
-  // In production, create a new client for every build
-  client = new MongoClient(uri, options);
-  clientPromise = client.connect();
 }
 
-export default clientPromise;
+test();
