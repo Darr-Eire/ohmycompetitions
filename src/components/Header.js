@@ -71,8 +71,8 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
           <Link href="/" className="dropdown-link" onClick={handleLinkClick}>Home</Link>
           <Link href="/competitions" className="dropdown-link" onClick={handleLinkClick}>All Competitions</Link>
           <Link href="/try-your-luck" className="dropdown-link" onClick={handleLinkClick}>Try Your Luck</Link>
-          <Link href="/future" className="dropdown-link" onClick={handleLinkClick}>The Future</Link>
           <Link href="/forums" className="dropdown-link" onClick={handleLinkClick}>Forums</Link>
+          <Link href="/future" className="dropdown-link" onClick={handleLinkClick}>The Future</Link>
           <Link href="/help-support" className="dropdown-link" onClick={handleLinkClick}>Help & Support</Link>
           <Link href="/how-we-got-started" className="dropdown-link" onClick={handleLinkClick}>How We Got Started</Link>
           <hr className="my-2 border-white/50" />

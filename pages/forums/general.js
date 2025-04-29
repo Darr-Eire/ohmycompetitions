@@ -24,11 +24,11 @@ export default function GeneralDiscussions() {
           </p>
 
           {/* Post Button */}
-          <Link href="/forums/general/new-post">
-            <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded mt-4">
-              ✏️ Start a Discussion
-            </button>
-          </Link>
+          <Link href="/forums/start-discussion">
+  <button className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold px-4 py-2 rounded">
+    ✏️ Start a Discussion
+  </button>
+</Link>
 
           {/* Back */}
           <div className="mt-10">
