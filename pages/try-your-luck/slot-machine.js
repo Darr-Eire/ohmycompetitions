@@ -38,12 +38,10 @@ export default function PiSlotMachine() {
       }, 100)
     }
 
-    // Stop reels one by one
     setTimeout(() => clearInterval(spinIntervals[0]), 2000)
     setTimeout(() => clearInterval(spinIntervals[1]), 2500)
     setTimeout(() => clearInterval(spinIntervals[2]), 3000)
 
-    // After all stop
     setTimeout(() => {
       setSpinning(false)
       checkResult()
@@ -61,41 +59,46 @@ export default function PiSlotMachine() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-yellow-100 via-pink-100 to-purple-100 p-6">
-      <h1 className="text-4xl font-bold text-purple-800 mb-8">
-        🎰 Pi Slot Machine
-      </h1>
+    <main className="page">
+      <div className="competition-card max-w-xl w-full">
+        {/* Top Banner */}
+        <div className="competition-top-banner">🎰 Pi Slot Machine</div>
 
-      {result?.includes('Jackpot') && <Confetti width={width} height={height} />}
+        {/* Confetti */}
+        {result?.includes('Jackpot') && <Confetti width={width} height={height} />}
 
-      {/* Slot Machine */}
-      <div className="slot-machine mb-8">
-        {reels.map((symbol, index) => (
-          <div key={index} className="reel">
-            {symbol}
+        {/* Slot Machine */}
+        <div className="flex justify-center gap-6 mt-8 mb-6">
+          {reels.map((symbol, index) => (
+            <div
+              key={index}
+              className="bg-white rounded-lg shadow text-5xl p-4 w-20 h-20 flex justify-center items-center text-black"
+            >
+              {symbol}
+            </div>
+          ))}
+        </div>
+
+        {/* Spin Button */}
+        <div className="text-center">
+          <button
+            onClick={spin}
+            disabled={played || spinning}
+            className={`comp-button ${
+              spinning || played ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+          >
+            {spinning ? 'Spinning...' : played ? 'Already Played Today' : 'SPIN!'}
+          </button>
+        </div>
+
+        {/* Result */}
+        {result && (
+          <div className="text-center mt-6">
+            <p className="text-lg font-bold text-purple-700">{result}</p>
           </div>
-        ))}
+        )}
       </div>
-
-      {/* Spin Button */}
-      <button
-        onClick={spin}
-        disabled={played || spinning}
-        className={`px-8 py-4 rounded-full font-bold text-lg transition ${
-          spinning
-            ? 'bg-gray-400 cursor-not-allowed'
-            : 'bg-green-500 hover:bg-green-600 text-white'
-        }`}
-      >
-        {spinning ? 'Spinning...' : played ? 'Already Played Today' : 'SPIN!'}
-      </button>
-
-      {/* Result */}
-      {result && (
-        <p className="mt-6 text-2xl font-bold text-purple-700 text-center">
-          {result}
-        </p>
-      )}
     </main>
   )
 }

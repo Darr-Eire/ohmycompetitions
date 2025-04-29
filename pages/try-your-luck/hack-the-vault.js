@@ -12,7 +12,7 @@ export default function HackTheVault() {
   const [shake, setShake] = useState(false)
   const { width, height } = useWindowSize()
 
-  const vaultCode = "pi" // today's answer
+  const vaultCode = "pi"
 
   useEffect(() => {
     const playedToday = localStorage.getItem('hackVaultPlayed')
@@ -50,34 +50,48 @@ export default function HackTheVault() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 via-blue-900 to-black text-white p-6">
+    <main className="page">
       {result?.includes('Unlocked') && <Confetti width={width} height={height} />}
-      <p className="streak-banner">🔥 Daily Streak: {getStreak()} days</p>
 
-      <h1 className="text-3xl font-bold mb-6 text-emerald-400">💥 Hack the Vault</h1>
+      <div className="competition-card max-w-md w-full">
+        {/* Top banner */}
+        <div className="competition-top-banner">🗝️ Hack The Vault</div>
 
-      <div
-        className={`vault-container ${shake ? 'animate-shake' : ''}`}
-      >
-        <div className="vault-dial">🔐</div>
-        <form onSubmit={handleSubmit} className="vault-input">
-          <input
-            type="text"
-            value={answer}
-            onChange={(e) => setAnswer(e.target.value)}
-            placeholder="Enter vault code"
-            required
-          />
-          <button type="submit">Unlock</button>
-        </form>
-      </div>
+        {/* Divider */}
+        <div className="h-1 w-24 bg-blue-300 mx-auto rounded mb-4" />
 
-      {result && (
-        <div className="mt-6 text-center space-y-2">
-          <p className="text-lg font-bold text-white">{result}</p>
-          {prize && <p className="text-2xl text-pink-400">{prize}</p>}
+        {/* Streak */}
+        <p className="text-center text-sm text-blue-800 mb-4">
+          🔥 Daily Streak: {getStreak()} days
+        </p>
+
+        {/* Vault Game */}
+        <div className={`vault-container px-4 ${shake ? 'animate-shake' : ''}`}>
+          <div className="text-5xl text-center mb-4">🔐</div>
+
+          <form onSubmit={handleSubmit} className="flex flex-col items-center gap-3">
+            <input
+              type="text"
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value)}
+              placeholder="Enter vault code"
+              required
+              className="px-4 py-2 border border-gray-300 rounded w-full text-black"
+            />
+            <button type="submit" className="comp-button w-full">
+              Unlock Vault
+            </button>
+          </form>
         </div>
-      )}
+
+        {/* Result */}
+        {result && (
+          <div className="mt-6 text-center space-y-2">
+            <p className="text-lg font-bold text-black">{result}</p>
+            {prize && <p className="text-2xl text-pink-500 font-semibold">{prize}</p>}
+          </div>
+        )}
+      </div>
     </main>
   )
 }

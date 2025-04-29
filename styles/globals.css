@@ -22,7 +22,7 @@ header {
   align-items: center;
   padding: 0.40rem 1rem;   /* less vertical padding */
   font-size: 1rem;
-  background-color: #0609b5;  /* Next.js blue */
+  background-color: #1E3A8A;  /* Next.js blue */
   color: #ffffff;
   position: relative; /* Make dropdown absolute inside */
   z-index: 1000;
@@ -83,13 +83,13 @@ footer {
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
   text-align: center;
-  background-color: #0609b5; 
+  background-color: #1E3A8A; 
   color: #ffffff;
 }
 
 /* 5. Competition card (simple old version) */
 .competition-card {
-  border: 2px solid #0609b5; 
+  border: 2px solid #1E3A8A; 
   border-radius: 8px;
   padding: 1rem;
   max-width: 320px;
@@ -103,7 +103,7 @@ footer {
 .comp-title {
   margin: 0 0 0.5rem;
   font-size: 1.25rem;
-  color: #0609b5; 
+  color: #1E3A8A; 
 }
 
 /* 7. Prize text */
@@ -122,7 +122,7 @@ footer {
 
 /* 9. Enter button */
 .comp-button {
-  background-color: #0070f3;
+  background-color: #1E3A8A;
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -132,7 +132,7 @@ footer {
   transition: background-color 0.2s ease;
 }
 .comp-button:hover {
-  background-color: #005bb5;
+  background-color: #1E3A8A;
 }
 
 /* 10. Footer social icons and policy links */
@@ -180,7 +180,7 @@ footer {
   position: absolute;
   top: 2.7rem;
   left: 0rem;
-  background-color: #0609b5; 
+  background-color: #1E3A8A; 
   border: 1px solid #ffffff;
   border-radius: 4px;
   padding: 0.5rem;
@@ -222,10 +222,10 @@ footer {
 
 /* Competition Card */
 .competition-card {
-  border: 4px solid #0609b5;           /* stronger purple border */
+  border: 4px solid  #06B6D4;         /* stronger purple border */
   border-radius: 12px;
   background: #f0f8ff;                 /* very light purple background */
-  box-shadow: 0 4px 12px #0609b5;       /* purple-tinted shadow */
+  box-shadow: 0 4px 12px  #06B6D4;      /* purple-tinted shadow */
   width: 280px;                        /* card width */
   padding: 1rem;                       /* correct rem syntax */
   text-align: center;
@@ -235,12 +235,12 @@ footer {
 
 .competition-card:hover {
   transform: scale(1.03);
-  box-shadow: 0 6px 16px #0609b5; 
+  box-shadow: 0 6px 16px  #06B6D4;
 }
 
 /* Top banner */
 .competition-top-banner {
-  background:#0609b5; 
+  background: #06B6D4;
   color: #ffffff;
   padding: 0.75rem;
   margin: -1.5rem -1.5rem 1rem;
@@ -307,7 +307,7 @@ footer {
 /* 15. Try Your Luck Game Card Styling */
 .game-card {
   background: #ffffff;
-  border: 2px solid #4f46e5; /* Indigo-600 */
+  border: 2px solid #06B6D4; /* Indigo-600 */
   border-radius: 1rem;
   padding: 2rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -317,14 +317,14 @@ footer {
 }
 .game-card:hover {
   transform: scale(1.05);
-  box-shadow: 0 8px 24px rgba(79, 70, 229, 0.6); /* Glow Indigo */
+  box-shadow: 0 8px 24px #06B6D4; /* Glow Indigo */
 }
 
 /* Game title inside card */
 .game-title {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #4f46e5; /* Indigo */
+  color: #1E3A8A; /* Indigo */
   margin-bottom: 1rem;
 }
 
@@ -350,63 +350,68 @@ footer {
   50% { opacity: 0.6; }
 }
 .vault-container {
-  position: relative;
-  background: radial-gradient(circle at center, #222 0%, #111 100%);
-  border: 6px solid #444;
+  background: radial-gradient(circle at center, #1e1e1e, #060320);
   border-radius: 50%;
-  width: 300px;
-  height: 300px;
-  box-shadow: inset 0 0 40px #000, 0 0 15px #4f46e5;
+  width: 260px;
+  height: 260px;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  transition: transform 0.2s ease;
+  align-items: center;
+  box-shadow: 0 0 25px #6a0dad;
+  margin: 0 auto;
   padding: 1rem;
+  transition: transform 0.3s ease;
 }
 
 .vault-dial {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  animation: pulse 2s infinite;
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.vault-input {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
 .vault-input input {
-  background: #111;
-  border: 2px solid #666;
-  color: #fff;
-  padding: 0.5rem;
-  font-size: 1rem;
-  text-align: center;
+  padding: 0.4rem 0.8rem;
   border-radius: 6px;
-  width: 180px;
-  margin-bottom: 0.5rem;
+  border: 1px solid #888;
+  width: 60%;
+  font-size: 0.9rem;
+  background-color: #f9f9f9;
+  color: #a958e2
 }
 
 .vault-input button {
-  background: #16a34a;
-  border: none;
+  background-color: #6a0dad; /* Purple button */
   color: white;
-  padding: 0.5rem 1rem;
+  border: none;
   border-radius: 6px;
+  padding: 0.4rem 0.9rem;
   font-weight: bold;
-  cursor: pointer;
-  transition: background 0.3s ease;
+  transition: background-color 0.3s ease;
 }
+
 .vault-input button:hover {
-  background: #22c55e;
+  background-color: #4b0082;
 }
+
 
 .animate-shake {
   animation: shake 0.5s;
 }
 
+/* vault-container animation */
 @keyframes shake {
-  0% { transform: translateX(0px); }
-  25% { transform: translateX(-6px); }
-  50% { transform: translateX(6px); }
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  50% { transform: translateX(4px); }
   75% { transform: translateX(-4px); }
-  100% { transform: translateX(0px); }
+  100% { transform: translateX(0); }
 }
 
 

@@ -26,12 +26,10 @@ export default function MysteryWheelPage() {
     setResult(null)
     setSpinning(true)
 
-    // Spin a random big angle
-    const randomAngle = 360 * 5 + Math.floor(Math.random() * 360) // 5 full spins + random
+    const randomAngle = 360 * 5 + Math.floor(Math.random() * 360)
 
     setAngle((prev) => prev + randomAngle)
 
-    // Calculate prize after spin finishes
     setTimeout(() => {
       const slice = 360 / prizes.length
       const finalAngle = (randomAngle % 360)
@@ -41,54 +39,65 @@ export default function MysteryWheelPage() {
       localStorage.setItem('mysteryWheelPlayed', new Date().toDateString())
       setPlayed(true)
       setSpinning(false)
-    }, 5000) // 5s spin
+    }, 5000)
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-yellow-100 via-pink-100 to-purple-100 p-6">
-      <h1 className="text-4xl font-bold text-purple-800 mb-8">
-        🎡 Mystery Wheel
-      </h1>
+    <main className="page">
+      <div className="competition-card max-w-xl w-full">
+        {/* Top Blue Banner */}
+        <div className="competition-top-banner">🎡 Mystery Wheel</div>
 
-      {result?.includes('won') && <Confetti width={width} height={height} />}
+        {/* Confetti */}
+        {result?.includes('won') && <Confetti width={width} height={height} />}
 
-      {/* Wheel */}
-      <div className="wheel-container mb-8">
-        <div
-          className="wheel"
-          style={{
-            transform: `rotate(${angle}deg)`,
-            transition: spinning ? 'transform 5s cubic-bezier(0.33, 1, 0.68, 1)' : undefined,
-          }}
-        >
-          {prizes.map((prize, idx) => (
-            <div key={idx} className="wheel-slice" style={{ transform: `rotate(${idx * (360 / prizes.length)}deg)` }}>
-              {prize}
-            </div>
-          ))}
+        {/* Wheel */}
+        <div className="relative w-64 h-64 mx-auto mt-8 mb-6">
+          <div
+            className="absolute w-full h-full rounded-full border-4 border-blue-500 flex items-center justify-center transition-transform"
+            style={{
+              transform: `rotate(${angle}deg)`,
+              transition: spinning ? 'transform 5s cubic-bezier(0.33, 1, 0.68, 1)' : undefined,
+            }}
+          >
+            {prizes.map((prize, idx) => (
+              <div
+                key={idx}
+                className="absolute text-xs font-bold text-purple-800"
+                style={{
+                  transform: `rotate(${idx * (360 / prizes.length)}deg) translateY(-100px)`,
+                }}
+              >
+                {prize}
+              </div>
+            ))}
+          </div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-[160%] text-2xl">
+            🔺
+          </div>
         </div>
-        <div className="wheel-pointer">▲</div>
+
+        {/* Spin Button */}
+        <div className="text-center">
+          <button
+            onClick={spin}
+            disabled={spinning || played}
+            className={`comp-button ${
+              spinning || played ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+          >
+            {spinning ? 'Spinning...' : played ? 'Already Played Today' : 'SPIN!'}
+          </button>
+        </div>
+
+        {/* Result */}
+        {result && (
+          <div className="text-center mt-6">
+            <p className="text-lg font-bold text-purple-700">{result}</p>
+          </div>
+        )}
       </div>
-
-      {/* Spin Button */}
-      <button
-        onClick={spin}
-        disabled={spinning || played}
-        className={`px-8 py-4 rounded-full font-bold text-lg transition ${
-          spinning || played
-            ? 'bg-gray-400 cursor-not-allowed'
-            : 'bg-blue-500 hover:bg-blue-600 text-white'
-        }`}
-      >
-        {spinning ? 'Spinning...' : played ? 'Already Played Today' : 'SPIN!'}
-      </button>
-
-      {/* Result */}
-      {result && (
-        <p className="mt-6 text-2xl font-bold text-purple-700 text-center">
-          {result}
-        </p>
-      )}
     </main>
   )
 }
+

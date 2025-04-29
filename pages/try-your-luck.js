@@ -1,53 +1,107 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import { getStreak } from '@/lib/streak'
 
-export default function TryYourLuck() {
+export default function TryYourLuckPage() {
+  const [streak, setStreak] = useState(0)
+  const [playedMap, setPlayedMap] = useState({})
+
   const games = [
     {
-      title: '🎯 3.14 Seconds',
-      description: 'Tap exactly at 3.14 seconds!',
+      title: '3.14 Seconds',
       href: '/try-your-luck/three-fourteen',
+      icon: '🕒', // updated icon
+      desc: 'Stop the timer at exactly 3.14s to win!',
+      storageKey: 'threeFourteenPlayed',
     },
     {
-      title: '🎰 Pi Slot Machine',
-      description: 'Match 3 Pi symbols to win!',
+      title: 'Pi Slot Machine',
       href: '/try-your-luck/slot-machine',
+      icon: '🎰',
+      desc: 'Match 3 Pi symbols to win!',
+      storageKey: 'slotMachinePlayed',
     },
     {
-      title: '🔒 Hack the Vault',
-      description: 'Solve the daily riddle!',
+      title: 'Hack the Vault',
       href: '/try-your-luck/hack-the-vault',
+      icon: '🗝️', // better vault icon
+      desc: 'Guess today’s vault code!',
+      storageKey: 'hackVaultPlayed',
     },
     {
-      title: '🎁 Mystery Wheel',
-      description: 'Spin the wheel for a bonus!',
+      title: 'Mystery Wheel',
       href: '/try-your-luck/mystery-wheel',
+      icon: '🎡',
+      desc: 'Spin the wheel for a surprise!',
+      storageKey: 'mysteryWheelPlayed',
     },
   ]
 
-  return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-200 to-pink-200 animate-gradient-x p-6">
-      {/* Page Header */}
-      <div className="text-center mb-10">
-        <h1 className="text-4xl font-extrabold text-blue-700 animate-pulse">🎲 Try Your Luck!</h1>
-        <p className="text-lg mt-2 text-gray-700">Play games daily and win Pi prizes!</p>
-      </div>
+  useEffect(() => {
+    setStreak(getStreak())
 
-      {/* Games Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-        {games.map((game) => (
-          <Link
-            href={game.href}
-            key={game.title}
-            className="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center justify-center space-y-4 transform transition hover:scale-105 hover:shadow-2xl border-2 border-blue-300"
-          >
-            <h2 className="text-2xl font-bold text-blue-800">{game.title}</h2>
-            <p className="text-gray-600 text-center">{game.description}</p>
+    const map = {}
+    games.forEach((game) => {
+      const played = localStorage.getItem(game.storageKey)
+      map[game.storageKey] = !!played
+    })
+    setPlayedMap(map)
+  }, [])
+
+  return (
+    <main className="min-h-screen bg-gradient-to-br from-yellow-100 via-pink-100 to-purple-100 p-4">
+      <div className="max-w-xl mx-auto competition-card">
+        <div className="competition-top-banner text-white text-xl font-bold">
+          🎯 Try Your Luck
+        </div>
+
+        <div className="text-center mb-4 text-lg">
+          🔥 Daily Streak: {streak} days
+        </div>
+
+        <div className="space-y-6 px-4">
+          {games.map((game) => {
+            const played = playedMap[game.storageKey]
+
+            return (
+              <div
+                key={game.href}
+                className={`bg-white border border-blue-200 shadow rounded-xl p-4 text-center transition-all ${
+                  played ? 'opacity-50 pointer-events-none' : ''
+                }`}
+              >
+                <h2 className="text-lg font-bold text-blue-700 flex justify-center items-center gap-2">
+  <span className="text-2xl">{game.icon}</span> {game.title}
+</h2>
+
+                <p className="text-sm text-gray-700 mb-3">{game.desc}</p>
+
+                {!played ? (
+                  <Link href={game.href}>
+                  <button className="comp-button">
+  Play Now
+</button>
+
+                  </Link>
+                ) : (
+                  <p className="text-gray-500 text-sm">Already played today</p>
+                )}
+              </div>
+            )
+          })}
+        </div>
+        <br/>
+
+        <div className="text-center mt-6">
+          <Link href="/" legacyBehavior>
+            <a className="inline-block text-sm text-blue-600 underline hover:text-blue-800">
+              ← Back to Home
+            </a>
           </Link>
-        ))}
+        </div>
       </div>
     </main>
   )
 }
-
