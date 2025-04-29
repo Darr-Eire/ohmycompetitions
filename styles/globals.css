@@ -220,10 +220,10 @@ footer {
 }
 
 .competition-card {
-  border: 4px solid #3b82f6;           /* stronger blue border */
+  border: 4px solid #602ba6;           /* stronger blue border */
   border-radius: 12px;
   background: #f0f8ff;                 /* very light blue background */
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); /* blue-tinted shadow */
+  box-shadow: 0 4px 12px  #602ba6;
   width: 280px;                       /* a touch wider */
   padding: 1 rem;
   text-align: center;
@@ -232,11 +232,11 @@ footer {
 }
 .competition-card:hover {
   transform: scale(1.03);
-  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5);
+  box-shadow: 0 6px 16px  #602ba6;
 }
 
 .competition-top-banner {
-  background: linear-gradient(to right, #60a5fa, #3b82f6);
+  background: linear-gradient(to right,  #602ba6 #602ba6);
   color: #fff;
   padding: 0.75rem;
   margin: -1.5rem -1.5rem 1rem;
