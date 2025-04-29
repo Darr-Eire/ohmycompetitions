@@ -264,23 +264,22 @@ footer {
   display: flex;
   overflow-x: auto;
   gap: 1rem;
-  padding: 1rem;                /* add equal padding on both sides */
+  padding: 1rem;
+  
+  /* smooth scrolling for any programmatic moves */
+  scroll-behavior: smooth;
+
+  /* force each child to snap into center */
   scroll-snap-type: x mandatory;
-  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
 }
 .daily-carousel::-webkit-scrollbar {
   display: none;
 }
 
-/* ensure each card snaps and doesn’t shrink */
+/* snap each card exactly in the middle */
 .daily-carousel > .competition-card {
   flex: 0 0 auto;
-  scroll-snap-align: center;    /* center each card when you swipe to it */
-}
-
-/* ——— Optional “small” variant for tighter cards ——— */
-.competition-card--small {
-  flex: 0 0 240px;   /* fixed width so you see partial next card */
-  padding: 0.75rem;  /* slightly less padding than full card */
-  margin-right: 1rem;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
 }
