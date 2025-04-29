@@ -22,7 +22,7 @@ header {
   align-items: center;
   padding: 0.40rem 1rem;   /* less vertical padding */
   font-size: 1rem;
-  background-color: #1E3A8A;  /* Next.js blue */
+  background-color: #06B6D4;   /* Next.js blue */
   color: #ffffff;
   position: relative; /* Make dropdown absolute inside */
   z-index: 1000;
@@ -83,13 +83,13 @@ footer {
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
   text-align: center;
-  background-color: #1E3A8A; 
+  background-color: #06B6D4; 
   color: #ffffff;
 }
 
 /* 5. Competition card (simple old version) */
 .competition-card {
-  border: 2px solid #1E3A8A; 
+  border: 2px solid #06B6D4;
   border-radius: 8px;
   padding: 1rem;
   max-width: 320px;
@@ -103,7 +103,7 @@ footer {
 .comp-title {
   margin: 0 0 0.5rem;
   font-size: 1.25rem;
-  color: #1E3A8A; 
+  color: #06B6D4;
 }
 
 /* 7. Prize text */
@@ -180,7 +180,7 @@ footer {
   position: absolute;
   top: 2.7rem;
   left: 0rem;
-  background-color: #1E3A8A; 
+  background-color: #06B6D4;
   border: 1px solid #ffffff;
   border-radius: 4px;
   padding: 0.5rem;
