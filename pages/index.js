@@ -37,13 +37,14 @@ export default function AllCompetitions() {
   }
 
   return (
-    <main className="pt-20 pb-12 px-4 space-y-8 bg-white min-h-screen">
+    <main className="pt-0 pb-12 px-4 space-y-8 bg-white min-h-screen">
       {/* Header */}
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-amber-700 mb-1">
-          🎯 Daily Competitions
-        </h2>
-      </div>
+      <div className="flex justify-center">
+  <h2 className="text-2xl font-bold text-amber-700 mb-0 text-center">
+    🎯 Daily Competitions
+  </h2>
+</div>
+
 
       {/* Carousel container */}
       <div className="relative">

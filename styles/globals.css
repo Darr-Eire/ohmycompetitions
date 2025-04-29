@@ -20,9 +20,9 @@ html, body, #__next {
 header {
   display: flex;
   align-items: center;
-  padding: 0.5rem 1rem;
+  padding: 0.40rem 1rem;   /* less vertical padding */
   font-size: 1rem;
-  background-color: #0070f3; /* Next.js blue */
+  background-color: #0609b5;  /* Next.js blue */
   color: #ffffff;
   position: relative; /* Make dropdown absolute inside */
   z-index: 1000;
@@ -57,7 +57,7 @@ header {
 .login-button,
 .logout-button {
   background: transparent;
-  border: 1px solid rgba(161, 21, 108, 0.39);
+  border: 1px solid rgba(250, 247, 249, 0.39);
   color: #ffffff;
   padding: 0.25rem 0.75rem;
   font-size: 0.9rem;
@@ -83,13 +83,13 @@ footer {
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
   text-align: center;
-  background-color: #0070f3;
+  background-color: #0609b5; 
   color: #ffffff;
 }
 
 /* 5. Competition card (simple old version) */
 .competition-card {
-  border: 2px solid #0070f3;
+  border: 2px solid #0609b5; 
   border-radius: 8px;
   padding: 1rem;
   max-width: 320px;
@@ -103,7 +103,7 @@ footer {
 .comp-title {
   margin: 0 0 0.5rem;
   font-size: 1.25rem;
-  color: #0070f3;
+  color: #0609b5; 
 }
 
 /* 7. Prize text */
@@ -172,7 +172,7 @@ footer {
   transition: background-color 0.2s ease;
 }
 .bg-pi-purple:hover {
-  background-color: #732d91;
+  background-color: #301698;
 }
 
 /* 12. Dropdown Menu (fixed nice mobile position) */
@@ -180,7 +180,7 @@ footer {
   position: absolute;
   top: 2.7rem;
   left: 0rem;
-  background-color: #0070f3;
+  background-color: #0609b5; 
   border: 1px solid #ffffff;
   border-radius: 4px;
   padding: 0.5rem;
@@ -212,6 +212,7 @@ footer {
 .page {
   display: flex;
   flex-wrap: wrap;
+  margin-top: -2rem;
   justify-content: center;
   align-items: flex-start;
   gap: 1rem;
@@ -219,25 +220,28 @@ footer {
   padding: 4rem 1rem 1rem; /* ↑ increased from 0.5rem to 4rem */
 }
 
+/* Competition Card */
 .competition-card {
-  border: 4px solid #602ba6;           /* stronger blue border */
+  border: 4px solid #0609b5;           /* stronger purple border */
   border-radius: 12px;
-  background: #f0f8ff;                 /* very light blue background */
-  box-shadow: 0 4px 12px  #602ba6;
-  width: 280px;                       /* a touch wider */
-  padding: 1 rem;
+  background: #f0f8ff;                 /* very light purple background */
+  box-shadow: 0 4px 12px #0609b5;       /* purple-tinted shadow */
+  width: 280px;                        /* card width */
+  padding: 1rem;                       /* correct rem syntax */
   text-align: center;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  margin: 1rem; /* gaps handled by .page */
-}
-.competition-card:hover {
-  transform: scale(1.03);
-  box-shadow: 0 6px 16px  #602ba6;
+  margin: 1rem;                        /* spacing around card */
 }
 
+.competition-card:hover {
+  transform: scale(1.03);
+  box-shadow: 0 6px 16px #0609b5; 
+}
+
+/* Top banner */
 .competition-top-banner {
-  background: linear-gradient(to right,  #602ba6 #602ba6);
-  color: #fff;
+  background:#0609b5; 
+  color: #ffffff;
   padding: 0.75rem;
   margin: -1.5rem -1.5rem 1rem;
   border-top-left-radius: 12px;
@@ -246,25 +250,30 @@ footer {
   font-weight: bold;
 }
 
+/* Image placeholder */
 .competition-image-placeholder {
   background: url('/pi.jpeg') center/cover no-repeat;
   height: 180px;   /* taller image area */
   margin-bottom: 1rem;
   border-radius: 8px;
+  overflow: hidden; /* ensure image fits cleanly */
 }
 
+/* Info section */
 .competition-info {
   text-align: left;
   margin-bottom: 1.5rem;
   font-size: 1rem;
   color: #1e293b; /* darker text */
 }
+
 /* ——— Daily competitions horizontal scroll strip ——— */
 .daily-carousel {
   display: flex;
   overflow-x: auto;
   gap: 1rem;
-  padding: 1rem;
+  padding-top: 0;
+  padding-bottom: 1rem;
   
   /* smooth scrolling for any programmatic moves */
   scroll-behavior: smooth;
@@ -283,3 +292,4 @@ footer {
   scroll-snap-align: center;
   scroll-snap-stop: always;
 }
+
