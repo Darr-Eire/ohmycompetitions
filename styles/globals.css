@@ -270,15 +270,14 @@ footer {
 /* ——— Daily competitions horizontal scroll strip ——— */
 .daily-carousel {
   display: flex;
-  overflow:-x-auto;
-  gap: 2rem; /* <- increased */
+  overflow-x: auto;
+  gap: 2rem;
   padding: 0 1.5rem 1rem;
   scroll-behavior: smooth;
   scroll-snap-type: x mandatory;
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
 }
-
 .daily-carousel::-webkit-scrollbar {
   display: none;
 }
