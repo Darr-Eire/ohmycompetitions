@@ -11,7 +11,7 @@ export default async function handler(req, res) {
 
   try {
     const client = await clientPromise
-    const db = client.db()
+    const db = client.db('ohmycompetitions') // explicitly select your DB
 
     if (req.method === 'DELETE') {
       const result = await db
@@ -29,7 +29,7 @@ export default async function handler(req, res) {
       .status(405)
       .json({ error: `Method ${req.method} Not Allowed` })
   } catch (err) {
-    console.error(`DELETE /api/competitions/${id} error:`, err)
+    console.error(`❌ DELETE /api/competitions/${id} error:`, err)
     return res.status(500).json({ error: 'Internal Server Error' })
   }
 }

@@ -16,11 +16,22 @@ export default async function handler(req, res) {
     const client = await clientPromise
     const db = client.db('ohmycompetitions')
     const now = new Date()
-    const doc = { title, prize, entryFee, slug, createdAt: now, ticketsSold: 0 }
-    const result = await db.collection('competitions').insertOne(doc)
+    const doc = {
+      title,
+      prize,
+      entryFee: entryFee != null ? entryFee : null,
+      slug,
+      createdAt: now,
+      ticketsSold: 0
+    }
+    const result = await db
+      .collection('competitions')
+      .insertOne(doc)
+
+    // Return the new document
     return res.status(201).json({ _id: result.insertedId, ...doc })
   } catch (err) {
-    console.error(err)
+    console.error('❌ POST /api/competitions/create error:', err)
     return res.status(500).json({ error: err.message })
   }
 }
