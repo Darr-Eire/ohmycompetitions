@@ -7,36 +7,47 @@ export const authOptions = {
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
-        username: { label: "Username", type: "text" },
-        password: { label: "Password", type: "password" }
+        username: { label: 'Username', type: 'text' },
+        password: { label: 'Password', type: 'password' }
       },
       async authorize(credentials) {
-        // Replace this with your real user lookup logic!
+        // TODO: Replace with real lookup (e.g. DB query)
         if (credentials.username === 'admin' && credentials.password === 'supersecret') {
           return { id: 1, name: 'Admin User', isAdmin: true }
         }
-        // Or for normal users:
-        // return { id: 2, name: 'Regular', isAdmin: false }
+        if (credentials.username === 'user' && credentials.password === 'password') {
+          return { id: 2, name: 'Regular User', isAdmin: false }
+        }
+        // Invalid credentials
         return null
       }
     })
   ],
+
+  // Use JWT-based sessions:
+  session: { strategy: 'jwt' },
+
   callbacks: {
-    async session({ session, token }) {
-      // Forward the isAdmin flag from token to session
-      session.user.isAdmin = token.isAdmin
-      return session
-    },
+    // Attach isAdmin to the JWT on initial sign-in:
     async jwt({ token, user }) {
-      // After initial sign in, attach isAdmin from user object to token
       if (user) {
         token.isAdmin = user.isAdmin
       }
       return token
+    },
+    // Expose isAdmin on the client-side session object:
+    async session({ session, token }) {
+      session.user.isAdmin = token.isAdmin
+      return session
     }
   },
-  session: { strategy: 'jwt' },
+
+  // Secret for signing tokens & cookies
   secret: process.env.NEXTAUTH_SECRET,
+
+  pages: {
+    signIn: '/auth/signin',  // optional custom sign-in page
+  }
 }
 
 export default NextAuth(authOptions)
