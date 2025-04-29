@@ -38,23 +38,18 @@ export default function AllCompetitions() {
 
   return (
 <main className="pt-0 pb-12 px-4 space-y-8 bg-white min-h-screen">
-      {/* Daily Competitions Header */}
-      <div className="text-center">
-      <h2 className="text-2xl font-bold text-amber-700 mb-0">
-          🎯 Daily Competitions
-        </h2>
-      </div>
+  {/* Header */}
+  <div>
+  <h2 className="text-2xl font-bold text-blue-600 text-center mb-4 mx-auto">
+    🎯 All Competitions
+  </h2>
+</div>
+
+
 
       {/* Carousel with left/right buttons */}
       <div className="relative">
-        <button
-          onClick={() => scroll(-240)}
-          className="absolute left-0 top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow"
-          aria-label="Scroll left"
-        >
-          ‹
-        </button>
-
+    
         {/* 3) Attach the hook-based ref here */}
         <div ref={carouselRef} className="daily-carousel">
           {dailyComps.map((c) => (
@@ -68,14 +63,6 @@ export default function AllCompetitions() {
             />
           ))}
         </div>
-
-        <button
-          onClick={() => scroll(240)}
-          className="absolute right-0 top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow"
-          aria-label="Scroll right"
-        >
-          ›
-        </button>
       </div>
     </main>
   )

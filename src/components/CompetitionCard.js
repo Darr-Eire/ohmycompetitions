@@ -20,7 +20,7 @@ export default function CompetitionCard({
         <Image
           src="/pi.jpeg"
           alt={`${title} banner`}
-          width={280}
+          width={300}
           height={181}
           className="object-cover rounded"
         />

@@ -15,10 +15,6 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
       >
         Menu
       </button>
-      <h1 className="site-title">
-        <Link href="/">Oh My Competitions</Link>
-      </h1>
-
       <div className="nav-spacer" />
 
       {isLoggedIn ? (

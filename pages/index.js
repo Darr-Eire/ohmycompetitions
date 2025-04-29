@@ -38,24 +38,13 @@ export default function AllCompetitions() {
 
   return (
     <main className="pt-0 pb-12 px-4 space-y-8 bg-white min-h-screen">
-      {/* Header */}
-      <div className="flex justify-center">
-  <h2 className="text-2xl font-bold text-amber-700 mb-0 text-center">
-    🎯 Daily Competitions
-  </h2>
-</div>
-
+    {/* Header */}
+   
+  
 
       {/* Carousel container */}
       <div className="relative">
-        <button
-          onClick={() => scroll(-240)}
-          className="absolute left-0 top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow"
-          aria-label="Scroll left"
-        >
-          ‹
-        </button>
-
+    
         {/* 3) Attach the ref here */}
         <div ref={carouselRef} className="daily-carousel">
           {dailyComps.map((c) => (
@@ -69,14 +58,6 @@ export default function AllCompetitions() {
             />
           ))}
         </div>
-
-        <button
-          onClick={() => scroll(240)}
-          className="absolute right-0 top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow"
-          aria-label="Scroll right"
-        >
-          ›
-        </button>
       </div>
     </main>
   )
