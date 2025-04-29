@@ -14,13 +14,16 @@ export default function AllCompetitions() {
   return (
     <main className="page">
       {competitions.map((c) => (
-        <CompetitionCard
-          key={c.slug}
-          title={c.title}
-          prize={c.prize}
-          fee={c.fee}
-          href={`/competitions/${c.slug}`}
-        />
+      <CompetitionCard
+      key={comp._id}
+      title={comp.title}
+      prize={comp.prize}
+      // Use entryFee if present, otherwise show 'Free'
+      fee={comp.entryFee != null ? `${comp.entryFee} π` : 'Free'}
+      href={`/competitions/${comp.slug}`}
+      small
+    />
+    
       ))}
     </main>
   )
