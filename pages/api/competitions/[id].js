@@ -1,6 +1,6 @@
 // pages/api/competitions/[id].js
 import { ObjectId } from 'mongodb';
-import clientPromise from '../../../src/lib/mongodb';
+import clientPromise from '../../../lib/mongodb';
 
 export default async function handler(req, res) {
   const { id } = req.query;
