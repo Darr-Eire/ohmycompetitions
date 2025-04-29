@@ -1,5 +1,7 @@
 // lib/mongodb.js
-import { MongoClient } from 'mongodb';
+// pages/api/competitions/index.js
+import clientPromise from '../../../lib/mongodb';
+
 
 const uri = process.env.MONGODB_URI;
 const options = {};
