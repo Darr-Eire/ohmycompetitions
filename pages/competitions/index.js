@@ -1,73 +1,29 @@
-// pages/competitions/index.js
-'use client'
+// pages/api/competitions/index.js
+import clientPromise from '../../../src/lib/mongodb';
 
-import { useRef, useEffect, useState } from 'react'
-import CompetitionCard from '@/components/CompetitionCard'
+export default async function handler(req, res) {
+  console.log('🟢 Invoked GET /api/competitions');
+  try {
+    const client = await clientPromise;
+    console.log('🟢 MongoDB client connected');
 
-export default function AllCompetitions() {
-  const carouselRef = useRef(null)
-  const [competitions, setCompetitions] = useState([])
+    // Explicitly use the “ohmycompetitions” database:
+    const db = client.db('ohmycompetitions');
 
-  useEffect(() => {
-    async function fetchCompetitions() {
-      try {
-        const res = await fetch('/api/competitions')
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        const data = await res.json()
-        setCompetitions(data)
-      } catch (error) {
-        console.error('Failed to load competitions:', error)
-      }
+    if (req.method === 'GET') {
+      const comps = await db
+        .collection('competitions')
+        .find({})
+        .sort({ createdAt: -1 })
+        .toArray();
+      console.log(`🟢 Retrieved ${comps.length} competitions`);
+      return res.status(200).json(comps);
     }
-    fetchCompetitions()
-  }, [])
 
-  const scroll = (offset) => {
-    carouselRef.current?.scrollBy({ left: offset, behavior: 'smooth' })
+    res.setHeader('Allow', ['GET']);
+    return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
+  } catch (err) {
+    console.error('❌ GET /api/competitions error:', err);
+    return res.status(500).json({ error: err.message });
   }
-
-  return (
-    <main className="pt-0 pb-12 px-4 space-y-8 bg-white min-h-screen">
-      <h2 className="text-2xl font-bold text-blue-600 text-center mb-4">
-        🎯 All Competitions
-      </h2>
-      <div className="relative">
-        <button
-          onClick={() => scroll(-300)}
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-white rounded-full shadow"
-          aria-label="Scroll left"
-        >
-          ‹
-        </button>
-        <div
-          ref={carouselRef}
-          className="flex space-x-4 overflow-x-auto scrollbar-hide scroll-smooth"
-        >
-          {competitions.length > 0 ? (
-            competitions.map((comp) => (
-              <CompetitionCard
-                key={comp._id}
-                title={comp.title}
-                prize={comp.prize}
-                fee={`${comp.fee} π`}
-                href={`/competitions/${comp.slug}`}
-                small
-              />
-            ))
-          ) : (
-            <p className="text-center text-gray-500 w-full">
-              Loading competitions...
-            </p>
-          )}
-        </div>
-        <button
-          onClick={() => scroll(300)}
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-white rounded-full shadow"
-          aria-label="Scroll right"
-        >
-          ›
-        </button>
-      </div>
-    </main>
-  )
 }
