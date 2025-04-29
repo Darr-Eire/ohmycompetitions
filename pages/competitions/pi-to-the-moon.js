@@ -7,7 +7,7 @@ export default function PiToTheMoon() {
         title="Pi To The Moon"
         href="/competitions/pi-to-the-moon"
         prize="500 PI Prize"
-        fee="0.250 π"
+        fee="2 π"
       />
     </main>
   )

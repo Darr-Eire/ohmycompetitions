@@ -7,7 +7,7 @@ export default function HackTheVault() {
         title="Hack The Vault"
         href="/competitions/hack-the-vault"
         prize="750 PI Bounty"
-        fee="0.375 π"
+        fee="1 π"
       />
     </main>
   )

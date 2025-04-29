@@ -224,8 +224,8 @@ footer {
   border-radius: 12px;
   background: #f0f8ff;                 /* very light blue background */
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); /* blue-tinted shadow */
-  width: 280px;                        /* a touch wider */
-  padding: 1.5rem;
+  width: 280px;                       /* a touch wider */
+  padding: 1 rem;
   text-align: center;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   margin: 1rem; /* gaps handled by .page */
@@ -261,20 +261,21 @@ footer {
 }
 /* ——— Daily competitions horizontal scroll strip ——— */
 .daily-carousel {
-  display: flex;                /* lay cards out in a row */
-  overflow-x: auto;             /* enable horizontal scrolling */
-  gap: 1rem;                    /* space between cards */
-  padding-bottom: 1rem;         /* room for scroll “bounce” */
-  scroll-snap-type: x mandatory;/* snap to each card */
-  scrollbar-width: none;        /* hide Firefox scrollbar */
+  display: flex;
+  overflow-x: auto;
+  gap: 1rem;
+  padding: 1rem;                /* add equal padding on both sides */
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
 }
 .daily-carousel::-webkit-scrollbar {
-  display: none;                /* hide WebKit scrollbar */
+  display: none;
 }
+
 /* ensure each card snaps and doesn’t shrink */
 .daily-carousel > .competition-card {
   flex: 0 0 auto;
-  scroll-snap-align: start;
+  scroll-snap-align: center;    /* center each card when you swipe to it */
 }
 
 /* ——— Optional “small” variant for tighter cards ——— */
