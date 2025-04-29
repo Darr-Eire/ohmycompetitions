@@ -11,6 +11,7 @@ export default function AllCompetitions() {
     async function fetchCompetitions() {
       try {
         const res = await fetch('/api/competitions')
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const data = await res.json()
         setCompetitions(data)
       } catch (error) {
@@ -29,16 +30,28 @@ export default function AllCompetitions() {
   return (
     <main className="pt-0 pb-12 px-4 space-y-8 bg-white min-h-screen">
       {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold text-blue-600 text-center mb-4 mx-auto">
+      <div className="text-center">
+        <h2 className="text-2xl font-bold text-blue-600 mb-4">
           🎯 All Competitions
         </h2>
       </div>
 
       {/* Carousel */}
       <div className="relative">
+        {/* Left scroll button */}
+        <button
+          onClick={() => scroll(-300)}
+          className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 p-2 bg-white rounded-full shadow"
+          aria-label="Scroll left"
+        >
+          ‹
+        </button>
+
         {/* Carousel container */}
-        <div ref={carouselRef} className="daily-carousel">
+        <div
+          ref={carouselRef}
+          className="flex space-x-4 overflow-x-auto scrollbar-hide scroll-smooth"
+        >
           {competitions.length > 0 ? (
             competitions.map((comp) => (
               <CompetitionCard
@@ -51,11 +64,21 @@ export default function AllCompetitions() {
               />
             ))
           ) : (
-            <p className="text-center text-gray-500">Loading competitions...</p>
+            <p className="text-center text-gray-500 w-full">
+              Loading competitions...
+            </p>
           )}
         </div>
+
+        {/* Right scroll button */}
+        <button
+          onClick={() => scroll(300)}
+          className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 p-2 bg-white rounded-full shadow"
+          aria-label="Scroll right"
+        >
+          ›
+        </button>
       </div>
     </main>
   )
 }
-
