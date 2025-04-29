@@ -1,7 +1,4 @@
-// pages/all-competitions.js
-// pages/all-competitions.js
 'use client'
-
 import { useRef, useEffect, useState } from 'react'
 import CompetitionCard from '@/components/CompetitionCard'
 
@@ -10,63 +7,46 @@ export default function AllCompetitions() {
   const [competitions, setCompetitions] = useState([])
 
   useEffect(() => {
-    async function fetchCompetitions() {
-      try {
-        const res = await fetch('/api/competitions')
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        const data = await res.json()
-        setCompetitions(data)
-      } catch (error) {
-        console.error('Failed to load competitions:', error)
-      }
-    }
-    fetchCompetitions()
+    fetchAll()
   }, [])
 
-  const scroll = (offset) => {
-    if (carouselRef.current) {
-      carouselRef.current.scrollBy({ left: offset, behavior: 'smooth' })
+  async function fetchAll() {
+    const res = await fetch('/api/competitions')
+    const data = await res.json()
+    setCompetitions(data)
+  }
+
+  async function handleDelete(id) {
+    if (!confirm('Delete this competition?')) return
+    const res = await fetch(`/api/competitions/${id}`, { method: 'DELETE' })
+    if (res.ok) {
+      // remove locally
+      setCompetitions(comps => comps.filter(c => c._id !== id))
+    } else {
+      alert('Delete failed')
     }
   }
 
   return (
-    <main className="pt-0 pb-12 px-4 space-y-8 bg-white min-h-screen">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-blue-600 mb-4">
-          🎯 All Competitions
-        </h2>
-      </div>
-
-      <div className="relative">
-        <button
-          onClick={() => scroll(-300)}
-          className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 p-2 bg-white rounded-full shadow"
-          aria-label="Scroll left"
-        >
-          ‹
-        </button>
-
-        <div
-          ref={carouselRef}
-          className="flex space-x-4 overflow-x-auto scrollbar-hide scroll-smooth"
-        >
-          {competitions.length > 0 ? (
-            competitions.map((comp) => (
-              <CompetitionCard
-                key={comp._id}
-                title={comp.title}
-                prize={comp.prize}
-                fee={comp.entryFee != null ? `${comp.entryFee} π` : 'Free'}
-                href={`/competitions/${comp.slug}`}
-                small
-              />
-            ))
-          ) : (
-            <p className="text-center text-gray-500 w-full">
-              Loading competitions...
-            </p>
-          )}
-        </div>
+    <main>… 
+      <div ref={carouselRef} className="flex overflow-x-auto">
+        {competitions.map(comp => (
+          <CompetitionCard
+            key={comp._id}
+            title={comp.title}
+            prize={comp.prize}
+            fee={`${comp.entryFee ?? 0} π`}
+            href={`/competitions/${comp.slug}`}
+            small
+          >
+            <button
+              onClick={() => handleDelete(comp._id)}
+              className="mt-2 text-red-500 hover:underline text-sm"
+            >
+              Delete
+            </button>
+          </CompetitionCard>
+        ))}
       </div>
     </main>
   )
