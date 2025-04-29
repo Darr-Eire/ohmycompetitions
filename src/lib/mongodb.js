@@ -1,17 +1,25 @@
-// scripts/test-mongo.js
-import clientPromise from './src/lib/mongodb.js';
+// src/lib/mongodb.js
+import { MongoClient } from 'mongodb';
 
-async function test() {
-  try {
-    const client = await clientPromise;
-    const db = client.db();
-    const collections = await db.listCollections().toArray();
-    console.log('Collections:', collections.map((c) => c.name));
-    process.exit(0);
-  } catch (err) {
-    console.error('Connection test failed:', err);
-    process.exit(1);
-  }
+const uri = process.env.MONGODB_URI;
+const options = {};
+
+if (!uri) {
+  throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
 }
 
-test();
+let client;
+let clientPromise;
+
+if (process.env.NODE_ENV === 'development') {
+  if (!global._mongoClientPromise) {
+    client = new MongoClient(uri, options);
+    global._mongoClientPromise = client.connect();
+  }
+  clientPromise = global._mongoClientPromise;
+} else {
+  client = new MongoClient(uri, options);
+  clientPromise = client.connect();
+}
+
+export default clientPromise;
