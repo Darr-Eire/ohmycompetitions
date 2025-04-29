@@ -67,14 +67,6 @@ export default function AllCompetitions() {
             </p>
           )}
         </div>
-
-        <button
-          onClick={() => scroll(300)}
-          className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 p-2 bg-white rounded-full shadow"
-          aria-label="Scroll right"
-        >
-          ›
-        </button>
       </div>
     </main>
   )
