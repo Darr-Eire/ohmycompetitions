@@ -6,10 +6,9 @@ export async function getStaticPaths() {
   const client = await clientPromise
   const db = client.db('ohmycompetitions')
   const all = await db
-  .collection('competitions')
-  .find({}, { projection: { slug: 1, _id: 0 } })
-  .toArray()
-
+    .collection('competitions')
+    .find({}, { projection: { slug: 1 } })
+    .toArray()
 
   const paths = all.map((c) => ({
     params: { slug: c.slug }
@@ -29,13 +28,12 @@ export async function getStaticProps({ params }) {
     return { notFound: true }
   }
 
-  // Convert Mongo ObjectID and Date to strings
   competition._id = competition._id.toString()
   competition.createdAt = competition.createdAt.toISOString()
 
   return {
     props: { competition },
-    revalidate: 60, // optional: ISR, regenerate at most every minute
+    revalidate: 60,
   }
 }
 
@@ -51,7 +49,11 @@ export default function CompetitionDetail({ competition }) {
       <CompetitionCard
         title={competition.title}
         prize={competition.prize}
-        fee={competition.entryFee != null ? `${competition.entryFee} π` : 'Free'}
+        fee={
+          competition.entryFee != null
+            ? `${competition.entryFee} π`
+            : 'Free'
+        }
         href="#"
       >
         <button className="mt-4 btn btn-primary">
