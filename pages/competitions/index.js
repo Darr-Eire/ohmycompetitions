@@ -86,7 +86,7 @@ export default function AllCompetitions() {
   )
 }
 
-// Prevent static export; force SSR so useSession can work
+// This prevents static export and enables useSession() to work
 export async function getServerSideProps() {
   return { props: {} }
 }
