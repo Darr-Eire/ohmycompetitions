@@ -63,7 +63,7 @@ export default function CompetitionCard({
       <div className="competition-info">
         <p><strong>Prize:</strong> {prize}</p>
         <p><strong>Draw ends in:</strong> {timeLeft}</p>
-        <p>📊 <strong>Total Tickets:</strong> 5000</p>
+        <p>📊 <strong>Total Tickets:</strong>3500</p>
         <p>✅ <strong>Sold:</strong> 0</p>
         <p>🏅 <strong>Entry Fee:</strong> {fee}</p>
         <p className="text-xs italic text-gray-400">Rarity: {rarity}</p>

@@ -80,16 +80,6 @@ export default function HowWeGotStarted() {
             We couldn't have made it without you.  
             See you at the next draw! 🥧🚀
           </p>
-
-          {/* Back Home Button */}
-          <div className="text-center mt-8">
-            <Link href="/">
-              <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded">
-                ← Back to Home
-              </button>
-            </Link>
-          </div>
-
         </div>
       </div>
     </main>

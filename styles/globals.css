@@ -241,6 +241,17 @@ footer {
   text-align:   center;
   color:        var(--free-title-color);
 }
+/* pick a variable if you want to tweak color elsewhere */
+:root {
+  --freebie-banner-bg: #DC2626;
+}
+
+/* make this more specific and force it to win */
+.freebie-card > .competition-top-banner {
+  background-color: var(--freebie-banner-bg) !important;
+  color: white !important;
+}
+
 
 
 
@@ -411,7 +422,7 @@ footer {
 /* === Game Card === */
 .game-card {
   background: #ffffff;
-  border: 2px solid #06B6D4;
+  border: 2px solid#2428ec; 
   border-radius: 1rem;
   padding: 2rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -421,7 +432,7 @@ footer {
 }
 .game-card:hover {
   transform: scale(1.05);
-  box-shadow: 0 8px 24px #06B6D4;
+  box-shadow: 0 8px 24px#2428ec; 
 }
 .game-title {
   font-size: 2rem;
@@ -564,12 +575,12 @@ footer {
   height: 100%;
   border-radius: 50%;
   background: conic-gradient(
-    #f87171 0deg 60deg,
-    #facc15 60deg 120deg,
-    #4ade80 120deg 180deg,
-    #60a5fa 180deg 240deg,
-    #a78bfa 240deg 300deg,
-    #f472b6 300deg 360deg
+    #f40404 0deg 60deg,
+    #07f91f 60deg 120deg,
+    #161612 120deg 180deg,
+    #f1f2f3 180deg 240deg,
+    #7b0c58 240deg 300deg,
+    #e0a205 300deg 360deg
   );
   position: relative;
 }

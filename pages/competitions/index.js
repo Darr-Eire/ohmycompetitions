@@ -1,4 +1,3 @@
-// pages/competitions/index.js
 'use client'
 
 import { useSession, signIn, signOut } from 'next-auth/react'
@@ -83,7 +82,13 @@ export default function AllCompetitions() {
                 fee={comp.entryFee != null ? `${comp.entryFee} π` : 'Free'}
                 href={`/competitions/${comp.slug}`}
                 small
-                className="w-full"
+                className={`w-full ${isFreebie ? 'freebie-card' : ''}`}
+                // apply red background to the title banner for Pi Day Freebie
+                titleStyle={
+                  isFreebie
+                    ? { backgroundColor: '#DC2626' }
+                    : undefined
+                }
               >
                 {isFreebie && (
                   <div className="mt-2 p-2 bg-green-50 rounded text-center">
