@@ -10,14 +10,11 @@ export async function getStaticPaths() {
     .find({}, { projection: { slug: 1 } })
     .toArray()
 
-  const paths = all.map((c) => ({
-    params: { slug: c.slug },
+  const paths = all.map(c => ({
+    params: { slug: c.slug }
   }))
 
-  return {
-    paths,
-    fallback: false,
-  }
+  return { paths, fallback: false }
 }
 
 export async function getStaticProps({ params }) {
@@ -31,39 +28,36 @@ export async function getStaticProps({ params }) {
     return { notFound: true }
   }
 
-  // Convert ObjectId/date to strings
   competition._id = competition._id.toString()
   competition.createdAt = competition.createdAt.toISOString()
 
   return {
-    props: { competition },
+    props: { comp: competition },  // note: renaming prop here
     revalidate: 60,
   }
 }
 
-// **Be sure you destructure { competition }, not { comp }**
-export default function CompetitionDetail({ competition }) {
+export default function CompetitionDetail({ comp }) {
   return (
     <main className="max-w-2xl mx-auto p-6 space-y-4">
-      <h1 className="text-3xl font-bold">{competition.title}</h1>
-      <p className="text-gray-600">Prize: {competition.prize}</p>
+      <h1 className="text-3xl font-bold">{comp.title}</h1>
+      <p className="text-gray-600">Prize: {comp.prize}</p>
       <p className="text-gray-600">
-        Entry Fee: {competition.entryFee ?? 'Free'} π
+        Entry Fee: {comp.entryFee ?? 'Free'} π
       </p>
 
       <CompetitionCard
-        title={competition.title}
-        prize={competition.prize}
-        fee={
-          competition.entryFee != null
-            ? `${competition.entryFee} π`
-            : 'Free'
-        }
+        title={comp.title}
+        prize={comp.prize}
+        fee={comp.entryFee != null ? `${comp.entryFee} π` : 'Free'}
         href="#"
       >
-        <button className="mt-4 btn btn-primary">Enter Now</button>
+        <button className="mt-4 btn btn-primary">
+          Enter Now
+        </button>
       </CompetitionCard>
     </main>
   )
 }
+
 
