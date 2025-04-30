@@ -41,19 +41,14 @@ export async function getServerSideProps(context) {
     // 2) Load competition by slug
     const client = await clientPromise
     const db = client.db('ohmycompetitions')
-    const comp = await db
-      .collection('competitions')
-      .findOne({ slug })
+    const comp = await db.collection('competitions').findOne({ slug })
+    if (!comp) return { notFound: true }
 
-    if (!comp) {
-      return { notFound: true }
-    }
-
-    // 3) Create a Pi payment session (your wrapper must handle SDK keys)
+    // 3) Create a Pi payment session
     const paymentUrl = await createPiPaymentSession({
       competitionId: comp._id.toString(),
       amount: comp.entryFee || 0,
-      // any other Pi metadata…
+      memo: `Entry fee for ${comp.title}`,
     })
 
     return {

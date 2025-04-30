@@ -1,6 +1,5 @@
 // pages/competitions/[slug].js
 import clientPromise from '../../src/lib/mongodb'
-import { ObjectId } from 'mongodb'
 import CompetitionCard from '@/components/CompetitionCard'
 
 export async function getStaticPaths() {

@@ -14,11 +14,8 @@ export default async function handler(req, res) {
   if (!comp) return res.status(404).json({ error: 'Not found' })
 
   // 2. Create the Pi payment session
-  const paymentUrl = await createPiPaymentSession({
-    competitionId: id,
-    amount: comp.entryFee || 0,
-    memo: `Entry fee for ${comp.title}`,
-  })
+  const paymentUrl = await createPiPaymentSession({ competitionId: id, amount: comp.entryFee })
+  res.status(200).json({ paymentUrl })
 
   // 3. Return that URL
   res.status(200).json({ paymentUrl })

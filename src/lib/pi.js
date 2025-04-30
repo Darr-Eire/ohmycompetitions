@@ -1,5 +1,5 @@
-// lib/pi.js
-import PiSDK from '@pinetwork-js/sdk'  // or whatever your package is
+// src/lib/pi.js
+import PiSDK from '@pinetwork-js/sdk'
 
 // instantiate with your server secret key
 const pi = new PiSDK({
@@ -7,18 +7,27 @@ const pi = new PiSDK({
   secret: process.env.PI_SECRET_SEED,
 })
 
+/**
+ * Creates a Pi payment session for a competition entry.
+ *
+ * @param {object} options
+ * @param {string} options.competitionId  Mongo _id of the competition
+ * @param {number} options.amount         Entry fee, in π
+ * @param {string} [options.memo]         Optional memo/description
+ * @returns {Promise<string>}             A URL that your client can redirect to
+ */
 export async function createPiPaymentSession({ competitionId, amount, memo }) {
-  // 1. Build whatever metadata you need to tie this payment to the competition & user
+  // Build metadata to correlate payment with your DB record
   const metadata = { competitionId, timestamp: Date.now() }
 
-  // 2. Call Pi’s API to create an invoice or payment request
+  // Create the payment request via Pi’s SDK
   const session = await pi.createPayment({
-    amount,                // in π
-    memo,                  // e.g. “Entry fee for COMPETITION_123”
-    metadata,              // your custom object
+    amount,                // amount in π
+    memo: memo || `Entry fee for ${competitionId}`,
+    metadata,              // attach any info you need
     callbackUrl: `${process.env.NEXTAUTH_URL}/api/competitions/${competitionId}/verify-payment`
   })
 
-  // 3. Pi’s SDK might return { paymentUrl, qrCodeData, expiresAt, ... }
+  // Return the URL your frontend should redirect the user to
   return session.paymentUrl
 }
