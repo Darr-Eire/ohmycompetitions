@@ -40,15 +40,13 @@ export async function getStaticProps({ params }) {
 export default function CompetitionDetail({ competition }) {
   return (
     <main className="max-w-2xl mx-auto p-6 space-y-4">
-      <h1 className="text-3xl font-bold">{competition.title}</h1>
+      <h1>{competition.title}</h1>
       <p className="text-gray-600">Prize: {competition.prize}</p>
       <p className="text-gray-600">
         Entry Fee: {competition.entryFee ?? 'Free'} π
       </p>
 
-      <CompetitionCard
-        title={competition.title}
-        prize={competition.prize}
+      <CompetitionCard title={competition.title} prize={competition.prize}
         fee={
           competition.entryFee != null
             ? `${competition.entryFee} π`
