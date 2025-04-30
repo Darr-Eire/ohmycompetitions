@@ -10,29 +10,27 @@ export async function getStaticPaths() {
     .find({}, { projection: { slug: 1 } })
     .toArray()
 
-  const paths = all.map(c => ({
-    params: { slug: c.slug }
-  }))
-
+  const paths = all.map(c => ({ params: { slug: c.slug } }))
   return { paths, fallback: false }
 }
 
 export async function getStaticProps({ params }) {
   const client = await clientPromise
   const db = client.db('ohmycompetitions')
-  const competition = await db
+  const comp = await db
     .collection('competitions')
     .findOne({ slug: params.slug })
 
-  if (!competition) {
+  if (!comp) {
     return { notFound: true }
   }
 
-  competition._id = competition._id.toString()
-  competition.createdAt = competition.createdAt.toISOString()
+  // serialize
+  comp._id = comp._id.toString()
+  comp.createdAt = comp.createdAt.toISOString()
 
   return {
-    props: { comp: competition },  // note: renaming prop here
+    props: { comp },
     revalidate: 60,
   }
 }
@@ -59,5 +57,3 @@ export default function CompetitionDetail({ comp }) {
     </main>
   )
 }
-
-
