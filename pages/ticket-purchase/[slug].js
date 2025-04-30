@@ -1,7 +1,7 @@
 // pages/ticket-purchase/[slug].js
 import { getSession } from 'next-auth/react'
-import { fetchCompetitionBySlug } from '@/lib/db'          // your helper to load a comp
-import { createPiPaymentSession } from '@/lib/pi'          // your Pi SDK wrapper
+import clientPromise from '../../src/lib/mongodb'
+import { createPiPaymentSession } from '../../src/lib/pi'
 
 export default function PurchasePage({ comp, sessionUrl, error }) {
   if (error) {
@@ -13,7 +13,10 @@ export default function PurchasePage({ comp, sessionUrl, error }) {
       <h1 className="text-2xl font-bold">{comp.title}</h1>
       <p>Prize: {comp.prize}</p>
       <p>Entry fee: {comp.entryFee ?? 0} π</p>
-      <a href={sessionUrl} className="btn btn-primary w-full">
+      <a
+        href={sessionUrl}
+        className="btn btn-primary w-full text-center block"
+      >
         Enter Competition
       </a>
     </main>
@@ -23,7 +26,7 @@ export default function PurchasePage({ comp, sessionUrl, error }) {
 export async function getServerSideProps(context) {
   const { slug } = context.params
 
-  // Ensure user is logged in
+  // 1) Protect the page
   const session = await getSession(context)
   if (!session) {
     return {
@@ -35,22 +38,33 @@ export async function getServerSideProps(context) {
   }
 
   try {
-    // 1) Load the competition from your DB
-    const comp = await fetchCompetitionBySlug(slug)
+    // 2) Load competition by slug
+    const client = await clientPromise
+    const db = client.db('ohmycompetitions')
+    const comp = await db
+      .collection('competitions')
+      .findOne({ slug })
+
     if (!comp) {
       return { notFound: true }
     }
 
-    // 2) Create a Pi payment session URL (server-side!)
+    // 3) Create a Pi payment session (your wrapper must handle SDK keys)
     const paymentUrl = await createPiPaymentSession({
-      competitionId: comp._id,
+      competitionId: comp._id.toString(),
       amount: comp.entryFee || 0,
-      // ...any other metadata
+      // any other Pi metadata…
     })
 
     return {
       props: {
-        comp,
+        comp: {
+          _id: comp._id.toString(),
+          title: comp.title,
+          prize: comp.prize,
+          entryFee: comp.entryFee,
+          slug: comp.slug,
+        },
         sessionUrl: paymentUrl,
       },
     }
