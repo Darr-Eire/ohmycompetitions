@@ -4,8 +4,7 @@ import CompetitionCard from '@/components/CompetitionCard'
 
 export async function getStaticPaths() {
   const client = await clientPromise
-  const all = await client
-    .db('ohmycompetitions')
+  const all = await client.db('ohmycompetitions')
     .collection('competitions')
     .find({}, { projection: { slug: 1 } })
     .toArray()
@@ -16,14 +15,11 @@ export async function getStaticPaths() {
 
 export async function getStaticProps({ params }) {
   const client = await clientPromise
-  const comp = await client
-    .db('ohmycompetitions')
+  const comp = await client.db('ohmycompetitions')
     .collection('competitions')
     .findOne({ slug: params.slug })
 
-  if (!comp) {
-    return { notFound: true }
-  }
+  if (!comp) return { notFound: true }
 
   comp._id = comp._id.toString()
   comp.createdAt = comp.createdAt.toISOString()
@@ -42,7 +38,6 @@ export default function CompetitionDetail({ comp }) {
       <p className="text-gray-600">
         Entry Fee: {comp.entryFee ?? 'Free'} π
       </p>
-
       <CompetitionCard
         title={comp.title}
         prize={comp.prize}
