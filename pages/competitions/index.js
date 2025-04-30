@@ -1,54 +1,59 @@
-// pages/competitions/[slug].js
+// pages/competitions/index.js
 import clientPromise from '../../src/lib/mongodb'
 import CompetitionCard from '@/components/CompetitionCard'
+import Link from 'next/link'
 
-export async function getStaticPaths() {
+export async function getStaticProps() {
   const client = await clientPromise
-  const all = await client.db('ohmycompetitions')
+  const db = client.db('ohmycompetitions')
+
+  // Fetch all competitions, projecting only the fields we need
+  const docs = await db
     .collection('competitions')
-    .find({}, { projection: { slug: 1 } })
+    .find({}, { projection: { _id: 1, title: 1, prize: 1, entryFee: 1, slug: 1 } })
     .toArray()
 
-  const paths = all.map(c => ({ params: { slug: c.slug } }))
-  return { paths, fallback: false }
-}
-
-export async function getStaticProps({ params }) {
-  const client = await clientPromise
-  const comp = await client.db('ohmycompetitions')
-    .collection('competitions')
-    .findOne({ slug: params.slug })
-
-  if (!comp) return { notFound: true }
-
-  comp._id = comp._id.toString()
-  comp.createdAt = comp.createdAt.toISOString()
+  // Serialize for JSON
+  const competitions = docs.map((c) => ({
+    _id: c._id.toString(),
+    title: c.title,
+    prize: c.prize,
+    entryFee: c.entryFee,
+    slug: c.slug,
+  }))
 
   return {
-    props: { comp },
-    revalidate: 60,
+    props: { competitions },
+    revalidate: 60, // ISR: rebuild at most once per minute
   }
 }
 
-export default function CompetitionDetail({ comp }) {
+export default function CompetitionsIndex({ competitions }) {
   return (
-    <main className="max-w-2xl mx-auto p-6 space-y-4">
-      <h1 className="text-3xl font-bold">{comp.title}</h1>
-      <p className="text-gray-600">Prize: {comp.prize}</p>
-      <p className="text-gray-600">
-        Entry Fee: {comp.entryFee ?? 'Free'} π
-      </p>
+    <main className="max-w-4xl mx-auto p-6 space-y-6">
+      <h1 className="text-4xl font-bold">All Competitions</h1>
 
-      <CompetitionCard
-        title={comp.title}
-        prize={comp.prize}
-        fee={comp.entryFee != null ? `${comp.entryFee} π` : 'Free'}
-        href="#"
-      >
-        <button className="mt-4 btn btn-primary">
-          Enter Now
-        </button>
-      </CompetitionCard>
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {competitions.map((competition) => (
+          <Link
+            key={competition._id}
+            href={`/competitions/${competition.slug}`}
+            passHref
+          >
+            <a>
+              <CompetitionCard
+                title={competition.title}
+                prize={competition.prize}
+                fee={
+                  competition.entryFee != null
+                    ? `${competition.entryFee} π`
+                    : 'Free'
+                }
+              />
+            </a>
+          </Link>
+        ))}
+      </div>
     </main>
   )
 }
