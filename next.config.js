@@ -3,9 +3,7 @@
 const nextConfig = {
     reactStrictMode: true,
   
-    // If you ever want to opt out of the swcMinify warning,
-    // you can remove this—but a fresh rebuild is forced by changing any config.
-    swcMinify: false, // no-op, just to force cache invalidation
+    
   
     webpack(config) {
       // Stub out Node.js core modules MongoDB driver depends on,
