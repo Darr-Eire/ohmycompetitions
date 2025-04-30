@@ -10,10 +10,11 @@ export async function getStaticPaths() {
     .find({}, { projection: { slug: 1 } })
     .toArray()
 
-  return {
-    paths: all.map(c => ({ params: { slug: c.slug } })),
-    fallback: false,
-  }
+  const paths = all.map((c) => ({
+    params: { slug: c.slug },
+  }))
+
+  return { paths, fallback: false }
 }
 
 export async function getStaticProps({ params }) {
@@ -27,6 +28,7 @@ export async function getStaticProps({ params }) {
     return { notFound: true }
   }
 
+  // Convert ObjectId & Date to strings
   competition._id = competition._id.toString()
   competition.createdAt = competition.createdAt.toISOString()
 
@@ -58,4 +60,3 @@ export default function CompetitionDetail({ competition }) {
     </main>
   )
 }
-
