@@ -1,59 +1,83 @@
 // pages/competitions/index.js
-import clientPromise from '../../src/lib/mongodb'
-import CompetitionCard from '@/components/CompetitionCard'
+'use client'
+
+import { useSession, signIn, signOut } from 'next-auth/react'
 import Link from 'next/link'
+import { useRef, useEffect, useState } from 'react'
+import CompetitionCard from '@/components/CompetitionCard'
 
-export async function getStaticProps() {
-  const client = await clientPromise
-  const db = client.db('ohmycompetitions')
+export default function AllCompetitions() {
+  const { data: session } = useSession()
+  const [competitions, setCompetitions] = useState([])
 
-  // Fetch all competitions, projecting only the fields we need
-  const docs = await db
-    .collection('competitions')
-    .find({}, { projection: { _id: 1, title: 1, prize: 1, entryFee: 1, slug: 1 } })
-    .toArray()
+  useEffect(() => {
+    fetch('/api/competitions')
+      .then(res => res.json())
+      .then(setCompetitions)
+  }, [])
 
-  // Serialize for JSON
-  const competitions = docs.map((c) => ({
-    _id: c._id.toString(),
-    title: c.title,
-    prize: c.prize,
-    entryFee: c.entryFee,
-    slug: c.slug,
-  }))
-
-  return {
-    props: { competitions },
-    revalidate: 60, // ISR: rebuild at most once per minute
+  async function handleDelete(id) {
+    if (!confirm('Delete this competition?')) return
+    const res = await fetch(`/api/competitions/${id}`, { method: 'DELETE' })
+    if (res.ok) setCompetitions(cs => cs.filter(c => c._id !== id))
+    else alert('Delete failed')
   }
-}
 
-export default function CompetitionsIndex({ competitions }) {
   return (
-    <main className="max-w-4xl mx-auto p-6 space-y-6">
-      <h1 className="text-4xl font-bold">All Competitions</h1>
+    <main className="pt-0 pb-12 px-4 space-y-8 bg-white min-h-screen">
+      <div className="flex justify-end space-x-4">
+        {!session ? (
+          <button onClick={() => signIn()} className="px-4 py-2 bg-blue-600 text-white rounded">
+            Sign In
+          </button>
+        ) : (
+          <>
+            <button onClick={() => signOut()} className="px-4 py-2 bg-gray-600 text-white rounded">
+              Sign Out
+            </button>
+            {session.user.isAdmin && (
+              <Link href="/competitions/new">
+                <button className="px-4 py-2 bg-green-600 text-white rounded">
+                  New Competition
+                </button>
+              </Link>
+            )}
+          </>
+        )}
+      </div>
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {competitions.map((competition) => (
-          <Link
-            key={competition._id}
-            href={`/competitions/${competition.slug}`}
-            passHref
-          >
-            <a>
+      <div className="relative">
+        <div className="flex space-x-4 overflow-x-auto scroll-smooth">
+          {competitions.length > 0 ? (
+            competitions.map(comp => (
               <CompetitionCard
-                title={competition.title}
-                prize={competition.prize}
-                fee={
-                  competition.entryFee != null
-                    ? `${competition.entryFee} π`
-                    : 'Free'
-                }
-              />
-            </a>
-          </Link>
-        ))}
+                key={comp._id}
+                title={comp.title}
+                prize={comp.prize}
+                fee={comp.entryFee != null ? `${comp.entryFee} π` : 'Free'}
+                href={`/competitions/${comp.slug}`}
+                small
+              >
+                {session?.user?.isAdmin && (
+                  <button
+                    onClick={() => handleDelete(comp._id)}
+                    className="mt-2 text-red-500 hover:underline text-sm"
+                  >
+                    Delete
+                  </button>
+                )}
+              </CompetitionCard>
+            ))
+          ) : (
+            <p className="text-center text-gray-500 w-full">Loading competitions...</p>
+          )}
+        </div>
       </div>
     </main>
   )
+}
+
+// Prevent static-export so that useSession works
+export async function getServerSideProps() {
+  return { props: {} }
 }
