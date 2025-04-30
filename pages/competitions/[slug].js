@@ -11,12 +11,12 @@ export async function getStaticPaths() {
     .toArray()
 
   const paths = all.map((c) => ({
-    params: { slug: c.slug }
+    params: { slug: c.slug },
   }))
 
   return {
     paths,
-    fallback: false,      // ← fallback must be boolean
+    fallback: false,
   }
 }
 
@@ -31,6 +31,7 @@ export async function getStaticProps({ params }) {
     return { notFound: true }
   }
 
+  // Convert ObjectId/date to strings
   competition._id = competition._id.toString()
   competition.createdAt = competition.createdAt.toISOString()
 
@@ -40,6 +41,7 @@ export async function getStaticProps({ params }) {
   }
 }
 
+// **Be sure you destructure { competition }, not { comp }**
 export default function CompetitionDetail({ competition }) {
   return (
     <main className="max-w-2xl mx-auto p-6 space-y-4">
@@ -52,13 +54,16 @@ export default function CompetitionDetail({ competition }) {
       <CompetitionCard
         title={competition.title}
         prize={competition.prize}
-        fee={competition.entryFee != null ? `${competition.entryFee} π` : 'Free'}
+        fee={
+          competition.entryFee != null
+            ? `${competition.entryFee} π`
+            : 'Free'
+        }
         href="#"
       >
-        <button className="mt-4 btn btn-primary">
-          Enter Now
-        </button>
+        <button className="mt-4 btn btn-primary">Enter Now</button>
       </CompetitionCard>
     </main>
   )
 }
+
