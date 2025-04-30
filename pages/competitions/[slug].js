@@ -25,9 +25,9 @@ export async function getStaticProps({ params }) {
     return { notFound: true }
   }
 
-  // serialize
+  // Serialize Mongo types
   comp._id = comp._id.toString()
-  comp.createdAt = comp.createdAt.toISOString()
+  if (comp.createdAt) comp.createdAt = comp.createdAt.toISOString()
 
   return {
     props: { comp },
@@ -41,7 +41,7 @@ export default function CompetitionDetail({ comp }) {
       <h1 className="text-3xl font-bold">{comp.title}</h1>
       <p className="text-gray-600">Prize: {comp.prize}</p>
       <p className="text-gray-600">
-        Entry Fee: {comp.entryFee ?? 'Free'} π
+        Entry Fee: {comp.entryFee != null ? `${comp.entryFee} π` : 'Free'}
       </p>
 
       <CompetitionCard
