@@ -6,9 +6,10 @@ export async function getStaticPaths() {
   const client = await clientPromise
   const db = client.db('ohmycompetitions')
   const all = await db
-    .collection('competitions')
-    .find({}, { projection: { slug: 1 } })
-    .toArray()
+  .collection('competitions')
+  .find({}, { projection: { slug: 1, _id: 0 } })
+  .toArray()
+
 
   const paths = all.map((c) => ({
     params: { slug: c.slug }
