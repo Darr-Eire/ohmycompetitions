@@ -10,11 +10,10 @@ export async function getStaticPaths() {
     .find({}, { projection: { slug: 1 } })
     .toArray()
 
-  const paths = all.map((c) => ({
-    params: { slug: c.slug }
-  }))
-
-  return { paths, fallback: false }
+  return {
+    paths: all.map((c) => ({ params: { slug: c.slug } })),
+    fallback: false
+  }
 }
 
 export async function getStaticProps({ params }) {
@@ -24,16 +23,14 @@ export async function getStaticProps({ params }) {
     .collection('competitions')
     .findOne({ slug: params.slug })
 
-  if (!competition) {
-    return { notFound: true }
-  }
+  if (!competition) return { notFound: true }
 
   competition._id = competition._id.toString()
   competition.createdAt = competition.createdAt.toISOString()
 
   return {
     props: { competition },
-    revalidate: 60,
+    revalidate: 60
   }
 }
 
