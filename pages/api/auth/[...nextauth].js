@@ -1,53 +1,29 @@
-// pages/api/auth/[...nextauth].js
 import NextAuth from 'next-auth'
-import CredentialsProvider from 'next-auth/providers/credentials'
+import PiProvider from 'next-auth/providers/pi-network'  // or your actual Pi provider import
 
-export const authOptions = {
+export default NextAuth({
   providers: [
-    CredentialsProvider({
-      name: 'Credentials',
-      credentials: {
-        username: { label: 'Username', type: 'text' },
-        password: { label: 'Password', type: 'password' }
+    PiProvider({
+      clientId:     process.env.PI_APP_ID,
+      clientSecret: process.env.PI_APP_SECRET,
+      authorization: {
+        url:   process.env.PI_OAUTH_AUTHORIZE_URL,
+        params: { scope: 'pi_user_info pi_transactions' }
       },
-      async authorize(credentials) {
-        // TODO: Replace with real lookup (e.g. DB query)
-        if (credentials.username === 'admin' && credentials.password === 'supersecret') {
-          return { id: 1, name: 'Admin User', isAdmin: true }
-        }
-        if (credentials.username === 'user' && credentials.password === 'password') {
-          return { id: 2, name: 'Regular User', isAdmin: false }
-        }
-        // Invalid credentials
-        return null
-      }
+      token:    process.env.PI_OAUTH_TOKEN_URL,
+      userinfo: process.env.PI_OAUTH_USERINFO_URL,
     })
   ],
-
-  // Use JWT-based sessions:
-  session: { strategy: 'jwt' },
-
   callbacks: {
-    // Attach isAdmin to the JWT on initial sign-in:
-    async jwt({ token, user }) {
-      if (user) {
-        token.isAdmin = user.isAdmin
-      }
+    async jwt({ token, account }) {
+      if (account?.access_token) token.piAccessToken = account.access_token
       return token
     },
-    // Expose isAdmin on the client-side session object:
     async session({ session, token }) {
-      session.user.isAdmin = token.isAdmin
+      session.piAccessToken = token.piAccessToken
       return session
     }
   },
-
-  // Secret for signing tokens & cookies
   secret: process.env.NEXTAUTH_SECRET,
-
-  pages: {
-    signIn: '/auth/signin',  // optional custom sign-in page
-  }
-}
-
-export default NextAuth(authOptions)
+  // …any other NextAuth settings…
+})
