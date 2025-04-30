@@ -62,4 +62,8 @@ export default function AllCompetitions() {
     </main>
   )
 }
+// pages/index.js
+export async function getServerSideProps() {
+  return { props: {} }
+}
 

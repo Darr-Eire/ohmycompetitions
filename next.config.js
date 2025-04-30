@@ -3,7 +3,7 @@
 const nextConfig = {
     // Any other Next.js configuration options you have
     reactStrictMode: true,
-    swcMinify: true,
+
   
     webpack(config) {
       // Stub out Node.js core modules MongoDB driver depends on,
