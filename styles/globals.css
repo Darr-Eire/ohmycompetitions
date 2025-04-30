@@ -56,8 +56,8 @@ header {
 /* Log In / Log Out button */
 .login-button,
 .logout-button {
-  background: rgb(123, 13, 74); 
-  border: 1px solid rgb(123, 13, 74);
+  background: #2428ec; 
+  border: 1px solid #2428ec; 
   color: #ffffff;
   padding: 0.25rem 0.75rem;
   font-size: 0.9rem;
@@ -67,7 +67,7 @@ header {
 }
 .login-button:hover,
 .logout-button:hover {
-  background:  rgb(123, 13, 74);
+  background:  #4975edc5; 
 }
 
 /* Optional welcome text styling */
@@ -204,9 +204,45 @@ footer {
   from { opacity: 0; transform: translateY(-10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+:root {
+  /* default color; feel free to tweak */
+  --daily-title-color: #2428ec;  /* same as Tailwind’s blue-600 */
+}
 
-/* 13. Updated Competition Card Styling (new fancy version) */
-/* …everything up through the dropdown-menu rules stays the same… */
+.daily-competitions-title {
+  /* size and weight you already want */
+  @apply text-2xl font-bold mb-4;
+
+  /* center & color from a variable you can change globally */
+  text-align: center;
+  color: var(--daily-title-color);
+}
+:root {
+  --daily-title-color: #2563eb; /* blue-600 */
+  --free-title-color:  #059669; /* green-500, or whatever you want */
+}
+
+.daily-competitions-title {
+  @apply text-2xl font-bold mb-4;
+  text-align:    center;
+  color:         var(--daily-title-color);
+}
+
+.free-competitions-title {
+  @apply text-2xl font-bold mb-4;
+  text-align:    center;
+  color:         var(--free-title-color);
+}
+
+.free-competitions-title {
+  font-size:   1.5rem;    
+  font-weight: 700;    
+  margin-bottom: 1rem;    /* mb-4 */
+  text-align:   center;
+  color:        var(--free-title-color);
+}
+
+
 
 /* 13. Updated Competition Card Styling (new fancy version) */
 .page {
@@ -231,6 +267,18 @@ footer {
   margin: 1rem auto;
   text-align: center;
   transition: transform 0.2s ease;
+}
+.competitions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem; /* adjust spacing as you like */
+}
+
+/* large screens: 4 columns */
+@media (min-width: 1024px) {
+  .competitions-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 .competition-card:hover {
   transform: scale(1.02);

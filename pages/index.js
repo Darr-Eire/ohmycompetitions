@@ -43,7 +43,10 @@ export default function HomePage() {
     <main className="pt-8 pb-12 px-4 space-y-12 bg-white min-h-screen">
       {/* Daily Carousel */}
       <div className="relative">
-        <h2 className="text-2xl font-bold text-blue-600 text-center mb-4">Daily Competitions</h2>
+      <h2 className="daily-competitions-title">
+  Daily Competitions
+</h2>
+
         <div ref={carouselRef} className="daily-carousel">
           {dailyComps.map((c) => (
             <CompetitionCard
@@ -62,7 +65,10 @@ export default function HomePage() {
 
       {/* Free Competitions Section */}
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-green-600 mb-4">Free Competitions</h2>
+      <h2 className="free-competitions-title">
+  Free Competitions
+</h2>
+
         <div className="flex justify-center">
           <CompetitionCard
             comp={{ slug: 'pi-day-freebie', entryFee: 0 }}

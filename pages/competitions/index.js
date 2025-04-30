@@ -1,3 +1,4 @@
+// pages/competitions/index.js
 'use client'
 
 import { useSession, signIn, signOut } from 'next-auth/react'
@@ -39,9 +40,9 @@ export default function AllCompetitions() {
   }
 
   return (
-    <main className="pt-6 pb-12 px-4 space-y-8 bg-white min-h-screen">
+    <main className="pt-6 pb-12 px-4 bg-white min-h-screen">
       {/* Auth Buttons */}
-      <div className="flex justify-end space-x-4">
+      <div className="flex justify-end space-x-4 mb-8">
         {!session ? (
           <button
             onClick={() => signIn()}
@@ -68,7 +69,7 @@ export default function AllCompetitions() {
         )}
       </div>
 
-      {/* Grid Layout for Competitions */}
+      {/* 2 cols by default, 4 cols at ≥768px */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
         {competitions.length > 0 ? (
           competitions.map(comp => {
@@ -82,10 +83,13 @@ export default function AllCompetitions() {
                 fee={comp.entryFee != null ? `${comp.entryFee} π` : 'Free'}
                 href={`/competitions/${comp.slug}`}
                 small
+                className="w-full"
               >
                 {isFreebie && (
                   <div className="mt-2 p-2 bg-green-50 rounded text-center">
-                    <h4 className="text-green-700 font-semibold">Referral Rewards</h4>
+                    <h4 className="text-green-700 font-semibold">
+                      Referral Rewards
+                    </h4>
                     <p className="text-sm text-gray-600">
                       Earn 1 free entry for every friend who signs up!
                     </p>
@@ -109,7 +113,9 @@ export default function AllCompetitions() {
             )
           })
         ) : (
-          <p className="text-center text-gray-500 w-full">Loading competitions...</p>
+          <p className="text-center text-gray-500 w-full">
+            Loading competitions...
+          </p>
         )}
       </div>
     </main>
@@ -119,4 +125,3 @@ export default function AllCompetitions() {
 export async function getServerSideProps() {
   return { props: {} }
 }
-
