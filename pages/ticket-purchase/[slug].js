@@ -1,57 +1,11 @@
 // pages/ticket-purchase/[slug].js
-'use client'
+import { getSession } from 'next-auth/react'
+import { fetchCompetitionBySlug } from '@/lib/db'          // your helper to load a comp
+import { createPiPaymentSession } from '@/lib/pi'          // your Pi SDK wrapper
 
-import { useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
-import { useSession, signIn } from 'next-auth/react'
-
-export default function PurchasePage({ params }) {
-  const { slug } = params
-  const { data: session } = useSession()
-  const [comp, setComp] = useState(null)
-  const [error, setError] = useState(null)
-  const router = useRouter()
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch(`/api/competitions/${slug}`)
-        if (!res.ok) throw new Error(res.statusText)
-        const data = await res.json()
-        setComp(data)
-      } catch (err) {
-        setError(err.message)
-      }
-    }
-    load()
-  }, [slug])
-
-  if (!session) {
-    return (
-      <div className="p-8 text-center">
-        <p>Please sign in to enter.</p>
-        <button onClick={() => signIn()} className="mt-4 btn">
-          Sign In
-        </button>
-      </div>
-    )
-  }
-
-  if (error) return <p className="p-8 text-red-500">Error: {error}</p>
-  if (!comp) return <p className="p-8">Loading…</p>
-
-  async function handleEnter() {
-    try {
-      const res = await fetch(`/api/competitions/${comp._id}/enter`, {
-        method: 'POST',
-      })
-      if (!res.ok) throw new Error('Purchase failed')
-      const { paymentUrl } = await res.json()
-      // Redirect to Pi payment flow or wherever:
-      window.location.href = paymentUrl
-    } catch (err) {
-      alert(err.message)
-    }
+export default function PurchasePage({ comp, sessionUrl, error }) {
+  if (error) {
+    return <p className="p-8 text-red-500">Error: {error}</p>
   }
 
   return (
@@ -59,9 +13,52 @@ export default function PurchasePage({ params }) {
       <h1 className="text-2xl font-bold">{comp.title}</h1>
       <p>Prize: {comp.prize}</p>
       <p>Entry fee: {comp.entryFee ?? 0} π</p>
-      <button onClick={handleEnter} className="btn btn-primary w-full">
+      <a href={sessionUrl} className="btn btn-primary w-full">
         Enter Competition
-      </button>
+      </a>
     </main>
   )
+}
+
+export async function getServerSideProps(context) {
+  const { slug } = context.params
+
+  // Ensure user is logged in
+  const session = await getSession(context)
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/api/auth/signin',
+        permanent: false,
+      },
+    }
+  }
+
+  try {
+    // 1) Load the competition from your DB
+    const comp = await fetchCompetitionBySlug(slug)
+    if (!comp) {
+      return { notFound: true }
+    }
+
+    // 2) Create a Pi payment session URL (server-side!)
+    const paymentUrl = await createPiPaymentSession({
+      competitionId: comp._id,
+      amount: comp.entryFee || 0,
+      // ...any other metadata
+    })
+
+    return {
+      props: {
+        comp,
+        sessionUrl: paymentUrl,
+      },
+    }
+  } catch (err) {
+    return {
+      props: {
+        error: err.message,
+      },
+    }
+  }
 }
