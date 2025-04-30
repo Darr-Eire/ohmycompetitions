@@ -1,36 +1,15 @@
-// pages/competitions/[slug].js
 import clientPromise from '../../src/lib/mongodb'
 import CompetitionCard from '@/components/CompetitionCard'
 
 export async function getStaticPaths() {
-  const client = await clientPromise
-  const db = client.db('ohmycompetitions')
-  const all = await db
-    .collection('competitions')
-    .find({}, { projection: { slug: 1 } })
-    .toArray()
-
-  return {
-    paths: all.map((c) => ({ params: { slug: c.slug } })),
-    fallback: false
-  }
+  /* … */
 }
 
 export async function getStaticProps({ params }) {
-  const client = await clientPromise
-  const db = client.db('ohmycompetitions')
-  const competition = await db
-    .collection('competitions')
-    .findOne({ slug: params.slug })
-
-  if (!competition) return { notFound: true }
-
-  competition._id = competition._id.toString()
-  competition.createdAt = competition.createdAt.toISOString()
-
+  /* … */
   return {
     props: { competition },
-    revalidate: 60
+    revalidate: 60,
   }
 }
 
