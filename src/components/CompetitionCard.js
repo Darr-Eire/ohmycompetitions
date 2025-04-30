@@ -3,6 +3,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 
 export default function CompetitionCard({
   comp,
@@ -12,24 +13,43 @@ export default function CompetitionCard({
   href,
   small,
   children,
+  theme,
+  rarity = 'common', // rarity levels: common, rare, epic, legendary
+  endsAt = new Date(Date.now() + 3600 * 1000 * 12), // fallback: 12h from now
 }) {
-  // Detect a “free” competition
   const isFree = comp?.entryFee === 0
+  const appliedTheme = theme || (isFree ? 'green' : 'gold')
+
+  const [timeLeft, setTimeLeft] = useState('')
+
+  useEffect(() => {
+    const updateCountdown = () => {
+      const now = new Date()
+      const diff = new Date(endsAt) - now
+      if (diff <= 0) return setTimeLeft('Ended')
+      const hours = Math.floor(diff / (1000 * 60 * 60))
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+      setTimeLeft(`${hours}h ${minutes}m`)
+    }
+
+    updateCountdown()
+    const timer = setInterval(updateCountdown, 60000)
+    return () => clearInterval(timer)
+  }, [endsAt])
 
   return (
     <div
       className={[
         'competition-card',
+        `theme-${appliedTheme}`,
+        `rarity-${rarity}`,
         small && 'competition-card--small',
-        isFree && 'border-2 border-green-500',
       ]
         .filter(Boolean)
         .join(' ')}
     >
-      {/* Banner */}
       <div className="competition-top-banner">{title}</div>
 
-      {/* Image */}
       <div className="competition-image-placeholder">
         <Image
           src="/pi.jpeg"
@@ -40,29 +60,24 @@ export default function CompetitionCard({
         />
       </div>
 
-      {/* Info */}
       <div className="competition-info">
         <p><strong>Prize:</strong> {prize}</p>
-        <p><strong>Draw ends in:</strong> 13h 58m</p>
+        <p><strong>Draw ends in:</strong> {timeLeft}</p>
         <p>📊 <strong>Total Tickets:</strong> 5000</p>
         <p>✅ <strong>Sold:</strong> 0</p>
         <p>🏅 <strong>Entry Fee:</strong> {fee}</p>
+        <p className="text-xs italic text-gray-400">Rarity: {rarity}</p>
       </div>
 
-      {/* Extra controls (delete button, referral info, etc.) */}
       {children}
 
-      {/* Enter button */}
       <Link href={href || `/ticket-purchase/${comp.slug}`}>
-        <button className="mt-2 btn btn-secondary w-full">
-          Enter Now
-        </button>
+        <button className="mt-2 comp-button w-full">Enter Now</button>
       </Link>
     </div>
   )
 }
 
-// Default props
 CompetitionCard.defaultProps = {
   comp: { slug: 'everyday-pioneer', entryFee: 0 },
   title: 'Everyday Pioneer',
@@ -70,4 +85,7 @@ CompetitionCard.defaultProps = {
   fee: '0.314 π',
   href: '/competitions/everyday-pioneer',
   small: false,
+  theme: null,
+  rarity: 'common',
+  endsAt: new Date(Date.now() + 1000 * 60 * 60 * 12),
 }

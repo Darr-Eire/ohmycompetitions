@@ -22,7 +22,7 @@ header {
   align-items: center;
   padding: 0.40rem 1rem;   /* less vertical padding */
   font-size: 1rem;
-  background-color: #06B6D4;   /* Next.js blue */
+  background-color: #2428ec;   
   color: #ffffff;
   position: relative; /* Make dropdown absolute inside */
   z-index: 1000;
@@ -56,8 +56,8 @@ header {
 /* Log In / Log Out button */
 .login-button,
 .logout-button {
-  background: transparent;
-  border: 1px solid rgba(250, 247, 249, 0.39);
+  background: rgb(123, 13, 74); 
+  border: 1px solid rgb(123, 13, 74);
   color: #ffffff;
   padding: 0.25rem 0.75rem;
   font-size: 0.9rem;
@@ -67,7 +67,7 @@ header {
 }
 .login-button:hover,
 .logout-button:hover {
-  background: rgba(198, 21, 130, 0.39);
+  background:  rgb(123, 13, 74);
 }
 
 /* Optional welcome text styling */
@@ -83,13 +83,13 @@ footer {
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
   text-align: center;
-  background-color: #06B6D4; 
+  background-color: #2428ec;  
   color: #ffffff;
 }
 
 /* 5. Competition card (simple old version) */
 .competition-card {
-  border: 2px solid #06B6D4;
+  border: 2px solid #FDB927; 
   border-radius: 8px;
   padding: 1rem;
   max-width: 320px;
@@ -103,7 +103,7 @@ footer {
 .comp-title {
   margin: 0 0 0.5rem;
   font-size: 1.25rem;
-  color: #06B6D4;
+  color: #FDB927;
 }
 
 /* 7. Prize text */
@@ -122,7 +122,7 @@ footer {
 
 /* 9. Enter button */
 .comp-button {
-  background-color: #1E3A8A;
+  background-color: #2428ec;   
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -132,7 +132,7 @@ footer {
   transition: background-color 0.2s ease;
 }
 .comp-button:hover {
-  background-color: #1E3A8A;
+  background-color: #2428ec;  
 }
 
 /* 10. Footer social icons and policy links */
@@ -180,7 +180,7 @@ footer {
   position: absolute;
   top: 2.7rem;
   left: 0rem;
-  background-color: #06B6D4;
+  background-color: #2428ec;  
   border: 1px solid #ffffff;
   border-radius: 4px;
   padding: 0.5rem;
@@ -217,57 +217,118 @@ footer {
   align-items: flex-start;
   gap: 1rem;
   /* Bump this top padding so cards sit comfortably below the header */
-  padding: 4rem 1rem 1rem; /* ↑ increased from 0.5rem to 4rem */
+  padding: 1rem 0.5rem 0.5rem; /* ↑ increased from 0.5rem to 4rem */
 }
 
-/* Competition Card */
+/* === Base Competition Card === */
 .competition-card {
-  border: 4px solid  #06B6D4;         /* stronger purple border */
-  border-radius: 12px;
-  background: #f0f8ff;                 /* very light purple background */
-  box-shadow: 0 4px 12px  #06B6D4;      /* purple-tinted shadow */
-  width: 280px;                        /* card width */
-  padding: 1rem;                       /* correct rem syntax */
+  border: 3px solid #06B6D4; /* default fallback border */
+  border-radius: 2px;
+  padding: 0.6rem;
+  max-width: 320px;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgb(39, 25, 196);
+  margin: 1rem auto;
   text-align: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  margin: 1rem;                        /* spacing around card */
+  transition: transform 0.2s ease;
 }
-
 .competition-card:hover {
-  transform: scale(1.03);
-  box-shadow: 0 6px 16px  #06B6D4;
+  transform: scale(1.02);
 }
-
-/* Top banner */
-.competition-top-banner {
-  background: #06B6D4;
-  color: #ffffff;
-  padding: 0.75rem;
-  margin: -1.5rem -1.5rem 1rem;
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
-  font-size: 1.25rem;
-  font-weight: bold;
-}
-
-/* Image placeholder */
-.competition-image-placeholder {
-  background: url('/pi.jpeg') center/cover no-repeat;
-  height: 180px;   /* taller image area */
-  margin-bottom: 1rem;
-  border-radius: 8px;
-  overflow: hidden; /* ensure image fits cleanly */
-}
-
-/* Info section */
 .competition-info {
   text-align: left;
-  margin-bottom: 1.5rem;
-  font-size: 1rem;
-  color: #1e293b; /* darker text */
+  font-size: 0.95rem;
+  color: #01060e;
+  margin-bottom: 1rem;
+}
+.competition-top-banner {
+  text-transform: uppercase;
+  text-shadow: 1px 1px 2px #00000050;
+  border-radius: 0rem;
+  background-color: #2428ec; 
+  color: #ffffff;
+  padding: 0.1rem;
 }
 
-/* ——— Daily competitions horizontal scroll strip ——— */
+
+.competition-image-placeholder {
+  margin-bottom: 1rem;
+}
+
+/* === Card Button === */
+.comp-button {
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 0.1rem 3rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+/* === Themed Styles === */
+
+/* GOLD — default */
+.theme-gold {
+  border-color: #2428ec;
+  box-shadow: 0 0 10px #2428ec; 
+}
+.theme-gold .competition-top-banner {
+  color: #ffffff; 
+}
+.theme-gold .comp-button {
+  background-color: #2428ec; 
+}
+.theme-gold .comp-button:hover {
+  background-color: #2428ec; 
+}
+
+/* GREEN — free competitions */
+.theme-green {
+  border-color: #22d631d0;
+  box-shadow: 0 0 10px #22d631d0;
+}
+.theme-green .competition-top-banner {
+  color: #ffffff;
+}
+.theme-green .comp-button {
+  background-color: #22d631d0;
+}
+.theme-green .comp-button:hover {
+  background-color: #22d631d0;
+}
+
+/* PURPLE — e.g. Hack the Vault */
+.theme-purple {
+  border-color: #2428ec; 
+  box-shadow: 0 0 10px#2428ec; 
+}
+.theme-purple .competition-top-banner {
+  color: #ffffff; 
+}
+.theme-purple .comp-button {
+  background-color: #2428ec; 
+}
+.theme-purple .comp-button:hover {
+  background-color: #2428ec; 
+}
+
+/* ORANGE — e.g. Pi to the Moon */
+.theme-orange {
+  border-color: #2428ec; 
+  box-shadow: 0 0 10px #2428ec; 
+}
+.theme-orange .competition-top-banner {
+  color: #ffffff; 
+}
+.theme-orange .comp-button {
+  background-color: #2428ec; 
+}
+.theme-orange .comp-button:hover {
+  background-color: #2428ec; 
+}
+
+/* === Daily Competitions Carousel === */
 .daily-carousel {
   display: flex;
   overflow-x: auto;
@@ -288,26 +349,21 @@ footer {
   margin-left: auto;
   margin-right: auto;
 }
-/* 14. Animated background gradient for Try Your Luck */
-@keyframes gradient-x {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-}
 
-/* Make backgrounds move softly left to right */
+/* === Try Your Luck Animated Gradient Background === */
+@keyframes gradient-x {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
 .animate-gradient-x {
   background-size: 200% 200%;
   animation: gradient-x 10s ease infinite;
 }
 
-/* 15. Try Your Luck Game Card Styling */
+/* === Game Card === */
 .game-card {
   background: #ffffff;
-  border: 2px solid #06B6D4; /* Indigo-600 */
+  border: 2px solid #06B6D4;
   border-radius: 1rem;
   padding: 2rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -317,22 +373,19 @@ footer {
 }
 .game-card:hover {
   transform: scale(1.05);
-  box-shadow: 0 8px 24px #06B6D4; /* Glow Indigo */
+  box-shadow: 0 8px 24px #06B6D4;
 }
-
-/* Game title inside card */
 .game-title {
-  font-size: 1.5rem;
+  font-size: 2rem;
   font-weight: bold;
-  color: #1E3A8A; /* Indigo */
+  color: #1E3A8A;
   margin-bottom: 1rem;
 }
-
-/* Game description text */
 .game-description {
   font-size: 1rem;
-  color: #6b7280; /* Gray-500 */
+  color: #6b7280;
 }
+
 
 /* 16. Streak counter (optional if you want it) */
 .streak-banner {
@@ -358,7 +411,7 @@ footer {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 0 25px #6a0dad;
+  box-shadow: 0 0 25px #2428ec;  
   margin: 0 auto;
   padding: 1rem;
   transition: transform 0.3s ease;
