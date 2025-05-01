@@ -58,7 +58,7 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
         </button>
       ) : (
         <button className="login-button" onClick={onLogin}>
-          Log In
+          Log In With Pi
         </button>
       )}
 
@@ -82,7 +82,7 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
             </button>
           ) : (
             <button className="login-button dropdown-link" onClick={() => { handleLinkClick(); onLogin(); }}>
-              Log In
+              Log In With Pi
             </button>
           )}
         </nav>

@@ -60,7 +60,7 @@ export default function HomePage() {
               theme={item.theme}
               className="flex-shrink-0"
             >
-              {/* PiPaymentButton drives authenticate + U2A payment */}
+              {/* Paid entry button */}
               <PiPaymentButton
                 amount={item.comp.entryFee}
                 memo={`Entry fee for ${item.title}`}
@@ -87,7 +87,8 @@ export default function HomePage() {
       {/* Free Competitions Section */}
       <div className="text-center space-y-4">
         <h2 className="free-competitions-title">Free Competitions</h2>
-        <div className="flex justify-center">
+        +  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 justify-items-center">
+          {/* Pi Day Freebie */}
           <CompetitionCard
             comp={{ slug: 'pi-day-freebie', entryFee: 0 }}
             title="Pi Day Freebie"
@@ -96,7 +97,7 @@ export default function HomePage() {
             href="/competitions/pi-day-freebie"
             small
             theme="green"
-            className="w-full max-w-xs"
+            className="w-full sm:w-1/2 md:w-1/3 max-w-xs"
           >
             <div className="mt-2 p-2 bg-green-50 rounded text-center">
               <h4 className="text-green-700 font-semibold">Referral Rewards</h4>
@@ -110,7 +111,34 @@ export default function HomePage() {
                 Get your referral link
               </a>
             </div>
-            {/* Simple “Enter Now” for freebie */}
+            <button className="mt-2 comp-button w-full">Enter Now</button>
+          </CompetitionCard>
+
+          {/* Weekly Pi Giveaway */}
+          <CompetitionCard
+            comp={{ slug: 'weekly-pi-giveaway', entryFee: 0 }}
+            title="Weekly Pi Giveaway"
+            prize="1,000 π Giveaway"
+            fee="Free"
+            href="/competitions/weekly-pi-giveaway"
+            small
+            theme="green"
+            className="w-full sm:w-1/2 md:w-1/3 max-w-xs"
+          >
+            <div className="mt-2 p-2 bg-green-50 rounded text-center">
+              <h4 className="text-green-700 font-semibold">Social Media Entry</h4>
+              <p className="text-sm text-gray-600">
+                Earn 1 free entry for every new social media follower you get this week!
+              </p>
+              <a
+                href="https://twitter.com/YourTwitterHandle"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-green-600 text-sm underline"
+              >
+                Follow us on Twitter
+              </a>
+            </div>
             <button className="mt-2 comp-button w-full">Enter Now</button>
           </CompetitionCard>
         </div>
