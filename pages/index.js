@@ -1,3 +1,4 @@
+// pages/index.js
 'use client'
 
 import { useRef } from 'react'
@@ -6,6 +7,7 @@ import PiPaymentButton from '@/components/PiPaymentButton'
 
 export default function HomePage() {
   const dailyRef = useRef(null)
+  const freeRef  = useRef(null)
 
   const dailyComps = [
     {
@@ -34,6 +36,7 @@ export default function HomePage() {
     },
   ]
 
+  // scroll helper
   const scroll = (ref, offset) => {
     ref.current?.scrollBy({ left: offset, behavior: 'smooth' })
   }
@@ -41,8 +44,10 @@ export default function HomePage() {
   return (
     <main className="pt-8 pb-12 px-4 bg-white min-h-screen space-y-16">
       {/* Daily Competitions Carousel */}
-      <section className="relative">
-        <h2 className="daily-competitions-title">Daily Competitions</h2>
+      <div className="relative">
+        <h2 className="text-2xl font-bold text-blue-600 text-center mb-4">
+          Daily Competitions
+        </h2>
         <div
           ref={dailyRef}
           className="flex space-x-4 overflow-x-auto pb-2 no-scrollbar"
@@ -67,13 +72,29 @@ export default function HomePage() {
             </CompetitionCard>
           ))}
         </div>
-      </section>
+        <button
+          onClick={() => scroll(dailyRef, -300)}
+          className="absolute left-0 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow"
+        >
+          ‹
+        </button>
+        <button
+          onClick={() => scroll(dailyRef, 300)}
+          className="absolute right-0 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow"
+        >
+          ›
+        </button>
+      </div>
 
-      {/* Free Competitions Grid */}
-      <section>
-        <h2 className="free-competitions-title">Free Competitions</h2>
-        <div className="competitions-grid">
-          {/* Pi Day Freebie */}
+      {/* Free Competitions Carousel */}
+      <div className="relative">
+        <h2 className="text-2xl font-bold text-green-600 text-center mb-4">
+          Free Competitions
+        </h2>
+        <div
+          ref={freeRef}
+          className="flex space-x-4 overflow-x-auto pb-2 no-scrollbar"
+        >
           <CompetitionCard
             comp={{ slug: 'pi-day-freebie', entryFee: 0 }}
             title="Pi Day Freebie"
@@ -82,6 +103,7 @@ export default function HomePage() {
             href="/competitions/pi-day-freebie"
             small
             theme="green"
+            className="flex-shrink-0 w-72"
           >
             <div className="mt-2 p-2 bg-green-50 rounded text-center">
               <h4 className="text-green-700 font-semibold">Referral Rewards</h4>
@@ -97,7 +119,6 @@ export default function HomePage() {
             </div>
           </CompetitionCard>
 
-          {/* Weekly Pi Giveaway */}
           <CompetitionCard
             comp={{ slug: 'weekly-pi-giveaway', entryFee: 0 }}
             title="Weekly Pi Giveaway"
@@ -106,6 +127,7 @@ export default function HomePage() {
             href="/competitions/weekly-pi-giveaway"
             small
             theme="green"
+            className="flex-shrink-0 w-72"
           >
             <div className="mt-2 p-2 bg-green-50 rounded text-center">
               <h4 className="text-green-700 font-semibold">Social Media Entry</h4>
@@ -123,7 +145,19 @@ export default function HomePage() {
             </div>
           </CompetitionCard>
         </div>
-      </section>
+        <button
+          onClick={() => scroll(freeRef, -300)}
+          className="absolute left-0 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow"
+        >
+          ‹
+        </button>
+        <button
+          onClick={() => scroll(freeRef, 300)}
+          className="absolute right-0 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow"
+        >
+          ›
+        </button>
+      </div>
     </main>
   )
 }

@@ -1,3 +1,4 @@
+// src/components/CompetitionCard.js
 'use client'
 
 import Image from 'next/image'
@@ -13,7 +14,7 @@ export default function CompetitionCard({
   small,
   children,
   theme,
-  endsAt = Date.now() + 1000 * 60 * 60 * 12, // 12 h default
+  endsAt = Date.now() + 1000 * 60 * 60 * 12,
 }) {
   const appliedTheme = theme || (comp.entryFee === 0 ? 'green' : 'gold')
   const [timeLeft, setTimeLeft] = useState('')
@@ -61,9 +62,9 @@ export default function CompetitionCard({
         <p>🏅 <strong>Entry Fee:</strong> {fee}</p>
       </div>
 
-      {children}
+      {children /* Only render any custom child UI */}
 
-      {/* Only show default button if no children provided */}
+      {/* Only render default Enter button if no custom children */}
       {!children && (
         <Link href={href}>
           <button className="mt-2 comp-button w-full">Enter Now</button>
