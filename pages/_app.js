@@ -1,37 +1,36 @@
-// pages/_app.js
-import { SessionProvider } from 'next-auth/react'
-import Layout from '@/components/layout'
-import '../styles/globals.css'
-import Script from 'next/script'
+import { useState } from 'react'
 
-export default function App({ Component, pageProps: { session, ...pageProps } }) {
-  return (
-    <SessionProvider session={session}>
-      {/* Load the Pi SDK */}
-      <Script
-        src="https://sdk.minepi.com/pi-sdk.js"
-        strategy="beforeInteractive"
-      />
+export function usePiAuth() {
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(false)
 
-      {/* Initialize it: sandbox = dev, disabled in prod */}
-      <Script
-        id="pi-init"
-        strategy="beforeInteractive"
-        dangerouslySetInnerHTML={{
-          __html: `
-            if (window.Pi) {
-              window.Pi.init({
-                version: "2.0",
-                sandbox: ${process.env.NODE_ENV !== 'production'}
-              });
-            }
-          `,
-        }}
-      />
+  async function signIn() {
+    setLoading(true)
+    try {
+      // 2a) Pi Browser prompt
+      const { accessToken } = await window.Pi.authenticate(
+        ["username","wallet_address","payments"],
+        (incomplete) => {
+          // clean up any unfinished U2A
+          fetch("/api/payments/complete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(incomplete),
+          })
+        }
+      )
+      // 2b) server-verify via /api/pi/me
+      const res = await fetch("/api/pi/me", {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      })
+      const me = await res.json()
+      setUser(me)
+    } catch (e) {
+      console.error("Pi auth failed", e)
+    } finally {
+      setLoading(false)
+    }
+  }
 
-      <Layout>
-        <Component {...pageProps} />
-      </Layout>
-    </SessionProvider>
-  )
+  return { user, loading, signIn }
 }

@@ -10,11 +10,10 @@ export default function PiPaymentButton({ amount, memo, metadata }) {
   const start = () => {
     if (!user) return signIn()
     setBusy(true)
-
     window.Pi.createPayment(
       { amount, memo, metadata },
       {
-        onReadyForServerApproval: async (paymentId) => {
+        onReadyForServerApproval: async paymentId => {
           await fetch('/api/payments/approve', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -31,13 +30,13 @@ export default function PiPaymentButton({ amount, memo, metadata }) {
           alert('🎉 Payment complete!')
         },
         onCancel: () => setBusy(false),
-        onError: (err) => { alert('Payment error: ' + err.message); setBusy(false) }
+        onError: err => { alert('Payment failed: ' + err.message); setBusy(false) },
       }
     )
   }
 
   return (
-    <button onClick={start} disabled={authLoading || busy}>
+    <button onClick={start} disabled={authLoading || busy} className="mt-2 comp-button w-full">
       { !user
         ? authLoading ? 'Connecting Pi…' : 'Sign in with Pi'
         : busy ? 'Processing…' : `Pay ${amount} π`
