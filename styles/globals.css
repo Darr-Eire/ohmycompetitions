@@ -345,34 +345,21 @@ footer {
 }
 
 /* GREEN — free competitions */
-.theme-green {
-  border-color: #22d631d0;
-  box-shadow: 0 0 10px #22d631d0;
-}
+/* FREE – green theme */
 .theme-green .competition-top-banner {
+  background-color: #22d631d0; /* or whatever green you like */
   color: #ffffff;
 }
-.theme-green .comp-button {
-  background-color: #22d631d0;
-}
-.theme-green .comp-button:hover {
-  background-color: #22d631d0;
-}
+
 
 /* PURPLE — e.g. Hack the Vault */
-.theme-purple {
-  border-color: #2428ec; 
-  box-shadow: 0 0 10px#2428ec; 
+/* FREE – green theme */
+.theme-green .competition-top-banner {
+  background-color: #22d631d0; /* or whatever green you like */
+  color: #ffffff;
 }
-.theme-purple .competition-top-banner {
-  color: #ffffff; 
-}
-.theme-purple .comp-button {
-  background-color: #2428ec; 
-}
-.theme-purple .comp-button:hover {
-  background-color: #2428ec; 
-}
+
+
 
 /* ORANGE — e.g. Pi to the Moon */
 .theme-orange {
@@ -410,7 +397,6 @@ footer {
   margin-left: auto;
   margin-right: auto;
 }
-
 
 /* === Try Your Luck Animated Gradient Background === */
 @keyframes gradient-x {

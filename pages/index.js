@@ -7,7 +7,7 @@ import PiPaymentButton from '@/components/PiPaymentButton'
 
 export default function HomePage() {
   const dailyRef = useRef(null)
-  const freeRef  = useRef(null)
+  const freeRef = useRef(null)
 
   const dailyComps = [
     {
@@ -36,7 +36,6 @@ export default function HomePage() {
     },
   ]
 
-  // scroll helper
   const scroll = (ref, offset) => {
     ref.current?.scrollBy({ left: offset, behavior: 'smooth' })
   }
@@ -50,7 +49,7 @@ export default function HomePage() {
         </h2>
         <div
           ref={dailyRef}
-          className="flex space-x-4 overflow-x-auto pb-2 no-scrollbar"
+          className="daily-carousel flex space-x-4 overflow-x-auto pb-2 no-scrollbar"
         >
           {dailyComps.map((item) => (
             <CompetitionCard
@@ -63,13 +62,7 @@ export default function HomePage() {
               small
               theme={item.theme}
               className="flex-shrink-0 w-72"
-            >
-              <PiPaymentButton
-                amount={item.comp.entryFee}
-                memo={`Entry fee for ${item.title}`}
-                metadata={{ compSlug: item.comp.slug }}
-              />
-            </CompetitionCard>
+            />
           ))}
         </div>
         <button
@@ -93,8 +86,9 @@ export default function HomePage() {
         </h2>
         <div
           ref={freeRef}
-          className="flex space-x-4 overflow-x-auto pb-2 no-scrollbar"
+          className="free-carousel flex space-x-4 overflow-x-auto pb-2 no-scrollbar"
         >
+          {/* Pi Day Freebie */}
           <CompetitionCard
             comp={{ slug: 'pi-day-freebie', entryFee: 0 }}
             title="Pi Day Freebie"
@@ -117,8 +111,12 @@ export default function HomePage() {
                 Get your referral link
               </a>
             </div>
+            <div className="mt-4">
+              <button className="comp-button w-full">Enter Now</button>
+            </div>
           </CompetitionCard>
 
+          {/* Weekly Pi Giveaway */}
           <CompetitionCard
             comp={{ slug: 'weekly-pi-giveaway', entryFee: 0 }}
             title="Weekly Pi Giveaway"
@@ -143,6 +141,9 @@ export default function HomePage() {
                 Follow us on Twitter
               </a>
             </div>
+            <div className="mt-4">
+              <button className="comp-button w-full">Enter Now</button>
+            </div>
           </CompetitionCard>
         </div>
         <button
@@ -162,6 +163,7 @@ export default function HomePage() {
   )
 }
 
+// This must be **after** your component
 export async function getServerSideProps() {
   return { props: {} }
 }
