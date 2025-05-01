@@ -43,12 +43,14 @@ export default function AllCompetitions() {
       {/* Auth Buttons */}
       <div className="flex justify-end space-x-4 mb-8">
         {!session ? (
-          <button
-            onClick={() => signIn()}
-            className="px-4 py-2 bg-blue-600 text-white rounded"
-          >
-            Sign In
-          </button>
+      <button
+         onClick={() =>
+           // launch Pi OAuth directly, then return here
+           signIn('pi', { callbackUrl: window.location.href })
+         }
+       >
+          Sign In with Pi
+        </button>
         ) : (
           <>
             <button
