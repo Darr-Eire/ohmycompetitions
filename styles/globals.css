@@ -218,8 +218,8 @@ footer {
   color: var(--daily-title-color);
 }
 :root {
-  --daily-title-color: #2563eb; /* blue-600 */
-  --free-title-color:  #059669; /* green-500, or whatever you want */
+  --daily-title-color: #2428ec;  /* blue-600 */
+  --free-title-color:  #22d631d0; /* green-500, or whatever you want */
 }
 
 .daily-competitions-title {
@@ -243,7 +243,8 @@ footer {
 }
 /* pick a variable if you want to tweak color elsewhere */
 :root {
-  --freebie-banner-bg: #DC2626;
+  --freebie-banner-bg: #2428ec; 
+  color: #ffffff;
 }
 
 /* make this more specific and force it to win */
@@ -269,13 +270,14 @@ footer {
 
 /* === Base Competition Card === */
 .competition-card {
-  border: 3px solid #06B6D4; /* default fallback border */
+  border: 1.5px solid #2428ec; 
+  color: #ffffff; /* default fallback border */
   border-radius: 2px;
   padding: 0.6rem;
   max-width: 300px;;
   background: #ffffff;
   box-shadow: 0 2px 6px rgb(39, 25, 196);
-  margin: 1rem auto;
+  margin: 0.4rem auto;
   text-align: center;
   transition: transform 0.2s ease;
 }
@@ -409,11 +411,13 @@ footer {
   margin-right: auto;
 }
 
+
 /* === Try Your Luck Animated Gradient Background === */
 @keyframes gradient-x {
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
 }
+
 .animate-gradient-x {
   background-size: 200% 200%;
   animation: gradient-x 10s ease infinite;

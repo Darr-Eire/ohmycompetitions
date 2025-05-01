@@ -1,141 +1,157 @@
+// pages/index.js
 'use client'
 
-import { useSession, signIn, signOut } from 'next-auth/react'
-import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useRef } from 'react'
 import CompetitionCard from '@/components/CompetitionCard'
-import PiPaymentButton from '@/components/PiPaymentButton'
 
-export default function AllCompetitions() {
-  const { data: session } = useSession()
-  const [competitions, setCompetitions] = useState([])
+export default function HomePage() {
+  const dailyRef = useRef(null)
+  const freeRef  = useRef(null)
 
-  useEffect(() => {
-    async function load() {
-      const res = await fetch('/api/competitions')
-      const data = await res.json()
+  const dailyComps = [
+    {
+      comp: { slug: 'everyday-pioneer', entryFee: 0.314 },
+      title: 'Everyday Pioneer',
+      href: '/competitions/everyday-pioneer',
+      prize: '1,000 PI Giveaway',
+      fee: '0.314 π',
+      theme: 'gold',
+    },
+    {
+      comp: { slug: 'pi-to-the-moon', entryFee: 0.25 },
+      title: 'Pi To The Moon',
+      href: '/competitions/pi-to-the-moon',
+      prize: '5,000 PI Prize',
+      fee: '3.14 π',
+      theme: 'orange',
+    },
+    {
+      comp: { slug: 'hack-the-vault', entryFee: 0.375 },
+      title: 'Hack The Vault',
+      href: '/competitions/hack-the-vault',
+      prize: '750 PI Bounty',
+      fee: '0.375 π',
+      theme: 'purple',
+    },
+  ]
 
-      // Inject Pi Day Freebie manually at top
-      const piDay = {
-        _id: 'pi-day-2026',
-        slug: 'pi-day-freebie',
-        title: 'Pi Day Freebie',
-        prize: '🎉 Pi Day Badge',
-        entryFee: 0,
-      }
-
-      setCompetitions([piDay, ...data])
-    }
-    load()
-  }, [])
-
-  async function handleDelete(id) {
-    if (!confirm('Delete this competition?')) return
-    const res = await fetch(`/api/competitions/${id}`, { method: 'DELETE' })
-    if (res.ok) {
-      setCompetitions(cs => cs.filter(c => c._id !== id))
-    } else {
-      alert('Delete failed')
-    }
+  const scroll = (ref, offset) => {
+    ref.current?.scrollBy({ left: offset, behavior: 'smooth' })
   }
 
   return (
-    <main className="pt-6 pb-12 px-4 bg-white min-h-screen">
-      {/* Auth Buttons */}
-      <div className="flex justify-end space-x-4 mb-8">
-        {!session ? (
-          <button
-            onClick={() =>
-              signIn('pi', { callbackUrl: window.location.href })
-            }
-            className="px-4 py-2 bg-blue-600 text-white rounded"
-          >
-            Sign in with Pi
-          </button>
-        ) : (
-          <>
-            <button
-              onClick={() => signOut()}
-              className="px-4 py-2 bg-gray-600 text-white rounded"
-            >
-              Sign Out
-            </button>
-            {session.user.isAdmin && (
-              <Link href="/competitions/new">
-                <button className="px-4 py-2 bg-green-600 text-white rounded">
-                  New Competition
-                </button>
-              </Link>
-            )}
-          </>
-        )}
+    <main className="pt-8 pb-12 px-4 bg-white min-h-screen space-y-16">
+      {/* Daily Competitions Carousel */}
+      <div className="relative">
+        <h2 className="text-2xl font-bold text-blue-600 text-center mb-4">
+          Daily Competitions
+        </h2>
+        <div
+          ref={dailyRef}
+          className="flex space-x-4 overflow-x-auto pb-2 no-scrollbar"
+        >
+          {dailyComps.map((item) => (
+            <CompetitionCard
+              key={item.comp.slug}
+              comp={item.comp}
+              title={item.title}
+              prize={item.prize}
+              fee={item.fee}
+              href={item.href}
+              small
+              theme={item.theme}
+              className="flex-shrink-0 w-72"
+            />
+          ))}
+        </div>
+        <button
+          onClick={() => scroll(dailyRef, -300)}
+          className="absolute left-0 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow"
+        >
+          ‹
+        </button>
+        <button
+          onClick={() => scroll(dailyRef, 300)}
+          className="absolute right-0 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow"
+        >
+          ›
+        </button>
       </div>
 
-      {/* 2 cols by default, 4 cols at ≥768px */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        {competitions.length > 0 ? (
-          competitions.map(comp => {
-            const isFreebie = comp.slug === 'pi-day-freebie'
-
-            return (
-              <CompetitionCard
-                key={comp._id}
-                comp={comp}
-                title={comp.title}
-                prize={comp.prize}
-                fee={
-                  Number.isFinite(comp.entryFee)
-                    ? `${comp.entryFee} π`
-                    : 'Free'
-                }
-                href={`/competitions/${comp.slug}`}
-                small
-                className={`w-full ${isFreebie ? 'freebie-card' : ''}`}
+      {/* Free Competitions Carousel */}
+      <div className="relative">
+        <h2 className="text-2xl font-bold text-green-600 text-center mb-4">
+          Free Competitions
+        </h2>
+        <div
+          ref={freeRef}
+          className="flex space-x-4 overflow-x-auto pb-2 no-scrollbar"
+        >
+          {/* Pi Day Freebie */}
+          <CompetitionCard
+            comp={{ slug: 'pi-day-freebie', entryFee: 0 }}
+            title="Pi Day Freebie"
+            prize="🎉 Pi Day Badge"
+            fee="Free"
+            href="/competitions/pi-day-freebie"
+            small
+            theme="green"
+            className="flex-shrink-0 w-72"
+          >
+            <div className="mt-2 p-2 bg-green-50 rounded text-center">
+              <h4 className="text-green-700 font-semibold">Referral Rewards</h4>
+              <p className="text-sm text-gray-600">
+                Earn 1 free entry for every friend who signs up!
+              </p>
+              <a
+                href={`/refer?comp=pi-day-freebie`}
+                className="text-green-600 text-sm underline"
               >
-                {/* Referral UI only for Pi Day Freebie */}
-                {isFreebie && (
-                  <div className="mt-2 p-2 bg-green-50 rounded text-center">
-                    <h4 className="text-green-700 font-semibold">
-                      Referral Rewards
-                    </h4>
-                    <p className="text-sm text-gray-600">
-                      Earn 1 free entry for every friend who signs up!
-                    </p>
-                    <Link
-                      href={`/refer?comp=${comp.slug}`}
-                      className="text-green-600 text-sm underline"
-                    >
-                      Get your referral link
-                    </Link>
-                  </div>
-                )}
+                Get your referral link
+              </a>
+            </div>
+          </CompetitionCard>
 
-                {/* PiPaymentButton for paid competitions */}
-                {!isFreebie && (
-                  <PiPaymentButton
-                    amount={comp.entryFee}
-                    memo={`Entry fee for ${comp.title}`}
-                    metadata={{ compSlug: comp.slug }}
-                  />
-                )}
-
-                {/* Admin delete button */}
-                {session?.user?.isAdmin && (
-                  <button
-                    onClick={() => handleDelete(comp._id)}
-                    className="mt-2 text-red-500 hover:underline text-sm"
-                  >
-                    Delete
-                  </button>
-                )}
-              </CompetitionCard>
-            )
-          })
-        ) : (
-          <p className="text-center text-gray-500 w-full">
-            Loading competitions...
-          </p>
-        )}
+          {/* Weekly Pi Giveaway */}
+          <CompetitionCard
+            comp={{ slug: 'weekly-pi-giveaway', entryFee: 0 }}
+            title="Weekly Pi Giveaway"
+            prize="1,000 π Giveaway"
+            fee="Free"
+            href="/competitions/weekly-pi-giveaway"
+            small
+            theme="green"
+            className="flex-shrink-0 w-72"
+          >
+            <div className="mt-2 p-2 bg-green-50 rounded text-center">
+              <h4 className="text-green-700 font-semibold">Social Media Entry</h4>
+              <p className="text-sm text-gray-600">
+                Earn 1 free entry for every new social media follower you get
+                this week!
+              </p>
+              <a
+                href="https://twitter.com/YourTwitterHandle"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-green-600 text-sm underline"
+              >
+                Follow us on Twitter
+              </a>
+            </div>
+          </CompetitionCard>
+        </div>
+        <button
+          onClick={() => scroll(freeRef, -300)}
+          className="absolute left-0 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow"
+        >
+          ‹
+        </button>
+        <button
+          onClick={() => scroll(freeRef, 300)}
+          className="absolute right-0 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow"
+        >
+          ›
+        </button>
       </div>
     </main>
   )

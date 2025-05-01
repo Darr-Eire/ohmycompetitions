@@ -1,4 +1,3 @@
-// src/components/CompetitionCard.js
 'use client'
 
 import Image from 'next/image'
@@ -14,27 +13,22 @@ export default function CompetitionCard({
   small,
   children,
   theme,
-  rarity = 'common', // rarity levels: common, rare, epic, legendary
-  endsAt = new Date(Date.now() + 3600 * 1000 * 12), // fallback: 12h from now
+  endsAt = Date.now() + 1000 * 60 * 60 * 12, // 12 h default
 }) {
-  const isFree = comp?.entryFee === 0
-  const appliedTheme = theme || (isFree ? 'green' : 'gold')
-
+  const appliedTheme = theme || (comp.entryFee === 0 ? 'green' : 'gold')
   const [timeLeft, setTimeLeft] = useState('')
 
   useEffect(() => {
-    const updateCountdown = () => {
-      const now = new Date()
-      const diff = new Date(endsAt) - now
+    function update() {
+      const diff = new Date(endsAt) - Date.now()
       if (diff <= 0) return setTimeLeft('Ended')
-      const hours = Math.floor(diff / (1000 * 60 * 60))
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-      setTimeLeft(`${hours}h ${minutes}m`)
+      const h = Math.floor(diff / 36e5)
+      const m = Math.floor((diff % 36e5) / 6e4)
+      setTimeLeft(`${h}h ${m}m`)
     }
-
-    updateCountdown()
-    const timer = setInterval(updateCountdown, 60000)
-    return () => clearInterval(timer)
+    update()
+    const iv = setInterval(update, 60000)
+    return () => clearInterval(iv)
   }, [endsAt])
 
   return (
@@ -42,7 +36,6 @@ export default function CompetitionCard({
       className={[
         'competition-card',
         `theme-${appliedTheme}`,
-        `rarity-${rarity}`,
         small && 'competition-card--small',
       ]
         .filter(Boolean)
@@ -63,29 +56,19 @@ export default function CompetitionCard({
       <div className="competition-info">
         <p><strong>Prize:</strong> {prize}</p>
         <p><strong>Draw ends in:</strong> {timeLeft}</p>
-        <p>📊 <strong>Total Tickets:</strong>3500</p>
+        <p>📊 <strong>Total Tickets:</strong> 3500</p>
         <p>✅ <strong>Sold:</strong> 0</p>
         <p>🏅 <strong>Entry Fee:</strong> {fee}</p>
-        <p className="text-xs italic text-gray-400">Rarity: {rarity}</p>
       </div>
 
       {children}
 
-      <Link href={href || `/ticket-purchase/${comp.slug}`}>
-        <button className="mt-2 comp-button w-full">Enter Now</button>
-      </Link>
+      {/* Only show default button if no children provided */}
+      {!children && (
+        <Link href={href}>
+          <button className="mt-2 comp-button w-full">Enter Now</button>
+        </Link>
+      )}
     </div>
   )
-}
-
-CompetitionCard.defaultProps = {
-  comp: { slug: 'everyday-pioneer', entryFee: 0 },
-  title: 'Everyday Pioneer',
-  prize: '1,000 PI Giveaways',
-  fee: '0.314 π',
-  href: '/competitions/everyday-pioneer',
-  small: false,
-  theme: null,
-  rarity: 'common',
-  endsAt: new Date(Date.now() + 1000 * 60 * 60 * 12),
 }
