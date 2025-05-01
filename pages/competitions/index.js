@@ -43,14 +43,12 @@ export default function AllCompetitions() {
       {/* Auth Buttons */}
       <div className="flex justify-end space-x-4 mb-8">
         {!session ? (
-      <button
-         onClick={() =>
-           // launch Pi OAuth directly, then return here
-           signIn('pi', { callbackUrl: window.location.href })
-         }
-       >
-          Sign In with Pi
-        </button>
+          <button
+            onClick={() => signIn('pi', { callbackUrl: window.location.href })}
+            className="px-4 py-2 bg-blue-600 text-white rounded"
+          >
+            Sign In with Pi
+          </button>
         ) : (
           <>
             <button
@@ -81,16 +79,14 @@ export default function AllCompetitions() {
                 comp={comp}
                 title={comp.title}
                 prize={comp.prize}
-                fee={comp.entryFee != null ? `${comp.entryFee} π` : 'Free'}
+                fee={
+                  Number.isFinite(comp.entryFee)
+                    ? `${comp.entryFee} π`
+                    : 'Free'
+                }
                 href={`/competitions/${comp.slug}`}
                 small
                 className={`w-full ${isFreebie ? 'freebie-card' : ''}`}
-                // apply red background to the title banner for Pi Day Freebie
-                titleStyle={
-                  isFreebie
-                    ? { backgroundColor: '#DC2626' }
-                    : undefined
-                }
               >
                 {isFreebie && (
                   <div className="mt-2 p-2 bg-green-50 rounded text-center">

@@ -10,42 +10,18 @@ export default function HomePage() {
   const [busySlug, setBusySlug] = useState(null)
 
   const dailyComps = [
-    {
-      comp: { slug: 'everyday-pioneer', entryFee: 0.314 },
-      title: 'Everyday Pioneer',
-      href: '/competitions/everyday-pioneer',
-      prize: '1,000 PI Giveaway',
-      fee: '0.314 π',
-      theme: 'gold',
-    },
-    {
-      comp: { slug: 'pi-to-the-moon', entryFee: 0.25 },
-      title: 'Pi To The Moon',
-      href: '/competitions/pi-to-the-moon',
-      prize: '500 PI Prize',
-      fee: '0.250 π',
-      theme: 'orange',
-    },
-    {
-      comp: { slug: 'hack-the-vault', entryFee: 0.375 },
-      title: 'Hack The Vault',
-      href: '/competitions/hack-the-vault',
-      prize: '750 PI Bounty',
-      fee: '0.375 π',
-      theme: 'purple',
-    },
+    { comp: { slug: 'everyday-pioneer', entryFee: 0.314 }, title: 'Everyday Pioneer', href: '/competitions/everyday-pioneer', prize: '1,000 PI Giveaway', fee: '0.314 π', theme: 'gold' },
+    { comp: { slug: 'pi-to-the-moon', entryFee: 0.25 },        title: 'Pi To The Moon',      href: '/competitions/pi-to-the-moon',      prize: '500 PI Prize',    fee: '0.250 π', theme: 'orange' },
+    { comp: { slug: 'hack-the-vault', entryFee: 0.375 },        title: 'Hack The Vault',      href: '/competitions/hack-the-vault',      prize: '750 PI Bounty',    fee: '0.375 π', theme: 'purple' },
   ]
 
   const scroll = (offset) => {
-    if (carouselRef.current) {
-      carouselRef.current.scrollBy({ left: offset, behavior: 'smooth' })
-    }
+    carouselRef.current?.scrollBy({ left: offset, behavior: 'smooth' })
   }
 
-  const handlePay = async ({ comp }) => {
-    if (status !== 'authenticated') {
-      return signIn()
-    }
+  const handlePay = async (item) => {
+    const { comp } = item
+    if (status !== 'authenticated') return signIn('pi', { callbackUrl: window.location.href })
     setBusySlug(comp.slug)
     try {
       const res = await fetch('/api/transaction', {
@@ -55,9 +31,9 @@ export default function HomePage() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Transaction failed')
-      alert('✅ Transaction success! ID: ' + data.id)
+      alert(`✅ Transaction success! ID: ${data.id}`)
     } catch (err) {
-      alert('⚠️ ' + err.message)
+      alert(`⚠️ ${err.message}`)
     } finally {
       setBusySlug(null)
     }
@@ -87,7 +63,7 @@ export default function HomePage() {
                 className="mt-2 comp-button w-full"
               >
                 {status !== 'authenticated'
-                  ? 'Sign in to Pay'
+                  ? 'Sign in with Pi'
                   : busySlug === item.comp.slug
                   ? 'Processing…'
                   : `Pay ${item.comp.entryFee} π`}
@@ -95,18 +71,8 @@ export default function HomePage() {
             </CompetitionCard>
           ))}
           {/* Scroll Arrows */}
-          <button
-            onClick={() => scroll(-300)}
-            className="absolute left-0 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow"
-          >
-            ‹
-          </button>
-          <button
-            onClick={() => scroll(300)}
-            className="absolute right-0 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow"
-          >
-            ›
-          </button>
+          <button onClick={() => scroll(-300)} className="absolute left-0 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow">‹</button>
+          <button onClick={() => scroll(300)}  className="absolute right-0 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow">›</button>
         </div>
       </div>
 
@@ -126,21 +92,15 @@ export default function HomePage() {
           >
             <div className="mt-2 p-2 bg-green-50 rounded text-center">
               <h4 className="text-green-700 font-semibold">Referral Rewards</h4>
-              <p className="text-sm text-gray-600">
-                Earn 1 free entry for every friend who signs up!
-              </p>
-              <a
-                href={`/refer?comp=pi-day-freebie`}
-                className="text-green-600 text-sm underline"
-              >
-                Get your referral link
-              </a>
+              <p className="text-sm text-gray-600">Earn 1 free entry for every friend who signs up!</p>
+              <a href={`/refer?comp=pi-day-freebie`} className="text-green-600 text-sm underline">Get your referral link</a>
             </div>
             <button
               onClick={() => handlePay({ comp: { slug: 'pi-day-freebie', entryFee: 0 } })}
+              disabled={busySlug === 'pi-day-freebie'}
               className="mt-2 comp-button w-full"
             >
-              Sign in to Enter
+              {status !== 'authenticated' ? 'Sign in with Pi' : 'Enter Now'}
             </button>
           </CompetitionCard>
         </div>
@@ -149,7 +109,6 @@ export default function HomePage() {
   )
 }
 
-// Server‐side props if needed for session refresh
 export async function getServerSideProps() {
   return { props: {} }
 }
