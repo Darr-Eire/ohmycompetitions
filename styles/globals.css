@@ -215,47 +215,78 @@ footer {
 
   /* center & color from a variable you can change globally */
   text-align: center;
-  color: var(--daily-title-color);
+  color: #2428ec;   /* directly using rose-600 */
 }
+/* Hide native scrollbar */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Title color variables */
 :root {
-  --daily-title-color: #2428ec;  /* blue-600 */
-  --free-title-color:  #22d631d0; /* green-500, or whatever you want */
+  --daily-title-color: #2563eb;   /* Tailwind blue-600 */
+  --free-title-color:  #16a34a;   /* Tailwind green-600 */
+  --item-title-color:  #eb7515;   /* Tailwind purple-700 */
 }
 
+/* Daily title */
 .daily-competitions-title {
-  @apply text-2xl font-bold mb-4;
-  text-align:    center;
-  color:         var(--daily-title-color);
+  text-align: center;
+  color: #2428ec;   /* directly using rose-600 */
 }
 
-.free-competitions-title {
-  @apply text-2xl font-bold mb-4;
-  text-align:    center;
-  color:         var(--free-title-color);
+/* Item title */
+.item-giveaways-title {
+  text-align: center;
+  color: var(--item-title-color);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
 }
 
-.free-competitions-title {
-  font-size:   1.5rem;    
-  font-weight: 700;    
-  margin-bottom: 1rem;    /* mb-4 */
-  text-align:   center;
-  color:        var(--free-title-color);
+
+/* Color variable for Item Giveaways title */
+:root {
+  --item-giveaways-color: #eb7515;  /* e.g. Tailwind’s purple-600 */
 }
+
+.item-giveaways-title {
+  @apply text-2xl font-bold text-center mb-6 mt-12;
+  color: var(--item-giveaways-color);
+}
+
+
+/* Ensure the PS5 card uses the same purple theme */
+.theme-purple {
+  border-color: #eb7515; 
+  box-shadow: 0 0 10px #eb7515; 
+}
+.theme-purple .competition-top-banner {
+  background-color: #eb7515; 
+}
+.theme-purple .comp-button {
+  background-color: #eb7515; 
+}
+
 /* pick a variable if you want to tweak color elsewhere */
 :root {
-  --freebie-banner-bg: #2428ec; 
+  --freebie-banner-bg: #eb7515; 
   color: #ffffff;
 }
 
 /* make this more specific and force it to win */
 .freebie-card > .competition-top-banner {
-  background-color: var(--freebie-banner-bg) !important;
+  background-color: #eb7515; 
   color: white !important;
 }
-
-
-
-
+.item-giveaways-title {
+  @apply text-2xl font-bold text-center mt-12 mb-6;
+  color: #eb7515; 
+}
 /* 13. Updated Competition Card Styling (new fancy version) */
 .page {
   display: flex;
@@ -331,50 +362,92 @@ footer {
 
 /* GOLD — default */
 .theme-gold {
-  border-color: #2428ec;
-  box-shadow: 0 0 10px #2428ec; 
+  border-color: #eb7515; 
+  box-shadow: 0 0 10px #eb7515; 
 }
+
 .theme-gold .competition-top-banner {
-  color: #ffffff; 
+  background-color: #eb7515; 
+
+  color: #ffffff;
 }
 .theme-gold .comp-button {
-  background-color: #2428ec; 
+  background-color: #eb7515; 
 }
+
+
 .theme-gold .comp-button:hover {
-  background-color: #2428ec; 
+  background-color: #eb7515; 
 }
+/* === DAILY THEME === */
+.theme-daily {
+  /* blue border/glow */
+  border-color: #2428ec;
+  box-shadow: 0 0 10px #2428ec;
+}
+
+.theme-daily .competition-top-banner {
+  background-color: #2428ec;
+  color: #fff;
+}
+
+.theme-daily .comp-button {
+  background-color: #2428ec;
+  color: #fff;
+}
+.theme-daily .comp-button:hover {
+  background-color: #1e1ab8;
+}
+
 
 /* GREEN — free competitions */
-/* FREE – green theme */
+.theme-green {
+  border-color: #22d631;
+  box-shadow: 0 0 10px #22d631;
+}
 .theme-green .competition-top-banner {
-  background-color: #22d631d0; /* or whatever green you like */
+  background-color: #22d631;
   color: #ffffff;
 }
-
-
-/* PURPLE — e.g. Hack the Vault */
-/* FREE – green theme */
-.theme-green .competition-top-banner {
-  background-color: #22d631d0; /* or whatever green you like */
-  color: #ffffff;
+.theme-green .comp-button {
+  background-color: #22d631;
+}
+.theme-green .comp-button:hover {
+  background-color: #16a34a;
 }
 
+/* PURPLE — e.g. PS5 Bundle */
+.theme-purple {
+  border-color: #eb7515; 
+  box-shadow: 0 0 10px #eb7515; 
+}
+.theme-purple .competition-top-banner {
+  background-color: #eb7515; 
+  color: #ffffff;
+}
+.theme-purple .comp-button {
+  background-color: #eb7515; 
+}
+.theme-purple .comp-button:hover {
+  background-color: #eb7515; 
+}
 
-
-/* ORANGE — e.g. Pi to the Moon */
+/* ORANGE — e.g. Pi To The Moon */
 .theme-orange {
-  border-color: #2428ec; 
-  box-shadow: 0 0 10px #2428ec; 
+  border-color: #eb7515; 
+  box-shadow: 0 0 10px #eb7515; 
 }
 .theme-orange .competition-top-banner {
-  color: #ffffff; 
+  background-color: #eb7515; 
+  color: #ffffff;
 }
 .theme-orange .comp-button {
-  background-color: #2428ec; 
+  background-color: #eb7515; 
 }
 .theme-orange .comp-button:hover {
-  background-color: #2428ec; 
+  background-color: #eb7515; 
 }
+
 
 /* === Daily Competitions Carousel === */
 .daily-carousel {

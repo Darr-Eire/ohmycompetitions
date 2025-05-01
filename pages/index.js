@@ -3,11 +3,11 @@
 
 import { useRef } from 'react'
 import CompetitionCard from '@/components/CompetitionCard'
-import PiPaymentButton from '@/components/PiPaymentButton'
 
 export default function HomePage() {
   const dailyRef = useRef(null)
   const freeRef = useRef(null)
+  const itemRef = useRef(null)
 
   const dailyComps = [
     {
@@ -42,16 +42,15 @@ export default function HomePage() {
 
   return (
     <main className="pt-8 pb-12 px-4 bg-white min-h-screen space-y-16">
+
       {/* Daily Competitions Carousel */}
       <div className="relative">
-        <h2 className="text-2xl font-bold text-blue-600 text-center mb-4">
-          Daily Competitions
-        </h2>
+        <h2 className="daily-competitions-title">Daily Competitions</h2>
         <div
           ref={dailyRef}
           className="daily-carousel flex space-x-4 overflow-x-auto pb-2 no-scrollbar"
         >
-          {dailyComps.map((item) => (
+          {dailyComps.map(item => (
             <CompetitionCard
               key={item.comp.slug}
               comp={item.comp}
@@ -60,7 +59,7 @@ export default function HomePage() {
               fee={item.fee}
               href={item.href}
               small
-              theme={item.theme}
+              theme="daily"
               className="flex-shrink-0 w-72"
             />
           ))}
@@ -81,12 +80,10 @@ export default function HomePage() {
 
       {/* Free Competitions Carousel */}
       <div className="relative">
-        <h2 className="text-2xl font-bold text-green-600 text-center mb-4">
-          Free Competitions
-        </h2>
+        <h2 className="free-competitions-title">Free Competitions</h2>
         <div
           ref={freeRef}
-          className="free-carousel flex space-x-4 overflow-x-auto pb-2 no-scrollbar"
+          className="daily-carousel flex space-x-4 overflow-x-auto pb-2 no-scrollbar"
         >
           {/* Pi Day Freebie */}
           <CompetitionCard
@@ -159,11 +156,67 @@ export default function HomePage() {
           ›
         </button>
       </div>
+
+      {/* Item Giveaways Carousel */}
+      <div className="relative space-y-4">
+        <h3 className="item-giveaways-title">Item Giveaways</h3>
+        <div
+          ref={itemRef}
+          className="daily-carousel flex space-x-4 overflow-x-auto pb-2 no-scrollbar"
+        >
+          {/* PS5 Bundle */}
+          <CompetitionCard
+            comp={{ slug: 'ps5-bundle-giveaway', entryFee: 0.5 }}
+            title="PS5 Bundle Giveaway"
+            prize="PlayStation 5 + Extra Controller"
+            fee="0.5 π"
+            href="/competitions/ps5-bundle-giveaway"
+            small
+            theme="purple"
+            className="flex-shrink-0 w-72"
+          />
+
+          {/* 55" TV */}
+          <CompetitionCard
+            comp={{ slug: '55-inch-tv-giveaway', entryFee: 0.75 }}
+            title='55" TV Giveaway'
+            prize='55" Smart TV'
+            fee='0.75 π'
+            href="/competitions/55-inch-tv-giveaway"
+            small
+            theme="gold"
+            className="flex-shrink-0 w-72"
+          />
+
+          {/* Xbox One Bundle */}
+          <CompetitionCard
+            comp={{ slug: 'xbox-one-bundle', entryFee: 0.6 }}
+            title="Xbox One Bundle"
+            prize="Xbox One + Game Pass"
+            fee="0.6 π"
+            href="/competitions/xbox-one-bundle"
+            small
+            theme="orange"
+            className="flex-shrink-0 w-72"
+          />
+        </div>
+        <button
+          onClick={() => scroll(itemRef, -300)}
+          className="absolute left-0 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow"
+        >
+          ‹
+        </button>
+        <button
+          onClick={() => scroll(itemRef, 300)}
+          className="absolute right-0 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow"
+        >
+          ›
+        </button>
+      </div>
     </main>
   )
 }
 
-// This must be **after** your component
 export async function getServerSideProps() {
   return { props: {} }
 }
