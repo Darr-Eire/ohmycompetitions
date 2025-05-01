@@ -272,7 +272,7 @@ footer {
   border: 3px solid #06B6D4; /* default fallback border */
   border-radius: 2px;
   padding: 0.6rem;
-  max-width: 320px;
+  max-width: 300px;;
   background: #ffffff;
   box-shadow: 0 2px 6px rgb(39, 25, 196);
   margin: 1rem auto;
@@ -282,7 +282,7 @@ footer {
 .competitions-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1rem; /* adjust spacing as you like */
+  gap: 0rem; /* adjust spacing as you like */
 }
 
 /* large screens: 4 columns */
