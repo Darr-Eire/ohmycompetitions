@@ -1,40 +1,41 @@
-// lib/usePiAuth.js
+// src/lib/usePiAuth.js
 import { useState } from 'react'
 
 export function usePiAuth() {
   const [user, setUser] = useState(null)
-  const [token, setToken] = useState(null)
   const [loading, setLoading] = useState(false)
 
   async function signIn() {
     setLoading(true)
     try {
-      // 1) ask Pi Browser for consent & get token + basic user info
-      const authRes = await window.Pi.authenticate(
-        ["username", "wallet_address", "payments"],
+      // 1) Prompt Pi Browser for consent & payment scope
+      const { accessToken } = await window.Pi.authenticate(
+        ['username', 'wallet_address', 'payments'],
         (incomplete) => {
-          // if there’s an unfinished U2A, send it to your server
-          fetch("/api/payments/complete", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
+          // Clean up any unfinished U2A payments
+          fetch('/api/payments/complete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(incomplete),
           })
         }
       )
 
-      setToken(authRes.accessToken)
-      // 2) verify on your server via /api/pi/me
-      const r = await fetch("/api/pi/me", {
-        headers: { Authorization: `Bearer ${authRes.accessToken}` }
+      // 2) Verify token with your backend
+      const res = await fetch('/api/pi/me', {
+        headers: { Authorization: `Bearer ${accessToken}` },
       })
-      const me = await r.json()
+      if (!res.ok) throw new Error('Token verification failed')
+      const me = await res.json()
+
+      // Save verified user info
       setUser(me)
     } catch (e) {
-      console.error("Pi auth failed", e)
+      console.error('Pi auth failed', e)
     } finally {
       setLoading(false)
     }
   }
 
-  return { user, token, loading, signIn }
+  return { user, loading, signIn }
 }
