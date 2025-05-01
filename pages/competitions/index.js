@@ -4,6 +4,7 @@ import { useSession, signIn, signOut } from 'next-auth/react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import CompetitionCard from '@/components/CompetitionCard'
+import PiPaymentButton from '@/components/PiPaymentButton'
 
 export default function AllCompetitions() {
   const { data: session } = useSession()
@@ -44,10 +45,12 @@ export default function AllCompetitions() {
       <div className="flex justify-end space-x-4 mb-8">
         {!session ? (
           <button
-            onClick={() => signIn('pi', { callbackUrl: window.location.href })}
+            onClick={() =>
+              signIn('pi', { callbackUrl: window.location.href })
+            }
             className="px-4 py-2 bg-blue-600 text-white rounded"
           >
-            Sign In with Pi
+            Sign in with Pi
           </button>
         ) : (
           <>
@@ -73,6 +76,7 @@ export default function AllCompetitions() {
         {competitions.length > 0 ? (
           competitions.map(comp => {
             const isFreebie = comp.slug === 'pi-day-freebie'
+
             return (
               <CompetitionCard
                 key={comp._id}
@@ -88,6 +92,7 @@ export default function AllCompetitions() {
                 small
                 className={`w-full ${isFreebie ? 'freebie-card' : ''}`}
               >
+                {/* Referral UI only for Pi Day Freebie */}
                 {isFreebie && (
                   <div className="mt-2 p-2 bg-green-50 rounded text-center">
                     <h4 className="text-green-700 font-semibold">
@@ -104,6 +109,17 @@ export default function AllCompetitions() {
                     </Link>
                   </div>
                 )}
+
+                {/* PiPaymentButton for paid competitions */}
+                {!isFreebie && (
+                  <PiPaymentButton
+                    amount={comp.entryFee}
+                    memo={`Entry fee for ${comp.title}`}
+                    metadata={{ compSlug: comp.slug }}
+                  />
+                )}
+
+                {/* Admin delete button */}
                 {session?.user?.isAdmin && (
                   <button
                     onClick={() => handleDelete(comp._id)}

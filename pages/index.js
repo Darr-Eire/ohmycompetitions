@@ -1,42 +1,42 @@
+// pages/index.js
 'use client'
 
-import { useRef, useState } from 'react'
-import { useSession, signIn } from 'next-auth/react'
+import { useRef } from 'react'
 import CompetitionCard from '@/components/CompetitionCard'
+import PiPaymentButton from '@/components/PiPaymentButton'
 
 export default function HomePage() {
   const carouselRef = useRef(null)
-  const { data: session, status } = useSession()
-  const [busySlug, setBusySlug] = useState(null)
 
   const dailyComps = [
-    { comp: { slug: 'everyday-pioneer', entryFee: 0.314 }, title: 'Everyday Pioneer', href: '/competitions/everyday-pioneer', prize: '1,000 PI Giveaway', fee: '0.314 π', theme: 'gold' },
-    { comp: { slug: 'pi-to-the-moon', entryFee: 0.25 },        title: 'Pi To The Moon',      href: '/competitions/pi-to-the-moon',      prize: '500 PI Prize',    fee: '0.250 π', theme: 'orange' },
-    { comp: { slug: 'hack-the-vault', entryFee: 0.375 },        title: 'Hack The Vault',      href: '/competitions/hack-the-vault',      prize: '750 PI Bounty',    fee: '0.375 π', theme: 'purple' },
+    {
+      comp: { slug: 'everyday-pioneer', entryFee: 0.314 },
+      title: 'Everyday Pioneer',
+      href: '/competitions/everyday-pioneer',
+      prize: '1,000 PI Giveaway',
+      fee: '0.314 π',
+      theme: 'gold',
+    },
+    {
+      comp: { slug: 'pi-to-the-moon', entryFee: 0.25 },
+      title: 'Pi To The Moon',
+      href: '/competitions/pi-to-the-moon',
+      prize: '500 PI Prize',
+      fee: '0.250 π',
+      theme: 'orange',
+    },
+    {
+      comp: { slug: 'hack-the-vault', entryFee: 0.375 },
+      title: 'Hack The Vault',
+      href: '/competitions/hack-the-vault',
+      prize: '750 PI Bounty',
+      fee: '0.375 π',
+      theme: 'purple',
+    },
   ]
 
   const scroll = (offset) => {
     carouselRef.current?.scrollBy({ left: offset, behavior: 'smooth' })
-  }
-
-  const handlePay = async (item) => {
-    const { comp } = item
-    if (status !== 'authenticated') return signIn('pi', { callbackUrl: window.location.href })
-    setBusySlug(comp.slug)
-    try {
-      const res = await fetch('/api/transaction', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: comp.entryFee, recipient: 'YOUR_MERCHANT_ID' }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Transaction failed')
-      alert(`✅ Transaction success! ID: ${data.id}`)
-    } catch (err) {
-      alert(`⚠️ ${err.message}`)
-    } finally {
-      setBusySlug(null)
-    }
   }
 
   return (
@@ -44,7 +44,10 @@ export default function HomePage() {
       {/* Daily Carousel */}
       <div className="relative space-y-4">
         <h2 className="daily-competitions-title">Daily Competitions</h2>
-        <div ref={carouselRef} className="daily-carousel flex space-x-4 overflow-x-auto pb-2">
+        <div
+          ref={carouselRef}
+          className="daily-carousel flex space-x-4 overflow-x-auto pb-2"
+        >
           {dailyComps.map((item) => (
             <CompetitionCard
               key={item.comp.slug}
@@ -57,22 +60,27 @@ export default function HomePage() {
               theme={item.theme}
               className="flex-shrink-0"
             >
-              <button
-                onClick={() => handlePay(item)}
-                disabled={busySlug === item.comp.slug}
-                className="mt-2 comp-button w-full"
-              >
-                {status !== 'authenticated'
-                  ? 'Sign in with Pi'
-                  : busySlug === item.comp.slug
-                  ? 'Processing…'
-                  : `Pay ${item.comp.entryFee} π`}
-              </button>
+              {/* PiPaymentButton drives authenticate + U2A payment */}
+              <PiPaymentButton
+                amount={item.comp.entryFee}
+                memo={`Entry fee for ${item.title}`}
+                metadata={{ compSlug: item.comp.slug }}
+              />
             </CompetitionCard>
           ))}
           {/* Scroll Arrows */}
-          <button onClick={() => scroll(-300)} className="absolute left-0 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow">‹</button>
-          <button onClick={() => scroll(300)}  className="absolute right-0 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow">›</button>
+          <button
+            onClick={() => scroll(-300)}
+            className="absolute left-0 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow"
+          >
+            ‹
+          </button>
+          <button
+            onClick={() => scroll(300)}
+            className="absolute right-0 top-1/2 -translate-y-1/2 p-2 bg-white rounded-full shadow"
+          >
+            ›
+          </button>
         </div>
       </div>
 
@@ -92,16 +100,18 @@ export default function HomePage() {
           >
             <div className="mt-2 p-2 bg-green-50 rounded text-center">
               <h4 className="text-green-700 font-semibold">Referral Rewards</h4>
-              <p className="text-sm text-gray-600">Earn 1 free entry for every friend who signs up!</p>
-              <a href={`/refer?comp=pi-day-freebie`} className="text-green-600 text-sm underline">Get your referral link</a>
+              <p className="text-sm text-gray-600">
+                Earn 1 free entry for every friend who signs up!
+              </p>
+              <a
+                href={`/refer?comp=pi-day-freebie`}
+                className="text-green-600 text-sm underline"
+              >
+                Get your referral link
+              </a>
             </div>
-            <button
-              onClick={() => handlePay({ comp: { slug: 'pi-day-freebie', entryFee: 0 } })}
-              disabled={busySlug === 'pi-day-freebie'}
-              className="mt-2 comp-button w-full"
-            >
-              {status !== 'authenticated' ? 'Sign in with Pi' : 'Enter Now'}
-            </button>
+            {/* Simple “Enter Now” for freebie */}
+            <button className="mt-2 comp-button w-full">Enter Now</button>
           </CompetitionCard>
         </div>
       </div>
