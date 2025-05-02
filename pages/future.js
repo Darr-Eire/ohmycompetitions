@@ -65,16 +65,6 @@ export default function FuturePage() {
               <li><strong>🗳️ You Vote, We Listen:</strong> Players decide the future competitions and features!</li>
             </ul>
           </section>
-
-          {/* Back Home Button */}
-          <div className="text-center mt-10">
-            <Link href="/">
-              <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded">
-                ← Back to Home
-              </button>
-            </Link>
-          </div>
-
         </div>
       </div>
     </main>

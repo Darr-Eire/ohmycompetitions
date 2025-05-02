@@ -254,6 +254,184 @@ footer {
   font-weight: 700;
   margin-bottom: 2rem;
 }
+.vault-wrapper {
+  position: relative;
+  max-width: 400px;
+  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+}
+
+.vault-bg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.vault-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem;
+}
+
+.vault-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 0.75rem;
+  text-shadow: 1px 1px 4px rgba(0,0,0,0.6);
+}
+
+.vault-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.vault-input {
+  width: 100%;
+  padding: 0.6rem;
+  border-radius: 6px;
+  border: none;
+  font-size: 1rem;
+  background: #f3f3f3;
+  color: black;
+}
+
+.vault-button {
+  background: #1E3A2F;
+  border: none;
+  color: white;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.vault-button:hover {
+  background: #2e5e42;
+}
+
+.vault-result {
+  text-align: center;
+}
+
+.glow-success {
+  box-shadow: 0 0 30px 5px limegreen;
+  transition: box-shadow 0.3s ease;
+}
+
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-4px); }
+  100% { transform: translateX(0); }
+}
+.slot-machine {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.reel {
+  font-size: 3rem;
+  padding: 1rem;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  width: 4rem;
+  height: 4rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f8f8f8;
+  box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+}
+
+button.spin-btn {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  background-color: #1E3A2F;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button.spin-btn:hover {
+  background-color: #4975edc5;
+}
+/* Base card layout */
+.competition-card {
+  @apply bg-white rounded-xl p-6 text-center shadow-lg border-2 border-green-900 max-w-md mx-auto;
+}
+
+/* Top banner styling */
+.competition-top-banner {
+  @apply bg-green-900 text-white font-bold text-sm py-2 px-4 rounded-md inline-block mb-4;
+}
+
+/* Daily streak banner */
+.streak-banner {
+  @apply text-sm text-orange-600 font-semibold mb-2 flex items-center justify-center gap-2;
+}
+
+/* Stopwatch style */
+.stopwatch-display {
+  @apply text-6xl font-mono text-green-900 mb-6;
+  letter-spacing: 0.05em;
+}
+
+/* Button base */
+.comp-button {
+  @apply bg-green-900 text-white py-2 px-4 rounded font-semibold transition duration-200;
+}
+
+.comp-button:hover {
+  @apply bg-green-800;
+}
+
+/* Result text styles */
+.result-success {
+  @apply text-green-600 text-lg font-bold;
+}
+
+.result-fail {
+  @apply text-red-600 text-lg font-semibold;
+}
+
+/* Shake animation (wrong vault code, bad timing etc.) */
+@keyframes shake {
+  0% { transform: rotate(-2deg); }
+  25% { transform: rotate(2deg); }
+  50% { transform: rotate(-1deg); }
+  75% { transform: rotate(1deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+
+
+
 
 
 
@@ -378,4 +556,65 @@ footer {
   .category-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
+.wheel-wrapper {
+  width: 280px;
+  height: 280px;
+  margin: 2rem auto;
+  position: relative;
+}
+
+.wheel {
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  border: 6px solid #065f46;
+  background: conic-gradient(
+    #fef08a 0% 16.666%,
+    #bbf7d0 16.666% 33.333%,
+    #fef08a 33.333% 50%,
+    #bbf7d0 50% 66.666%,
+    #fef08a 66.666% 83.333%,
+    #bbf7d0 83.333% 100%
+  );
+  position: relative;
+  transform-origin: center center;
+  overflow: hidden;
+}
+
+.wheel-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: center center;
+  width: 100px;
+  height: 30px;
+  text-align: center;
+  line-height: 1.2;
+  font-weight: bold;
+  font-size: 14px;
+  color: #065f46;
+  white-space: nowrap;
+}
+
+
+
+.pointer {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-bottom: 24px solid red;
+  transform: translateX(-50%);
+  z-index: 10;
+}
+.theme-green .comp-button {
+  background-color: #064e3b; /* Tailwind's green-900 */
+  color: white;
+}
+.theme-green .comp-button:hover {
+  background-color: #065f46; /* green-800 */
 }

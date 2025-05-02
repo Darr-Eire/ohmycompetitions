@@ -12,7 +12,7 @@ export default function TryYourLuckPage() {
     {
       title: '3.14 Seconds',
       href: '/try-your-luck/three-fourteen',
-      icon: '🕒', // updated icon
+      icon: '🕒',
       desc: 'Stop the timer at exactly 3.14s to win!',
       storageKey: 'threeFourteenPlayed',
     },
@@ -26,7 +26,7 @@ export default function TryYourLuckPage() {
     {
       title: 'Hack the Vault',
       href: '/try-your-luck/hack-the-vault',
-      icon: '🗝️', // better vault icon
+      icon: '🗝️',
       desc: 'Guess today’s vault code!',
       storageKey: 'hackVaultPlayed',
     },
@@ -57,7 +57,7 @@ export default function TryYourLuckPage() {
           🎯 Try Your Luck
         </div>
 
-        <div className="text-center mb-4 text-lg">
+        <div className="text-center mb-4 text-lg text-black">
           🔥 Daily Streak: {streak} days
         </div>
 
@@ -73,17 +73,14 @@ export default function TryYourLuckPage() {
                 }`}
               >
                 <h2 className="text-lg font-bold text-blue-700 flex justify-center items-center gap-2">
-  <span className="text-2xl">{game.icon}</span> {game.title}
-</h2>
+                  <span className="text-2xl">{game.icon}</span> {game.title}
+                </h2>
 
                 <p className="text-sm text-gray-700 mb-3">{game.desc}</p>
 
                 {!played ? (
                   <Link href={game.href}>
-                  <button className="comp-button">
-  Play Now
-</button>
-
+                    <button className="comp-button">Play Now</button>
                   </Link>
                 ) : (
                   <p className="text-gray-500 text-sm">Already played today</p>
@@ -91,15 +88,6 @@ export default function TryYourLuckPage() {
               </div>
             )
           })}
-        </div>
-        <br/>
-
-        <div className="text-center mt-6">
-          <Link href="/" legacyBehavior>
-            <a className="inline-block text-sm text-blue-600 underline hover:text-blue-800">
-              ← Back to Home
-            </a>
-          </Link>
         </div>
       </div>
     </main>

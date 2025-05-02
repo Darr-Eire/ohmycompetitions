@@ -40,6 +40,9 @@ export default function HackTheVault() {
 
       setResult('🔓 Vault Unlocked!')
       setPrize(`${reward}${bonus}`)
+
+      // Glow effect
+      document.querySelector('.vault-wrapper')?.classList.add('glow-success')
     } else {
       setShake(true)
       setTimeout(() => setShake(false), 600)
@@ -53,44 +56,35 @@ export default function HackTheVault() {
     <main className="page">
       {result?.includes('Unlocked') && <Confetti width={width} height={height} />}
 
-      <div className="competition-card max-w-md w-full">
-        {/* Top banner */}
-        <div className="competition-top-banner">🗝️ Hack The Vault</div>
+      <div className={`vault-wrapper ${shake ? 'animate-shake' : ''}`}>
+        <img src="/images/vault-door.png" alt="Vault Door" className="vault-bg" />
 
-        {/* Divider */}
-        <div className="h-1 w-24 bg-blue-300 mx-auto rounded mb-4" />
+        <div className="vault-overlay">
+          <h2 className="vault-title">🗝️ Hack The Vault</h2>
 
-        {/* Streak */}
-        <p className="text-center text-sm text-blue-800 mb-4">
-          🔥 Daily Streak: {getStreak()} days
-        </p>
+          <p className="text-sm mb-4 text-white">🔥 Daily Streak: {getStreak()} days</p>
 
-        {/* Vault Game */}
-        <div className={`vault-container px-4 ${shake ? 'animate-shake' : ''}`}>
-          <div className="text-5xl text-center mb-4">🔐</div>
-
-          <form onSubmit={handleSubmit} className="flex flex-col items-center gap-3">
+          <form onSubmit={handleSubmit} className="vault-form">
             <input
               type="text"
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
               placeholder="Enter vault code"
               required
-              className="px-4 py-2 border border-gray-300 rounded w-full text-black"
+              className="vault-input"
             />
-            <button type="submit" className="comp-button w-full">
+            <button type="submit" className="vault-button">
               Unlock Vault
             </button>
           </form>
-        </div>
 
-        {/* Result */}
-        {result && (
-          <div className="mt-6 text-center space-y-2">
-            <p className="text-lg font-bold text-black">{result}</p>
-            {prize && <p className="text-2xl text-pink-500 font-semibold">{prize}</p>}
-          </div>
-        )}
+          {result && (
+            <div className="vault-result mt-4">
+              <p className="text-lg font-bold text-white">{result}</p>
+              {prize && <p className="text-xl text-green-300">{prize}</p>}
+            </div>
+          )}
+        </div>
       </div>
     </main>
   )

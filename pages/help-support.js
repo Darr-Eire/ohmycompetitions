@@ -54,68 +54,71 @@ export default function HelpSupport() {
                 <strong>How do I enter competitions?</strong><br />
                 Click “Enter Now” on any competition and follow instructions!
               </li>
-              <li>
+              <li><br/>
                 <strong>Is joining free?</strong><br />
                 Some competitions are free, others have a small Pi entry fee.
               </li>
               <li>
+                <br/>
                 <strong>Where are my tickets?</strong><br />
                 Check the “My Entries” page after logging in.
               </li>
               <li>
+                <br/>
                 <strong>How are winners picked?</strong><br />
                 Randomly selected when competitions close.
               </li>
             </ul>
           </div>
 
-          {/* Social Icons */}
-          <div>
-            <h2 className="font-semibold text-blue-600 mb-1 text-center">Connect with Us</h2>
-            <div className="flex justify-center space-x-4 mb-4">
-              <a
-                href="https://twitter.com/yourprofile"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:text-blue-800"
-              >
-                <FaTwitter size={24} />
-              </a>
-              <a
-                href="https://facebook.com/yourprofile"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:text-blue-800"
-              >
-                <FaFacebookF size={24} />
-              </a>
-              <a
-                href="https://instagram.com/yourprofile"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:text-blue-800"
-              >
-                <FaInstagram size={24} />
-              </a>
-              <a
-                href="https://discord.gg/yourinvite"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:text-blue-800"
-              >
-                <FaDiscord size={24} />
-              </a>
-            </div>
-          </div>
+    {/* Social Icons */}
+<div>
+<h2 style={{ color: '#000000' }} className="font-semibold mb-1 text-center">
+  Connect with Us
+</h2>
 
-          {/* Back to Home Button */}
-          <div className="text-center">
-            <Link href="/" legacyBehavior>
-            <a className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded">
-                ← Back to Home
-              </a>
-            </Link>
-          </div>
+
+  <div className="flex justify-center space-x-4 mb-4">
+    <a
+      href="https://twitter.com/yourprofile"
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{ color: '#064e3b' }}
+      className="hover:text-green-800"
+    >
+      <FaTwitter size={24} />
+    </a>
+    <a
+      href="https://facebook.com/yourprofile"
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{ color: '#064e3b' }}
+      className="hover:text-green-800"
+    >
+      <FaFacebookF size={24} />
+    </a>
+    <a
+      href="https://instagram.com/yourprofile"
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{ color: '#064e3b' }}
+      className="hover:text-green-800"
+    >
+      <FaInstagram size={24} />
+    </a>
+    <a
+      href="https://discord.gg/yourinvite"
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{ color: '#064e3b' }}
+      className="hover:text-green-800"
+    >
+      <FaDiscord size={24} />
+    </a>
+  </div>
+</div>
+
+
         </div>
       </div>
     </main>
