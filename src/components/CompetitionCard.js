@@ -1,4 +1,3 @@
-// src/components/CompetitionCard.js
 'use client'
 
 import Image from 'next/image'
@@ -16,6 +15,7 @@ export default function CompetitionCard({
   theme,
   imageUrl,
   endsAt = comp?.endsAt || Date.now() + 1000 * 60 * 60 * 12,
+  hideButton = false, // NEW PROP
 }) {
   const appliedTheme = theme || (comp.entryFee === 0 ? 'green' : 'gold')
   const [timeLeft, setTimeLeft] = useState('')
@@ -58,19 +58,22 @@ export default function CompetitionCard({
       <div className="competition-info space-y-1 text-left text-sm">
         <p><strong>Prize:</strong> <span className="font-bold">{prize}</span></p>
         <p><strong>Draw ends in:</strong> <span className="font-bold">{timeLeft}</span></p>
-        <p><strong>Total Tickets:</strong> <span className="font-bold">{comp.totalTickets}</span></p>
-        <p><strong>Sold:</strong> <span className="font-bold">{comp.ticketsSold}</span></p>
+        <p><strong>Total Tickets:</strong> <span className="font-bold">{comp.totalTickets?.toLocaleString() || '—'}</span></p>
+        <p><strong>Remaining:</strong> <span className="font-bold">
+          {comp.totalTickets && comp.ticketsSold !== undefined
+            ? (comp.totalTickets - comp.ticketsSold).toLocaleString()
+            : '—'}
+        </span></p>
         <p><strong>Entry Fee:</strong> <span className="font-bold">{fee}</span></p>
       </div>
 
       {children}
 
-      {!children && (
-        <Link href={href}>
-          <button className="mt-4 comp-button w-full font-bold">Enter Now</button>
+      {!children && !hideButton && (
+        <Link href={`/ticket-purchase/${comp.slug}`}>
+          <button className="mt-4 comp-button w-full">Enter Now</button>
         </Link>
       )}
     </div>
   )
 }
-
