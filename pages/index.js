@@ -1,3 +1,4 @@
+// pages/index.js
 'use client'
 
 import { useRef } from 'react'
@@ -5,43 +6,43 @@ import Link from 'next/link'
 import CompetitionCard from '@/components/CompetitionCard'
 
 export default function HomePage() {
-  const dailyRef = useRef(null)
-  const freeRef = useRef(null)
-  const itemRef = useRef(null)
-  const piRef = useRef(null)
+  const dailyRef   = useRef(null)
+  const freeRef    = useRef(null)
+  const techRef    = useRef(null)
+  const piRef      = useRef(null)
   const premiumRef = useRef(null)
-
-  const scroll = (ref, offset) => {
-    ref.current?.scrollBy({ left: offset, behavior: 'smooth' })
-  }
 
   const ViewMoreCard = ({ href, theme }) => (
     <div className="flex items-center justify-center min-w-[280px] h-full">
-
-      <Link
-        href={href}
-        className={`view-more-button view-more-${theme}`}
-      >
+      <Link href={href} className={`view-more-button view-more-${theme}`}>
         View More →
       </Link>
     </div>
   )
 
-  const Section = ({ title, comps, ref, theme, viewMoreHref }) => (
-    <section className="relative text-center">
-      <h2 className={`${theme}-competitions-title inline-block mx-auto mb-4`}>
-        {title}
-      </h2>
-      <div ref={ref} className="daily-carousel">
-        {comps.map(item => (
+const Section = ({
+  title,
+  items,
+  containerRef,
+  theme,
+  viewMoreHref,
+  className = '',
+}) => (
+  <section className={`relative ${className}`}>
+    <h2 className="category-page-title">{title}</h2>
+      <div
+        ref={containerRef}
+        className="daily-carousel flex space-x-4 overflow-x-auto"
+      >
+        {items.map(({ comp, title, prize, fee, href, imageUrl }) => (
           <CompetitionCard
-            key={item.comp.slug}
-            comp={item.comp}
-            title={item.title}
-            prize={item.prize}
-            fee={item.fee}
-            href={item.href}
-            imageUrl={item.imageUrl}
+            key={comp.slug}
+            comp={comp}
+            title={title}
+            prize={prize}
+            fee={fee}
+            href={href}
+            imageUrl={imageUrl}
             small
             theme={theme}
             className="transform scale-95 transition-all duration-200"
@@ -53,10 +54,11 @@ export default function HomePage() {
   )
 
   return (
-    <main className="pt-8 pb-12 px-4 bg-white min-h-screen space-y-16">
+    <main className="pb-12 px-4 bg-white min-h-screen space-y-16">
       <Section
+        className="mt-8"
         title="Daily Competitions"
-        comps={[
+        items={[
           {
             comp: {
               slug: 'pi-to-the-moon',
@@ -70,8 +72,8 @@ export default function HomePage() {
             prize: '5,000 Pi',
             fee: '3.14 π',
             imageUrl: '/images/pitothemoon.jpeg',
-          }, 
-           {
+          },
+          {
             comp: {
               slug: 'everyday-pioneer',
               entryFee: 0.314,
@@ -85,12 +87,11 @@ export default function HomePage() {
             fee: '0.314 π',
             imageUrl: '/images/everyday.png',
           },
-        
           {
             comp: {
               slug: 'hack-the-vault',
-              entryFee: 0.99,
-              totalTickets: 850,
+              entryFee: 0.375,
+              totalTickets: 2225,
               ticketsSold: 0,
               endsAt: '2025-05-03T23:59:59Z',
             },
@@ -101,15 +102,14 @@ export default function HomePage() {
             imageUrl: '/images/vault.png',
           },
         ]}
-        
-        ref={dailyRef}
+        containerRef={dailyRef}
         theme="daily"
         viewMoreHref="/competitions/daily"
       />
 
       <Section
         title="Free Competitions"
-        comps={[
+        items={[
           {
             comp: {
               slug: 'pi-day-freebie',
@@ -134,7 +134,7 @@ export default function HomePage() {
             },
             title: "Everyone's A Winner",
             href: '/competitions/everyones-a-winner',
-            prize: `🎉 1st 6,000\n2nd 3,000\n3rd 1,000`,
+            prize: '🎉 1st 6,000\n2nd 3,000\n3rd 1,000',
             fee: 'Free',
             imageUrl: '/images/everyone.png',
           },
@@ -153,16 +153,14 @@ export default function HomePage() {
             imageUrl: '/images/weekly.png',
           },
         ]}
-        
-        
-        ref={freeRef}
+        containerRef={freeRef}
         theme="green"
         viewMoreHref="/competitions/free"
       />
 
       <Section
         title="Tech Giveaways"
-        comps={[
+        items={[
           {
             comp: {
               slug: 'ps5-bundle-giveaway',
@@ -206,15 +204,14 @@ export default function HomePage() {
             imageUrl: '/images/xbox.jpeg',
           },
         ]}
-        
-        ref={itemRef}
+        containerRef={techRef}
         theme="orange"
         viewMoreHref="/competitions/tech"
       />
 
       <Section
         title="Pi Giveaways"
-        comps={[
+        items={[
           {
             comp: {
               slug: 'pi-giveaway-100k',
@@ -240,7 +237,7 @@ export default function HomePage() {
             title: '50,000 π Giveaway',
             href: '/competitions/pi-giveaway-50k',
             prize: '50,000 π',
-            fee: '3,14 π',
+            fee: '3.14 π',
             imageUrl: '/images/50,000.png',
           },
           {
@@ -258,15 +255,14 @@ export default function HomePage() {
             imageUrl: '/images/25,000.png',
           },
         ]}
-        
-        ref={piRef}
+        containerRef={piRef}
         theme="purple"
         viewMoreHref="/competitions/pi"
       />
 
       <Section
         title="Premium Competitions"
-        comps={[
+        items={[
           {
             comp: {
               slug: 'tesla-model-3-giveaway',
@@ -276,10 +272,7 @@ export default function HomePage() {
               endsAt: '2025-05-20T23:59:00Z',
             },
             title: 'Tesla Model 3 Giveaway',
-            href: '/competitions/tesla-model-3-giveaway',
-            prize: 'Tesla Model 3',
-            fee: '40 π',
-            imageUrl: '/images/tesla.jpeg',
+            href: '/competitions/tesla-model-3-giveaway',            prize: 'Tesla Model 3',            fee: '40 π',            imageUrl: '/images/tesla.jpeg',
           },
           {
             comp: {
@@ -310,8 +303,7 @@ export default function HomePage() {
             imageUrl: '/images/hotel.jpeg',
           },
         ]}
-        
-        ref={premiumRef}
+        containerRef={premiumRef}
         theme="premium"
         viewMoreHref="/competitions/premium"
       />

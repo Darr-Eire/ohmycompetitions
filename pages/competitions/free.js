@@ -14,7 +14,7 @@ const freeComps = [
     comp: { slug: 'everyones-a-winner', entryFee: 0 },
     title: "Everyone's A Winner",
     href: '/competitions/everyones-a-winner',
-    prize: '🎉 1st 9999 2nd 5555 3rd 1111',
+    prize: '🎉 1st 6,000 2nd 3,000 3rd 1,000',
     fee: 'Free',
     imageUrl: '/images/everyone.png',
   },

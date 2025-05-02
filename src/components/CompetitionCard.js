@@ -17,21 +17,24 @@ export default function CompetitionCard({
   endsAt = comp?.endsAt || Date.now() + 1000 * 60 * 60 * 12,
   hideButton = false,
 }) {
-  const appliedTheme = theme || comp?.theme || (comp.entryFee === 0 ? 'green' : 'gold');
+  const appliedTheme = 'global';
 
   const [timeLeft, setTimeLeft] = useState('')
 
   useEffect(() => {
-    function update() {
+    const update = () => {
       const diff = new Date(endsAt) - Date.now()
-      if (diff <= 0) return setTimeLeft('Ended')
+      if (diff <= 0) {
+        setTimeLeft('Ended')
+        return
+      }
       const h = Math.floor(diff / 36e5)
       const m = Math.floor((diff % 36e5) / 6e4)
       setTimeLeft(`${h}h ${m}m`)
     }
     update()
-    const iv = setInterval(update, 60000)
-    return () => clearInterval(iv)
+    const timer = setInterval(update, 60000)
+    return () => clearInterval(timer)
   }, [endsAt])
 
   return (
@@ -44,8 +47,10 @@ export default function CompetitionCard({
         .filter(Boolean)
         .join(' ')}
     >
+      {/* Top Banner */}
       <div className="competition-top-banner font-bold">{title}</div>
 
+      {/* Image */}
       <div className="competition-image mb-4 h-40 overflow-hidden rounded">
         <Image
           src={imageUrl || '/pi.jpeg'}
@@ -56,20 +61,23 @@ export default function CompetitionCard({
         />
       </div>
 
+      {/* Info */}
       <div className="competition-info space-y-1 text-left text-sm">
-        <p><strong>Prize:</strong> <span className="font-bold">{prize}</span></p>
+        <p><strong>Prize:</strong> <span className="font-bold whitespace-pre-line">{prize}</span></p>
         <p><strong>Draw ends in:</strong> <span className="font-bold">{timeLeft}</span></p>
-        <p><strong>Total Tickets:</strong> <span className="font-bold">{comp.totalTickets?.toLocaleString() || '—'}</span></p>
+        <p><strong>Total Tickets:</strong> <span className="font-bold">{comp.totalTickets?.toLocaleString() ?? '—'}</span></p>
         <p><strong>Remaining:</strong> <span className="font-bold">
-          {comp.totalTickets && comp.ticketsSold !== undefined
+          {(comp.totalTickets && typeof comp.ticketsSold === 'number')
             ? (comp.totalTickets - comp.ticketsSold).toLocaleString()
             : '—'}
         </span></p>
         <p><strong>Entry Fee:</strong> <span className="font-bold">{fee}</span></p>
       </div>
 
+      {/* Optional custom children content */}
       {children}
 
+      {/* Enter Now button */}
       {!children && !hideButton && (
         <Link href={`/ticket-purchase/${comp.slug}`}>
           <button className="mt-4 comp-button w-full">Enter Now</button>
