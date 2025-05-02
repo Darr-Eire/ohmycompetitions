@@ -15,9 +15,10 @@ export default function CompetitionCard({
   theme,
   imageUrl,
   endsAt = comp?.endsAt || Date.now() + 1000 * 60 * 60 * 12,
-  hideButton = false, // NEW PROP
+  hideButton = false,
 }) {
-  const appliedTheme = theme || (comp.entryFee === 0 ? 'green' : 'gold')
+  const appliedTheme = theme || comp?.theme || (comp.entryFee === 0 ? 'green' : 'gold');
+
   const [timeLeft, setTimeLeft] = useState('')
 
   useEffect(() => {
