@@ -1,4 +1,5 @@
 // pages/competitions/index.js
+
 import CompetitionCard from '@/components/CompetitionCard'
 
 export default function AllCompetitionsPage() {
@@ -68,8 +69,8 @@ export default function AllCompetitionsPage() {
     },
     {
       comp: { slug: '55-inch-tv-giveaway', entryFee: 0.75 },
-      title: '55\" TV Giveaway',
-      prize: '55\" Smart TV',
+      title: '55" TV Giveaway',
+      prize: '55" Smart TV',
       fee: '0.75 π',
       href: '/competitions/55-inch-tv-giveaway',
       imageUrl: '/images/Tv.jpeg',
@@ -150,7 +151,10 @@ export default function AllCompetitionsPage() {
         <div className="border-2 border-blue-500 rounded-xl p-4 bg-blue-50 shadow-md">
           <div className="flex flex-wrap justify-center gap-4">
             {allComps.map(item => (
-              <div key={item.comp.slug} className="transform scale-90 transition-all duration-200">
+              <div
+                key={item.comp.slug}
+                className="transform scale-90 transition-all duration-200"
+              >
                 <CompetitionCard
                   comp={item.comp}
                   title={item.title}
