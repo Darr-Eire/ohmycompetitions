@@ -15,9 +15,7 @@ export default function ReferPage() {
       <h1 className="text-2xl font-bold">Your Pi Day Referral Link</h1>
       <p className="break-all bg-gray-100 p-4 rounded">{link}</p>
       <button
-        onClick={() => scroll(dailyRef, 200)} 
-
-> navigator.clipboard.writeText(link)}
+        onClick={() => navigator.clipboard.writeText(link)}
         className="btn btn-primary"
       >
         Copy to Clipboard
