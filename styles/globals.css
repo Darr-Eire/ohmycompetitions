@@ -215,31 +215,23 @@ footer {
 
 /* 3) Carousel base (unchanged) */
 .daily-carousel,
-.competition-container {
-  text-align: center;
-  margin-left: auto;
-  margin-right: auto;
-  float: none;
-}
-
 .free-carousel,
 .item-carousel {
   display: flex;
-  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
   padding: 1rem 0;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
+  overflow: visible;
 }
-.daily-carousel > * {
-  flex: initial; /* or remove entirely */
-  scroll-snap-align: none;
-}
+
+.daily-carousel > *,
 .free-carousel > *,
 .item-carousel > * {
-  scroll-snap-align: center;
-  flex: 0 0 auto;
+  flex: initial;
+  scroll-snap-align: none;
 }
+
 
 
 /* Base banner (all themes) */

@@ -52,7 +52,8 @@ export default function HomePage() {
         </h2>
         <div
           ref={dailyRef}
-          className="daily-carousel flex space-x-4 overflow-x-auto pb-2 no-scrollbar px-4 sm:px-0"
+          className="daily-carousel"
+
         >
           {dailyComps.map(item => (
             <CompetitionCard
@@ -76,10 +77,11 @@ export default function HomePage() {
         <h2 className="free-competitions-title inline-block mx-auto">
           Free Competitions
         </h2>
-        <div className="daily-carousel">
-  {dailyComps.map(comp => (
-    <CompetitionCard key={comp.slug} {...comp} />
-  ))}
+        <div
+          ref={freeRef}
+          className="daily-carousel"
+
+        >
           <CompetitionCard
             comp={{ slug: 'pi-day-freebie', entryFee: 0 }}
             title="Pi Day Freebie"
@@ -164,7 +166,8 @@ export default function HomePage() {
         </h3>
         <div
           ref={itemRef}
-          className="daily-carousel flex space-x-4 overflow-x-auto pb-2 no-scrollbar px-4 sm:px-0"
+          className="daily-carousel"
+
         >
           <CompetitionCard
             comp={{ slug: 'ps5-bundle-giveaway', entryFee: 0.5 }}
@@ -209,7 +212,8 @@ export default function HomePage() {
         </h2>
         <div
           ref={piRef}
-          className="daily-carousel flex space-x-4 overflow-x-auto pb-2 no-scrollbar px-4 sm:px-0"
+          className="daily-carousel"
+
         >
           <CompetitionCard
             comp={{ slug: 'pi-giveaway-100k', entryFee: 10 }}
@@ -254,7 +258,8 @@ export default function HomePage() {
         </h2>
         <div
           ref={premiumRef}
-          className="daily-carousel flex space-x-4 overflow-x-auto pb-2 no-scrollbar px-4 sm:px-0"
+          className="daily-carousel"
+
         >
           <CompetitionCard
             comp={{ slug: 'tesla-model-3-giveaway', entryFee: 50 }}
