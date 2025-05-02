@@ -227,15 +227,36 @@ footer {
 .free-competitions-title,
 .item-giveaways-title,
 .pi-giveaways-title,
-.premium-competitions-title,
-.tech-giveaways-title {
-  display: block;        /* full width */
-  width: 100%;           /* span container */
-  text-align: center;    /* center text */
-  font-size: 1.875rem;   /* text-3xl in Tailwind */
-  font-weight: 700;      /* bold */
-  margin-bottom: 1rem;   /* space below */
+.premium-competitions-title {
+  display: block;
+  width: 100%;
+  text-align: center;
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
 }
+.category-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  justify-items: center;
+}
+
+@media (min-width: 640px) {
+  .category-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+/* Category page heading */
+.category-page-title {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+}
+
+
+
 
 /* 2) Section‑specific colors */
 .daily-competitions-title   { color: #1E3A2F; }  /* daily: dark green */
@@ -345,3 +366,16 @@ footer {
 }
 
 /* Other themes keep same hover as base */
+/* Grid layout for all-category pages */
+.category-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  justify-items: center;
+}
+
+@media (min-width: 640px) {
+  .category-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
