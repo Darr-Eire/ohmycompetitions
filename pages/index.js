@@ -52,7 +52,8 @@ export default function HomePage() {
         </h2>
         <div
           ref={dailyRef}
-          className="daily-carousel"
+          className="daily-carousel flex space-x-4 overflow-x-auto pb-2 no-scrollbar px-4 sm:px-0"
+
 
         >
           {dailyComps.map(item => (
@@ -79,7 +80,8 @@ export default function HomePage() {
         </h2>
         <div
           ref={freeRef}
-          className="daily-carousel"
+          className="daily-carousel flex space-x-4 overflow-x-auto pb-2 no-scrollbar px-4 sm:px-0"
+
 
         >
           <CompetitionCard
@@ -166,7 +168,8 @@ export default function HomePage() {
         </h3>
         <div
           ref={itemRef}
-          className="daily-carousel"
+          className="daily-carousel flex space-x-4 overflow-x-auto pb-2 no-scrollbar px-4 sm:px-0"
+
 
         >
           <CompetitionCard
@@ -212,7 +215,8 @@ export default function HomePage() {
         </h2>
         <div
           ref={piRef}
-          className="daily-carousel"
+          className="daily-carousel flex space-x-4 overflow-x-auto pb-2 no-scrollbar px-4 sm:px-0"
+
 
         >
           <CompetitionCard
@@ -258,7 +262,8 @@ export default function HomePage() {
         </h2>
         <div
           ref={premiumRef}
-          className="daily-carousel"
+          className="daily-carousel flex space-x-4 overflow-x-auto pb-2 no-scrollbar px-4 sm:px-0"
+
 
         >
           <CompetitionCard

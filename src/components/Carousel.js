@@ -25,7 +25,8 @@ export default function Carousel({ children }) {
       <button onClick={() => ref.current.scrollBy({ left: ref.current.clientWidth, behavior: 'smooth' })} className="carousel-arrow right">›</button>
 
       {/* track */}
-      <div ref={ref} className="daily-carousel">
+      <div ref={ref} className="daily-carousel flex space-x-4 overflow-x-auto pb-2 no-scrollbar px-4 sm:px-0"
+>
         {children}
       </div>
 
