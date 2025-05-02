@@ -218,20 +218,18 @@ footer {
 .free-carousel,
 .item-carousel {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1.5rem;
+  gap: 1rem;
   padding: 1rem 0;
-  overflow: visible;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
 }
-
 .daily-carousel > *,
 .free-carousel > *,
 .item-carousel > * {
-  flex: initial;
-  scroll-snap-align: none;
+  scroll-snap-align: center;
+  flex: 0 0 auto;
 }
-
 
 
 /* Base banner (all themes) */

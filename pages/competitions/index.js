@@ -60,9 +60,7 @@ export default function HomePage() {
               href={item.href}
               small
               theme={item.theme}
-              className="flex-shrink-0 w-64"
-
-
+              className="flex-shrink-0 w-72"
             />
           ))}
         </div>
@@ -98,9 +96,7 @@ export default function HomePage() {
             href="/competitions/pi-day-freebie"
             small
             theme="green"
-            className="flex-shrink-0 w-64"
-
-
+            className="flex-shrink-0 w-72"
           >
             <div className="mt-2 p-2 bg-green-50 rounded text-center">
               <h4 className="text-green-700 font-semibold">Referral Rewards</h4>
@@ -125,9 +121,7 @@ export default function HomePage() {
             href="/competitions/weekly-pi-giveaway"
             small
             theme="green"
-            className="flex-shrink-0 w-64"
-
-
+            className="flex-shrink-0 w-72"
           >
             <div className="mt-2 p-2 bg-green-50 rounded text-center">
               <h4 className="text-green-700 font-semibold">Social Media Entry</h4>
