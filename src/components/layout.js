@@ -13,14 +13,6 @@ export default function Layout({ children }) {
       <main className="content">
         {children}
 
-        {/* Back to Home button */}
-        <div className="mt-8 flex justify-center">
-          <Link href="/" passHref>
-            <button className="comp-button">
-              Back to Home
-            </button>
-          </Link>
-        </div>
       </main>
 
       <Footer />

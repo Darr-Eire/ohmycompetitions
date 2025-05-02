@@ -190,44 +190,47 @@ footer {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* 11) Section titles & carousels */
-/* — Daily / Free / Item / Pi */
-/* Section Titles in a “pill” */
+/* 1) Base styles for all section titles */
 .daily-competitions-title,
 .free-competitions-title,
 .item-giveaways-title,
 .pi-giveaways-title,
-.premium-competitions-title {
-  @apply text-2xl font-semibold mb-6 px-4 py-2 rounded-full inline-block;
-  background-color: var(--pill-bg);
-  color: var(--pill-fg);
+.premium-competitions-title,
+.tech-giveaways-title {
+  display: block;        /* full width */
+  width: 100%;           /* span container */
+  text-align: center;    /* center text */
+  font-size: 1.875rem;   /* text-3xl in Tailwind */
+  font-weight: 700;      /* bold */
+  margin-bottom: 1rem;   /* space below */
 }
 
-/* individual title colors */
-.daily-competitions-title { --pill-bg: #1E3A2F; --pill-fg: #ffffff; }
-.free-competitions-title  { --pill-bg: #2E7D32; --pill-fg: #ffffff; }
-.item-giveaways-title     { --pill-bg: #FFB300; --pill-fg: #ffffff; }
-.pi-giveaways-title       { --pill-bg: #6A1B9A; --pill-fg: #ffffff; }
-.premium-competitions-title { --pill-bg: #B76E79; --pill-fg: #ffffff; }
-.pill-title {
-  display: inline-block;
-  margin: 0 auto 1rem;
-  padding: 0.5rem 1.5rem;
-  border-radius: 9999px;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #fff;
-  background-color: var(--ribbon-bg, #000);
-  text-transform: uppercase;
-}
+/* 2) Section‑specific colors */
+.daily-competitions-title   { color: #1E3A2F; }  /* daily: dark green */
+.free-competitions-title    { color: #2E7D32; }  /* free : medium green */
+.item-giveaways-title       { color: #FFB300; }  /* tech : amber    */
+.tech-giveaways-title       { color: #FFB300; }  /* alias for item */
+.pi-giveaways-title         { color: #6A1B9A; }  /* pi   : purple   */
+.premium-competitions-title { color: #B76E79; }  /* premium: rose   */
 
-/* carousel base */
+/* 3) Carousel base (unchanged) */
 .daily-carousel,
 .free-carousel,
-.item-carousel {display: flex;gap: 1rem;padding: 1rem 0;overflow-x: auto;scroll-snap-type: x mandatory;-webkit-overflow-scrolling: touch;}
+.item-carousel {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 0;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
 .daily-carousel > *,
 .free-carousel > *,
-.item-carousel > * {scroll-snap-align: center; flex: 0 0 auto;}
+.item-carousel > * {
+  scroll-snap-align: center;
+  flex: 0 0 auto;
+}
+
 
 /* Base banner (all themes) */
 .competition-top-banner {

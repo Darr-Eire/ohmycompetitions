@@ -14,6 +14,7 @@ export default function CompetitionCard({
   small,
   children,
   theme,
+  imageUrl,            // ← new prop
   endsAt = Date.now() + 1000 * 60 * 60 * 12,
 }) {
   const appliedTheme = theme || (comp.entryFee === 0 ? 'green' : 'gold')
@@ -44,17 +45,21 @@ export default function CompetitionCard({
     >
       <div className="competition-top-banner">{title}</div>
 
-      <div className="competition-image-placeholder">
+      {/*
+        If an imageUrl prop was passed, use it; otherwise
+        fall back to /pi.jpeg.
+      */}
+      <div className="competition-image mb-4 h-40 overflow-hidden rounded">
         <Image
-          src="/pi.jpeg"
+          src={imageUrl || '/pi.jpeg'}
           alt={`${title} banner`}
           width={300}
-          height={181}
-          className="object-cover rounded"
+          height={180}
+          className="object-cover w-full h-full"
         />
       </div>
 
-      <div className="competition-info">
+      <div className="competition-info space-y-1 text-left">
         <p><strong>Prize:</strong> {prize}</p>
         <p><strong>Draw ends in:</strong> {timeLeft}</p>
         <p>📊 <strong>Total Tickets:</strong> 3500</p>
@@ -62,12 +67,11 @@ export default function CompetitionCard({
         <p>🏅 <strong>Entry Fee:</strong> {fee}</p>
       </div>
 
-      {children /* Only render any custom child UI */}
+      {children /* render any custom child UI here */}
 
-      {/* Only render default Enter button if no custom children */}
       {!children && (
         <Link href={href}>
-          <button className="mt-2 comp-button w-full">Enter Now</button>
+          <button className="mt-4 comp-button w-full">Enter Now</button>
         </Link>
       )}
     </div>
