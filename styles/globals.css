@@ -1,3 +1,5 @@
+/* styles/globals.css */
+
 /* 1) HEADER & FOOTER LINKS ONLY */
 header a,
 footer a {
@@ -35,13 +37,13 @@ header {
   align-items: center;
   padding: 0.4rem 1rem;
   font-size: 1rem;
-  background-color: #1E3A2F   ;
+  background-color: #1E3A2F;
   color: #ffffff;
   position: relative;
   z-index: 1000;
 }
 .site-title {
-  margin: 0 0 0 0.75rem;
+  margin-left: 0.75rem;
   font-size: 1.25rem;
   color: #ffffff;
   text-decoration: none;
@@ -59,8 +61,8 @@ header {
 .nav-spacer { flex: 1; }
 .login-button,
 .logout-button {
-  background:#1E3A2F;
-  border: 1px solid#1E3A2F;
+  background: #1E3A2F;
+  border: 1px solid #1E3A2F;
   color: #ffffff;
   padding: 0.25rem 0.75rem;
   font-size: 0.9rem;
@@ -79,7 +81,7 @@ footer {
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
   text-align: center;
-  background-color:#1E3A2F;
+  background-color: #1E3A2F;
   color: #ffffff;
 }
 
@@ -95,8 +97,8 @@ footer {
   text-align: center;
 }
 .comp-title {
-  margin-bottom: 0.5rem;
-  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  font-size: 2rem;
   color: #FDB927;
 }
 .comp-prize {
@@ -108,7 +110,7 @@ footer {
   color: #333;
 }
 .comp-button {
-  background-color:#1E3A2F;
+  background-color: #1E3A2F;
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -118,7 +120,7 @@ footer {
   transition: background-color 0.2s ease;
 }
 .comp-button:hover {
-  background-color:#1E3A2F;
+  background-color: #1E3A2F;
 }
 
 /* 8) Footer social & links */
@@ -164,7 +166,7 @@ footer {
   position: absolute;
   top: 2.7rem;
   left: 0;
-  background-color:#1E3A2F;
+  background-color: #1E3A2F;
   border: 1px solid #ffffff;
   border-radius: 4px;
   padding: 0.5rem;
@@ -188,56 +190,114 @@ footer {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* 11) Titles & carousels (move these into your file if needed) */
-/* — daily/free/item section titles */
+/* 11) Section titles & carousels */
+/* — Daily / Free / Item / Pi */
+/* Section Titles in a “pill” */
 .daily-competitions-title,
 .free-competitions-title,
-.pi-giveaways-title
-.item-giveaways-title {
-  @apply text-2xl font-bold mb-4;
-  text-align: center;
+.item-giveaways-title,
+.pi-giveaways-title,
+.premium-competitions-title {
+  @apply text-2xl font-semibold mb-6 px-4 py-2 rounded-full inline-block;
+  background-color: var(--pill-bg);
+  color: var(--pill-fg);
 }
-.daily-competitions-title { color: 	#1E3A2F }
-.free-competitions-title { color: 	#2E7D32; }
-.item-giveaways-title { color: #FFB300;}
-.pi-giveaways-title { color: 	#6A1B9A;}
 
-/* — carousel base */
+/* individual title colors */
+.daily-competitions-title { --pill-bg: #1E3A2F; --pill-fg: #ffffff; }
+.free-competitions-title  { --pill-bg: #2E7D32; --pill-fg: #ffffff; }
+.item-giveaways-title     { --pill-bg: #FFB300; --pill-fg: #ffffff; }
+.pi-giveaways-title       { --pill-bg: #6A1B9A; --pill-fg: #ffffff; }
+.premium-competitions-title { --pill-bg: #B76E79; --pill-fg: #ffffff; }
+.pill-title {
+  display: inline-block;
+  margin: 0 auto 1rem;
+  padding: 0.5rem 1.5rem;
+  border-radius: 9999px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  background-color: var(--ribbon-bg, #000);
+  text-transform: uppercase;
+}
+
+/* carousel base */
 .daily-carousel,
 .free-carousel,
-.item-carousel {
-  display: flex;
-  gap: 1rem;
-  padding: 1rem 0;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-}
+.item-carousel {display: flex;gap: 1rem;padding: 1rem 0;overflow-x: auto;scroll-snap-type: x mandatory;-webkit-overflow-scrolling: touch;}
 .daily-carousel > *,
 .free-carousel > *,
-.item-carousel > * {
-  scroll-snap-align: center;
-  flex: 0 0 auto;
+.item-carousel > * {scroll-snap-align: center; flex: 0 0 auto;}
+
+/* Base banner (all themes) */
+.competition-top-banner {
+  font-size: 1 rem;      /* larger title */
+  padding: 1rem 1rem;    /* generous padding */
+  text-transform: uppercase;
 }
 
-/* 12) Themed card variants */
-.theme-daily { border-color:#1E3A2F; box-shadow: 0 0 10px#1E3A2F; }
+/* Base button (all themes) */
+.comp-button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+/* Theme definitions */
+.theme-daily,
+.theme-green,
+.theme-orange,
+.theme-purple,
+.theme-premium {
+  /* border + glow */
+  box-shadow: 0 0 10px currentColor;
+}
+
+.theme-daily {
+  --c: #1E3A2F;
+}
+.theme-green {
+  --c: #2E7D32;
+}
+.theme-orange {
+  --c: #FFB300;
+}
+.theme-purple {
+  --c: #6A1B9A;
+}
+.theme-premium {
+  --c: #B76E79;
+}
+
+/* Apply each theme’s color variable */
+.theme-daily,
+.theme-green,
+.theme-orange,
+.theme-purple,
+.theme-premium {
+  border-color: var(--c);
+  color: var(--c);
+}
+
 .theme-daily .competition-top-banner,
-.theme-daily .comp-button { background-color:#1E3A2F; color: #fff; }
-.theme-daily .comp-button:hover { background-color: #1e1ab8; }
-
-.theme-green { border-color: #2E7D32;  box-shadow: 0 0 10px #2E7D32;  }
+.theme-daily .comp-button,
 .theme-green .competition-top-banner,
-.theme-green .comp-button { background-color: #2E7D32;  color: #fff; }
-.theme-green .comp-button:hover { background-color: 	#2E7D32; }
-
-.theme-orange { border-color: #FFB300;box-shadow: 0 0 10px #FFB300;}
+.theme-green .comp-button,
 .theme-orange .competition-top-banner,
-.theme-orange .comp-button { background-color: #FFB300;color: #fff; }
-
-.theme-purple { border-color: #6A1B9A; box-shadow: 0 0 10px #6A1B9A; }
+.theme-orange .comp-button,
 .theme-purple .competition-top-banner,
-.theme-purple .comp-button { background-color: #6A1B9A; color: #fff; }
-.theme-purple .comp-button:hover { background-color:	#6A1B9A; }
+.theme-purple .comp-button,
+.theme-premium .competition-top-banner,
+.theme-premium .comp-button {
+  background-color: var(--c);
+  color: white;
+}
 
+/* Override button hover for premium (darker) */
+.theme-premium .comp-button:hover {
+  background-color: #9B5C64;
+}
 
+/* Other themes keep same hover as base */

@@ -6,7 +6,7 @@ import '../styles/globals.css'
 import Script from 'next/script'
 
 class App extends NextApp {
-  // ← satisfy Next.js 15’s requirement
+  // Next.js 15 requires getInitialProps on a custom App
   static async getInitialProps(appContext) {
     const appProps = await NextApp.getInitialProps(appContext)
     return { ...appProps }
@@ -23,7 +23,8 @@ class App extends NextApp {
           src="https://sdk.minepi.com/pi-sdk.js"
           strategy="beforeInteractive"
         />
-        {/* Init it (sandbox in dev) */}
+
+        {/* Initialize Pi SDK (sandbox in dev) */}
         <Script
           id="pi-init"
           strategy="beforeInteractive"

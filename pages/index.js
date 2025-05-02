@@ -234,7 +234,9 @@ export default function HomePage() {
 
    {/* Premium Competitions */}
    <section className="relative text-center">
-        <h2 className="premium-competitions-title mx-auto">Premium Competitions</h2>
+  <h2 className="premium-competitions-title">
+    Premium Competitions
+  </h2>
         <div
           ref={premiumRef}
           className="daily-carousel flex space-x-4 overflow-x-auto pb-2 no-scrollbar"
