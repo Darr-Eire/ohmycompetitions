@@ -8,7 +8,6 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
   const menuRef = useRef(null)
   const buttonRef = useRef(null)
 
-  // Close menu if clicked outside (but ignore Menu button itself)
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -35,7 +34,7 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
       <button
         ref={buttonRef}
         className="menu-button"
-        onClick={() => setMenuOpen((prev) => !prev)}
+        onClick={() => setMenuOpen(prev => !prev)}
         aria-label="Toggle menu"
       >
         Menu
@@ -110,4 +109,3 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
     </header>
   )
 }
-

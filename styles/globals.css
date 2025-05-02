@@ -227,8 +227,8 @@ footer {
 .daily-carousel > *,
 .free-carousel > *,
 .item-carousel > * {
-  scroll-snap-align: center;
-  flex: 0 0 auto;
+  flex: initial;
+  width: auto;
 }
 
 
