@@ -1,44 +1,53 @@
-/* 1. Make sure html/body and Next.js root fill the viewport */
+/* 1) HEADER & FOOTER LINKS ONLY */
+header a,
+footer a {
+  color: #ffffff;
+  text-decoration: underline;
+}
+header a:hover,
+footer a:hover {
+  color: #e0e0e0;
+}
+
+/* 2) “Back to Home” styled link (if you use it) */
+.back-button,
+.back-button a {
+  color: #ffffff !important;
+}
+
+/* 3) Root & layout */
 html, body, #__next {
   height: 100%;
   margin: 0;
 }
-
-/* 2. Flex-column layout to push footer down */
 .layout {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
-
-/* Main content grows to fill space between header/footer */
 .content {
   flex: 1 0 auto;
 }
 
-/* 3. Shrinked, blue header */
+/* 4) Header */
 header {
   display: flex;
   align-items: center;
-  padding: 0.40rem 1rem;   /* less vertical padding */
+  padding: 0.4rem 1rem;
   font-size: 1rem;
-  background-color: #2428ec;   
+  background-color: #1E3A2F   ;
   color: #ffffff;
-  position: relative; /* Make dropdown absolute inside */
+  position: relative;
   z-index: 1000;
 }
-
-/* Site title in header */
 .site-title {
-  margin: 0;
-  margin-left: 0.75rem;
+  margin: 0 0 0 0.75rem;
   font-size: 1.25rem;
   color: #ffffff;
   text-decoration: none;
-  font-weight: normal;
 }
 
-/* Menu button in top-left */
+/* 5) Menu & auth buttons */
 .menu-button {
   background: transparent;
   border: none;
@@ -47,17 +56,11 @@ header {
   cursor: pointer;
   padding: 0.25rem 0.5rem;
 }
-
-/* Spacer to push login/logout to the right */
-.nav-spacer {
-  flex: 1;
-}
-
-/* Log In / Log Out button */
+.nav-spacer { flex: 1; }
 .login-button,
 .logout-button {
-  background: #2428ec; 
-  border: 1px solid #2428ec; 
+  background:#1E3A2F;
+  border: 1px solid#1E3A2F;
   color: #ffffff;
   padding: 0.25rem 0.75rem;
   font-size: 0.9rem;
@@ -67,29 +70,22 @@ header {
 }
 .login-button:hover,
 .logout-button:hover {
-  background:  #4975edc5; 
+  background: #4975edc5;
 }
 
-/* Optional welcome text styling */
-.welcome-text {
-  margin-left: 0.5rem;
-  font-size: 0.9rem;
-  color: #ffffff;
-}
-
-/* 4. Shrinked, blue footer */
+/* 6) Footer */
 footer {
   margin-top: auto;
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
   text-align: center;
-  background-color: #2428ec;  
+  background-color:#1E3A2F;
   color: #ffffff;
 }
 
-/* 5. Competition card (simple old version) */
+/* 7) Basic Competition Card */
 .competition-card {
-  border: 2px solid #FDB927; 
+  border: 2px solid #4c239f;
   border-radius: 8px;
   padding: 1rem;
   max-width: 320px;
@@ -98,31 +94,21 @@ footer {
   margin: 1rem auto;
   text-align: center;
 }
-
-/* 6. Title */
 .comp-title {
-  margin: 0 0 0.5rem;
+  margin-bottom: 0.5rem;
   font-size: 1.25rem;
   color: #FDB927;
 }
-
-/* 7. Prize text */
 .comp-prize {
-  margin: 0 0 0.75rem;
-  font-size: 1rem;
+  margin-bottom: 0.75rem;
   font-weight: bold;
 }
-
-/* 8. Fee line */
 .comp-fee {
-  margin: 0 0 1rem;
-  font-size: 0.9rem;
+  margin-bottom: 1rem;
   color: #333;
 }
-
-/* 9. Enter button */
 .comp-button {
-  background-color: #2428ec;   
+  background-color:#1E3A2F;
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -132,10 +118,10 @@ footer {
   transition: background-color 0.2s ease;
 }
 .comp-button:hover {
-  background-color: #2428ec;  
+  background-color:#1E3A2F;
 }
 
-/* 10. Footer social icons and policy links */
+/* 8) Footer social & links */
 .social-icons {
   display: flex;
   justify-content: center;
@@ -145,7 +131,6 @@ footer {
 .social-icons a {
   color: #ffffff;
   font-size: 1.25rem;
-  transition: color 0.2s ease;
 }
 .social-icons a:hover {
   color: #e0e0e0;
@@ -154,7 +139,6 @@ footer {
   display: flex;
   justify-content: center;
   gap: 1rem;
-  margin-bottom: 0.75rem;
 }
 .footer-links a {
   color: #ffffff;
@@ -165,9 +149,9 @@ footer {
   color: #e0e0e0;
 }
 
-/* 11. Pay with Pi button styling */
+/* 9) Pi button */
 .bg-pi-purple {
-  background-color: #8e44ad; /* Pi purple */
+  background-color: #6A1B9A;
   color: #ffffff;
   transition: background-color 0.2s ease;
 }
@@ -175,12 +159,12 @@ footer {
   background-color: #301698;
 }
 
-/* 12. Dropdown Menu (fixed nice mobile position) */
+/* 10) Dropdown */
 .dropdown-menu {
   position: absolute;
   top: 2.7rem;
-  left: 0rem;
-  background-color: #2428ec;  
+  left: 0;
+  background-color:#1E3A2F;
   border: 1px solid #ffffff;
   border-radius: 4px;
   padding: 0.5rem;
@@ -192,484 +176,68 @@ footer {
 }
 .dropdown-link {
   color: #ffffff;
-  text-decoration: none;
   padding: 0.5rem 0.75rem;
-  font-size: 1rem;
+  text-decoration: none;
   border-radius: 4px;
 }
 .dropdown-link:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(255,255,255,0.2);
 }
 @keyframes dropdown-fade {
   from { opacity: 0; transform: translateY(-10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-:root {
-  /* default color; feel free to tweak */
-  --daily-title-color: #2428ec;  /* same as Tailwind’s blue-600 */
-}
 
-.daily-competitions-title {
-  /* size and weight you already want */
+/* 11) Titles & carousels (move these into your file if needed) */
+/* — daily/free/item section titles */
+.daily-competitions-title,
+.free-competitions-title,
+.pi-giveaways-title
+.item-giveaways-title {
   @apply text-2xl font-bold mb-4;
-
-  /* center & color from a variable you can change globally */
   text-align: center;
-  color: #2428ec;   /* directly using rose-600 */
 }
-/* Hide native scrollbar */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
+.daily-competitions-title { color: 	#1E3A2F }
+.free-competitions-title { color: 	#2E7D32; }
+.item-giveaways-title { color: #FFB300;}
+.pi-giveaways-title { color: 	#6A1B9A;}
 
-/* Title color variables */
-:root {
-  --daily-title-color: #2563eb;   /* Tailwind blue-600 */
-  --free-title-color:  #16a34a;   /* Tailwind green-600 */
-  --item-title-color:  #eb7515;   /* Tailwind purple-700 */
-}
-
-/* Daily title */
-.daily-competitions-title {
-  text-align: center;
-  color: #2428ec;   /* directly using rose-600 */
-}
-
-/* Item title */
-.item-giveaways-title {
-  text-align: center;
-  color: var(--item-title-color);
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-}
-
-
-/* Color variable for Item Giveaways title */
-:root {
-  --item-giveaways-color: #eb7515;  /* e.g. Tailwind’s purple-600 */
-}
-
-.item-giveaways-title {
-  @apply text-2xl font-bold text-center mb-6 mt-12;
-  color: var(--item-giveaways-color);
-}
-
-
-/* Ensure the PS5 card uses the same purple theme */
-.theme-purple {
-  border-color: #eb7515; 
-  box-shadow: 0 0 10px #eb7515; 
-}
-.theme-purple .competition-top-banner {
-  background-color: #eb7515; 
-}
-.theme-purple .comp-button {
-  background-color: #eb7515; 
-}
-
-/* pick a variable if you want to tweak color elsewhere */
-:root {
-  --freebie-banner-bg: #eb7515; 
-  color: #ffffff;
-}
-
-/* make this more specific and force it to win */
-.freebie-card > .competition-top-banner {
-  background-color: #eb7515; 
-  color: white !important;
-}
-.item-giveaways-title {
-  @apply text-2xl font-bold text-center mt-12 mb-6;
-  color: #eb7515; 
-}
-/* 13. Updated Competition Card Styling (new fancy version) */
-.page {
+/* — carousel base */
+.daily-carousel,
+.free-carousel,
+.item-carousel {
   display: flex;
-  flex-wrap: wrap;
-  margin-top: -2rem;
-  justify-content: center;
-  align-items: flex-start;
   gap: 1rem;
-  /* Bump this top padding so cards sit comfortably below the header */
-  padding: 1rem 0.5rem 0.5rem; /* ↑ increased from 0.5rem to 4rem */
-}
-
-/* === Base Competition Card === */
-.competition-card {
-  border: 1.5px solid #2428ec; 
-  color: #ffffff; /* default fallback border */
-  border-radius: 2px;
-  padding: 0.6rem;
-  max-width: 300px;;
-  background: #ffffff;
-  box-shadow: 0 2px 6px rgb(39, 25, 196);
-  margin: 0.4rem auto;
-  text-align: center;
-  transition: transform 0.2s ease;
-}
-.competitions-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0rem; /* adjust spacing as you like */
-}
-
-/* large screens: 4 columns */
-@media (min-width: 1024px) {
-  .competitions-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-.competition-card:hover {
-  transform: scale(1.02);
-}
-.competition-info {
-  text-align: left;
-  font-size: 0.95rem;
-  color: #01060e;
-  margin-bottom: 1rem;
-}
-.competition-top-banner {
-  text-transform: uppercase;
-  text-shadow: 1px 1px 2px #00000050;
-  border-radius: 0rem;
-  background-color: #2428ec; 
-  color: #ffffff;
-  padding: 0.1rem;
-}
-
-
-.competition-image-placeholder {
-  margin-bottom: 1rem;
-}
-
-/* === Card Button === */
-.comp-button {
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 0.1rem 3rem;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-/* === Themed Styles === */
-
-/* GOLD — default */
-.theme-gold {
-  border-color: #eb7515; 
-  box-shadow: 0 0 10px #eb7515; 
-}
-
-.theme-gold .competition-top-banner {
-  background-color: #eb7515; 
-
-  color: #ffffff;
-}
-.theme-gold .comp-button {
-  background-color: #eb7515; 
-}
-
-
-.theme-gold .comp-button:hover {
-  background-color: #eb7515; 
-}
-/* === DAILY THEME === */
-.theme-daily {
-  /* blue border/glow */
-  border-color: #2428ec;
-  box-shadow: 0 0 10px #2428ec;
-}
-
-.theme-daily .competition-top-banner {
-  background-color: #2428ec;
-  color: #fff;
-}
-
-.theme-daily .comp-button {
-  background-color: #2428ec;
-  color: #fff;
-}
-.theme-daily .comp-button:hover {
-  background-color: #1e1ab8;
-}
-
-
-/* GREEN — free competitions */
-.theme-green {
-  border-color: #22d631;
-  box-shadow: 0 0 10px #22d631;
-}
-.theme-green .competition-top-banner {
-  background-color: #22d631;
-  color: #ffffff;
-}
-.theme-green .comp-button {
-  background-color: #22d631;
-}
-.theme-green .comp-button:hover {
-  background-color: #16a34a;
-}
-
-/* PURPLE — e.g. PS5 Bundle */
-.theme-purple {
-  border-color: #eb7515; 
-  box-shadow: 0 0 10px #eb7515; 
-}
-.theme-purple .competition-top-banner {
-  background-color: #eb7515; 
-  color: #ffffff;
-}
-.theme-purple .comp-button {
-  background-color: #eb7515; 
-}
-.theme-purple .comp-button:hover {
-  background-color: #eb7515; 
-}
-
-/* ORANGE — e.g. Pi To The Moon */
-.theme-orange {
-  border-color: #eb7515; 
-  box-shadow: 0 0 10px #eb7515; 
-}
-.theme-orange .competition-top-banner {
-  background-color: #eb7515; 
-  color: #ffffff;
-}
-.theme-orange .comp-button {
-  background-color: #eb7515; 
-}
-.theme-orange .comp-button:hover {
-  background-color: #eb7515; 
-}
-
-
-/* === Daily Competitions Carousel === */
-.daily-carousel {
-  display: flex;
+  padding: 1rem 0;
   overflow-x: auto;
-  gap: 2rem;
-  padding: 0 1.5rem 1rem;
-  scroll-behavior: smooth;
   scroll-snap-type: x mandatory;
-  overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
 }
-.daily-carousel::-webkit-scrollbar {
-  display: none;
-}
-.daily-carousel > .competition-card {
-  flex: 0 0 auto;
+.daily-carousel > *,
+.free-carousel > *,
+.item-carousel > * {
   scroll-snap-align: center;
-  scroll-snap-stop: always;
-  margin-left: auto;
-  margin-right: auto;
+  flex: 0 0 auto;
 }
 
-/* === Try Your Luck Animated Gradient Background === */
-@keyframes gradient-x {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-.animate-gradient-x {
-  background-size: 200% 200%;
-  animation: gradient-x 10s ease infinite;
-}
+/* 12) Themed card variants */
+.theme-daily { border-color:#1E3A2F; box-shadow: 0 0 10px#1E3A2F; }
+.theme-daily .competition-top-banner,
+.theme-daily .comp-button { background-color:#1E3A2F; color: #fff; }
+.theme-daily .comp-button:hover { background-color: #1e1ab8; }
 
-/* === Game Card === */
-.game-card {
-  background: #ffffff;
-  border: 2px solid#2428ec; 
-  border-radius: 1rem;
-  padding: 2rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  text-align: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  cursor: pointer;
-}
-.game-card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 24px#2428ec; 
-}
-.game-title {
-  font-size: 2rem;
-  font-weight: bold;
-  color: #1E3A8A;
-  margin-bottom: 1rem;
-}
-.game-description {
-  font-size: 1rem;
-  color: #6b7280;
-}
+.theme-green { border-color: #2E7D32;  box-shadow: 0 0 10px #2E7D32;  }
+.theme-green .competition-top-banner,
+.theme-green .comp-button { background-color: #2E7D32;  color: #fff; }
+.theme-green .comp-button:hover { background-color: 	#2E7D32; }
 
+.theme-orange { border-color: #FFB300;box-shadow: 0 0 10px #FFB300;}
+.theme-orange .competition-top-banner,
+.theme-orange .comp-button { background-color: #FFB300;color: #fff; }
 
-/* 16. Streak counter (optional if you want it) */
-.streak-banner {
-  background: linear-gradient(90deg, #4f46e5, #8b5cf6);
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 9999px;
-  font-weight: bold;
-  display: inline-block;
-  margin-bottom: 1.5rem;
-  animation: pulse 2s infinite;
-}
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
-}
-.vault-container {
-  background: radial-gradient(circle at center, #1e1e1e, #060320);
-  border-radius: 50%;
-  width: 260px;
-  height: 260px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0 0 25px #2428ec;  
-  margin: 0 auto;
-  padding: 1rem;
-  transition: transform 0.3s ease;
-}
-
-.vault-dial {
-  font-size: 2.5rem;
-  margin-bottom: 0.75rem;
-}
-
-.vault-input {
-  display: flex;
-  width: 100%;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.vault-input input {
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  border: 1px solid #888;
-  width: 60%;
-  font-size: 0.9rem;
-  background-color: #f9f9f9;
-  color: #a958e2
-}
-
-.vault-input button {
-  background-color: #6a0dad; /* Purple button */
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 0.4rem 0.9rem;
-  font-weight: bold;
-  transition: background-color 0.3s ease;
-}
-
-.vault-input button:hover {
-  background-color: #4b0082;
-}
-
-
-.animate-shake {
-  animation: shake 0.5s;
-}
-
-/* vault-container animation */
-@keyframes shake {
-  0% { transform: translateX(0); }
-  25% { transform: translateX(-4px); }
-  50% { transform: translateX(4px); }
-  75% { transform: translateX(-4px); }
-  100% { transform: translateX(0); }
-}
-
-
-.timer-circle {
-  width: 220px;
-  height: 220px;
-  border-radius: 50%;
-  background: radial-gradient(circle at center, #6d28d9, #3b0764);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 20px #6d28d9, 0 0 30px #8b5cf6;
-  transition: transform 0.2s ease;
-}
-.pulse {
-  animation: pulse 2s infinite;
-}
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
-.slot-machine {
-  display: flex;
-  justify-content: center;
-  gap: 1.5rem;
-}
-.reel {
-  width: 80px;
-  height: 80px;
-  background: radial-gradient(circle at center, #6d28d9, #3b0764);
-  border: 4px solid #4f46e5;
-  border-radius: 12px;
-  font-size: 3rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 15px #6d28d9;
-  animation: pulse 2s infinite;
-}
-.wheel-container {
-  position: relative;
-  width: 300px;
-  height: 300px;
-}
-
-.wheel {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: conic-gradient(
-    #f40404 0deg 60deg,
-    #07f91f 60deg 120deg,
-    #161612 120deg 180deg,
-    #f1f2f3 180deg 240deg,
-    #7b0c58 240deg 300deg,
-    #e0a205 300deg 360deg
-  );
-  position: relative;
-}
-
-.wheel-slice {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform-origin: center left;
-  font-size: 1rem;
-  font-weight: bold;
-  color: white;
-  padding-left: 10px;
-}
-
-.wheel-pointer {
-  position: absolute;
-  top: -20px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 2rem;
-  color: #4f46e5;
-}
-
-
-
-
-
+.theme-purple { border-color: #6A1B9A; box-shadow: 0 0 10px #6A1B9A; }
+.theme-purple .competition-top-banner,
+.theme-purple .comp-button { background-color: #6A1B9A; color: #fff; }
+.theme-purple .comp-button:hover { background-color:	#6A1B9A; }
 
 

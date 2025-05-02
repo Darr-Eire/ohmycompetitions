@@ -21,24 +21,16 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
       }
     }
 
-    if (menuOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-    } else {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [menuOpen])
-
-  // Helper to close when clicking a link
   const handleLinkClick = () => {
     setMenuOpen(false)
   }
 
   return (
-    <header className="relative z-50">
+    <header className="relative z-50 flex items-center px-4 bg-blue-600 text-white">
       {/* Menu Button */}
       <button
         ref={buttonRef}
@@ -49,7 +41,7 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
         Menu
       </button>
 
-      <div className="nav-spacer" />
+      <div className="nav-spacer flex-1" />
 
       {/* Login/Logout Button */}
       {isLoggedIn ? (
@@ -66,22 +58,50 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
       {menuOpen && (
         <nav
           ref={menuRef}
-          className="dropdown-menu dropdown-menu-animate absolute top-full left-0 mt-2 bg-blue-600 rounded-lg shadow-lg p-4 w-48 space-y-2 z-50"
+          className="dropdown-menu absolute top-full left-0 mt-2 bg-blue-600 rounded-lg shadow-lg p-4 w-48 space-y-2 z-50"
         >
-          <Link href="/" className="dropdown-link" onClick={handleLinkClick}>Home</Link>
-          <Link href="/competitions" className="dropdown-link" onClick={handleLinkClick}>All Competitions</Link>
-          <Link href="/try-your-luck" className="dropdown-link" onClick={handleLinkClick}>Try Your Luck</Link>
-          <Link href="/forums" className="dropdown-link" onClick={handleLinkClick}>Forums</Link>
-          <Link href="/future" className="dropdown-link" onClick={handleLinkClick}>The Future</Link>
-          <Link href="/help-support" className="dropdown-link" onClick={handleLinkClick}>Help & Support</Link>
-          <Link href="/how-we-got-started" className="dropdown-link" onClick={handleLinkClick}>How We Got Started</Link>
+          <Link href="/" onClick={handleLinkClick} className="dropdown-link">
+            Home
+          </Link>
+          <Link href="/competitions" onClick={handleLinkClick} className="dropdown-link">
+            All Competitions
+          </Link>
+          <Link href="/try-your-luck" onClick={handleLinkClick} className="dropdown-link">
+            Try Your Luck
+          </Link>
+          <Link href="/forums" onClick={handleLinkClick} className="dropdown-link">
+            Forums
+          </Link>
+          <Link href="/future" onClick={handleLinkClick} className="dropdown-link">
+            The Future
+          </Link>
+          <Link href="/help-support" onClick={handleLinkClick} className="dropdown-link">
+            Help & Support
+          </Link>
+          <Link href="/how-we-got-started" onClick={handleLinkClick} className="dropdown-link">
+            How We Got Started
+          </Link>
+
           <hr className="my-2 border-white/50" />
+
           {isLoggedIn ? (
-            <button className="logout-button dropdown-link" onClick={() => { handleLinkClick(); onLogout(); }}>
+            <button
+              className="logout-button dropdown-link"
+              onClick={() => {
+                handleLinkClick()
+                onLogout()
+              }}
+            >
               Log Out
             </button>
           ) : (
-            <button className="login-button dropdown-link" onClick={() => { handleLinkClick(); onLogin(); }}>
+            <button
+              className="login-button dropdown-link"
+              onClick={() => {
+                handleLinkClick()
+                onLogin()
+              }}
+            >
               Log In With Pi
             </button>
           )}
@@ -90,3 +110,4 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
     </header>
   )
 }
+
