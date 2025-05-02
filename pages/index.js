@@ -67,7 +67,9 @@ export default function HomePage() {
               imageUrl={item.imageUrl}
               small
               theme="daily"
-              className="flex-shrink-0 w-72"
+              className="flex-shrink-0 w-64"
+
+
             />
           ))}
         </div>
@@ -93,7 +95,9 @@ export default function HomePage() {
             imageUrl="/images/freebie.png"
             small
             theme="green"
-            className="flex-shrink-0 w-72"
+            className="flex-shrink-0 w-64"
+
+
           >
             <div className="mt-2 p-2 bg-green-50 rounded text-center">
               <h4 className="text-green-700 font-semibold">Referral Rewards</h4>
@@ -117,7 +121,9 @@ export default function HomePage() {
             imageUrl="/images/everyone.png"
             small
             theme="green"
-            className="flex-shrink-0 w-72"
+            className="flex-shrink-0 w-64"
+
+
           >
             <div className="mt-2 p-2 bg-green-50 rounded text-center">
               <h4 className="text-green-700 font-semibold">Referral Rewards</h4>
@@ -141,7 +147,9 @@ export default function HomePage() {
             imageUrl="/images/weekly.png"
             small
             theme="green"
-            className="flex-shrink-0 w-72"
+            className="flex-shrink-0 w-64"
+
+
           >
             <div className="mt-2 p-2 bg-green-50 rounded text-center">
               <h4 className="text-green-700 font-semibold">Social Media Entry</h4>
@@ -181,7 +189,9 @@ export default function HomePage() {
             imageUrl="/images/ps5.jpeg"
             small
             theme="orange"
-            className="flex-shrink-0 w-72"
+            className="flex-shrink-0 w-64"
+
+
           />
           <CompetitionCard
             comp={{ slug: '55-inch-tv-giveaway', entryFee: 0.75 }}
@@ -192,7 +202,9 @@ export default function HomePage() {
             imageUrl="/images/Tv.jpeg"
             small
             theme="orange"
-            className="flex-shrink-0 w-72"
+            className="flex-shrink-0 w-64"
+
+
           />
           <CompetitionCard
             comp={{ slug: 'xbox-one-bundle', entryFee: 0.6 }}
@@ -203,7 +215,9 @@ export default function HomePage() {
             imageUrl="/images/xbox.jpeg"
             small
             theme="orange"
-            className="flex-shrink-0 w-72"
+            className="flex-shrink-0 w-64"
+
+
           />
         </div>
       </section>
@@ -228,7 +242,9 @@ export default function HomePage() {
             imageUrl="/images/100,000.png"
             small
             theme="purple"
-            className="flex-shrink-0 w-72"
+            className="flex-shrink-0 w-64"
+
+
           />
           <CompetitionCard
             comp={{ slug: 'pi-giveaway-50k', entryFee: 5 }}
@@ -239,7 +255,9 @@ export default function HomePage() {
             imageUrl="/images/50,000.png"
             small
             theme="purple"
-            className="flex-shrink-0 w-72"
+            className="flex-shrink-0 w-64"
+
+
           />
           <CompetitionCard
             comp={{ slug: 'pi-giveaway-25k', entryFee: 2.5 }}
@@ -250,7 +268,9 @@ export default function HomePage() {
             imageUrl="/images/25,000.png"
             small
             theme="purple"
-            className="flex-shrink-0 w-72"
+            className="flex-shrink-0 w-64"
+
+
           />
         </div>
       </section>
@@ -275,7 +295,9 @@ export default function HomePage() {
             imageUrl="/images/tesla.jpeg"
             small
             theme="premium"
-            className="flex-shrink-0 w-72"
+            className="flex-shrink-0 w-64"
+
+
           />
           <CompetitionCard
             comp={{ slug: 'dubai-luxury-holiday', entryFee: 25 }}
@@ -286,7 +308,9 @@ export default function HomePage() {
             imageUrl="/images/dubai-luxury-holiday.jpg"
             small
             theme="premium"
-            className="flex-shrink-0 w-72"
+            className="flex-shrink-0 w-64"
+
+
           />
           <CompetitionCard
             comp={{ slug: 'penthouse-hotel Stay', entryFee: 15 }}
@@ -297,7 +321,9 @@ export default function HomePage() {
             imageUrl="/images/hotel.jpeg"
             small
             theme="premium"
-            className="flex-shrink-0 w-72"
+            className="flex-shrink-0 w-64"
+
+
           />
         </div>
       </section>
