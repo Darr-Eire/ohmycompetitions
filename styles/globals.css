@@ -215,6 +215,13 @@ footer {
 
 /* 3) Carousel base (unchanged) */
 .daily-carousel,
+.competition-container {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+  float: none;
+}
+
 .free-carousel,
 .item-carousel {
   display: flex;
@@ -224,7 +231,10 @@ footer {
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
 }
-.daily-carousel > *,
+.daily-carousel > * {
+  flex: initial; /* or remove entirely */
+  scroll-snap-align: none;
+}
 .free-carousel > *,
 .item-carousel > * {
   scroll-snap-align: center;

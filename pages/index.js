@@ -76,10 +76,10 @@ export default function HomePage() {
         <h2 className="free-competitions-title inline-block mx-auto">
           Free Competitions
         </h2>
-        <div
-          ref={freeRef}
-          className="daily-carousel flex space-x-4 overflow-x-auto pb-2 no-scrollbar px-4 sm:px-0"
-        >
+        <div className="daily-carousel">
+  {dailyComps.map(comp => (
+    <CompetitionCard key={comp.slug} {...comp} />
+  ))}
           <CompetitionCard
             comp={{ slug: 'pi-day-freebie', entryFee: 0 }}
             title="Pi Day Freebie"
