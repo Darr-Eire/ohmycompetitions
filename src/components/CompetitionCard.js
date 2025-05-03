@@ -10,82 +10,62 @@ export default function CompetitionCard({
   title,
   prize,
   fee,
-  small,
-  children,
-  theme = 'global',
+  small = false,
+  theme = 'daily',
   imageUrl,
-  endsAt = comp?.endsAt || Date.now() + 1000 * 60 * 60 * 12,
+  endsAt,
   hideButton = false,
+  children,
 }) {
+  // Countdown
   const [timeLeft, setTimeLeft] = useState('')
 
   useEffect(() => {
     const update = () => {
-      const diff = new Date(endsAt) - Date.now()
-      if (diff <= 0) {
-        setTimeLeft('Ended')
-        return
-      }
+      const diff = new Date(endsAt).getTime() - Date.now()
+      if (diff <= 0) return setTimeLeft('Ended')
       const h = Math.floor(diff / 36e5)
       const m = Math.floor((diff % 36e5) / 6e4)
       setTimeLeft(`${h}h ${m}m`)
     }
     update()
-    const timer = setInterval(update, 60000)
-    return () => clearInterval(timer)
+    const id = setInterval(update, 60_000)
+    return () => clearInterval(id)
   }, [endsAt])
 
-  const bannerStyles = {
-    global:  'bg-blue-600 text-white',
+  // Theme → banner classes
+  const bannerClass = {
     daily:   'bg-blue-600 text-white',
-    green:   'bg-green-500 text-white',
-    orange:  'bg-orange-500 text-white',
-    purple:  'bg-purple-600 text-white',
+    free:    'bg-green-500 text-white',
+    tech:    'bg-orange-500 text-white',
+    pi:      'bg-purple-600 text-white',
     premium: 'bg-gray-800 text-white',
-  }
-
-  const bannerClass = bannerStyles[theme] || bannerStyles.global
+  }[theme] || 'bg-blue-600 text-white'
 
   return (
-    <div
-      className={[
-        'competition-card',
-        small && 'competition-card--small',
-      ]
-        .filter(Boolean)
-        .join(' ')
-      }
-    >
-      {/* Colored title banner with larger text */}
-      <div
-        className={`${bannerClass} inline-block text-3xl font-bold px-4 py-2 rounded-t-md mb-4`}
-      >
+    <div className={`competition-card ${small ? 'competition-card--small' : ''}`}>
+      {/* Title Banner */}
+      <div className={`${bannerClass} px-4 py-2 text-2xl font-bold rounded-t-md mb-4`}>
         {title}
       </div>
 
       {/* Image */}
-      <div className="competition-image mb-4 h-40 overflow-hidden rounded">
+      <div className="competition-image h-40 overflow-hidden rounded mb-4">
         <Image
           src={imageUrl || '/pi.jpeg'}
-          alt={`${title} banner`}
+          alt={title}
           width={300}
           height={180}
-          className="object-cover w-full h-full"
+          className="w-full h-full object-cover"
         />
       </div>
 
-      {/* Info */}
-      <div className="competition-info space-y-1 text-left text-sm">
+      {/* Details */}
+      <div className="competition-info text-sm space-y-1">
+        <p><strong>Prize:</strong> <span className="font-bold">{prize}</span></p>
+        <p><strong>Ends In:</strong> <span className="font-bold">{timeLeft}</span></p>
         <p>
-          <strong>Prize:</strong>{' '}
-          <span className="font-bold whitespace-pre-line">{prize}</span>
-        </p>
-        <p>
-          <strong>Draw ends in:</strong>{' '}
-          <span className="font-bold">{timeLeft}</span>
-        </p>
-        <p>
-          <strong>Total Tickets:</strong>{' '}
+          <strong>Tickets:</strong>{' '}
           <span className="font-bold">
             {comp.totalTickets?.toLocaleString() ?? '—'}
           </span>
@@ -93,24 +73,21 @@ export default function CompetitionCard({
         <p>
           <strong>Remaining:</strong>{' '}
           <span className="font-bold">
-            {comp.totalTickets != null && typeof comp.ticketsSold === 'number'
+            {typeof comp.ticketsSold === 'number'
               ? (comp.totalTickets - comp.ticketsSold).toLocaleString()
               : '—'}
           </span>
         </p>
-        <p>
-          <strong>Entry Fee:</strong>{' '}
-          <span className="font-bold">{fee}</span>
-        </p>
+        <p><strong>Entry Fee:</strong> <span className="font-bold">{fee}</span></p>
       </div>
 
-      {/* Optional children */}
+      {/* Custom children */}
       {children}
 
       {/* Enter Now button */}
       {!children && !hideButton && (
         <Link href={`/ticket-purchase/${comp.slug}`}>
-          <button className="mt-4 comp-button w-full">Enter Now</button>
+          <button className="comp-button w-full mt-4">Enter Now</button>
         </Link>
       )}
     </div>

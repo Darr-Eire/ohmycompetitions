@@ -1,87 +1,60 @@
 /* === Theme Variables === */
 :root {
-  --primary-color: #1897e6;
-    /* Blue */
-  --primary-hover: #1834e6;
-  --primary-text: #ffffff;
-
-  --secondary-color: #1834e6; /* Darker Blue */
-  --secondary-hover: #683e0b;
-  --secondary-text: #ffffff;
-
-  --accent-color: #0f1f7d;
-  --accent-hover: #e0e0e0;
-
-  --button-radius: 4px;
-  --transition-duration: 0.2s;
+  --primary-color:    #1897e6;
+  --primary-hover:    #1834e6;
+  --primary-text:     #ffffff;
+  --secondary-color:  #2718b3;
+  --secondary-hover:  #683e0b;
+  --accent-color:     #0f1f7d;
+  --accent-hover:     #e0e0e0;
+  --button-radius:    4px;
+  --transition-dur:   0.2s;
 }
 
-/* === Global Reset === */
+/* === Reset & Base === */
 html, body, #__next {
-  height: 100%;
   margin: 0;
+  height: 100%;
   font-family: sans-serif;
   background-color: #f9f9f9;
-  color: #000; /* Make text black globally */
+  color: #000;
 }
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
+a { color: inherit; text-decoration: none; }
 button {
   font-family: inherit;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
 }
 
 /* === Layout === */
-.layout {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
+.layout { display: flex; flex-direction: column; min-height: 100vh; }
+.content { flex: 1; }
 
-.content {
-  flex: 1 0 auto;
-}
-
-/* === Header === */
+/* === Header & Nav === */
 header {
-  display: flex;
-  align-items: center;
-  padding: 0.4rem 1rem;
-  font-size: 1rem;
-  background-color: var(--primary-color);
+  display: flex; align-items: center;
+  padding: 0.5rem 1rem;
+  background: var(--primary-color);
   color: var(--primary-text);
-  position: relative;
-  z-index: 1000;
+  position: relative; z-index:1000;
 }
-
-/* === Menu & Auth Buttons === */
-.menu-button {
-  background: transparent;
-  border: none;
-  color: inherit;
-  font-size: 1rem;
-  cursor: pointer;
-  padding: 0.25rem 0.5rem;
+.menu-button,
+.login-button,
+.logout-button {
+  background: transparent; color: inherit;
+  border: none; padding: 0.25rem 0.5rem;
 }
-
 .nav-spacer { flex: 1; }
-
 .login-button,
 .logout-button {
   background: var(--primary-color);
   border: 1px solid var(--primary-color);
-  color: var(--primary-text);
-  padding: 0.25rem 0.75rem;
-  font-size: 0.9rem;
-  cursor: pointer;
   border-radius: var(--button-radius);
   margin-left: 0.5rem;
-  transition: background-color var(--transition-duration) ease;
+  transition: background-color var(--transition-dur);
 }
-
 .login-button:hover,
 .logout-button:hover {
   background: var(--primary-hover);
@@ -91,92 +64,75 @@ header {
 footer {
   margin-top: auto;
   padding: 0.5rem 1rem;
-  font-size: 0.875rem;
+  background: var(--primary-color);
+  color: var(--primary-text);
   text-align: center;
-  background-color: var(--primary-color);
-  color: var(--primary-text);
+  font-size: 0.875rem;
 }
-
-.footer-links {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-}
-.footer-links a {
-  color: var(--primary-text);
-  text-decoration: underline;
-}
-.footer-links a:hover {
-  color: var(--accent-hover);
-}
-
+.footer-links,
 .social-icons {
   display: flex;
   justify-content: center;
   gap: 1rem;
+  margin-top: 0.5rem;
 }
-.social-icons a {
-  color: var(--primary-text);
-  font-size: 1.25rem;
+.footer-links a:hover { color: var(--accent-hover); }
+
+/* === Buttons === */
+.comp-button,
+.view-more-button {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: var(--button-radius);
+  font-weight: 600;
+  transition: background-color var(--transition-dur);
 }
-.social-icons a:hover {
+.comp-button {
+  background: var(--primary-color);
   color: var(--primary-text);
+}
+.comp-button:hover {
+  background: var(--primary-hover);
 }
 
-/* === View More Button === */
-.view-more-button {
-  padding: 0.5rem 1.25rem;
-  border-radius: 9999px;
-  display: inline-block;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: white;
-  background-color: var(--primary-color);
-  transition: background-color var(--transition-duration) ease;
-}
-.view-more-button:hover {
-  background-color: var(--primary-hover);
-}
+/* “View More” by theme */
+.view-more-daily   { background: #2718b3; color: #fff }
+.view-more-free    { background: #2718b3; color: #fff }
+.view-more-tech    { background: #2718b3; color: #fff }
+.view-more-pi      { background: #2718b3; color: #fff }
+.view-more-premium { background: #2718b3;color: #fff }
 
 /* === Competition Card === */
-/* styles/globals.css or wherever you keep this */
 .competition-card {
   border: 5px solid var(--primary-color);
   border-radius: 4px;
-  padding: 0.2rem;
-  max-width: 320px;
-  background: #ffffff;
+  background: #fff;
   box-shadow: 0 0 40px var(--primary-color);
-  margin: 0rem auto;
+  max-width: 320px;
+  margin: 1rem auto;
+  padding: 0.5rem;
   text-align: center;
 }
-:root {
-  --secondary-color: #1b220c;   /* or whatever your header/nav color is */
+.competition-card img {
+  width: 100%;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 0.5rem;
 }
-
-
-
-
 .comp-prize,
 .comp-fee {
-  color: #000;
-  margin-bottom: 0.75rem;
   font-weight: bold;
+  margin-bottom: 0.75rem;
 }
 
-.comp-button {
-  background-color: var(--primary-color);
-  color: var(--primary-text);
-  border: none;
-  border-radius: var(--button-radius);
-  padding: 0.5rem 1rem;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: background-color var(--transition-duration) ease;
+/* === Section Titles === */
+.category-page-title {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--secondary-color);
+  margin-bottom: -2rem;
 }
-.comp-button:hover {
-  background-color: var(--primary-hover);
-}
+
 /* === Carousel Containers === */
 .daily-carousel,
 .free-carousel,
@@ -188,31 +144,32 @@ footer {
   padding: 1rem 0;
   overflow-x: auto;
 
-  /* snap and smooth */
-  scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   overscroll-behavior-x: contain;
+  touch-action: pan-x;
 }
-
-/* === Carousel Items === */
-.daily-carousel > *,
-.free-carousel > *,
-.tech-carousel > *,
-.pi-carousel > *,
+/* Carousel Items fixed width */
+.daily-carousel  > *,
+.free-carousel    > *,
+.tech-carousel    > *,
+.pi-carousel      > *,
 .premium-carousel > * {
-  flex: 0 0 auto;
+  flex: 0 0 280px;
   scroll-snap-align: start;
   scroll-snap-stop: always;
 }
 
-/* === Responsive Grid for full pages === */
+/* === “All X” Grid Pages === */
+.category-grid {
+  display: grid;
+  gap: 1.5rem;
+  justify-items: center;
+}
 @media (min-width: 1024px) {
   .category-grid {
-    display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-    justify-items: center;
   }
 }
 @media (max-width: 1023px) {
@@ -230,47 +187,16 @@ footer {
   }
 }
 
-/* === “View More” buttons === */
-.view-more-button {
-  padding: 0.5rem 1rem;
-  border-radius: 0.375rem;
-  font-weight: 600;
-}
-.view-more-daily   { background: #1e3a8a; color: #fff; }
-.view-more-green   { background: #047857; color: #fff; }
-.view-more-orange  { background: #c2410c; color: #fff; }
-.view-more-purple  { background: #6d28d9; color: #fff; }
-.view-more-premium { background: #111827; color: #fff; }
-
-
-/* === Section Titles === */
-.daily-competitions-title,
-.free-competitions-title,
-.item-giveaways-title,
-.pi-giveaways-title,
-.premium-competitions-title,
-.category-page-title {
-  text-align: center;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--primary-color);
-  margin: 0 auto 0rem;
-}
-
 /* === Dropdown Menu === */
 .dropdown-menu {
   position: absolute;
-  top: 2.7rem;
-  left: 0;
-  background-color: var(--primary-color);
+  top: 2.5rem; left: 0;
+  background: var(--primary-color);
   border: 1px solid var(--primary-text);
   border-radius: 4px;
   padding: 0.5rem;
-  display: flex;
-  flex-direction: column;
   z-index: 1100;
-  min-width: 150px;
-  animation: dropdown-fade var(--transition-duration) ease forwards;
+  animation: dropdown-fade var(--transition-dur) ease forwards;
 }
 .dropdown-link {
   color: var(--primary-text);
@@ -278,11 +204,9 @@ footer {
   border-radius: 4px;
 }
 .dropdown-link:hover {
-  background-color: rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.2);
 }
-
 @keyframes dropdown-fade {
   from { opacity: 0; transform: translateY(-10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-
