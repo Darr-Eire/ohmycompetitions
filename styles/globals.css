@@ -248,12 +248,20 @@ footer {
   gap: 1rem;
   padding: 2.4rem 0;
   overflow-x: auto;
+
+  /* momentum on iOS */
   -webkit-overflow-scrolling: touch;
+
+  /* native snap */
   scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
-  overscroll-behavior-x: contain;
+
+  /* only intercept horizontal pans */
   touch-action: pan-x;
+
+  /* allow vertical scrolling to pass through */
+  overscroll-behavior: contain;
 }
+
 
 /* Each item snaps and locks to 280px width */
 .daily-carousel  > *,

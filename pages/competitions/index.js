@@ -31,8 +31,7 @@ export default function AllCompetitionsPage() {
     { comp: { slug: 'tesla-model-3-giveaway', entryFee: 50 },   title: 'Tesla Model 3 Giveaway',  prize: 'Tesla Model 3',             fee: '50 π',       href: '/competitions/tesla-model-3-giveaway', imageUrl: '/images/tesla.jpeg',               theme: 'premium'  },
     { comp: { slug: 'dubai-luxury-holiday', entryFee: 25 },     title: 'Dubai Luxury Holiday',     prize: '7-Day Dubai Trip',          fee: '25 π',       href: '/competitions/dubai-luxury-holiday',   imageUrl: '/images/dubai-luxury-holiday.jpg', theme: 'premium'  },
     { comp: { slug: 'penthouse-hotel-stay', entryFee: 15 },     title: 'Penthouse Hotel Stay',     prize: 'Penthouse Hotel Stay of your choice', fee: '15 π', href: '/competitions/macbook-pro-2025-giveaway', imageUrl: '/images/hotel.jpeg', theme: 'premium' },
-  ]
-
+  ] 
   return (
     <main className="pt-8 pb-12 px-4 bg-white min-h-screen">
       <div className="max-w-6xl mx-auto">
