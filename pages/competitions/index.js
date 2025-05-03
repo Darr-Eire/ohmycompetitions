@@ -30,7 +30,7 @@ export default function AllCompetitionsPage() {
 
         <div className="border-2 border-blue-500 rounded-xl p-4 bg-blue-50 shadow-md">
           {/* here’s the grid: exactly 3 columns, no flex */}
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-4 gap-6">
             {allComps.map(item => (
               <CompetitionCard
                 key={item.comp.slug}

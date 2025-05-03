@@ -196,15 +196,23 @@ footer {
   scroll-snap-align: center;
 }
 /* 3-column grid for competition lists */
+/* styles/globals.css */
+
+/* Default: 1 column on mobile */
 .category-grid {
   display: grid;
-  /* always 3 columns of equal width */
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  /* gap-6 in Tailwind = 1.5rem */
-  gap: 5rem;
-  /* center items if they’re narrower than the column */
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 3rem;             /* your chosen gutter */
   justify-items: center;
 }
+
+/* ≥1024px (lg): switch to 4 columns */
+@media (min-width: 1024px) {
+  .category-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 
 /* === Section Titles === */
 .daily-competitions-title,
