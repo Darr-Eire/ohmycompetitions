@@ -178,42 +178,37 @@ footer {
 }
 
 /* === Carousel === */
-/* styles/globals.css */
-
-/* carousel container */
-/* styles/globals.css */
-
-/* 1) Make the carousel snap exactly per card */
+/* === Carousel Containers === */
 .daily-carousel,
 .free-carousel,
-.item-carousel,
 .tech-carousel,
 .pi-carousel,
 .premium-carousel {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 0;
+  overflow-x: auto;
+
+  /* Snap behavior */
   scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch; /* smooth momentum */
+  -webkit-overflow-scrolling: touch; /* smooth momentum on iOS */
+
+  /* Slow down super-fast swipes */
+  scroll-behavior: smooth;
   overscroll-behavior-x: contain;    /* prevent rubber‑banding beyond ends */
 }
 
+/* === Carousel Items === */
 .daily-carousel > *,
 .free-carousel > *,
-.item-carousel > *,
 .tech-carousel > *,
 .pi-carousel > *,
 .premium-carousel > * {
-  scroll-snap-align: start;
+  flex: 0 0 auto;
+  scroll-snap-align: center; /* snap each card to center */
+  scroll-snap-stop: always;  /* ensure it stops exactly */
 }
 
-/* 2) Slow down the flick momentum a little */
-.daily-carousel,
-.free-carousel,
-.item-carousel,
-.tech-carousel,
-.pi-carousel,
-.premium-carousel {
-  /* this prohibits super‑fast velocity swipes */
-  scroll-behavior: smooth;
-}
 
 
 /* view-more button base */
