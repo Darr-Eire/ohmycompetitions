@@ -11,21 +11,6 @@ export default function HomePage() {
   const piRef      = useRef(null)
   const premiumRef = useRef(null)
   const SCROLL_STEP = 75
-
-  // Reset carousel to start when scrolled off‐screen
-  useEffect(() => {
-    const onScroll = () => {
-      for (const ref of [dailyRef, freeRef, techRef, piRef, premiumRef]) {
-        const el = ref.current
-        if (el?.getBoundingClientRect().bottom < 0) {
-          el.scrollLeft = 0
-        }
-      }
-    }
-    window.addEventListener('scroll', onScroll)
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
   // Section component: header + native‑swipe carousel
   const Section = ({ title, items, containerRef, theme, viewMoreHref, className = '' }) => {
     const headingStyles = {

@@ -133,7 +133,7 @@ footer {
   margin-bottom: -2rem;
 }
 
-/* === Carousel Containers === */
+/* Carousel containers */
 .daily-carousel,
 .free-carousel,
 .tech-carousel,
@@ -144,25 +144,24 @@ footer {
   padding: 1rem 0;
   overflow-x: auto;
 
+  /* momentum on iOS */
   -webkit-overflow-scrolling: touch;
+
+  /* native snap */
   scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
-  overscroll-behavior-x: contain;
-  touch-action: pan-x;
 }
-/* Carousel Items fixed width */
-.daily-carousel  > *,
-.free-carousel    > *,
-.tech-carousel    > *,
-.pi-carousel      > *,
+
+/* Each card snaps */
+.daily-carousel > *,
+.free-carousel > *,
+.tech-carousel > *,
+.pi-carousel > *,
 .premium-carousel > * {
-  flex: 0 0 280px;
+  flex: 0 0 280px; /* or auto */
   scroll-snap-align: start;
   scroll-snap-stop: always;
-  display: flex;
-  flex-direction: column;
-
 }
+
 .view-more-card {
   display: flex;
   align-items: center;
