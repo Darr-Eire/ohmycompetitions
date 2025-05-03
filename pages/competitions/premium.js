@@ -86,6 +86,34 @@ const premiumComps = [
     fee: '15 π',
     imageUrl: '/images/hotel.jpeg',
   },
+  {
+    comp: {
+      slug: 'penthouse-hotel-stay',
+      entryFee: 15,
+      totalTickets: 5000,
+      ticketsSold: 4875,
+      endsAt: '2025-05-15T21:00:00Z',
+    },
+    title: 'Penthouse Hotel Stay',
+    href: '/competitions/macbook-pro-2025-giveaway',
+    prize: 'Penthouse Hotel Stay of your choice',
+    fee: '15 π',
+    imageUrl: '/images/hotel.jpeg',
+  },
+  {
+    comp: {
+      slug: 'penthouse-hotel-stay',
+      entryFee: 15,
+      totalTickets: 5000,
+      ticketsSold: 4875,
+      endsAt: '2025-05-15T21:00:00Z',
+    },
+    title: 'Penthouse Hotel Stay',
+    href: '/competitions/macbook-pro-2025-giveaway',
+    prize: 'Penthouse Hotel Stay of your choice',
+    fee: '15 π',
+    imageUrl: '/images/hotel.jpeg',
+  },
 ]
 
 export default function AllPremiumCompsPage() {

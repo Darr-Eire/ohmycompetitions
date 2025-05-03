@@ -178,6 +178,9 @@ footer {
 }
 
 /* === Carousel === */
+/* styles/globals.css */
+
+/* carousel container */
 .daily-carousel,
 .free-carousel,
 .item-carousel {
@@ -195,6 +198,19 @@ footer {
   flex: 0 0 auto;
   scroll-snap-align: center;
 }
+
+/* view-more button base */
+.view-more-button {
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-weight: 600;
+}
+.view-more-daily   { background:#1e3a8a; color:#fff; }
+.view-more-green   { background:#047857; color:#fff; }
+.view-more-orange  { background:#c2410c; color:#fff; }
+.view-more-purple  { background:#6d28d9; color:#fff; }
+.view-more-premium { background:#111827; color:#fff; }
+
 /* 3-column grid for competition lists */
 /* styles/globals.css */
 
@@ -255,4 +271,17 @@ footer {
 @keyframes dropdown-fade {
   from { opacity: 0; transform: translateY(-10px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+/* styles/globals.css */
+.sponsor-row {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.sponsor-banner {
+  display: block;
+  max-width: 120px;    /* shrink width */
+  width: 100%;
+  height: auto;
 }
