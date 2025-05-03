@@ -199,7 +199,7 @@ footer {
 .category-grid {
   display: grid;
   /* always 3 columns of equal width */
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   /* gap-6 in Tailwind = 1.5rem */
   gap: 5rem;
   /* center items if they’re narrower than the column */
