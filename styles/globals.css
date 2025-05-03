@@ -179,7 +179,7 @@ footer {
 
 /* Enter Now button */
 .comp-button {
-  background: var(--secondary-color);
+  background: var(--primary-color);
   color: white; /* force white text */
   padding: 0.5rem;
   width: 100%;
@@ -189,7 +189,7 @@ footer {
 }
 
 .comp-button:hover {
-  background: var(--primary-hover);
+  background: var(--secondary-hover);
   color: white; /* ensure it stays white on hover */
 }
 
@@ -240,6 +240,7 @@ footer {
 
 /* === Carousel Containers === */
 /* === Carousel Containers === */
+/* === Carousel Containers === */
 .daily-carousel,
 .free-carousel,
 .tech-carousel,
@@ -253,8 +254,12 @@ footer {
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   overscroll-behavior-x: contain;
-  /* remove this: touch-action: pan-x; */
+
+  /* center first & last cards */
+  padding-left: calc((100vw - 280px) / 2);
+  padding-right: calc((100vw - 280px) / 2);
 }
+
 
 
 /* Each item snaps and locks to 280px width */
