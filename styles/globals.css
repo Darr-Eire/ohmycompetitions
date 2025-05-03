@@ -205,9 +205,36 @@ footer {
 .pi-carousel > *,
 .premium-carousel > * {
   flex: 0 0 auto;
-  scroll-snap-align: center; /* snap each card to center */
+  scroll-snap-align: start; /* snap each card to center */
   scroll-snap-stop: always;  /* ensure it stops exactly */
 }
+/* styles/globals.css */
+
+/* Mobile carousel */
+@media (max-width: 1023px) {
+  .category-grid {
+    display: flex;
+    overflow-x: auto;
+    gap: 1rem;
+    padding: 1rem 0;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  .category-grid > * {
+    flex: 0 0 80%;
+    scroll-snap-align: center;
+  }
+}
+
+/* Desktop grid */
+@media (min-width: 1024px) {
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem; /* Tailwind’s gap-6 */
+  }
+}
+
 
 
 
@@ -284,16 +311,4 @@ footer {
   from { opacity: 0; transform: translateY(-10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-/* styles/globals.css */
-.sponsor-row {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-.sponsor-banner {
-  display: block;
-  max-width: 120px;    /* shrink width */
-  width: 100%;
-  height: auto;
-}
+

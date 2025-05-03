@@ -34,19 +34,6 @@ export default function HomePage() {
     window.addEventListener('scroll', handler)
     return () => window.removeEventListener('scroll', handler)
   }, [])
-
-  // Tiny sponsor banner component
-  const SponsorBanner = ({ href, img, alt }) => (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="sponsor-banner"
-    >
-      <img src={img} alt={alt} className="w-full h-auto" />
-    </a>
-  )
-
   // Reusable section with header, arrows, friction on touch
   const Section = ({ title, items, containerRef, theme = 'global', viewMoreHref, className = '' }) => {
     const headingStyles = {
@@ -157,11 +144,6 @@ export default function HomePage() {
 
   return (
     <main className="pt-8 pb-12 px-4 bg-white min-h-screen space-y-16">
-      {/* sponsor banners */}
-  <div className="sponsor-row flex gap-6 mb-8">
-    <SponsorBanner href="https://sponsor1.com" img="/images/sponsor-banner.png" alt="Sponsor 1"/>
- </div>
-
       {/* competition sections */}
       <Section title="Daily Competitions"   containerRef={dailyRef}   theme="daily"   viewMoreHref="/competitions/daily"   items={dailyItems}   className="mt-8" />
       <Section title="Free Competitions"    containerRef={freeRef}    theme="green"   viewMoreHref="/competitions/free"    items={freeItems}    />
