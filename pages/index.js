@@ -1,4 +1,3 @@
-// pages/index.js
 'use client'
 
 import { useRef, useEffect } from 'react'
@@ -6,12 +5,12 @@ import Link from 'next/link'
 import CompetitionCard from '@/components/CompetitionCard'
 
 export default function HomePage() {
-  // Refs for each carousel
   const dailyRef   = useRef(null)
   const freeRef    = useRef(null)
   const techRef    = useRef(null)
   const piRef      = useRef(null)
   const premiumRef = useRef(null)
+  const SCROLL_STEP = 75
 
   // Reset carousel to start when scrolled off‐screen
   useEffect(() => {
@@ -27,7 +26,7 @@ export default function HomePage() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // Section component: header + native-swipe carousel
+  // Section component: header + native‑swipe carousel
   const Section = ({ title, items, containerRef, theme, viewMoreHref, className = '' }) => {
     const headingStyles = {
       daily:   'bg-blue-600 text-white',
@@ -37,6 +36,33 @@ export default function HomePage() {
       premium: 'bg-gray-800 text-white',
     }
     const headingClass = headingStyles[theme] || headingStyles.daily
+
+    // Touch‑drag friction (no preventDefault)
+    useEffect(() => {
+      const el = containerRef.current
+      if (!el) return
+
+      const F = 0.3
+      let startX = 0, startScroll = 0
+
+      const onTouchStart = e => {
+        startX = e.touches[0].pageX
+        startScroll = el.scrollLeft
+      }
+      const onTouchMove = e => {
+        const deltaX = startX - e.touches[0].pageX
+        // Only adjust horizontal
+        el.scrollLeft = startScroll + deltaX * F
+        // **no** e.preventDefault() here
+      }
+
+      el.addEventListener('touchstart', onTouchStart, { passive: true })
+      el.addEventListener('touchmove',  onTouchMove,   { passive: true })
+      return () => {
+        el.removeEventListener('touchstart', onTouchStart)
+        el.removeEventListener('touchmove',  onTouchMove)
+      }
+    }, [containerRef])
 
     return (
       <section className={`relative ${className}`}>
@@ -48,18 +74,13 @@ export default function HomePage() {
           className={`${theme}-carousel flex space-x-4 overflow-x-auto scroll-smooth`}
         >
           {items.map(item => (
-            <CompetitionCard
-              key={item.comp.slug + (item.comp.endsAt || '')}
-              {...item}
-              small
-              theme={theme}
-            />
+            <CompetitionCard key={item.comp.slug + (item.comp.endsAt || '')} {...item} small theme={theme} />
           ))}
-          <div className="view-more-card min-w-[280px]">
-              <Link href={viewMoreHref} className={`view-more-button view-more-${theme}`}>
-                View More →
-              </Link>
-            </div>
+          <div className="flex items-center justify-center min-w-[280px]">
+            <Link href={viewMoreHref} className={`view-more-button view-more-${theme}`}>
+              View More →
+            </Link>
+          </div>
         </div>
       </section>
     )
