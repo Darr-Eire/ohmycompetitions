@@ -227,7 +227,7 @@ footer {
   border-radius: 4px;
   background: #fff;
   box-shadow: 0 0 40px var(--primary-color);
-  max-width: 320px;
+  max-width: 520px;
   margin: 1rem auto;
   overflow: hidden;
   text-align: center;
@@ -257,8 +257,8 @@ footer {
   scroll-behavior: smooth;
   overscroll-behavior-x: contain;
  /* center first & last cards */
-  padding-left: calc((170vw - 380px) / 2);
-  padding-right: calc((400vw - 480px) / 2);
+  padding-left: calc((200vw - 280px) / 2);
+  padding-right: calc((200vw - 280px) / 2);
 }
 /* Each item snaps and locks to 280px width */
 .daily-carousel  > *,
@@ -266,7 +266,7 @@ footer {
 .tech-carousel    > *,
 .pi-carousel      > *,
 .premium-carousel > * {
-  flex: 0 0 380px;
+  flex: 0 0 780px;
   scroll-snap-align: start;
   scroll-snap-stop: always;
 }
