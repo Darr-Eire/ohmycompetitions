@@ -18,11 +18,13 @@ export default function ForumsPage() {
 
         {/* Intro Text */}
         <div className="p-6 space-y-6 text-center">
-        <p className="text-2xl text-gray-700 font-semibold">
+        <p>
+  <strong>
+  Welcome to the OhMyCompetitions Forums!  
+  Connect, share, vote, and discuss with fellow players around the world.
+  </strong>
+</p>
 
-            Welcome to the <strong>OhMyCompetitions Forums</strong>!  
-            Connect, share, vote, and discuss with fellow players around the world.
-          </p>
 
           {/* Sections */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">

@@ -23,9 +23,12 @@ export default function HelpSupport() {
 
         {/* Body */}
         <div className="p-6 space-y-6">
-          <p className="text-lg">
-            Welcome to our Help & Support Center. We’re here to assist you with any questions or issues!
-          </p>
+         <p>
+  <strong>
+  Welcome to our Help & Support Center. We’re here to assist you with any questions or issues!
+  </strong>
+</p>
+
 
           {/* Contact Information */}
           <div>

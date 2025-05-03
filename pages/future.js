@@ -19,9 +19,12 @@ export default function FuturePage() {
         <div className="p-6 space-y-10 text-gray-700 text-left">
 
           {/* Intro */}
-          <p className="text-lg text-center">
-            Here's a glimpse at the amazing new features and ideas we’re building for our players! 🎉
-          </p>
+         <p>
+  <strong>
+  Here's a glimpse at the amazing new features and ideas we’re building for our players! 🎉
+  </strong>
+</p>
+
 
           {/* Section: Competitions */}
           <section>

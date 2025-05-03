@@ -19,9 +19,15 @@ export default function HowWeGotStarted() {
         <div className="p-6 space-y-6 text-left text-gray-700">
 
           {/* 1. Intro */}
+         
           <p>
-            Welcome, Pioneers! Our journey with Pi Network started just like yours — with a simple invite from a friend... and a bit of curiosity. 🔥
-          </p>
+  <strong>
+    Welcome, Pioneers! Our journey with Pi Network started just like yours — with a simple invite from a friend... and a bit of curiosity. 🔥
+  </strong>
+</p>
+
+
+
 
           {/* 2. The Early Days */}
           <h2 className="font-semibold text-blue-600 mt-6">Finding Pi — And Believing in It Early</h2>

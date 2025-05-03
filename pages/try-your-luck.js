@@ -56,10 +56,16 @@ export default function TryYourLuckPage() {
         <div className="competition-top-banner text-white text-xl font-bold">
           🎯 Try Your Luck
         </div>
+         <div className="text-center mb-6">
+  <p className="text-2xl font-extrabold text-black mb-2">
+  <strong>🎉 Welcome to the OhMyCompetitions “Try Your Luck” Page! 
+    Win free tickets, unlock daily rewards, spin for mystery prizes, and rack up piles of <span className="text-purple-600">π</span> every day!</strong>
+  </p>
+  <p className="text-xl font-bold text-red-600">
+    🔥 Daily Streak: {streak} days 🔥
+  </p>
+</div>
 
-        <div className="text-center mb-4 text-lg text-black">
-          🔥 Daily Streak: {streak} days
-        </div>
 
         <div className="space-y-6 px-4">
           {games.map((game) => {
