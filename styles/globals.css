@@ -188,10 +188,13 @@ footer {
   padding: 1rem 0;
   overflow-x: auto;
 
+  /* Snap behavior */
   scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
+  -webkit-overflow-scrolling: touch;  /* smooth momentum on iOS */
+
+  /* Slow down super-fast swipes */
   scroll-behavior: smooth;
-  overscroll-behavior-x: contain;
+  overscroll-behavior-x: contain;     /* prevent rubber‑banding beyond ends */
 }
 
 /* === Carousel Items === */
@@ -201,8 +204,8 @@ footer {
 .pi-carousel > *,
 .premium-carousel > * {
   flex: 0 0 auto;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
+  scroll-snap-align: start;  /* snap each card into view */
+  scroll-snap-stop: always;   /* ensure it stops exactly */
 }
 
 /* === Responsive: carousel on mobile, grid on desktop === */
@@ -218,8 +221,8 @@ footer {
     -webkit-overflow-scrolling: touch;
   }
   .category-grid > * {
-    flex: 0 0 80%;
-    scroll-snap-align: center;
+    flex: 0 0 80%;             /* each card takes 80% of viewport */
+    scroll-snap-align: center; /* center each card when snapped */
   }
 }
 
@@ -227,8 +230,8 @@ footer {
 @media (min-width: 1024px) {
   .category-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem; /* Tailwind’s gap-6 */
+    grid-template-columns: repeat(3, 1fr); /* 3 columns */
+    gap: 1.5rem;                           /* Tailwind’s gap-6 */
     justify-items: center;
   }
 }
@@ -246,7 +249,6 @@ footer {
 .view-more-premium { background: #111827; color: #fff; }
 
 
-
 /* === Section Titles === */
 .daily-competitions-title,
 .free-competitions-title,
@@ -255,10 +257,10 @@ footer {
 .premium-competitions-title,
 .category-page-title {
   text-align: center;
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  color: var(--secondary-color);
-  margin: 0 auto 2rem;
+  color: var(--primary-color);
+  margin: 0 auto 0rem;
 }
 
 /* === Dropdown Menu === */
