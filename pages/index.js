@@ -55,11 +55,11 @@ export default function HomePage() {
               theme={theme}
             />
           ))}
-          <div className="flex items-center justify-center min-w-[280px]">
-            <Link href={viewMoreHref} className={`view-more-button view-more-${theme}`}>
-              View More →
-            </Link>
-          </div>
+          <div className="view-more-card min-w-[280px]">
+              <Link href={viewMoreHref} className={`view-more-button view-more-${theme}`}>
+                View More →
+              </Link>
+            </div>
         </div>
       </section>
     )
