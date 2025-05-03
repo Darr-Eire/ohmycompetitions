@@ -177,7 +177,6 @@ footer {
   background-color: var(--primary-hover);
 }
 
-/* === Carousel === */
 /* === Carousel Containers === */
 .daily-carousel,
 .free-carousel,
@@ -189,13 +188,10 @@ footer {
   padding: 1rem 0;
   overflow-x: auto;
 
-  /* Snap behavior */
   scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch; /* smooth momentum on iOS */
-
-  /* Slow down super-fast swipes */
+  -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
-  overscroll-behavior-x: contain;    /* prevent rubber‑banding beyond ends */
+  overscroll-behavior-x: contain;
 }
 
 /* === Carousel Items === */
@@ -205,12 +201,13 @@ footer {
 .pi-carousel > *,
 .premium-carousel > * {
   flex: 0 0 auto;
-  scroll-snap-align: start; /* snap each card to center */
-  scroll-snap-stop: always;  /* ensure it stops exactly */
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 }
-/* styles/globals.css */
 
-/* Mobile carousel */
+/* === Responsive: carousel on mobile, grid on desktop === */
+
+/* Mobile / Tablet (<1024px) */
 @media (max-width: 1023px) {
   .category-grid {
     display: flex;
@@ -226,47 +223,28 @@ footer {
   }
 }
 
-/* Desktop grid */
+/* Desktop (≥1024px) */
 @media (min-width: 1024px) {
   .category-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 1.5rem; /* Tailwind’s gap-6 */
+    justify-items: center;
   }
 }
 
-
-
-
-/* view-more button base */
+/* === “View More” buttons === */
 .view-more-button {
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
   font-weight: 600;
 }
-.view-more-daily   { background:#1e3a8a; color:#fff; }
-.view-more-green   { background:#047857; color:#fff; }
-.view-more-orange  { background:#c2410c; color:#fff; }
-.view-more-purple  { background:#6d28d9; color:#fff; }
-.view-more-premium { background:#111827; color:#fff; }
+.view-more-daily   { background: #1e3a8a; color: #fff; }
+.view-more-green   { background: #047857; color: #fff; }
+.view-more-orange  { background: #c2410c; color: #fff; }
+.view-more-purple  { background: #6d28d9; color: #fff; }
+.view-more-premium { background: #111827; color: #fff; }
 
-/* 3-column grid for competition lists */
-/* styles/globals.css */
-
-/* Default: 1 column on mobile */
-.category-grid {
-  display: grid;
-  grid-template-columns: repeat(1, minmax(0, 1fr));
-  gap: 3rem;             /* your chosen gutter */
-  justify-items: center;
-}
-
-/* ≥1024px (lg): switch to 4 columns */
-@media (min-width: 1024px) {
-  .category-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
 
 
 /* === Section Titles === */
