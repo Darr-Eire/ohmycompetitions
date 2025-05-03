@@ -179,7 +179,7 @@ export default function HomePage() {
       prize: 'PS5 + Extra Controller',
       fee: '0.5 π',
       href: '/competitions/ps5-bundle-giveaway',
-      imageUrl: '/images/ps5.jpeg',
+      imageUrl: '/images/playstation.jpeg',
       theme: 'tech'
     },
     {
@@ -194,7 +194,7 @@ export default function HomePage() {
       prize: '55″ Smart TV',
       fee: '0.75 π',
       href: '/competitions/55-inch-tv-giveaway',
-      imageUrl: '/images/Tv.jpeg',
+      imageUrl: '/images/tv.jpeg',
       theme: 'tech'
     },
     {
