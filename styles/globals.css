@@ -1,10 +1,11 @@
 /* === Theme Variables === */
 :root {
-  --primary-color: #1834e6; /* Blue */
-  --primary-hover: #1897e6;
+  --primary-color: #1897e6;
+    /* Blue */
+  --primary-hover: #1834e6;
   --primary-text: #ffffff;
 
-  --secondary-color: #0f1f7d; /* Darker Blue */
+  --secondary-color: #1834e6; /* Darker Blue */
   --secondary-hover: #683e0b;
   --secondary-text: #ffffff;
 
@@ -176,7 +177,6 @@ footer {
 .comp-button:hover {
   background-color: var(--primary-hover);
 }
-
 /* === Carousel Containers === */
 .daily-carousel,
 .free-carousel,
@@ -188,13 +188,11 @@ footer {
   padding: 1rem 0;
   overflow-x: auto;
 
-  /* Snap behavior */
+  /* snap and smooth */
   scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;  /* smooth momentum on iOS */
-
-  /* Slow down super-fast swipes */
+  -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
-  overscroll-behavior-x: contain;     /* prevent rubber‑banding beyond ends */
+  overscroll-behavior-x: contain;
 }
 
 /* === Carousel Items === */
@@ -204,13 +202,19 @@ footer {
 .pi-carousel > *,
 .premium-carousel > * {
   flex: 0 0 auto;
-  scroll-snap-align: start;  /* snap each card into view */
-  scroll-snap-stop: always;   /* ensure it stops exactly */
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 }
 
-/* === Responsive: carousel on mobile, grid on desktop === */
-
-/* Mobile / Tablet (<1024px) */
+/* === Responsive Grid for full pages === */
+@media (min-width: 1024px) {
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    justify-items: center;
+  }
+}
 @media (max-width: 1023px) {
   .category-grid {
     display: flex;
@@ -221,18 +225,8 @@ footer {
     -webkit-overflow-scrolling: touch;
   }
   .category-grid > * {
-    flex: 0 0 80%;             /* each card takes 80% of viewport */
-    scroll-snap-align: center; /* center each card when snapped */
-  }
-}
-
-/* Desktop (≥1024px) */
-@media (min-width: 1024px) {
-  .category-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3 columns */
-    gap: 1.5rem;                           /* Tailwind’s gap-6 */
-    justify-items: center;
+    flex: 0 0 80%;
+    scroll-snap-align: center;
   }
 }
 
