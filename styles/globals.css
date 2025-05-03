@@ -195,6 +195,16 @@ footer {
   flex: 0 0 auto;
   scroll-snap-align: center;
 }
+/* 3-column grid for competition lists */
+.category-grid {
+  display: grid;
+  /* always 3 columns of equal width */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* gap-6 in Tailwind = 1.5rem */
+  gap: 5rem;
+  /* center items if they’re narrower than the column */
+  justify-items: center;
+}
 
 /* === Section Titles === */
 .daily-competitions-title,
