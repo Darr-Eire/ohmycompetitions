@@ -239,6 +239,7 @@ footer {
 }
 
 /* === Carousel Containers === */
+/* === Carousel Containers === */
 .daily-carousel,
 .free-carousel,
 .tech-carousel,
@@ -248,18 +249,11 @@ footer {
   gap: 1rem;
   padding: 2.4rem 0;
   overflow-x: auto;
-
-  /* momentum on iOS */
   -webkit-overflow-scrolling: touch;
-
-  /* native snap */
   scroll-snap-type: x mandatory;
-
-  /* only intercept horizontal pans */
-  touch-action: pan-x;
-
-  /* allow vertical scrolling to pass through */
-  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+  /* remove this: touch-action: pan-x; */
 }
 
 
