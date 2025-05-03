@@ -12,9 +12,11 @@ import {
 export default function HelpSupport() {
   return (
     <main className="page">
-      <div className="competition-card max-w-2xl w-full">
+      <div className="competition-card max-w-2xl w-full mx-auto">
         {/* Banner */}
-        <div className="competition-top-banner">🚀 Help & Support</div>
+        <div className="competition-top-banner text-center px-4 py-2 text-2xl font-bold bg-blue-600 text-white rounded-t-md">
+          🚀 Help & Support
+        </div>
 
         {/* Divider */}
         <div className="h-1 w-24 bg-blue-300 mx-auto rounded mb-6" />
@@ -35,90 +37,80 @@ export default function HelpSupport() {
               </li>
               <li>
                 <strong>Phone:</strong>{' '}
-                <span className="text-blue-600"><br/>
-                +353 87 1365782</span>
+                <span className="text-blue-600">+353 87 1365782</span>
               </li>
               <li>
                 <strong>Address:</strong>{' '}
-                <span className="text-blue-600"><br/>
-                Dublin, Ireland</span>
+                <span className="text-blue-600">Dublin, Ireland</span>
               </li>
             </ul>
           </div>
 
           {/* FAQ */}
           <div>
-            <h2 className="font-semibold text-blue-600 mb-1">Frequently Asked Questions (FAQ)</h2>
-            <ul className="list-disc list-inside space-y-2 text-left">
+            <h2 className="font-semibold text-blue-600 mb-1">
+              Frequently Asked Questions (FAQ)
+            </h2>
+            <ul className="list-disc list-inside space-y-4 text-left">
               <li>
                 <strong>How do I enter competitions?</strong><br />
-                Click “Enter Now” on any competition and follow instructions!
+                Click “Enter Now” on any competition and follow the instructions!
               </li>
-              <li><br/>
+              <li>
                 <strong>Is joining free?</strong><br />
                 Some competitions are free, others have a small Pi entry fee.
               </li>
               <li>
-                <br/>
                 <strong>Where are my tickets?</strong><br />
                 Check the “My Entries” page after logging in.
               </li>
               <li>
-                <br/>
                 <strong>How are winners picked?</strong><br />
-                Randomly selected when competitions close.
+                Winners are randomly selected when competitions close.
               </li>
             </ul>
           </div>
 
-    {/* Social Icons */}
-<div>
-<h2 style={{ color: '#000000' }} className="font-semibold mb-1 text-center">
-  Connect with Us
-</h2>
-
-
-  <div className="flex justify-center space-x-4 mb-4">
-    <a
-      href="https://twitter.com/yourprofile"
-      target="_blank"
-      rel="noopener noreferrer"
-      style={{ color: '#064e3b' }}
-      className="hover:text-green-800"
-    >
-      <FaTwitter size={24} />
-    </a>
-    <a
-      href="https://facebook.com/yourprofile"
-      target="_blank"
-      rel="noopener noreferrer"
-      style={{ color: '#064e3b' }}
-      className="hover:text-green-800"
-    >
-      <FaFacebookF size={24} />
-    </a>
-    <a
-      href="https://instagram.com/yourprofile"
-      target="_blank"
-      rel="noopener noreferrer"
-      style={{ color: '#064e3b' }}
-      className="hover:text-green-800"
-    >
-      <FaInstagram size={24} />
-    </a>
-    <a
-      href="https://discord.gg/yourinvite"
-      target="_blank"
-      rel="noopener noreferrer"
-      style={{ color: '#064e3b' }}
-      className="hover:text-green-800"
-    >
-      <FaDiscord size={24} />
-    </a>
-  </div>
-</div>
-
-
+          {/* Social Icons */}
+          <div>
+            <h2 className="font-semibold mb-2 text-center text-white">
+              Connect with Us
+            </h2>
+            <div className="flex justify-center space-x-4 mb-4">
+              <a
+                href="https://twitter.com/yourprofile"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white hover:text-gray-200"
+              >
+                <FaTwitter size={24} />
+              </a>
+              <a
+                href="https://facebook.com/yourprofile"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white hover:text-gray-200"
+              >
+                <FaFacebookF size={24} />
+              </a>
+              <a
+                href="https://instagram.com/yourprofile"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white hover:text-gray-200"
+              >
+                <FaInstagram size={24} />
+              </a>
+              <a
+                href="https://discord.gg/yourinvite"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white hover:text-gray-200"
+              >
+                <FaDiscord size={24} />
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </main>

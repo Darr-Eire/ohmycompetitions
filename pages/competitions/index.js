@@ -1,9 +1,6 @@
-// pages/competitions/index.js
-
 import CompetitionCard from '@/components/CompetitionCard'
-
 export default function AllCompetitionsPage() {
-  const allComps = [
+   const allComps = [
     { comp: { slug: 'everyday-pioneer', entryFee: 0.314 },      title: 'Everyday Pioneer',       prize: '1,000 PI Giveaway',        fee: '0.314 π',      href: '/competitions/everyday-pioneer',      imageUrl: '/images/everyday.png',              theme: 'daily'    },
     { comp: { slug: 'pi-to-the-moon', entryFee: 0.25 },          title: 'Pi To The Moon',          prize: '5,000 PI Prize',           fee: '3.14 π',      href: '/competitions/pi-to-the-moon',          imageUrl: '/images/pitothemoon.jpeg',         theme: 'daily'    },
     { comp: { slug: 'hack-the-vault', entryFee: 0.375 },        title: 'Hack The Vault',          prize: '750 PI Bounty',           fee: '0.375 π',     href: '/competitions/hack-the-vault',         imageUrl: '/images/vault.png',               theme: 'daily'    },
@@ -43,24 +40,31 @@ export default function AllCompetitionsPage() {
           All Competitions
         </h2>
 
-        <div className="border-2 border-blue-500 rounded-xl p-4 bg-blue-50 shadow-md">
-          {/* here’s the grid: exactly 3 columns, no flex */}
-          <div className="grid grid-cols-4 gap-6">
-            {allComps.map(item => (
+        {/* Desktop: 3‑column grid */}
+        <div className="hidden lg:grid lg:grid-cols-3 gap-6">
+          {allComps.map(item => (
+            <CompetitionCard
+              key={item.comp.slug}
+              {...item}
+              small
+              className="transform scale-90 transition-all duration-200"
+            />
+          ))}
+        </div>
+
+        {/* Mobile/Tablet: swipeable carousel */}
+        <div className="lg:hidden flex space-x-4 overflow-x-auto scroll-snap-type-x-mandatory snap-x pb-4">
+          {allComps.map(item => (
+            <div
+              key={item.comp.slug}
+              className="flex-none w-64 snap-start"
+            >
               <CompetitionCard
-                key={item.comp.slug}
-                comp={item.comp}
-                title={item.title}
-                prize={item.prize}
-                fee={item.fee}
-                href={item.href}
-                imageUrl={item.imageUrl}
+                {...item}
                 small
-                theme={item.theme}
-                className="transform scale-90 transition-all duration-200"
               />
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </div>
     </main>

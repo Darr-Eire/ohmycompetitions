@@ -1,3 +1,4 @@
+// src/components/Header.js
 'use client'
 
 import Link from 'next/link'
@@ -8,25 +9,23 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
   const menuRef = useRef(null)
   const buttonRef = useRef(null)
 
+  // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const handleClickOutside = (e) => {
       if (
         menuRef.current &&
-        !menuRef.current.contains(event.target) &&
+        !menuRef.current.contains(e.target) &&
         buttonRef.current &&
-        !buttonRef.current.contains(event.target)
+        !buttonRef.current.contains(e.target)
       ) {
         setMenuOpen(false)
       }
     }
-
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const handleLinkClick = () => {
-    setMenuOpen(false)
-  }
+  const handleLinkClick = () => setMenuOpen(false)
 
   return (
     <header className="relative z-50 flex items-center px-4 bg-blue-600 text-white">
@@ -34,7 +33,7 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
       <button
         ref={buttonRef}
         className="menu-button"
-        onClick={() => setMenuOpen(prev => !prev)}
+        onClick={() => setMenuOpen((v) => !v)}
         aria-label="Toggle menu"
       >
         Menu
@@ -42,7 +41,7 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
 
       <div className="nav-spacer flex-1" />
 
-      {/* Login/Logout Button */}
+      {/* Login / Logout */}
       {isLoggedIn ? (
         <button className="logout-button" onClick={onLogout}>
           Log Out
@@ -53,13 +52,13 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
         </button>
       )}
 
-      {/* Dropdown Menu */}
+      {/* Dropdown */}
       {menuOpen && (
         <nav
           ref={menuRef}
-          className="dropdown-menu absolute top-full left-0 mt-2 bg-blue-600 rounded-lg shadow-lg p-4 w-48 space-y-2 z-50"
+          className="dropdown-menu"
         >
-          <Link href="/" onClick={handleLinkClick} className="dropdown-link">
+          <Link href="/"             onClick={handleLinkClick} className="dropdown-link">
             Home
           </Link>
           <Link href="/competitions" onClick={handleLinkClick} className="dropdown-link">
@@ -68,13 +67,13 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
           <Link href="/try-your-luck" onClick={handleLinkClick} className="dropdown-link">
             Try Your Luck
           </Link>
-          <Link href="/forums" onClick={handleLinkClick} className="dropdown-link">
+          <Link href="/forums"        onClick={handleLinkClick} className="dropdown-link">
             Forums
           </Link>
-          <Link href="/future" onClick={handleLinkClick} className="dropdown-link">
+          <Link href="/future"        onClick={handleLinkClick} className="dropdown-link">
             The Future
           </Link>
-          <Link href="/help-support" onClick={handleLinkClick} className="dropdown-link">
+          <Link href="/help-support"  onClick={handleLinkClick} className="dropdown-link">
             Help & Support
           </Link>
           <Link href="/how-we-got-started" onClick={handleLinkClick} className="dropdown-link">
@@ -85,7 +84,7 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
 
           {isLoggedIn ? (
             <button
-              className="logout-button dropdown-link"
+              className="logout-button dropdown-link block w-full text-left"
               onClick={() => {
                 handleLinkClick()
                 onLogout()
@@ -95,7 +94,7 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
             </button>
           ) : (
             <button
-              className="login-button dropdown-link"
+              className="login-button dropdown-link block w-full text-left"
               onClick={() => {
                 handleLinkClick()
                 onLogin()

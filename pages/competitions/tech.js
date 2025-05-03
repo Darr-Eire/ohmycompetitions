@@ -94,17 +94,17 @@ const techComps = [
   },
   {
     comp: {
-      slug: 'xbox-one-bundle',
+      slug: 'mac-book-pro',
       entryFee: 0.3,
       totalTickets: 2000,
       ticketsSold: 0,
       endsAt: '2025-05-09T17:45:00Z',
     },
-    title: 'Xbox One Bundle',
-    prize: 'Xbox One + Game Pass',
+    title: 'Macbook Pro',
+    prize: 'MacBook Pro',
     fee: '0.3 π',
-    href: '/competitions/xbox-one-bundle',
-    imageUrl: '/images/xbox.jpeg',
+    href: '/competitions/macbook-pro',
+    imageUrl: '/images/macbook.jpeg',
     theme: 'orange',
   },
   {

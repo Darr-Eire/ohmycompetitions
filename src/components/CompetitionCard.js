@@ -1,4 +1,3 @@
-// src/components/CompetitionCard.js
 'use client'
 
 import Image from 'next/image'
@@ -13,27 +12,30 @@ export default function CompetitionCard({
   small = false,
   theme = 'daily',
   imageUrl,
-  endsAt,
+  endsAt = comp?.endsAt || new Date().toISOString(),
   hideButton = false,
   children,
 }) {
-  // Countdown
+  // 1) Set up timeLeft state
   const [timeLeft, setTimeLeft] = useState('')
 
   useEffect(() => {
-    const update = () => {
+    function update() {
       const diff = new Date(endsAt).getTime() - Date.now()
-      if (diff <= 0) return setTimeLeft('Ended')
-      const h = Math.floor(diff / 36e5)
-      const m = Math.floor((diff % 36e5) / 6e4)
-      setTimeLeft(`${h}h ${m}m`)
+      if (diff <= 0) {
+        setTimeLeft('Ended')
+        return
+      }
+      const hours = Math.floor(diff / 36e5)
+      const mins  = Math.floor((diff % 36e5) / 6e4)
+      setTimeLeft(`${hours}h ${mins}m`)
     }
     update()
     const id = setInterval(update, 60_000)
     return () => clearInterval(id)
   }, [endsAt])
 
-  // Theme → banner classes
+  // 2) Banner classes by theme
   const bannerClass = {
     daily:   'bg-blue-600 text-white',
     free:    'bg-green-500 text-white',
@@ -44,13 +46,13 @@ export default function CompetitionCard({
 
   return (
     <div className={`competition-card ${small ? 'competition-card--small' : ''}`}>
-      {/* Title Banner */}
-      <div className={`${bannerClass} px-4 py-2 text-2xl font-bold rounded-t-md mb-4`}>
+      {/* Title banner */}
+      <div className={`competition-card__header ${bannerClass}`}>
         {title}
       </div>
 
       {/* Image */}
-      <div className="competition-image h-40 overflow-hidden rounded mb-4">
+      <div className="competition-image h-40 overflow-hidden">
         <Image
           src={imageUrl || '/pi.jpeg'}
           alt={title}
@@ -61,7 +63,7 @@ export default function CompetitionCard({
       </div>
 
       {/* Details */}
-      <div className="competition-info text-sm space-y-1">
+      <div className="competition-info flex-1 p-4 text-sm space-y-2">
         <p><strong>Prize:</strong> <span className="font-bold">{prize}</span></p>
         <p><strong>Ends In:</strong> <span className="font-bold">{timeLeft}</span></p>
         <p>
@@ -81,7 +83,7 @@ export default function CompetitionCard({
         <p><strong>Entry Fee:</strong> <span className="font-bold">{fee}</span></p>
       </div>
 
-      {/* Custom children */}
+      {/* Optional children */}
       {children}
 
       {/* Enter Now button */}
@@ -93,3 +95,4 @@ export default function CompetitionCard({
     </div>
   )
 }
+

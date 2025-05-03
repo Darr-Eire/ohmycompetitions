@@ -7,18 +7,17 @@ export default function TermsConditions() {
     <main className="page">
       <div className="competition-card max-w-3xl w-full">
 
-        {/* Title */}
+        {/* Title Banner */}
         <div className="competition-top-banner text-center">
-          📜 Terms & Conditions
+          📜 Terms &amp; Conditions
         </div>
-
-        {/* Divider */}
-        <div className="h-1 w-24 bg-blue-300 mx-auto rounded mb-6" />
 
         {/* Body */}
         <div className="p-6 space-y-6 text-left text-gray-700">
 
-          <p>Welcome to OhMyCompetitions! By participating in our competitions, you fully agree to these Terms & Conditions:</p>
+          <p>
+            Welcome to OhMyCompetitions! By participating in our competitions, you fully agree to these Terms &amp; Conditions:
+          </p>
 
           <h2 className="font-semibold text-blue-600 mt-6">1. Eligibility</h2>
           <ul className="list-disc list-inside space-y-2">
@@ -26,7 +25,7 @@ export default function TermsConditions() {
             <li>Entries are only valid if made through OhMyCompetitions via Pi Network login.</li>
           </ul>
 
-          <h2 className="font-semibold text-blue-600 mt-6">2. Entries & Fees</h2>
+          <h2 className="font-semibold text-blue-600 mt-6">2. Entries &amp; Fees</h2>
           <ul className="list-disc list-inside space-y-2">
             <li>Some competitions may be free, others may require a small Pi entry fee.</li>
             <li>Fees are final and non-refundable once a ticket is purchased.</li>
@@ -67,7 +66,7 @@ export default function TermsConditions() {
 
           <h2 className="font-semibold text-blue-600 mt-6">8. Changes to Terms</h2>
           <ul className="list-disc list-inside space-y-2">
-            <li>We reserve the right to amend these Terms & Conditions at any time.</li>
+            <li>We reserve the right to amend these Terms &amp; Conditions at any time.</li>
             <li>Changes become effective immediately upon posting on this website.</li>
           </ul>
 
@@ -84,8 +83,8 @@ export default function TermsConditions() {
           </div>
 
         </div>
-
       </div>
     </main>
   )
 }
+
