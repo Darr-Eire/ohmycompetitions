@@ -13,42 +13,9 @@ export default function HomePage() {
   const SCROLL_STEP = 75
   // Section component: header + native‑swipe carousel
   const Section = ({ title, items, containerRef, theme, viewMoreHref, className = '' }) => {
-    const headingStyles = {
-      daily:   'bg-blue-600 text-white',
-      free:    'bg-green-500 text-white',
-      tech:    'bg-orange-500 text-white',
-      pi:      'bg-purple-600 text-white',
-      premium: 'bg-gray-800 text-white',
-    }
-    const headingClass = headingStyles[theme] || headingStyles.daily
-
-    // Touch‑drag friction (no preventDefault)
-    useEffect(() => {
-      const el = containerRef.current
-      if (!el) return
-
-      const F = 0.3
-      let startX = 0, startScroll = 0
-
-      const onTouchStart = e => {
-        startX = e.touches[0].pageX
-        startScroll = el.scrollLeft
-      }
-      const onTouchMove = e => {
-        const deltaX = startX - e.touches[0].pageX
-        // Only adjust horizontal
-        el.scrollLeft = startScroll + deltaX * F
-        // **no** e.preventDefault() here
-      }
-
-      el.addEventListener('touchstart', onTouchStart, { passive: true })
-      el.addEventListener('touchmove',  onTouchMove,   { passive: true })
-      return () => {
-        el.removeEventListener('touchstart', onTouchStart)
-        el.removeEventListener('touchmove',  onTouchMove)
-      }
-    }, [containerRef])
-
+    const headingStyles = { /* … */ }
+    const headingClass  = headingStyles[theme] || headingStyles.daily
+  
     return (
       <section className={`relative ${className}`}>
         <h2 className={`category-page-title inline-block px-4 py-2 rounded mb-4 ${headingClass}`}>
@@ -56,10 +23,10 @@ export default function HomePage() {
         </h2>
         <div
           ref={containerRef}
-          className={`${theme}-carousel flex space-x-4 overflow-x-auto scroll-smooth`}
+          className={`${theme}-carousel flex space-x-4 overflow-x-auto scroll-smooth touch-pan-x`}
         >
           {items.map(item => (
-            <CompetitionCard key={item.comp.slug + (item.comp.endsAt || '')} {...item} small theme={theme} />
+            <CompetitionCard key={item.comp.slug + (item.comp.endsAt||'')} {...item} small theme={theme}/>
           ))}
           <div className="flex items-center justify-center min-w-[280px]">
             <Link href={viewMoreHref} className={`view-more-button view-more-${theme}`}>
@@ -70,6 +37,7 @@ export default function HomePage() {
       </section>
     )
   }
+  
 
   // Data arrays
   const dailyItems = [
