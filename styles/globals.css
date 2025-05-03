@@ -133,7 +133,7 @@ footer {
   margin-bottom: -2rem;
 }
 
-/* enable touch momentum and horizontal pan only */
+/* Carousel containers */
 .daily-carousel,
 .free-carousel,
 .tech-carousel,
@@ -144,34 +144,22 @@ footer {
   padding: 1rem 0;
   overflow-x: auto;
 
-  /* iOS native momentum scroll */
+  /* momentum on iOS */
   -webkit-overflow-scrolling: touch;
-  /* smooth scroll for JS calls (arrow buttons) */
-  scroll-behavior: smooth;
-  /* horizontal pan only, allow momentum */
-  touch-action: pan-x;
+
+  /* native snap */
+  scroll-snap-type: x mandatory;
 }
 
-/* optional: always snap to items */
+/* Each card snaps */
 .daily-carousel > *,
-.free-carousel   > *,
-.tech-carousel   > *,
-.pi-carousel     > *,
-.premium-carousel> * {
-  flex: 0 0 280px;
+.free-carousel > *,
+.tech-carousel > *,
+.pi-carousel > *,
+.premium-carousel > * {
+  flex: 0 0 280px; /* or auto */
   scroll-snap-align: start;
   scroll-snap-stop: always;
-}
-
-/* ensure scroll-snap on mobile */
-@media (max-width: 1023px) {
-  .daily-carousel,
-  .free-carousel,
-  .tech-carousel,
-  .pi-carousel,
-  .premium-carousel {
-    scroll-snap-type: x mandatory;
-  }
 }
 
 .view-more-card {
