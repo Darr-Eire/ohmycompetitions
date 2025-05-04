@@ -51,12 +51,15 @@ export default function ForumsPage() {
         <div className="max-w-2xl mx-auto">
           
           {/* Title Banner */}
-          <div className="competition-top-banner bg-blue-600 text-white text-center px-4 py-2 mb-4">
-            Forums
-          </div>
+          <div
+   className="competition-top-banner text-white text-center px-4 py-2"
+   style={{ background: 'var(--primary-gradient)' }}
+ >
+         Forums
+        </div>
 
           {/* Intro Text */}
-          <p className="font semi-bold text-black mt-6">
+          <p className="font semi-bold text-white mt-6">
             <strong>
               Welcome to the OhMyCompetitions Forums! Connect, share, vote, and discuss with fellow players around the world.
             </strong>

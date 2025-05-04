@@ -1,3 +1,4 @@
+// pages/try-your-luck.js
 'use client'
 
 import Head from 'next/head'
@@ -31,7 +32,12 @@ export default function TryYourLuckPage() {
         <title>Try Your Luck | OhMyCompetitions</title>
       </Head>
 
-      <main className="min-h-screen bg-gradient-to-br from-blue-700 via-blue-500 to-blue-300 p-4">
+      <main
+        className="min-h-screen p-4"
+        style={{
+          backgroundImage: 'linear-gradient(to bottom right, #1E3A8A, #60A5FA)',
+        }}
+      >
         <div className="max-w-xl mx-auto">
 
           {/* Banner */}
@@ -62,7 +68,13 @@ export default function TryYourLuckPage() {
                 <div
                   key={game.href}
                   className={`
-                    bg-white rounded-2xl shadow-lg p-6 text-center transition-opacity
+                    competition-card
+                    bg-white
+                    rounded-2xl
+                    shadow-lg
+                    p-6
+                    text-center
+                    transition-opacity
                     ${played ? 'opacity-50 pointer-events-none' : 'opacity-100'}
                   `}
                 >
@@ -74,7 +86,7 @@ export default function TryYourLuckPage() {
                   {!played ? (
                     <Link
                       href={game.href}
-                      className="inline-block bg-blue-600 text-white py-2 px-6 rounded-full hover:bg-blue-700 transition"
+                      className="comp-button bg-blue-600 text-white py-2 px-6 rounded-full hover:bg-blue-700 transition"
                     >
                       Play Now
                     </Link>
