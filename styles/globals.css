@@ -1,9 +1,14 @@
+/* styles/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* === Theme Variables === */
 :root {
   --primary-color:    #0052CC;
   --primary-hover:    #1834e6;
   --primary-text:     #ffffff;
-  --secondary-color:   #0052CC;
+  --secondary-color:  #0052CC;
   --secondary-hover:  #1834e6;
   --secondary-text:   #ffffff;
   --accent-color:     #0f1f7d;
@@ -33,7 +38,7 @@ button {
   padding: 0;
 }
 
-/* === Layout === */
+/* === Layout Helpers === */
 .layout {
   display: flex;
   flex-direction: column;
@@ -44,30 +49,8 @@ button {
 }
 
 /* === Header & Nav === */
-/* styles/globals.css */
-/* styles/globals.css */
-
-/* ── Brand title ── */
-.brand-title {
-  font-size: 1.2rem;     /* adjust to taste */
-  font-weight: 200;
-  color: var(--primary-text);
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  white-space: nowrap;   /* prevent wrapping on small screens */
-}
-/* in styles/globals.css */
-.brand-logo {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-}
-
 header {
-  position: relative; /* ensure absolute children are positioned within */
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -79,93 +62,66 @@ header {
 }
 header > .container,
 footer > .container {
-  max-width: 72rem; /* Tailwind’s 6xl */
+  max-width: 72rem;
   margin: 0 auto;
   padding: 0 1rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
-/* “Menu” and “Log In/Out” buttons */
+.brand-title,
+.brand-logo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+}
 .menu-button,
 .login-button,
 .logout-button {
-  background: transparent;
-  color: inherit;
-  border: none;
   padding: 0.25rem 0.5rem;
   font-size: 1rem;
-  flex-shrink: 0;
-}
-
-/* Login/Logout variants */
-.login-button,
-.logout-button {
   background: var(--primary-color);
+  color: var(--primary-text);
   border: 1px solid var(--primary-color);
   border-radius: var(--button-radius);
-  margin-left: 0.5rem;
   transition: background-color var(--transition-dur);
 }
+.menu-button {
+  background: transparent;
+  border: none;
+  color: inherit;
+}
+.menu-button:hover,
 .login-button:hover,
 .logout-button:hover {
   background: var(--primary-hover);
 }
 
-/* Centering the “View More” button under carousels */
-.view-more-card {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-}
-.view-more-button {
-  display: inline-block;
-  margin: 0;
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  color: var(--primary-text);
-  background: var(--secondary-color);
-  border-radius: var(--button-radius);
-  text-decoration: none;
-  transition: background-color var(--transition-dur), transform 0.1s ease-in-out;
-}
-.view-more-button:hover {
-  background-color: var(--secondary-hover);
-  transform: translateY(-1px);
-}
-.view-more-button:active {
-  transform: translateY(0);
-}
-
-
-/* Anchor the dropdown to the left of the header container */
+/* === Dropdown === */
 .dropdown-menu {
   position: absolute;
-  top: 100%;        /* drop immediately below the header */
-  left: 1rem;       /* offset 1rem from the left edge of the header */
+  top: 100%;
+  left: 1rem;
   background: var(--primary-color);
   border: 1px solid var(--primary-text);
-  border-radius: 4px;
+  border-radius: var(--button-radius);
   padding: 0.5rem;
   z-index: 1100;
-  width: max-content;   /* shrink‑wrap to its contents */
-  min-width: 10rem;     /* ensure it's never too narrow */
+  width: max-content;
+  min-width: 10rem;
   animation: dropdown-fade var(--transition-dur) ease forwards;
 }
-
-/* keep your links block‑level inside it */
 .dropdown-link {
   display: block;
   color: var(--primary-text);
   padding: 0.5rem 0.75rem;
-  border-radius: 4px;
+  border-radius: var(--button-radius);
 }
-
 .dropdown-link:hover {
   background: rgba(255,255,255,0.2);
 }
-
-
 
 /* === Footer === */
 footer {
@@ -187,125 +143,74 @@ footer {
   color: var(--accent-hover);
 }
 
-/* Competition Card Container */
+/* === Competition Card === */
 .competition-card {
   display: flex;
   flex-direction: column;
-
-  /* make it fill ~90% of the mobile viewport, up to 420px */
   width: 90%;
-  max-width: 420px;
-
+  max-width: 375px;
   margin: 1rem auto;
   background: #fff;
   border: 5px solid var(--primary-color);
-  border-radius: 4px;
+  border-radius: var(--button-radius);
   box-shadow: 0 0 40px var(--primary-color);
   overflow: hidden;
+  text-align: center;
 }
-
-
-/* 1) Title banner */
 .competition-card__header {
-  background-color: var(--secondary-color);
-  color: var(--primary-text);
 
   padding: 0.5rem 1rem;
   font-size: 1.125rem;
   font-weight: 700;
   text-align: center;
 }
-/* === Competition-Style Top Banner (for cards & pages) === */
-.competition-top-banner {
-  background: var(--primary-color);
-  color: var(--primary-text);
-  font-size: 1.25rem;
-  font-weight: 700;
-  padding: 0.75rem 1rem;
-  border-radius: 4px 4px 0 0;   /* only top corners rounded */
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  margin-bottom: 1rem;
-  text-align: center;
-}
-
-/* Ensure your competition-card wrapper doesn’t re-add padding above */
-.competition-card {
-  overflow: hidden; /* let the banner’s rounded corners show cleanly */
-}
-
-
-
-/* Details */
 .competition-info {
   flex: 1;
+  overflow-y: auto;
 }
-
-/* Enter Now button */
 .comp-button {
-  background: var(--primary-color);
-  color: white; /* force white text */
-  padding: 0.5rem;
   width: 100%;
-  border: none;
-  cursor: pointer;
-  transition: background-color var(--transition-dur) ease;
+  padding: 0.5rem;
+  background: var(--primary-color);
+  color: var(--primary-text);
   font-size: 1.125rem;
+  transition: background-color var(--transition-dur);
 }
-
 .comp-button:hover {
   background: var(--secondary-hover);
-  color: white; /* ensure it stays white on hover */
 }
+
+/* === “View More” Button === */
 .view-more-card {
   display: flex;
   justify-content: center;
   width: 100%;
- margin-bottom: 2rem;
+  margin-bottom: 2rem;
 }
-
-
-/* “View More →” button styling */
-/* ── “View More →” Button Styling ── */
 .view-more-button {
-  display: inline-block;                  /* shrink to content */
-  margin: 0;                              /* no extra offsets */
-  padding: 0.5rem 1rem;                   /* button size you want */
-  font-size: 1rem;                        /* text size you want */
-  color: var(--primary-text);             /* keeps your chosen text color */
-  background: var(--secondary-color);     /* your chosen background */
-  border-radius: var(--button-radius);    /* rounded corners */
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  background: var(--secondary-color);
+  color: var(--secondary-text);
+  border-radius: var(--button-radius);
   text-decoration: none;
   transition: background-color var(--transition-dur), transform 0.1s ease-in-out;
 }
-
 .view-more-button:hover {
-  background-color: var(--secondary-hover);
+  background: var(--secondary-hover);
   transform: translateY(-1px);
 }
-
 .view-more-button:active {
   transform: translateY(0);
 }
-
-
-/* Theme variants (all share the same background here) */
+/* Per‐theme overrides if you need them */
 .view-more-button.view-more-daily,
 .view-more-button.view-more-free,
 .view-more-button.view-more-tech,
 .view-more-button.view-more-pi,
 .view-more-button.view-more-premium {
-  /* you can override per-theme colors here if needed */
   background: var(--secondary-color);
-}
-
-/* Hover and active states */
-.view-more-button:hover {
-  background-color: var(--secondary-hover);
-  transform: translateY(-1px);
-}
-
-.view-more-button:active {
-  transform: translateY(0);
 }
 
 /* === Section Titles === */
@@ -317,29 +222,7 @@ footer {
   margin-bottom: -2rem;
 }
 
-/* === Competition Card === */
-/* === Competition Card === */
-.competition-card {
-  border: 5px solid var(--primary-color);
-  border-radius: 4px;
-  background: #fff;
-  box-shadow: 0 0 40px var(--primary-color);
-  max-width: 375px;
-  margin: 1rem auto;
-  overflow: hidden;
-  text-align: center;
-
-  /* 1) Cap the card height so it never grows past 480px */
-  max-height: 2000px;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Allow the internal content to scroll if it ever overflows */
-.competition-card .competition-info {
-  overflow-y: auto;
-}
-/* === Carousel Containers === */
+/* === Mobile Carousels === */
 .daily-carousel,
 .free-carousel,
 .tech-carousel,
@@ -353,15 +236,13 @@ footer {
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   overscroll-behavior-x: contain;
- /* center first & last cards */
   padding-left: calc((200vw - 280px) / 2);
   padding-right: calc((200vw - 280px) / 2);
 }
-/* Each item snaps and locks to 280px width */
-.daily-carousel  > *,
-.free-carousel    > *,
-.tech-carousel    > *,
-.pi-carousel      > *,
+.daily-carousel > *,
+.free-carousel > *,
+.tech-carousel > *,
+.pi-carousel > *,
 .premium-carousel > * {
   flex: 0 0 780px;
   scroll-snap-align: start;
@@ -379,8 +260,6 @@ footer {
     overflow-x: hidden;
   }
 }
-
-
 @media (max-width: 1023px) {
   .category-grid {
     display: flex;

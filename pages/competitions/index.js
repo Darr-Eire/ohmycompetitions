@@ -1,227 +1,156 @@
+'use client'
+
 import CompetitionCard from '@/components/CompetitionCard'
+
 export default function AllCompetitionsPage() {
-   const allComps = [
-    {
-      comp: {
-        slug: 'everyday-pioneer',
-        entryFee: 0.314,
-        totalTickets: 1900,
-        ticketsSold: 1500,
-        endsAt: '2025-05-04T12:00:00Z'
-      },
-      title: 'Everyday Pioneer',
-      prize: '1,000 π',
-      fee: '0.314 π',
-      href: '/competitions/everyday-pioneer',
-      imageUrl: '/images/everyday.png',
-      theme: 'daily'
-    },
-    {
-      comp: {
-        slug: 'pi-to-the-moon',
-        entryFee: 0.25,
-        totalTickets: 2500,
-        ticketsSold: 2400,
-        endsAt: '2025-05-05T15:00:00Z'
-      },
-      title: 'Pi To The Moon',
-      prize: '5,000 π',
-      fee: '1.314 π',
-      href: '/competitions/pi-to-the-moon',
-      imageUrl: '/images/pitothemoon.jpeg',
-      theme: 'daily'
-    },
-    {
-      comp: {
-        slug: 'hack-the-vault',
-        entryFee: 0.375,
-        totalTickets: 2225,
-        ticketsSold: 1800,
-        endsAt: '2025-05-03T23:59:59Z'
-      },
-      title: 'Hack The Vault',
-      prize: '7,750 π',
-      fee: '3.14 π',
-      href: '/competitions/hack-the-vault',
-      imageUrl: '/images/vault.png',
-      theme: 'daily'
-    },
-  ]
-
-  const freeItems = [
-    {
-      comp: {
-        slug: 'pi-day-freebie',
-        entryFee: 0,
-        totalTickets: 10000,
-        ticketsSold: 7500,
-        endsAt: '2025-05-06T20:00:00Z'
-      },
-      title: 'Pi‑Day Freebie',
-      prize: '3,314 Reward',
-      fee: 'Free',
-      href: '/competitions/pi-day-freebie',
-      imageUrl: '/images/freebie.png',
-      theme: 'free'
-    },
-    {
-      comp: {
-        slug: 'everyones-a-winner',
-        entryFee: 0,
-        totalTickets: 10000,
-        ticketsSold: 8500,
-        endsAt: '2025-05-10T18:00:00Z'
-      },
-      title: 'Everyone’s A Winner',
-      prize: '6,000 / 3,000 / 1,000 π',
-      fee: 'Free',
-      href: '/competitions/everyones-a-winner',
-      imageUrl: '/images/everyone.png',
-      theme: 'free'
-    },
-    {
-      comp: {
-        slug: 'weekly-pi-giveaway',
-        entryFee: 0,
-        totalTickets: 5000,
-        ticketsSold: 4200,
-        endsAt: '2025-05-05T23:59:59Z'
-      },
-      title: 'Weekly Pi Giveaway',
-      prize: '1,000 π',
-      fee: 'Free',
-      href: '/competitions/weekly-pi-giveaway',
-      imageUrl: '/images/weekly.png',
-      theme: 'free'
-    },
-  ]
-
-  const techItems = [
+  const allComps = [
     {
       comp: {
         slug: 'ps5-bundle-giveaway',
-        entryFee: 0.5,
+        entryFee: 0.8,
         totalTickets: 1100,
-        ticketsSold: 900,
-        endsAt: '2025-05-07T14:00:00Z'
+        ticketsSold: 0,
+        endsAt: '2025-05-07T14:00:00Z',
       },
       title: 'PS5 Bundle Giveaway',
-      prize: 'PS5 + Extra Controller',
-      fee: '0.5 π',
+      prize: 'PlayStation 5 + Extra Controller',
+      fee: '0.8 π',
       href: '/competitions/ps5-bundle-giveaway',
-      imageUrl: '/images/ps5.jpeg',
-      theme: 'tech'
+      imageUrl: '/images/playstation.jpeg',
+      theme: 'orange',
     },
     {
       comp: {
         slug: '55-inch-tv-giveaway',
-        entryFee: 0.75,
+        entryFee: 0.25,
         totalTickets: 1400,
-        ticketsSold: 1200,
-        endsAt: '2025-05-08T11:30:00Z'
+        ticketsSold: 0,
+        endsAt: '2025-05-08T11:30:00Z',
       },
       title: '55″ TV Giveaway',
-      prize: '55″ Smart TV',
-      fee: '0.75 π',
+      prize: '55″ Smart TV',
+      fee: '0.25 π',
       href: '/competitions/55-inch-tv-giveaway',
-      imageUrl: '/images/Tv.jpeg',
-      theme: 'tech'
+      imageUrl: '/images/tv.jpg',
+      theme: 'orange',
     },
     {
       comp: {
         slug: 'xbox-one-bundle',
-        entryFee: 0.6,
+        entryFee: 0.3,
         totalTickets: 2000,
-        ticketsSold: 1750,
-        endsAt: '2025-05-09T17:45:00Z'
+        ticketsSold: 0,
+        endsAt: '2025-05-09T17:45:00Z',
       },
       title: 'Xbox One Bundle',
-      prize: 'Xbox One + Game Pass',
-      fee: '0.6 π',
+      prize: 'Xbox One + Game Pass',
+      fee: '0.3 π',
       href: '/competitions/xbox-one-bundle',
       imageUrl: '/images/xbox.jpeg',
-      theme: 'tech'
-    },
-  ]
-
-  const piItems = [
-    {
-      comp: {
-        slug: 'pi-giveaway-100k',
-        entryFee: 10,
-        totalTickets: 33000,
-        ticketsSold: 32000,
-        endsAt: '2025-05-12T00:00:00Z'
-      },
-      title: '100 000 π Giveaway',
-      prize: '100 000 π',
-      fee: '10 π',
-      href: '/competitions/pi-giveaway-100k',
-      imageUrl: '/images/100,000.png',
-      theme: 'pi'
+      theme: 'orange',
     },
     {
       comp: {
-        slug: 'pi-giveaway-50k',
-        entryFee: 5,
-        totalTickets: 17000,
-        ticketsSold: 16000,
-        endsAt: '2025-05-11T00:00:00Z'
+        slug: 'apple-iphone',
+        entryFee: 0.8,
+        totalTickets: 1100,
+        ticketsSold: 0,
+        endsAt: '2025-05-07T14:00:00Z',
       },
-      title: '50 000 π Giveaway',
-      prize: '50 000 π',
-      fee: '5 π',
-      href: '/competitions/pi-giveaway-50k',
-      imageUrl: '/images/50,000.png',
-      theme: 'pi'
+      title: 'Apple Iphone',
+      prize: 'PlayStation 5 + Extra Controller',
+      fee: '0.8 π',
+      href: '/competitions/apple-iphone',
+      imageUrl: '/images/iphone.jpeg',
+      theme: 'orange',
     },
     {
       comp: {
-        slug: 'pi-giveaway-25k',
-        entryFee: 2.5,
-        totalTickets: 18500,
-        ticketsSold: 17500,
-        endsAt: '2025-05-10T00:00:00Z'
+        slug: 'Rolex',
+        entryFee: 0.25,
+        totalTickets: 1400,
+        ticketsSold: 0,
+        endsAt: '2025-05-08T11:30:00Z',
       },
-      title: '25 000 π Giveaway',
-      prize: '25 000 π',
-      fee: '2.5 π',
-      href: '/competitions/pi-giveaway-25k',
-      imageUrl: '/images/25,000.png',
-      theme: 'pi'
+      title: 'Rolex',
+      prize: 'Rolex',
+      fee: '0.25 π',
+      href: '/competitions/rolex',
+      imageUrl: '/images/rolex.jpeg',
+      theme: 'orange',
     },
-  ]
-
-  const premiumItems = [
+    {
+      comp: {
+        slug: 'gamer-pc-bundle',
+        entryFee: 0.3,
+        totalTickets: 2000,
+        ticketsSold: 0,
+        endsAt: '2025-05-09T17:45:00Z',
+      },
+      title: 'Gamer Pc Bundle',
+      prize: 'Electic-Bundle',
+      fee: '0.3 π',
+      href: '/competitions/gamer-pc-bundle',
+      imageUrl: '/images/bundle.jpeg',
+      theme: 'orange',
+    },
+    {
+      comp: {
+        slug: 'mac-book-pro',
+        entryFee: 0.3,
+        totalTickets: 2000,
+        ticketsSold: 0,
+        endsAt: '2025-05-09T17:45:00Z',
+      },
+      title: 'Macbook Pro',
+      prize: 'MacBook Pro',
+      fee: '0.3 π',
+      href: '/competitions/macbook-pro',
+      imageUrl: '/images/macbook.jpeg',
+      theme: 'orange',
+    },
+    {
+      comp: {
+        slug: 'electric-bike',
+        entryFee: 0.3,
+        totalTickets: 2000,
+        ticketsSold: 0,
+        endsAt: '2025-05-09T17:45:00Z',
+      },
+      title: 'Electric Bike',
+      prize: 'Electric Bike',
+      fee: '0.3 π',
+      href: '/competitions/electric-bike',
+      imageUrl: '/images/bike.jpeg',
+      theme: 'orange',
+    },
     {
       comp: {
         slug: 'tesla-model-3-giveaway',
-        entryFee: 50,
+        entryFee: 40,
         totalTickets: 20000,
         ticketsSold: 5120,
-        endsAt: '2025-05-20T23:59:00Z'
+        endsAt: '2025-05-20T23:59:00Z',
       },
-      title: 'Tesla Model 3 Giveaway',
-      prize: 'Tesla Model 3',
-      fee: '50 π',
+      title: 'Tesla Model 3 Giveaway',
       href: '/competitions/tesla-model-3-giveaway',
+      prize: 'Tesla Model 3',
+      fee: '40 π',
       imageUrl: '/images/tesla.jpeg',
-      theme: 'premium'
     },
     {
       comp: {
         slug: 'dubai-luxury-holiday',
-        entryFee: 25,
+        entryFee: 20,
         totalTickets: 15000,
         ticketsSold: 7100,
-        endsAt: '2025-05-18T22:00:00Z'
+        endsAt: '2025-05-18T22:00:00Z',
       },
       title: 'Dubai Luxury Holiday',
-      prize: '7‑Day Dubai Trip',
-      fee: '25 π',
       href: '/competitions/dubai-luxury-holiday',
+      prize: '7-Day Dubai Trip',
+      fee: '20 π',
       imageUrl: '/images/dubai-luxury-holiday.jpg',
-      theme: 'premium'
     },
     {
       comp: {
@@ -229,57 +158,223 @@ export default function AllCompetitionsPage() {
         entryFee: 15,
         totalTickets: 5000,
         ticketsSold: 4875,
-        endsAt: '2025-05-15T21:00:00Z'
+        endsAt: '2025-05-15T21:00:00Z',
       },
       title: 'Penthouse Hotel Stay',
-      prize: 'Your Choice Penthouse',
-      fee: '15 π',
       href: '/competitions/macbook-pro-2025-giveaway',
+      prize: 'Penthouse Hotel Stay of your choice',
+      fee: '15 π',
       imageUrl: '/images/hotel.jpeg',
-      theme: 'premium'
     },
+    
+    {
+      comp: {
+        slug: 'the-crown-jewels',
+        entryFee: 20,
+        totalTickets: 15000,
+        ticketsSold: 7100,
+        endsAt: '2025-05-18T22:00:00Z',
+      },
+      title: 'The Crown Jewels',
+      href: '/competitions/the-crown-jewels',
+      prize: 'Jewels',
+      fee: '20 π',
+      imageUrl: '/images/jew.jpeg',
+    },
+    {
+      comp: {
+        slug: 'first-class-flight',
+        entryFee: 15,
+        totalTickets: 5000,
+        ticketsSold: 4875,
+        endsAt: '2025-05-15T21:00:00Z',
+      },
+      title: 'First Class Flight',
+      href: '/competitions/first-class-flight',
+      prize: 'Return flights to anywhere in the wORLD',
+      fee: '15 π',
+      imageUrl: '/images/first.jpeg',
+    },
+    {
+        comp: {
+          slug: 'luxury-yacht-weekend',
+          entryFee: 30,
+          totalTickets: 8000,
+          ticketsSold: 0,
+          endsAt: '2025-06-10T00:00:00Z',
+        },
+        title: 'Luxury Yacht Weekend',
+        prize: '3 day Mediterranean Yacht Cruise',
+        fee: '30 π',
+        href: '/competitions/luxury-yacht-weekend',
+        imageUrl: '/images/yacht.jpeg',
+        theme: 'premium',
+      },
+    {
+      comp: {
+        slug: 'pi-giveaway-100k',
+        entryFee: 10,
+        totalTickets: 33000,
+        ticketsSold: 0,
+        endsAt: '2025-05-12T00:00:00Z',
+      },
+      title: '100 000 π Mega Giveaway',
+      prize: '100 000 π',
+      fee: '10 π',
+      href: '/competitions/pi-giveaway-100k',
+      imageUrl: '/images/100,000.png',
+      theme: 'purple',
+    },
+    {
+      comp: {
+        slug: 'pi-giveaway-50k',
+        entryFee: 5,
+        totalTickets: 17000,
+        ticketsSold: 0,
+        endsAt: '2025-05-11T00:00:00Z',
+      },
+      title: '50 000 π Big Giveaway',
+      prize: '50 000 π',
+      fee: '5 π',
+      href: '/competitions/pi-giveaway-50k',
+      imageUrl: '/images/50,000.png',
+      theme: 'purple',
+    },
+    {
+      comp: {
+        slug: 'pi-giveaway-25k',
+        entryFee: 1.5,
+        totalTickets: 18500,
+        ticketsSold: 0,
+        endsAt: '2025-05-10T00:00:00Z',
+      },
+      title: '25 000 π Weekly Giveaway',
+      prize: '25 000 π',
+      fee: '1.5 π',
+      href: '/competitions/pi-giveaway-25k',
+      imageUrl: '/images/25,000.png',
+      theme: 'purple',
+    },
+  
+      {
+        comp: {
+          slug: 'pi-giveaway-250k',
+          entryFee: 15,
+          totalTickets: 50000,
+          ticketsSold: 0,
+          endsAt: '2025-06-01T00:00:00Z',
+        },
+        title: '250 000 π Mega Giveaway',
+        prize: '250 000 π',
+        fee: '15 π',
+        href: '/competitions/pi-giveaway-250k',
+        imageUrl: '/images/250000.png',
+        theme: 'purple',
+      },
+      {
+        comp: {
+          slug: 'pi-giveaway-100k',
+          entryFee: 10,
+          totalTickets: 33000,
+          ticketsSold: 0,
+          endsAt: '2025-05-20T00:00:00Z',
+        },
+        title: '100 000 π Grand Giveaway',
+        prize: '100 000 π',
+        fee: '10 π',
+        href: '/competitions/pi-giveaway-100k',
+        imageUrl: '/images/100000.png',
+        theme: 'purple',
+      },
+      {
+        comp: {
+          slug: 'pi-giveaway-60000',
+          entryFee: 6,
+          totalTickets: 20000,
+          ticketsSold: 0,
+          endsAt: '2025-05-15T00:00:00Z',
+        },
+        title: '60 000 π Super Giveaway',
+        prize: '60 000 π',
+        fee: '6 π',
+        href: '/competitions/pi-giveaway-60000',
+        imageUrl: '/images/60000.png',
+        theme: 'purple',
+      },
+      {
+        comp: {
+          slug: 'pi-giveaway-25000',
+          entryFee: 2.5,
+          totalTickets: 18500,
+          ticketsSold: 0,
+          endsAt: '2025-05-10T00:00:00Z',
+        },
+        title: '25 000 π Weekly Giveaway',
+        prize: '25 000 π',
+        fee: '2.5 π',
+        href: '/competitions/pi-giveaway-25000',
+        imageUrl: '/images/25000.png',
+        theme: 'purple',
+      },
+      {
+        comp: {
+          slug: 'pi-giveaway-10000',
+          entryFee: 1,
+          totalTickets: 15000,
+          ticketsSold: 0,
+          endsAt: '2025-05-08T00:00:00Z',
+        },
+        title: '10 000 π Flash Giveaway',
+        prize: '10 000 π',
+        fee: '1 π',
+        href: '/competitions/pi-giveaway-10000',
+        imageUrl: '/images/10000.png',
+        theme: 'purple',
+      },
+      {
+        comp: {
+          slug: 'pi-giveaway-5000',
+          entryFee: 0.5,
+          totalTickets: 10000,
+          ticketsSold: 0,
+          endsAt: '2025-05-05T00:00:00Z',
+        },
+        title: '5 000 π Daily Giveaway',
+        prize: '5 000 π',
+        fee: '0.5 π',
+        href: '/competitions/pi-giveaway-5000',
+        imageUrl: '/images/5000.png',theme: 'purple',},
+    { comp:{slug:'everyday-pioneer',entryFee:0.314,totalTickets:1900,ticketsSold:0,endsAt:'2025-05-03T15:14:00Z'}, title:'Everyday Pioneer', prize:'1,000 π', fee:'0.314 π', href:'/competitions/everyday-pioneer', imageUrl:'/images/everyday.png', theme:'daily' },
+    { comp:{slug:'pi-to-the-moon',entryFee:3.14,totalTickets:1900,ticketsSold:0,endsAt:'2025-05-04T12:00:00Z'}, title:'Pi to the Moon', prize:'5,000 π', fee:'3.14 π', href:'/competitions/pi-to-the-moon', imageUrl:'/images/pitothemoon.jpeg', theme:'daily' },
+    { comp: {slug:'hack-the-vault',entryFee: 0.375,totalTickets: 2225,ticketsSold: 1800,endsAt: '2025-05-03T23:59:59Z'},title: 'Hack The Vault',prize: '7,750 π',fee: '3.14 π',href: '/competitions/hack-the-vault',imageUrl: '/images/vault.png',theme: 'daily'},
+    { comp:{slug:'daily-pi-slice',entryFee:0.314,totalTickets:1900,ticketsSold:0,endsAt:'2025-05-03T15:14:00Z'}, title:'Daily Pi Slice', prize:'1,000 π', fee:'0.314 π', href:'/competitions/daily-pi-slice', imageUrl:'/images/daily.png', theme:'daily' },
+    { comp:{slug:'daily-jackpot',entryFee:0.375,totalTickets:2225,ticketsSold:0,endsAt:'2025-05-03T23:59:59Z'}, title:'Daily Jackpot', prize:'750 π', fee:'0.375 π', href:'/competitions/daily-jackpot', imageUrl:'/images/jackpot.png', theme:'daily' },
     { comp:{slug:'the-daily-dash',entryFee:3.14,totalTickets:1900,ticketsSold:0,endsAt:'2025-05-04T12:00:00Z'}, title:'The Daily Dash', prize:'5,000 π', fee:'3.14 π', href:'/competitions/the-daily-dash', imageUrl:'/images/dash.png', theme:'daily' },
-    { comp: { slug: 'pi-day-freebie', entryFee: 0 },            title: 'Pi Day Freebie',          prize: 'Pi Day Badge',             fee: 'Free',        href: '/competitions/pi-day-freebie',         imageUrl: '/images/freebie.png',              theme: 'green'    },
-    { comp: { slug: 'everyones-a-winner', entryFee: 0 },        title: 'Everyone’s A Winner',     prize: '9999 / 5555 / 1111 π',      fee: 'Free',        href: '/competitions/everyones-a-winner',     imageUrl: '/images/everyone.png',             theme: 'green'    },
-    { comp: { slug: 'weekly-pi-giveaway', entryFee: 0 },        title: 'Weekly Pi Giveaway',      prize: '1,000 π Giveaway',         fee: 'Free',        href: '/competitions/weekly-pi-giveaway',     imageUrl: '/images/weekly.png',               theme: 'green'    },
-    { comp: { slug: 'ps5-bundle-giveaway', entryFee: 0.5 },     title: 'PS5 Bundle Giveaway',     prize: 'PlayStation 5 + Extra Controller', fee: '0.5 π', href: '/competitions/ps5-bundle-giveaway', imageUrl: '/images/ps5.jpeg',                theme: 'orange'   },
-    { comp: { slug: '55-inch-tv-giveaway', entryFee: 0.75 },    title: '55" TV Giveaway',         prize: '55" Smart TV',              fee: '0.75 π',     href: '/competitions/55-inch-tv-giveaway',    imageUrl: '/images/Tv.jpeg',                  theme: 'orange'   },
-    { comp: { slug: 'xbox-one-bundle', entryFee: 0.6 },         title: 'Xbox One Bundle',         prize: 'Xbox One + Game Pass',      fee: '0.6 π',      href: '/competitions/xbox-one-bundle',        imageUrl: '/images/xbox.jpeg',                theme: 'orange'   },
-    { comp: { slug: 'pi-giveaway-100k', entryFee: 10 },         title: '100 000 π Giveaway',      prize: '100 000 π',                 fee: '10 π',       href: '/competitions/pi-giveaway-100k',       imageUrl: '/images/100,000.png',              theme: 'purple'   },
-    { comp: { slug: 'pi-giveaway-50k', entryFee: 5 },           title: '50 000 π Giveaway',       prize: '50 000 π',                  fee: '5 π',        href: '/competitions/pi-giveaway-50k',        imageUrl: '/images/50,000.png',               theme: 'purple'   },
-    { comp: { slug: 'pi-giveaway-25k', entryFee: 2.5 },         title: '25 000 π Giveaway',       prize: '25 000 π',                  fee: '2.5 π',      href: '/competitions/pi-giveaway-25k',        imageUrl: '/images/25,000.png',               theme: 'purple'   },
-    { comp: { slug: 'tesla-model-3-giveaway', entryFee: 50 },   title: 'Tesla Model 3 Giveaway',  prize: 'Tesla Model 3',             fee: '50 π',       href: '/competitions/tesla-model-3-giveaway', imageUrl: '/images/tesla.jpeg',               theme: 'premium'  },
-    { comp: { slug: 'dubai-luxury-holiday', entryFee: 25 },     title: 'Dubai Luxury Holiday',     prize: '7-Day Dubai Trip',          fee: '25 π',       href: '/competitions/dubai-luxury-holiday',   imageUrl: '/images/dubai-luxury-holiday.jpg', theme: 'premium'  },
-    { comp: { slug: 'penthouse-hotel-stay', entryFee: 15 },     title: 'Penthouse Hotel Stay',     prize: 'Penthouse Hotel Stay of your choice', fee: '15 π', href: '/competitions/macbook-pro-2025-giveaway', imageUrl: '/images/hotel.jpeg', theme: 'premium' },
-  ] 
-  return (
-    <main className="pt-8 pb-12 px-4 bg-white min-h-screen">
-      <div className="max-w-6xl mx-auto">
-        <h2 className="text-3xl font-bold text-center text-blue-600 mb-6">
-          All Competitions
-        </h2>
-
-        {/* Desktop: 3‑column grid */}
-        <div className="hidden lg:grid lg:grid-cols-3 gap-6">
+    { comp:{slug:'pi-day-freebie', entryFee:0, totalTickets:10000, ticketsSold:0, endsAt:'2025-05-06T20:00:00Z'}, title:'Pi‑Day Freebie', href:'/competitions/pi-day-freebie', prize:'Special Badge', fee:'Free', imageUrl:'/images/freebie.png', theme:'green' },
+    { comp:{slug:'everyone-wins',   entryFee:0, totalTickets:10000, ticketsSold:0, endsAt:'2025-05-10T18:00:00Z'}, title:"Everyone Wins",    href:'/competitions/everyones-a-winner', prize:'9,999 / 5,555 / 1,111 π', fee:'Free', imageUrl:'/images/everyone.png', theme:'green' },
+    { comp:{slug:'weekly-giveaway', entryFee:0, totalTickets:5000,  ticketsSold:0, endsAt:'2025-05-05T23:59:59Z'}, title:'Weekly Giveaway',  href:'/competitions/weekly-pi-giveaway', prize:'1,000 π', fee:'Free', imageUrl:'/images/weekly.png', theme:'green' },
+    { comp:{slug:'pi-miners-bonanza', entryFee:0, totalTickets:10000, ticketsSold:0, endsAt:'2025-05-06T20:00:00Z'}, title:'Pi Miners Bonanza', href:'/competitions/pi-miners-bonanza', prize:'Special Badge', fee:'Free', imageUrl:'/images/freebie.png', theme:'green' },
+    { comp:{slug:'pi-nugget-giveaway',   entryFee:0, totalTickets:10000, ticketsSold:0, endsAt:'2025-05-10T18:00:00Z'}, title:"Pi Nugget Giveaway",    href:'/competitions/pi-nugget-giveaway', prize:'9,999 / 5,555 / 1,111 π', fee:'Free', imageUrl:'/images/everyone.png', theme:'green' },
+    { comp:{slug:'free-for-all', entryFee:0, totalTickets:5000,  ticketsSold:0, endsAt:'2025-05-05T23:59:59Z'}, title:'Free For All',  href:'/competitions/free-for-all', prize:'1,000 π', fee:'Free', imageUrl:'/images/weekly.png', theme:'green' },
+    { comp:{slug:'freebie-frenzy', entryFee:0, totalTickets:10000, ticketsSold:0, endsAt:'2025-05-06T20:00:00Z'}, title:'Freebie Frenzy', href:'/competitions/freebie-frenzy', prize:'Special Badge', fee:'Free', imageUrl:'/images/freebie.png', theme:'green' },]
+    return (
+      <main className="pt-8 pb-12 px-4 bg-white min-h-screen">
+        <h1 className="text-3xl font-bold mb-8">All Competitions</h1>
+  
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {allComps.map(item => (
             <CompetitionCard
               key={item.comp.slug}
-              {...item}
-              small
-              className="transform scale-90 transition-all duration-200"
+              comp={item.comp}
+              title={item.title}
+              prize={item.prize}
+              fee={item.fee}
+              theme={item.theme}
+              imageUrl={item.imageUrl}
+              endsAt={item.comp.endsAt}
             />
           ))}
         </div>
-
-        {/* Mobile/Tablet: swipeable carousel */}
-        <div className="lg:hidden flex space-x-4 overflow-x-auto scroll-snap-type-x-mandatory snap-x pb-4">
-          {allComps.map(item => (
-            <div key={item.comp.slug} className="flex-none w-64 snap-start">
-              <CompetitionCard {...item} small />
-            </div>
-          ))}
-        </div>
-      </div>
-    </main>
-  )
-}
+      </main>
+    )
+  }

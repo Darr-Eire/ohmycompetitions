@@ -1,93 +1,114 @@
 // pages/partners.js
 'use client'
+
 import Image from 'next/image'
 import Link from 'next/link'
+
+// Your real partner data here
+const partnerItems = [
+  {
+    slug: 'example-dapp',
+    name: 'Example DApp',
+    logoUrl: '/images/your.png',
+    website: 'https://example-dapp.com'
+  },
+  {
+    slug: 'another-dapp',
+    name: 'Another DApp',
+    logoUrl: '/images/your.png',
+    website: 'https://another-dapp.io'
+  },
+  {
+    slug: 'third-dapp',
+    name: 'Third DApp',
+    logoUrl: '/images/your.png',
+    website: 'https://third.app'
+  },
+  // …
+]
+
 export default function PartnersPage() {
-  const integrations = [
-   
-    {
-        name: 'Your Logo Here',
-        logo: '/images/your.png',
-        description: 'Want to see your DApp here? Contact us to get featured!',
-        link: '/partners/form',
-        isPlaceholder: true,
-      },
-  ]
-
   return (
-    <main className="min-h-screen bg-gray-50 py-10 px-4">
-      <div className="competition-card max-w-4xl mx-auto overflow-hidden">
-        {/* Top Banner */}
-        <div className="competition-top-banner text-3xl">
-          🤝 Featured Integrations
+    <main className="bg-white min-h-screen py-8">
+      {/* Centered container with side padding */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <header className="text-center mb-8">
+          <h1 className="inline-flex items-center justify-center text-2xl sm:text-3xl font-bold">
+            <span className="mr-2 text-2xl">🤝</span>
+            Featured Integrations
+          </h1>
+          <p className="mt-2 text-gray-700 text-sm sm:text-base">
+            We Promote Community DApps
+          </p>
+        </header>
+
+        {/* Grid: 1col ↔ 2col@sm ↔ 3col@md ↔ 4col@lg */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {partnerItems.map(partner => (
+            <div
+              key={partner.slug}
+              className="w-full flex flex-col items-center bg-white border border-gray-200 rounded-lg p-4 sm:p-6 shadow-sm text-center"
+            >
+              <Image
+                src={partner.logoUrl}
+                alt={partner.name}
+                width={80}
+                height={80}
+                className="object-contain mb-4"
+              />
+              <h2 className="text-lg sm:text-xl font-semibold mb-2">
+                {partner.name}
+              </h2>
+              <Link
+                href={partner.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-auto text-blue-600 text-sm hover:underline"
+              >
+                Visit Site →
+              </Link>
+            </div>
+          ))}
+
+          {/* Become a Partner CTA */}
+          <div className="w-full flex flex-col items-center justify-center bg-gray-50 border border-dashed border-gray-300 rounded-lg p-6 text-center">
+            <div className="mb-4 text-gray-500 text-sm">Your Logo Here</div>
+            <p className="text-gray-600 text-sm mb-4">
+              Want your DApp featured? Contact us!
+            </p>
+            <Link
+              href="/contact"
+              className="inline-block bg-blue-600 text-white text-sm py-2 px-4 rounded hover:bg-blue-700 transition"
+            >
+              Become a Partner →
+            </Link>
+          </div>
         </div>
 
-        <div className="bg-white p-6 space-y-8">
-          {/* Integrations Section */}
-          <section className="space-y-4">
-            <h2 className="text-xl font-semibold border-b-2 pb-2">
-              We Promote Community DApps
-            </h2>
-            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {integrations.map(intg => (
-                <div
-                  key={intg.name}
-                  className={`
-                    flex flex-col items-center space-y-3
-                    border rounded-lg p-6 shadow
-                    ${intg.isPlaceholder ? 'opacity-60' : ''}
-                  `}
-                >
-                  <Image
-                    src={intg.logo}
-                    alt={intg.name}
-                    width={80}
-                    height={80}
-                    className="object-contain"
-                  />
-                  <h3 className="font-semibold">{intg.name}</h3>
-                  <p className="text-sm text-center">{intg.description}</p>
-                  <Link
-                    href={intg.link}
-                    className="mt-2 inline-block text-blue-600 hover:underline text-sm"
-                  >
-                    Become a Partner →
-                  </Link>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* Partner Benefits */}
-          <section className="space-y-6 bg-gray-50 p-6 rounded-lg shadow">
-            <h2 className="text-2xl font-bold text-center text-blue-600">
-              Why Partner With OhMyCompetitions?
-            </h2>
-            <ul className="space-y-4 list-disc list-inside text-gray-800">
-              <li>
-                <strong>Instant Trust &amp; Credibility:</strong>{' '}
-                Aligning with a trusted platform like ours instantly boosts your DApp’s reputation. Users know they’re entering a fair, secure giveaway.
-              </li>
-              <li>
-                <strong>Zero Integration Headaches:</strong>{' '}
-                We handle ticketing, random draws, and reward distribution—so you can focus on building features, not back‑end logistics.
-              </li>
-              <li>
-                <strong>Community Growth Engine:</strong>{' '}
-                Giveaways are proven to increase daily active users and retention. Tap into our established audience, then watch them stick around for your core features.
-              </li>
-              <li>
-                <strong>Official Pi App Giveaway Hub:</strong>{' '}
-                We’re building the Pi ecosystem’s go‑to giveaway destination. We want to be the first DApp featured when Pi users think “giveaway.”
-              </li>
-            </ul>
-            <div className="text-center mt-6">
-            <Link href="/partners/form" className="view-more-button">
-  Become a Partner →
-</Link>
-            </div>
-          </section>
-        </div>
+        {/* Why Partner section */}
+        <section className="mt-12 max-w-2xl mx-auto bg-white border border-gray-200 rounded-lg p-6 sm:p-8 shadow-sm">
+          <h2 className="text-xl sm:text-2xl font-semibold text-center mb-4">
+            Why Partner With OhMyCompetitions?
+          </h2>
+          <ul className="list-disc list-inside space-y-2 text-gray-700 text-sm sm:text-base">
+            <li>
+              <strong>Instant Trust &amp; Credibility:</strong> Align with a
+              top-ranked platform to build confidence in your DApp.
+            </li>
+            <li>
+              <strong>Massive Visibility:</strong> Get in front of thousands of
+              crypto-curious users every day.
+            </li>
+            <li>
+              <strong>Easy Integration:</strong> A single API call and you’re live.
+            </li>
+            <li>
+              <strong>Shared Marketing:</strong> Cross-promote in our socials
+              and newsletter.
+            </li>
+          </ul>
+        </section>
       </div>
     </main>
   )
