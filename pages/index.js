@@ -28,6 +28,8 @@ export default function HomePage() {
   }, [])
 
   // Section: header + swipe-native carousel
+  // inside your HomePage component:
+
   function Section({ title, items, containerRef, theme, viewMoreHref, className = '' }) {
     const headingStyles = {
       daily:   'bg-blue-600 text-white',
@@ -37,17 +39,21 @@ export default function HomePage() {
       premium: 'bg-gray-800 text-white',
     }
     const headingClass = headingStyles[theme] || headingStyles.daily
-
+  
     return (
       <section className={`relative ${className}`}>
         <h2 className={`category-page-title inline-block px-4 py-2 rounded mb-4 ${headingClass}`}>
           {title}
         </h2>
-
-        {/* Scrollable carousel */}
+  
+        {/* 1) Mobile carousel: flex + scroll. 2) Hide completely on lg+ */}
         <div
           ref={containerRef}
-          className={`${theme}-carousel flex space-x-4 overflow-x-auto scroll-smooth touch-pan-x`}
+          className={`
+            ${theme}-carousel
+            flex space-x-4 overflow-x-auto scroll-smooth touch-pan-x
+            lg:hidden
+          `}
         >
           {items.map(item => (
             <CompetitionCard
@@ -58,15 +64,23 @@ export default function HomePage() {
             />
           ))}
         </div>
-
-  <Link
-    href={viewMoreHref}
-    className={`view-more-button view-more-${theme} !inline-block !w-auto`}
-  >
-    View More 
-  </Link>
-</section>
+  
+        {/* View More: also hidden on lg+ */}
+        <div className="view-more-card mt-4 w-full flex justify-center lg:hidden">
+          <Link
+            href={viewMoreHref}
+            className={`view-more-button view-more-${theme}`}
+          >
+            View More →
+          </Link>
+        </div>
+      </section>
     )
+  
+  
+  
+
+
   }
   const techItems = [
     {

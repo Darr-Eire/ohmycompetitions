@@ -45,30 +45,33 @@ button {
 
 /* === Header & Nav === */
 /* styles/globals.css */
+/* styles/globals.css */
+
+/* ── Brand title ── */
 .brand-title {
   font-size: 1.5rem;     /* adjust to taste */
   font-weight: 700;
   color: var(--primary-text);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;   /* prevent wrapping on small screens */
 }
 
 header {
-  position: relative; /* ensure dropdown is positioned within this box */
+  position: relative; /* ensure absolute children are positioned within */
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0.5rem 1rem;
   height: 2.5rem;
   background: var(--primary-color);
   color: var(--primary-text);
   z-index: 1000;
 }
-header > div.absolute {
-  pointer-events: none;          /* let clicks go through */
-}
 
-header span {
-  color: var(--primary-text);
-}
-
+/* “Menu” and “Log In/Out” buttons */
 .menu-button,
 .login-button,
 .logout-button {
@@ -77,8 +80,10 @@ header span {
   border: none;
   padding: 0.25rem 0.5rem;
   font-size: 1rem;
+  flex-shrink: 0;
 }
-.nav-spacer { flex: 1; }
+
+/* Login/Logout variants */
 .login-button,
 .logout-button {
   background: var(--primary-color);
@@ -86,12 +91,37 @@ header span {
   border-radius: var(--button-radius);
   margin-left: 0.5rem;
   transition: background-color var(--transition-dur);
-  font-size: 1rem;
 }
 .login-button:hover,
 .logout-button:hover {
   background: var(--primary-hover);
 }
+
+/* Centering the “View More” button under carousels */
+.view-more-card {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+.view-more-button {
+  display: inline-block;
+  margin: 0;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  color: var(--primary-text);
+  background: var(--secondary-color);
+  border-radius: var(--button-radius);
+  text-decoration: none;
+  transition: background-color var(--transition-dur), transform 0.1s ease-in-out;
+}
+.view-more-button:hover {
+  background-color: var(--secondary-hover);
+  transform: translateY(-1px);
+}
+.view-more-button:active {
+  transform: translateY(0);
+}
+
 
 /* Anchor the dropdown to the left of the header container */
 .dropdown-menu {
@@ -220,15 +250,55 @@ footer {
 
 
 
-/* “View More →” button variants */
-.view-more-button {
-  color: var(--primary-text);
+.view-more-card {
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
-.view-more-button.view-more-daily   { background: var(--secondary-color); }
-.view-more-button.view-more-free    { background: var(--secondary-color); }
-.view-more-button.view-more-tech    { background: var(--secondary-color); }
-.view-more-button.view-more-pi      { background: var(--secondary-color); }
-.view-more-button.view-more-premium { background: var(--secondary-color); }
+
+/* “View More →” button styling */
+/* ── “View More →” Button Styling ── */
+.view-more-button {
+  display: inline-block;                  /* shrink to content */
+  margin: 0;                              /* no extra offsets */
+  padding: 0.5rem 1rem;                   /* button size you want */
+  font-size: 1rem;                        /* text size you want */
+  color: var(--primary-text);             /* keeps your chosen text color */
+  background: var(--secondary-color);     /* your chosen background */
+  border-radius: var(--button-radius);    /* rounded corners */
+  text-decoration: none;
+  transition: background-color var(--transition-dur), transform 0.1s ease-in-out;
+}
+
+.view-more-button:hover {
+  background-color: var(--secondary-hover);
+  transform: translateY(-1px);
+}
+
+.view-more-button:active {
+  transform: translateY(0);
+}
+
+
+/* Theme variants (all share the same background here) */
+.view-more-button.view-more-daily,
+.view-more-button.view-more-free,
+.view-more-button.view-more-tech,
+.view-more-button.view-more-pi,
+.view-more-button.view-more-premium {
+  /* you can override per-theme colors here if needed */
+  background: var(--secondary-color);
+}
+
+/* Hover and active states */
+.view-more-button:hover {
+  background-color: var(--secondary-hover);
+  transform: translateY(-1px);
+}
+
+.view-more-button:active {
+  transform: translateY(0);
+}
 
 /* === Section Titles === */
 .category-page-title {
@@ -289,20 +359,6 @@ footer {
   scroll-snap-align: start;
   scroll-snap-stop: always;
 }
-.view-more-container {
-  text-align: center;
-  margin-top: 1rem; /* space above button */
-}
-
-/* globals.css */
-.view-more-card .view-more-button {
-  display: inline-block !important;
-  width: auto          !important;
-}
-
-
-
-
 
 /* === “All X” Grid Pages === */
 .category-grid {
@@ -311,10 +367,12 @@ footer {
   justify-items: center;
 }
 @media (min-width: 1024px) {
-  .category-grid {
-    grid-template-columns: repeat(3, 1fr);
+  html, body {
+    overflow-x: hidden;
   }
 }
+
+
 @media (max-width: 1023px) {
   .category-grid {
     display: flex;

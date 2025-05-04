@@ -27,26 +27,21 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
   const handleLinkClick = () => setMenuOpen(false)
 
   return (
-    <header className="relative z-50 flex items-center px-4 bg-blue-600 text-white h-12">
-      {/* Left: Menu Button */}
+    <header>
+      {/* Left: Menu Toggle */}
       <button
         ref={buttonRef}
-        className="menu-button text-white"
+        className="menu-button"
         onClick={() => setMenuOpen(v => !v)}
         aria-label="Toggle menu"
       >
-        Menu
+        ☰
       </button>
 
-      {/* Center: App Title */}
-      <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
-        <Link href="/" className="text-2xl font-extrabold">
-          OhMyCompetitions
-        </Link>
-      </div>
-
-      {/* Spacer so login/logout sits at right edge */}
-      <div className="flex-1" />
+      {/* Center: Logo */}
+      <span className="brand-title nav-spacer">
+        <Link href="/">OhMyCompetitions</Link>
+      </span>
 
       {/* Right: Login / Logout */}
       {isLoggedIn ? (
@@ -59,53 +54,42 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
         </button>
       )}
 
-      {/* Dropdown Menu */}
+      {/* Dropdown */}
       {menuOpen && (
         <nav ref={menuRef} className="dropdown-menu">
-          <Link href="/" onClick={handleLinkClick} className="dropdown-link">
-            Home
-          </Link>
-          <Link href="/competitions" onClick={handleLinkClick} className="dropdown-link">
-            All Competitions
-          </Link>
-          <Link href="/try-your-luck" onClick={handleLinkClick} className="dropdown-link">
-            Try Your Luck
-          </Link>
-          <Link href="/forums" onClick={handleLinkClick} className="dropdown-link">
-            Forums
-          </Link>
-          <Link href="/future" onClick={handleLinkClick} className="dropdown-link">
-            The Future
-          </Link>
-          <Link href="/help-support" onClick={handleLinkClick} className="dropdown-link">
-            Help & Support
-          </Link>
-          <Link href="/how-we-got-started" onClick={handleLinkClick} className="dropdown-link">
-            How We Got Started
-          </Link>
-          <Link href="/partners" onClick={handleLinkClick} className="dropdown-link">
-            Partners & Sponsors
-          </Link>
+          {[
+            ['Home', '/'],
+            ['All Competitions', '/competitions'],
+            ['Try Your Luck', '/try-your-luck'],
+            ['Forums', '/forums'],
+            ['The Future', '/future'],
+            ['Help & Support', '/help-support'],
+            ['How We Got Started', '/how-we-got-started'],
+            ['Partners & Sponsors', '/partners'],
+          ].map(([label, href]) => (
+            <Link
+              key={href}
+              href={href}
+              onClick={handleLinkClick}
+              className="dropdown-link"
+            >
+              {label}
+            </Link>
+          ))}
 
           <hr className="my-2 border-white/50" />
 
           {isLoggedIn ? (
             <button
               className="logout-button dropdown-link block w-full text-left"
-              onClick={() => {
-                handleLinkClick()
-                onLogout()
-              }}
+              onClick={() => { handleLinkClick(); onLogout() }}
             >
               Log Out
             </button>
           ) : (
             <button
               className="login-button dropdown-link block w-full text-left"
-              onClick={() => {
-                handleLinkClick()
-                onLogin()
-              }}
+              onClick={() => { handleLinkClick(); onLogin() }}
             >
               Log In With Pi
             </button>
@@ -115,5 +99,3 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
     </header>
   )
 }
-
-
