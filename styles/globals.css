@@ -61,6 +61,7 @@ header {
   color: inherit;
   border: none;
   padding: 0.25rem 0.5rem;
+  font-size: 1.125rem;
 }
 .nav-spacer { flex: 1; }
 .login-button,
@@ -70,6 +71,7 @@ header {
   border-radius: var(--button-radius);
   margin-left: 0.5rem;
   transition: background-color var(--transition-dur);
+  font-size: 1.125rem;
 }
 .login-button:hover,
 .logout-button:hover {
@@ -192,6 +194,7 @@ footer {
   border: none;
   cursor: pointer;
   transition: background-color var(--transition-dur) ease;
+  font-size: 1.125rem;
 }
 
 .comp-button:hover {
