@@ -46,7 +46,7 @@ button {
 /* === Header & Nav === */
 /* styles/globals.css */
 .brand-title {
-  font-size: 1.6rem;     /* adjust to taste */
+  font-size: 1.5rem;     /* adjust to taste */
   font-weight: 700;
   color: var(--primary-text);
 }
@@ -56,7 +56,7 @@ header {
   display: flex;
   align-items: center;
   padding: 0.5rem 1rem;
-  height: 3.5rem;
+  height: 2.5rem;
   background: var(--primary-color);
   color: var(--primary-text);
   z-index: 1000;
@@ -76,7 +76,7 @@ header span {
   color: inherit;
   border: none;
   padding: 0.25rem 0.5rem;
-  font-size: 1.125rem;
+  font-size: 1rem;
 }
 .nav-spacer { flex: 1; }
 .login-button,
@@ -86,7 +86,7 @@ header span {
   border-radius: var(--button-radius);
   margin-left: 0.5rem;
   transition: background-color var(--transition-dur);
-  font-size: 1.125rem;
+  font-size: 1rem;
 }
 .login-button:hover,
 .logout-button:hover {
@@ -235,7 +235,7 @@ footer {
   text-align: center;
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--primary-color);
+  color: var(--secondary-color);
   margin-bottom: -2rem;
 }
 
