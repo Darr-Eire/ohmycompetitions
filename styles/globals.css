@@ -3,21 +3,69 @@
 @tailwind components;
 @tailwind utilities;
 
-/* === Theme Variables === */
+/* =============================================================================
+   Utilities Layer
+   ============================================================================= */
+@layer utilities {
+  .backdrop-blur {
+    backdrop-filter: blur(10px);
+  }
+  .backdrop-blur-sm {
+    backdrop-filter: blur(4px);
+  }
+
+  .text-neon-primary {
+    color: var(--primary-color);
+    text-shadow:
+      0 0 4px  var(--primary-color),
+      0 0 8px  var(--primary-color),
+      0 0 12px var(--primary-glow),
+      0 0 16px var(--primary-glow);
+  }
+
+  .btn-neon-primary {
+    background-color: var(--primary-color);
+    color: var(--primary-text);
+    border: none;
+    border-radius: var(--button-radius);
+    padding: 0.5rem 1rem;
+    box-shadow:
+      0 0 8px  var(--primary-color),
+      0 0 16px var(--primary-glow),
+      0 0 24px var(--primary-glow);
+    transition: box-shadow var(--transition-dur);
+  }
+  .btn-neon-primary:hover {
+    box-shadow:
+      0 0 12px var(--primary-color),
+      0 0 24px var(--primary-glow),
+      0 0 36px var(--primary-glow);
+  }
+}
+
+/* =============================================================================
+   Theme Variables
+   ============================================================================= */
 :root {
-  --primary-color:    #0052CC;
-  --primary-hover:    #1834e6;
+  --primary-color:    linear-gradient(to bottom right, #1E3A8A, #60A5FA);
+  --primary-gradient: linear-gradient(to bottom right, #1E3A8A, #60A5FA);
+  --primary-hover:    #0052CC;
   --primary-text:     #ffffff;
+
   --secondary-color:  #0052CC;
   --secondary-hover:  #1834e6;
-  --secondary-text:   #ffffff;
+  --secondary-text:   #2f019a;
+
   --accent-color:     #0f1f7d;
-  --accent-hover:     #ffffff;
+  --accent-hover:     #1a0c54;
+
   --button-radius:    4px;
   --transition-dur:   0.2s;
 }
 
-/* === Reset & Base === */
+/* =============================================================================
+   Reset & Base
+   ============================================================================= */
 html, body, #__next {
   margin: 0;
   padding: 0;
@@ -38,7 +86,9 @@ button {
   padding: 0;
 }
 
-/* === Layout Helpers === */
+/* =============================================================================
+   Layout Helpers
+   ============================================================================= */
 .layout {
   display: flex;
   flex-direction: column;
@@ -48,28 +98,30 @@ button {
   flex: 1;
 }
 
-/* === Header & Nav === */
+/* =============================================================================
+   Header & Nav
+   ============================================================================= */
+/* blend the header & brand together */
 header {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem 1rem;
-  height: 2.5rem;
-  background: var(--primary-color);
-  color: var(--primary-text);
-  z-index: 1000;
+  background: var(--primary-gradient); /* your blue‑900 → blue‑400 */
 }
-header > .container,
-footer > .container {
-  max-width: 72rem;
-  margin: 0 auto;
-  padding: 0 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+
+/* make the brand title text gradient‑filled */
+.brand-title {
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: white;
+  font-size: 1.5rem;
+  font-weight: 700;
 }
-.brand-title,
+
+/* optional: lightly blur behind the brand, so the gradient shows through but text stands out */
+.brand-container {
+  backdrop-filter: blur(4px);
+  padding: 0 0.5rem;
+  border-radius: var(--button-radius);
+}
+
 .brand-logo {
   position: absolute;
   left: 50%;
@@ -80,26 +132,32 @@ footer > .container {
 .menu-button,
 .login-button,
 .logout-button {
-  padding: 0.25rem 0.5rem;
   font-size: 1rem;
-  background: var(--primary-color);
-  color: var(--primary-text);
-  border: 1px solid var(--primary-color);
   border-radius: var(--button-radius);
   transition: background-color var(--transition-dur);
 }
 .menu-button {
-  background: transparent;
-  border: none;
-  color: inherit;
+  background: var(--primary-color);
+  color: var(--primary-text);
+  padding: 0.25rem 0.5rem;
 }
-.menu-button:hover,
+.menu-button:hover {
+  background: var(--primary-hover);
+}
+.login-button,
+.logout-button {
+  background: var(--primary-color);
+  color: var(--primary-text);
+  padding: 0.25rem 0.5rem;
+}
 .login-button:hover,
 .logout-button:hover {
   background: var(--primary-hover);
 }
 
-/* === Dropdown === */
+/* =============================================================================
+   Dropdown
+   ============================================================================= */
 .dropdown-menu {
   position: absolute;
   top: 100%;
@@ -111,7 +169,6 @@ footer > .container {
   z-index: 1100;
   width: max-content;
   min-width: 10rem;
-  animation: dropdown-fade var(--transition-dur) ease forwards;
 }
 .dropdown-link {
   display: block;
@@ -123,7 +180,9 @@ footer > .container {
   background: rgba(255,255,255,0.2);
 }
 
-/* === Footer === */
+/* =============================================================================
+   Footer
+   ============================================================================= */
 footer {
   margin-top: auto;
   padding: 0.5rem 1rem;
@@ -143,7 +202,9 @@ footer {
   color: var(--accent-hover);
 }
 
-/* === Competition Card === */
+/* =============================================================================
+   Competition Card
+   ============================================================================= */
 .competition-card {
   display: flex;
   flex-direction: column;
@@ -151,14 +212,13 @@ footer {
   max-width: 375px;
   margin: 1rem auto;
   background: #fff;
-  border: 5px solid var(--primary-color);
+  border: 5px solid white;
   border-radius: var(--button-radius);
   box-shadow: 0 0 40px var(--primary-color);
   overflow: hidden;
   text-align: center;
 }
 .competition-card__header {
-
   padding: 0.5rem 1rem;
   font-size: 1.125rem;
   font-weight: 700;
@@ -180,7 +240,9 @@ footer {
   background: var(--secondary-hover);
 }
 
-/* === “View More” Button === */
+/* =============================================================================
+   “View More” Button
+   ============================================================================= */
 .view-more-card {
   display: flex;
   justify-content: center;
@@ -204,25 +266,38 @@ footer {
 .view-more-button:active {
   transform: translateY(0);
 }
-/* Per‐theme overrides if you need them */
-.view-more-button.view-more-daily,
-.view-more-button.view-more-free,
-.view-more-button.view-more-tech,
-.view-more-button.view-more-pi,
-.view-more-button.view-more-premium {
-  background: var(--secondary-color);
+
+/* =============================================================================
+   Section & Competition Title Styling
+   ============================================================================= */
+@layer components {
+  /* Center category titles with solid primary background & white text */
+  section > h2 {
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin: 0 auto 1rem;
+    background: var(--primary-color);
+    color: var(--primary-text);
+    padding: 0.5rem 1rem;
+    border-radius: var(--button-radius);
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  /* Competition‐card headers stay gradient text */
+  .competition-card__header {
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+  }
 }
 
-/* === Section Titles === */
-.category-page-title {
-  text-align: center;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--secondary-color);
-  margin-bottom: -2rem;
-}
-
-/* === Mobile Carousels === */
+/* =============================================================================
+   Mobile Carousels
+   ============================================================================= */
 .daily-carousel,
 .free-carousel,
 .tech-carousel,
@@ -249,12 +324,34 @@ footer {
   scroll-snap-stop: always;
 }
 
-/* === “All X” Grid Pages === */
+/* =============================================================================
+   “All X” Grid Pages
+   ============================================================================= */
 .category-grid {
   display: grid;
   gap: 1.5rem;
   justify-items: center;
 }
+@media (min-width: 1024px) {
+  html, body {
+    overflow-x: hidden;
+  }
+}
+@media (max-width: 1023px) {
+  .category-grid {
+    display: flex;
+    overflow-x: auto;
+    gap: 1rem;
+    padding: 1rem 0;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  .category-grid > * {
+    flex: 0 0 80%;
+    scroll-snap-align: center;
+  }
+}
+
 @media (min-width: 1024px) {
   html, body {
     overflow-x: hidden;

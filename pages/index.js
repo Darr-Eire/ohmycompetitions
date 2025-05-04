@@ -223,9 +223,10 @@ export default function HomePage() {
 
   return (
     <main
-      className="pt-8 pb-12 px-4 min-h-screen space-y-16"
-      style={{
-        backgroundImage: 'linear-gradient(to bottom right, #0052CC, #66A3FF)',
+    className="pt-8 pb-12 px-4 min-h-screen space-y-16"
+    style={{
+      backgroundImage: 'linear-gradient(to bottom right, #1E3A8A, #60A5FA)',
+
       }}
     >
       <Section

@@ -1,4 +1,6 @@
+// =============================================================================
 // src/components/Header.js
+// =============================================================================
 'use client'
 
 import Link from 'next/link'
@@ -11,7 +13,7 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (e) => {
+    const handleClickOutside = e => {
       if (
         menuRef.current &&
         !menuRef.current.contains(e.target) &&
@@ -25,8 +27,6 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const handleLinkClick = () => setMenuOpen(false)
-
   const navItems = [
     ['Home', '/'],
     ['All Competitions', '/competitions'],
@@ -39,71 +39,129 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
   ]
 
   return (
-    <header className="relative bg-blue-600 text-white px-4 py-3 flex items-center">
-      {/* Left: Menu Toggle */}
+    <header className="relative bg-transparent px-4 py-3 flex items-center z-20">
+      {/* ======================================================================= */}
+      {/* Menu toggle                                                           */}
+      {/* ======================================================================= */}
       <button
         ref={buttonRef}
-        className="menu-button text-xl"
         onClick={() => setMenuOpen(v => !v)}
         aria-label="Toggle menu"
+        className="
+          menu-button
+          bg-blue-600            /* blue background */
+          text-white             /* white text */
+          rounded
+          px-3 py-1
+          hover:bg-blue-700
+          transition
+          drop-shadow
+        "
       >
-        ☰
+        ☰ Menu
       </button>
 
-      {/* Center: Logo */}
+      {/* ======================================================================= */}
+      {/* Logo                                                                  */}
+      {/* ======================================================================= */}
       <div className="flex-1 text-center">
-        <Link href="/" className="brand-title text-2xl font-bold">
-          OMC
+        <Link
+          href="/"
+          className="brand-title inline-block text-2xl font-bold bg-white/60 backdrop-blur px-2 py-1 rounded text-blue-600 drop-shadow"
+        >
+          OhMyCompetitions
         </Link>
       </div>
 
-      {/* Right: Login / Logout */}
+      {/* ======================================================================= */}
+      {/* Login / Logout                                                        */}
+      {/* ======================================================================= */}
       {isLoggedIn ? (
         <button
-          className="logout-button bg-transparent border border-white rounded px-3 py-1 hover:bg-white hover:text-blue-600 transition"
           onClick={onLogout}
+          className="
+            logout-button
+            bg-white/60 backdrop-blur
+            text-blue-600
+            rounded px-3 py-1
+            hover:bg-white/80
+            transition drop-shadow
+          "
         >
           Log Out
         </button>
       ) : (
         <button
-          className="login-button bg-white text-blue-600 rounded px-3 py-1 hover:bg-white/90 transition"
           onClick={onLogin}
+          className="
+            login-button
+            bg-white/60 backdrop-blur
+            text-blue-600
+            rounded px-3 py-1
+            hover:bg-white/80
+            transition drop-shadow
+          "
         >
           Log In With Pi
         </button>
       )}
 
-      {/* Dropdown */}
+      {/* ======================================================================= */}
+      {/* Dropdown Menu                                                         */}
+      {/* ======================================================================= */}
       {menuOpen && (
         <nav
           ref={menuRef}
-          className="dropdown-menu absolute top-full left-0 mt-1 bg-blue-600 border border-white rounded shadow-lg w-48"
+          className="
+            dropdown-menu
+            absolute top-full left-0 mt-1
+            bg-blue-500 backdrop-blur
+            border border-blue-600
+            rounded shadow-lg w-48
+          "
         >
           {navItems.map(([label, href]) => (
             <Link
               key={href}
               href={href}
-              className="dropdown-link block px-4 py-2 hover:bg-white/20"
-              onClick={handleLinkClick}
+              className="
+                dropdown-link
+                block px-4 py-2
+                text-white
+                hover:bg-blue-600
+                transition
+              "
+              onClick={() => setMenuOpen(false)}
             >
               {label}
             </Link>
           ))}
 
-          <hr className="border-white/50 my-1" />
+          <hr className="border-blue-600 my-1" />
 
           {isLoggedIn ? (
             <button
-              className="dropdown-link block w-full text-left px-4 py-2 hover:bg-white/20"
-              onClick={() => { handleLinkClick(); onLogout() }}
+              className="
+                dropdown-link
+                block w-full text-left px-4 py-2
+                text-white
+                hover:bg-blue-600
+                transition
+              "
+              onClick={() => { setMenuOpen(false); onLogout() }}
             >
               Log Out
             </button>
           ) : (
             <button
-              className="dropdown-link block w-full text-left px-4 py-2 hover:bg-white/20"
-              onClick={() => { handleLinkClick(); onLogin() }}
+              className="
+                dropdown-link
+                block w-full text-left px-4 py-2
+                text-white
+                hover:bg-blue-600
+                transition
+              "
+              onClick={() => { setMenuOpen(false); onLogin() }}
             >
               Log In With Pi
             </button>
