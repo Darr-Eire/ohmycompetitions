@@ -311,12 +311,14 @@ export default function HomePage() {
   ]
 
   return (
-    <main className="pt-8 pb-12 px-4 bg-white min-h-screen space-y-16">
-      <Section title="Daily Competitions"   items={dailyItems}   containerRef={dailyRef}   theme="daily"   viewMoreHref="/competitions/daily"   />
-      <Section title="Free Competitions"    items={freeItems}    containerRef={freeRef}    theme="free"    viewMoreHref="/competitions/free"    />
-      <Section title="Tech Giveaways"       items={techItems}    containerRef={techRef}    theme="tech"    viewMoreHref="/competitions/tech"    />
-      <Section title="Pi Giveaways"         items={piItems}      containerRef={piRef}      theme="pi"      viewMoreHref="/competitions/pi"      />
-      <Section title="Premium Competitions" items={premiumItems} containerRef={premiumRef} theme="premium" viewMoreHref="/competitions/premium" />
+    <main className="pt-8 pb-12 px-4 bg-white min-h-screen space-y-16"> 
+        <Section title="Tech Giveaways"       items={techItems}    containerRef={techRef}    theme="tech"    viewMoreHref="/competitions/tech"    />
+        <Section title="Premium Competitions" items={premiumItems} containerRef={premiumRef} theme="premium" viewMoreHref="/competitions/premium" />
+        <Section title="Pi Giveaways"         items={piItems}      containerRef={piRef}      theme="pi"      viewMoreHref="/competitions/pi"      />
+        <Section title="Daily Competitions"   items={dailyItems}   containerRef={dailyRef}   theme="daily"   viewMoreHref="/competitions/daily"   />
+        <Section title="Free Competitions"    items={freeItems}    containerRef={freeRef}    theme="free"    viewMoreHref="/competitions/free"    />
+     
+     
     </main>
   )
 }

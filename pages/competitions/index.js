@@ -238,7 +238,7 @@ export default function AllCompetitionsPage() {
       imageUrl: '/images/hotel.jpeg',
       theme: 'premium'
     },
-    { comp:{slug:'the-daily-dash',entryFee:3.14,totalTickets:1900,ticketsSold:0,endsAt:'2025-05-04T12:00:00Z'}, title:'The Daily Dash', prize:'5,000 π', fee:'3.14 π', href:'/competitions/the-daily-dash', imageUrl:'/images/.jpeg', theme:'daily' },
+    { comp:{slug:'the-daily-dash',entryFee:3.14,totalTickets:1900,ticketsSold:0,endsAt:'2025-05-04T12:00:00Z'}, title:'The Daily Dash', prize:'5,000 π', fee:'3.14 π', href:'/competitions/the-daily-dash', imageUrl:'/images/dash.png', theme:'daily' },
     { comp:{slug:'the-daily-hustle',entryFee:0.375,totalTickets:2225,ticketsSold:0,endsAt:'2025-05-03T23:59:59Z'}, title:'The Daily Hustle', prize:'750 π', fee:'0.375 π', href:'/competitions/the-daily-hustle', imageUrl:'/images/vault.png', theme:'daily' },
     { comp: { slug: 'pi-day-freebie', entryFee: 0 },            title: 'Pi Day Freebie',          prize: 'Pi Day Badge',             fee: 'Free',        href: '/competitions/pi-day-freebie',         imageUrl: '/images/freebie.png',              theme: 'green'    },
     { comp: { slug: 'everyones-a-winner', entryFee: 0 },        title: 'Everyone’s A Winner',     prize: '9999 / 5555 / 1111 π',      fee: 'Free',        href: '/competitions/everyones-a-winner',     imageUrl: '/images/everyone.png',             theme: 'green'    },

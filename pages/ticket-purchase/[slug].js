@@ -68,7 +68,7 @@ const COMPETITIONS = {
   },
   'ps5-bundle-giveaway': {
     title: 'PS5 Bundle Giveaway',
-    imageUrl: '/images/ps5.jpeg',
+    imageUrl: '/images/playstation.jpeg',
     prize: 'PlayStation 5 + Extra Controller',
     entryFee: 0.8,
     totalTickets: 1100,
@@ -78,7 +78,7 @@ const COMPETITIONS = {
   },
   '55-inch-tv-giveaway': {
     title: '55" TV Giveaway',
-    imageUrl: '/images/Tv.jpeg',
+    imageUrl: '/images/vv.jpeg',
     prize: '55" Smart TV',
     entryFee: 0.25,
     totalTickets: 1400,
@@ -156,6 +156,258 @@ const COMPETITIONS = {
     endsAt: '2025-05-15T21:00:00Z',
     theme: 'premium',
   },
+
+ 'luxury-yacht-weekend': {
+  title: 'Luxury Yacht Weekend',
+  imageUrl: '/images/yacht.jpeg',
+  prize: '3 day Mediterranean Yacht Cruise',
+  entryFee: 20,
+  totalTickets: 15000,
+  ticketsSold: 0,
+  endsAt: '2025-05-15T21:00:00Z',
+  theme: 'premium'},
+
+  'the-crown-jewels': {
+    title: 'The Crown Jewels',
+    imageUrl: '/images/jew.jpeg',
+    prize: 'Gold Rings',
+    entryFee: 20,
+    totalTickets: 15000,
+    ticketsSold: 0,
+    endsAt: '2025-05-15T21:00:00Z',
+    theme: 'premium'},
+
+    'first-class-flight': {
+      title: 'First Class Flight',
+      imageUrl: '/images/first.jpeg',
+      prize: 'Return Flights Anywhere In The World',
+      entryFee: 20,
+      totalTickets: 15000,
+      ticketsSold: 0,
+      endsAt: '2025-05-15T21:00:00Z',
+      theme: 'premium'},
+
+      'pi-giveaway-250k': {
+        title: '25,000 π Giveaway',
+        imageUrl: '/images/first.jpeg',
+        prize: '25 000 π',
+        entryFee: 20,
+        totalTickets: 15000,
+        ticketsSold: 0,
+        endsAt: '2025-05-15T21:00:00Z',
+        theme: 'premium'},
+
+        'pi-giveaway-100k': {
+        title: '100,000 π Giveaway',
+        imageUrl: '/images/first.jpeg',
+        prize: '25 000 π',
+        entryFee: 20,
+        totalTickets: 15000,
+        ticketsSold: 0,
+        endsAt: '2025-05-15T21:00:00Z',
+        theme: 'premium'},
+
+        'pi-giveaway-60000': {
+          title: '60,000 π Giveaway',
+          imageUrl: '/images/first.jpeg',
+          prize: '25 000 π',
+          entryFee: 20,
+          totalTickets: 15000,
+          ticketsSold: 0,
+          endsAt: '2025-05-15T21:00:00Z',
+          theme: 'premium'},
+
+          'pi-giveaway-25k': {
+            title: '100,000 π Giveaway',
+            imageUrl: '/images/first.jpeg',
+            prize: '100,000 π',
+            entryFee: 20,
+            totalTickets: 15000,
+            ticketsSold: 0,
+            endsAt: '2025-05-15T21:00:00Z',
+            theme: 'premium'},
+
+            'pi-giveaway-25000': {
+            title: '25,000 Giveaway',
+            imageUrl: '/images/first.jpeg',
+            prize: '25,000 π',
+            entryFee: 20,
+            totalTickets: 15000,
+            ticketsSold: 0,
+            endsAt: '2025-05-15T21:00:00Z',
+            theme: 'premium'},
+
+            'pi-giveaway-10000': {
+              title: '10,000 Giveaway',
+              imageUrl: '/images/first.jpeg',
+              prize: '10,000 π',
+              entryFee: 20,
+              totalTickets: 15000,
+              ticketsSold: 0,
+              endsAt: '2025-05-15T21:00:00Z',
+              theme: 'premium'},
+
+              'pi-giveaway-5000': {
+              title: '5000 Giveaway',
+              imageUrl: '/images/first.jpeg',
+              prize: '5000 π',
+              entryFee: 20,
+              totalTickets: 5000,
+              ticketsSold: 0,
+              endsAt: '2025-05-15T21:00:00Z',
+              theme: 'premium'},
+
+              'pi-giveaway-1000': {
+              title: '1000 Giveaway',
+              imageUrl: '/images/first.jpeg',
+              prize: '1000 π',
+              entryFee: 20,
+              totalTickets: 1000,
+              ticketsSold: 0,
+              endsAt: '2025-05-15T21:00:00Z',
+              theme: 'premium'},
+
+              'apple-iphone': {
+              title: 'Apple Iphone',
+              imageUrl: '/images/iphone.jpeg',
+              prize: 'Iphone',
+              entryFee: 20,
+              totalTickets: 1000,
+              ticketsSold: 0,
+              endsAt: '2025-05-15T21:00:00Z',
+              theme: 'premium'},
+
+              'Rolex': {
+              title: 'Rolex',
+              imageUrl: '/images/rolex.jpeg',
+              prize: 'Rolex Watch',
+              entryFee: 20,
+              totalTickets: 1000,
+              ticketsSold: 0,
+              endsAt: '2025-05-15T21:00:00Z',
+              theme: 'premium'},
+
+              'gamer-pc-bundle': {
+              title: 'Gamer Pc nBundle',
+              imageUrl: '/images/bundle.jpeg',
+              prize: 'Rolex Watch',
+              entryFee: 20,
+              totalTickets: 1000,
+              ticketsSold: 0,
+              endsAt: '2025-05-15T21:00:00Z',
+              theme: 'premium'},
+
+              'mac-book-pro': {
+                title: 'Mac Book Pro',
+                imageUrl: '/images/macbook.jpeg',
+                prize: 'Rolex Watch',
+                entryFee: 20,
+                totalTickets: 1000,
+                ticketsSold: 0,
+                endsAt: '2025-05-15T21:00:00Z',
+                theme: 'premium'},
+                
+                'electric-bike': {
+                  title: 'Electric Bike',
+                  imageUrl: '/images/bike.jpeg',
+                  prize: 'Electric Bike',
+                  entryFee: 20,
+                  totalTickets: 1000,
+                  ticketsSold: 0,
+                  endsAt: '2025-05-15T21:00:00Z',
+                  theme: 'premium'},
+
+                  'pi-miners-bonanza': {
+                    title: 'Pi Miners Bonanza',
+                    imageUrl: '/images/bike.jpeg',
+                    prize: '',
+                    entryFee: 20,
+                    totalTickets: 1000,
+                    ticketsSold: 0,
+                    endsAt: '2025-05-15T21:00:00Z',
+                    theme: 'premium'},
+
+                    'pi-nugget-giveaway': {
+                      title: 'Pi-Nugget-Giveaway',
+                      imageUrl: '/images/bike.jpeg',
+                      prize: '',
+                      entryFee: 20,
+                      totalTickets: 1000,
+                      ticketsSold: 0,
+                      endsAt: '2025-05-15T21:00:00Z',
+                      theme: 'premium'},
+
+                      'free-for-all': {
+                        title: 'Free For All',
+                        imageUrl: '/images/bike.jpeg',
+                        prize: '',
+                        entryFee: 20,
+                        totalTickets: 1000,
+                        ticketsSold: 0,
+                        endsAt: '2025-05-15T21:00:00Z',
+                        theme: 'premium'},
+
+                        'freebie-frenzy': {
+                          title: 'freebie-frenzy',
+                          imageUrl: '/images/bike.jpeg',
+                          prize: '',
+                          entryFee: 20,
+                          totalTickets: 1000,
+                          ticketsSold: 0,
+                          endsAt: '2025-05-15T21:00:00Z',
+                          theme: 'premium'},
+
+                          'daily-pi-slice': {
+                          title: 'Daily Pi Slice',
+                          imageUrl: '/images/bike.jpeg',
+                          prize: '',
+                          entryFee: 20,
+                          totalTickets: 1000,
+                          ticketsSold: 0,
+                          endsAt: '2025-05-15T21:00:00Z',
+                          theme: 'premium'},
+
+                          
+                          'pi-powered-daily': {
+                            title: 'Pi Powered Daily',
+                            imageUrl: '/images/power.png',
+                            prize: '',
+                            entryFee: 20,
+                            totalTickets: 1000,
+                            ticketsSold: 0,
+                            endsAt: '2025-05-15T21:00:00Z',
+                            theme: 'premium'},
+
+                            'daily-jackpot': {
+                            title: 'Daily Jackpot',
+                            imageUrl: '/images/.png',
+                            prize: '',
+                            entryFee: 20,
+                            totalTickets: 1000,
+                            ticketsSold: 0,
+                            endsAt: '2025-05-15T21:00:00Z',
+                            theme: 'premium'},
+
+                            'the-daily-dash': {
+                              title: 'The Daily Dash',
+                              imageUrl: '/images/dash.png',
+                              prize: '',
+                              entryFee: 20,
+                              totalTickets: 1000,
+                              ticketsSold: 0,
+                              endsAt: '2025-05-15T21:00:00Z',
+                              theme: 'premium'},
+  
+                              'the-daily-hustle': {
+                              title: 'The Daily Hustle',
+                              imageUrl: '/images/.png',
+                              prize: '',
+                              entryFee: 20,
+                              totalTickets: 1000,
+                              ticketsSold: 0,
+                              endsAt: '2025-05-15T21:00:00Z',
+                              theme: 'premium'},
+
 }
 
 export default function TicketPurchasePage() {
