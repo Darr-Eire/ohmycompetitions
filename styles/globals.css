@@ -77,7 +77,15 @@ header {
   color: var(--primary-text);
   z-index: 1000;
 }
-
+header > .container,
+footer > .container {
+  max-width: 72rem; /* Tailwind’s 6xl */
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 /* “Menu” and “Log In/Out” buttons */
 .menu-button,
 .login-button,
@@ -226,11 +234,6 @@ footer {
 }
 
 
-
-/* Image */
-.competition-image {
-  /* height/overflow already in component JSX */
-}
 
 /* Details */
 .competition-info {

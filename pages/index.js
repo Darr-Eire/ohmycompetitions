@@ -1,3 +1,4 @@
+// pages/index.js
 'use client'
 
 import { useRef, useEffect } from 'react'
@@ -11,9 +12,8 @@ export default function HomePage() {
   const techRef    = useRef(null)
   const piRef      = useRef(null)
   const premiumRef = useRef(null)
-  const SCROLL_STEP = 75
 
-  // Reset scrollLeft when a carousel scrolls off-screen
+  // Reset scrollLeft when a carousel scrolls off‑screen
   useEffect(() => {
     const onScroll = () => {
       for (const ref of [dailyRef, freeRef, techRef, piRef, premiumRef]) {
@@ -27,66 +27,59 @@ export default function HomePage() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // Section: header + swipe-native carousel
-  // inside your HomePage component:
+  // Section: header + swipe‑native carousel
+  function Section({ title, items, containerRef, theme, viewMoreHref, className = '' }) {
+    const headingStyles = {
+      daily:   'bg-blue-600 text-white',
+      free:    'bg-green-500 text-white',
+      tech:    'bg-orange-500 text-white',
+      pi:      'bg-purple-600 text-white',
+      premium: 'bg-gray-800 text-white',
+    }
+    const headingClass = headingStyles[theme] || headingStyles.daily
 
-function Section({ title, items, containerRef, theme, viewMoreHref, className = '' }) {
-  const headingStyles = {
-    daily:   'bg-blue-600 text-white',
-    free:    'bg-green-500 text-white',
-    tech:    'bg-orange-500 text-white',
-    pi:      'bg-purple-600 text-white',
-    premium: 'bg-gray-800 text-white',
-  }
-  const headingClass = headingStyles[theme] || headingStyles.daily
+    return (
+      <section className={`relative ${className}`}>
+        <h2 className={`category-page-title inline-block px-4 py-2 rounded mb-4 ${headingClass}`}>
+          {title}
+        </h2>
 
-  return (
-    <section className={`relative ${className}`}>
-      <h2 className={`category-page-title inline-block px-4 py-2 rounded mb-4 ${headingClass}`}>
-        {title}
-      </h2>
-
-      {/* Scrollable carousel: visible only below lg, and no scrollbar at lg+ */}
-      <div
-        ref={containerRef}
-        className={`
-          ${theme}-carousel
-          flex space-x-4
-          overflow-x-auto
-          scroll-smooth
-          touch-pan-x
-
-          /* HIDE on large screens */
-          lg:hidden
-
-          /* If you did keep it visible, this would kill the scrollbar at lg+ */
-          lg:overflow-hidden
-        `}
-      >
-        {items.map(item => (
-          <CompetitionCard
-            key={item.comp.slug + item.comp.endsAt}
-            {...item}
-            small
-            theme={theme}
-          />
-        ))}
-      </div>
-
-      {/* View More button — also hide at lg */}
-      <div className="view-more-card mt-2 mb-8 w-full flex justify-center">
-        <Link
-          href={viewMoreHref}
-          className={`view-more-button view-more-${theme}`}
+        {/* Mobile swipe carousel (hidden at lg+) */}
+        <div
+          ref={containerRef}
+          className={`
+            ${theme}-carousel
+            flex space-x-4
+            overflow-x-auto
+            scroll-smooth
+            touch-pan-x
+            lg:hidden
+          `}
         >
-          View More →
-        </Link>
-      </div>
-    </section>
-  )
+          {items.map(item => (
+            <CompetitionCard
+              key={item.comp.slug + item.comp.endsAt}
+              {...item}
+              small
+              theme={theme}
+            />
+          ))}
+        </div>
 
-
+        {/* “View More” button centered below carousel */}
+        <div className="view-more-card mt-4 flex justify-center lg:hidden">
+          <Link
+            href={viewMoreHref}
+            className={`view-more-button view-more-${theme}`}
+          >
+            View More →
+          </Link>
+        </div>
+      </section>
+    )
   }
+
+  // === Data for each section ===
   const techItems = [
     {
       comp: { slug:'ps5-bundle-giveaway', entryFee:0.5, totalTickets:1100, ticketsSold:900, endsAt:'2025-05-07T14:00:00Z' },
@@ -142,24 +135,36 @@ function Section({ title, items, containerRef, theme, viewMoreHref, className = 
   ]
 
   const dailyItems = [
-    { comp:{slug:'daily-jackpot',entryFee:0.375,totalTickets:2225,ticketsSold:0,endsAt:'2025-05-03T23:59:59Z'}, title:'Daily Jackpot', prize:'750 π', fee:'0.375 π', href:'/competitions/daily-jackpot', imageUrl:'/images/jackpot.png', theme:'daily' },
-    { comp:{slug:'everyday-pioneer',entryFee:0.314,totalTickets:1900,ticketsSold:0,endsAt:'2025-05-03T15:14:00Z'}, title:'Everyday Pioneer', prize:'1,000 π', fee:'0.314 π', href:'/competitions/everyday-pioneer', imageUrl:'/images/everyday.jpeg', theme:'daily' },
-    { comp:{slug:'daily-pi-slice',entryFee:0.314,totalTickets:1900,ticketsSold:0,endsAt:'2025-05-03T15:14:00Z'}, title:'Daily Pi Slice', prize:'1,000 π', fee:'0.314 π', href:'/competitions/daily-pi-slice', imageUrl:'/images/daily.png', theme:'daily' },
+    {
+      comp:{slug:'daily-jackpot', entryFee:0.375, totalTickets:2225, ticketsSold:1800, endsAt:'2025-05-03T23:59:59Z'},
+      title:'Daily Jackpot', prize:'750 π', fee:'0.375 π',
+      href:'/competitions/daily-jackpot', imageUrl:'/images/jackpot.png', theme:'daily'
+    },
+    {
+      comp:{slug:'everyday-pioneer', entryFee:0.314, totalTickets:1900, ticketsSold:1500, endsAt:'2025-05-03T15:14:00Z'},
+      title:'Everyday Pioneer', prize:'1,000 π', fee:'0.314 π',
+      href:'/competitions/everyday-pioneer', imageUrl:'/images/everyday.png', theme:'daily'
+    },
+    {
+      comp:{slug:'daily-pi-slice', entryFee:0.314, totalTickets:1900, ticketsSold:1200, endsAt:'2025-05-03T15:14:00Z'},
+      title:'Daily Pi Slice', prize:'1,000 π', fee:'0.314 π',
+      href:'/competitions/daily-pi-slice', imageUrl:'/images/daily.png', theme:'daily'
+    },
   ]
 
   const freeItems = [
     {
-      comp: { slug:'pi-day-freebie', entryFee:0, totalTickets:10000, ticketsSold:7500, endsAt:'2025-05-06T20:00:00Z' },
+      comp:{slug:'pi-day-freebie', entryFee:0, totalTickets:10000, ticketsSold:7500, endsAt:'2025-05-06T20:00:00Z'},
       title:'Pi‑Day Freebie', prize:'3,314 Reward', fee:'Free',
       href:'/competitions/pi-day-freebie', imageUrl:'/images/freebie.png', theme:'free'
     },
     {
-      comp: { slug:'everyones-a-winner', entryFee:0, totalTickets:10000, ticketsSold:8500, endsAt:'2025-05-10T18:00:00Z' },
+      comp:{slug:'everyones-a-winner', entryFee:0, totalTickets:10000, ticketsSold:8500, endsAt:'2025-05-10T18:00:00Z'},
       title:'Everyone’s A Winner', prize:'6,000 / 3,000 / 1,000 π', fee:'Free',
       href:'/competitions/everyones-a-winner', imageUrl:'/images/everyone.png', theme:'free'
     },
     {
-      comp: { slug:'weekly-pi-giveaway', entryFee:0, totalTickets:5000, ticketsSold:4200, endsAt:'2025-05-05T23:59:59Z' },
+      comp:{slug:'weekly-pi-giveaway', entryFee:0, totalTickets:5000, ticketsSold:4200, endsAt:'2025-05-05T23:59:59Z'},
       title:'Weekly Pi Giveaway', prize:'1,000 π', fee:'Free',
       href:'/competitions/weekly-pi-giveaway', imageUrl:'/images/weekly.png', theme:'free'
     },
