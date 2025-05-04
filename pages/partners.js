@@ -36,9 +36,9 @@ export default function PartnersPage() {
         <header className="text-center mb-8">
           <h1 className="inline-flex items-center justify-center text-2xl sm:text-3xl font-bold">
             <span className="mr-2 text-2xl">🤝</span>
-            Featured Integrations
+          Partners/Sponsors
           </h1>
-          <p className="mt-2 text-gray-700 text-sm sm:text-base">
+          <p className="mt-2 text-white text-1xl">
             We Promote Community DApps
           </p>
         </header>

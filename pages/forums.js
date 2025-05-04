@@ -1,94 +1,91 @@
+// pages/forums.js
 'use client'
 
+import Head from 'next/head'
 import Link from 'next/link'
 import { FaComments, FaThumbsUp, FaPoll, FaUserFriends } from 'react-icons/fa'
 
+const forumSections = [
+  {
+    slug: 'general',
+    title: 'General Discussions',
+    icon: <FaComments />,
+    description: 'Chat about anything — competitions, prizes, Pi Network, and more!',
+    href: '/forums/general',
+    buttonText: 'Enter',
+  },
+  {
+    slug: 'vote',
+    title: 'Vote for Next Prize',
+    icon: <FaThumbsUp />,
+    description: 'Help us pick the next big giveaway! Make your voice heard.',
+    href: '/forums/vote',
+    buttonText: 'Vote',
+  },
+  {
+    slug: 'ideas',
+    title: 'Post Your Ideas',
+    icon: <FaPoll />,
+    description: 'Got a cool idea for OhMyCompetitions? Share it here!',
+    href: '/forums/ideas',
+    buttonText: 'Post Idea',
+  },
+  {
+    slug: 'winners',
+    title: 'Winner Celebrations',
+    icon: <FaUserFriends />,
+    description: '🎉 Celebrate winners! Share your winning stories with the community.',
+    href: '/forums/winners',
+    buttonText: 'Celebrate',
+  },
+]
+
 export default function ForumsPage() {
   return (
-    <main className="page">
-      <div className="competition-card max-w-3xl w-full">
+    <>
+      <Head>
+        <title>Forums | OhMyCompetitions</title>
+      </Head>
 
-        {/* Title Banner */}
-        <div className="competition-top-banner flex items-center justify-center gap-2">
-          Forums
-        </div>
+      <main className="font semi-bold text-black mt-6">
+        <div className="max-w-2xl mx-auto">
+          
+          {/* Title Banner */}
+          <div className="competition-top-banner bg-blue-600 text-white text-center px-4 py-2 mb-4">
+            Forums
+          </div>
 
-        {/* Divider */}
-        <div className="h-1 w-24 bg-blue-300 mx-auto rounded mb-6" />
+          {/* Intro Text */}
+          <p className="font semi-bold text-black mt-6">
+            <strong>
+              Welcome to the OhMyCompetitions Forums! Connect, share, vote, and discuss with fellow players around the world.
+            </strong>
+          </p>
 
-        {/* Intro Text */}
-        <div className="p-6 space-y-6 text-center">
-        <p>
-  <strong>
-  Welcome to the OhMyCompetitions Forums!  
-  Connect, share, vote, and discuss with fellow players around the world.
-  </strong>
-</p>
-
-
-          {/* Sections */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
-
-            {/* General Discussions */}
-            <div className="bg-white rounded-lg p-4 shadow-md hover:shadow-lg transition text-center">
-              <h2 className="text-lg font-bold text-blue-700 mb-2">General Discussions</h2>
-              <p className="text-gray-600 text-sm mb-4">
-                Chat about anything — competitions, prizes, Pi Network, and more!
-              </p>
-              <Link href="/forums/general">
-                <button style={{ backgroundColor: '#064e3b', color: 'white' }} className="hover:bg-green-800 font-semibold py-2 px-4 rounded">
-                  Enter
-                </button>
-              </Link>
-            </div>
-            <br/>
-
-            {/* Vote for Next Prize */}
-            <div className="bg-white rounded-lg p-4 shadow-md hover:shadow-lg transition text-center">
-              <h2 className="text-lg font-bold text-blue-700 mb-2">Vote for Next Prize</h2>
-              <p className="text-gray-600 text-sm mb-4">
-                Help us pick the next big giveaway! 🎯  
-                Make your voice heard.
-              </p>
-              <Link href="/forums/vote">
-                <button style={{ backgroundColor: '#064e3b', color: 'white' }} className="hover:bg-green-800 font-semibold py-2 px-4 rounded">
-                  Vote
-                </button>
-              </Link>
-            </div>
-            <br/>
-
-            {/* Post Ideas */}
-            <div className="bg-white rounded-lg p-4 shadow-md hover:shadow-lg transition text-center">
-              <h2 className="text-lg font-bold text-blue-700 mb-2">Post Your Ideas</h2>
-              <p className="text-gray-600 text-sm mb-4">
-                Got a cool idea for OhMyCompetitions? 🚀  
-                Share it here!
-              </p>
-              <Link href="/forums/ideas">
-                <button style={{ backgroundColor: '#064e3b', color: 'white' }} className="hover:bg-green-800 font-semibold py-2 px-4 rounded">
-                  Post Idea
-                </button>
-              </Link>
-            </div>
-            <br/>
-
-            {/* Winner Celebrations */}
-            <div className="bg-white rounded-lg p-4 shadow-md hover:shadow-lg transition text-center">
-              <h2 className="text-lg font-bold text-blue-700 mb-2">Winner Celebrations</h2>
-              <p className="text-gray-600 text-sm mb-4">
-                🎉 Celebrate winners! Share your winning stories with the community.
-              </p>
-              <Link href="/forums/winners">
-                <button style={{ backgroundColor: '#064e3b', color: 'white' }} className="hover:bg-green-800 font-semibold py-2 px-4 rounded">
-                  Celebrate
-                </button>
-              </Link>
-            </div>
+          {/* Sections Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {forumSections.map(section => (
+              <div
+                key={section.slug}
+                className="competition-card p-6 flex flex-col items-center text-center mx-auto"
+              >
+                <div className="text-2xl text-blue-600 mb-2">{section.icon}</div>
+                <h2 className="text-lg font-bold text-black mb-2">
+                  {section.title}
+                </h2>
+                <p className="text-black text-sm mb-4 flex-1">
+                  {section.description}
+                </p>
+                <Link href={section.href}>
+                  <button className="bg-blue-700 text-white py-2 px-4 rounded hover:bg-green-900 transition">
+                    {section.buttonText}
+                  </button>
+                </Link>
               </div>
+            ))}
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </>
   )
 }
-

@@ -11,17 +11,14 @@ import {
 
 export default function HelpSupport() {
   return (
-    <main className="page">
-      <div className="competition-card max-w-2xl w-full mx-auto">
-        {/* Banner */}
-        <div className="competition-top-banner text-center px-4 py-2 text-2xl font-bold bg-blue-600 text-white rounded-t-md">
-          🚀 Help & Support
-        </div>
-
-        {/* Divider */}
-        <div className="h-1 w-24 bg-blue-300 mx-auto rounded mb-6" />
-
-        {/* Body */}
+    <main className="flex justify-center bg-white py-8 px-4 min-h-screen">
+        <div className="competition-card max-w-3xl w-full">
+          
+          {/* Banner */}
+          <div className="competition-top-banner bg-blue-600 text-white text-center px-4 py-2">
+            🚀 Help And Support
+          </div>
+         {/* Body */}
         <div className="p-6 space-y-6">
          <p>
   <strong>
@@ -32,7 +29,7 @@ export default function HelpSupport() {
 
           {/* Contact Information */}
           <div>
-            <h2 className="font-semibold text-blue-600 mb-1">Contact Information</h2>
+            <h2 className="font-bold text-black mt-6">Contact Information</h2>
             <ul className="flex flex-wrap gap-6 list-inside">
               <li>
                 <strong>Email:</strong>{' '}
@@ -51,7 +48,7 @@ export default function HelpSupport() {
 
           {/* FAQ */}
           <div>
-            <h2 className="font-semibold text-blue-600 mb-1">
+            <h2 className="font-bold text-black mt-6">
               Frequently Asked Questions (FAQ)
             </h2>
             <ul className="list-disc list-inside space-y-4 text-left">

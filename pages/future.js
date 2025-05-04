@@ -4,19 +4,16 @@ import Link from 'next/link'
 
 export default function FuturePage() {
   return (
-    <main className="page">
-      <div className="competition-card max-w-4xl w-full">
-
-        {/* Banner */}
-        <div className="competition-top-banner text-center">
-          🚀 The Future of OhMyCompetitions
-        </div>
-
-        {/* Divider */}
-        <div className="h-1 w-24 bg-blue-300 mx-auto rounded mb-6" />
-
-        {/* Body */}
-        <div className="p-6 space-y-10 text-gray-700 text-left">
+   
+    <main className="flex justify-center bg-white py-8 px-4 min-h-screen">
+    <div className="competition-card max-w-3xl w-full">
+      
+      {/* Banner */}
+      <div className="competition-top-banner bg-blue-600 text-white text-center px-4 py-2">
+        🚀 The Future
+      </div>
+       {/* Body */}
+        <div className="font-semi-bold text-black mt-10">
 
           {/* Intro */}
          <p>
@@ -28,8 +25,8 @@ export default function FuturePage() {
 
           {/* Section: Competitions */}
           <section>
-            <h2 className="text-2xl font-bold text-blue-600 mb-4">🎯 Bigger and Better Competitions</h2>
-            <ul className="space-y-2 list-disc list-inside">
+            <h2 className="font-bold text-black mt-10">🎯 Bigger and Better Competitions</h2>
+            <ul className="text-black mt-6">
               <li><strong>🎥 Live Draws:</strong> Watch competition winners drawn live!</li>
               <li><strong>🌍 Regional Competitions:</strong> Country-specific competitions and prizes.</li>
               <li><strong>🧩 Mystery Competitions:</strong> Secret competitions that unlock over time.</li>
@@ -39,8 +36,8 @@ export default function FuturePage() {
 
           {/* Section: Games & Mini Challenges */}
           <section>
-            <h2 className="text-2xl font-bold text-blue-600 mb-4">🎮 New Games & Daily Challenges</h2>
-            <ul className="space-y-2 list-disc list-inside">
+            <h2 className="font-bold text-black mt-10">🎮 New Games & Daily Challenges</h2>
+            <ul className="text-black mt-6">
               <li><strong>🎯 Quests & Challenges:</strong> Complete daily and weekly missions to earn bonus Pi.</li>
               <li><strong>🏆 Monthly Championships:</strong> Compete for the top of the leaderboard every month!</li>
               <li><strong>🎡 More Try Your Luck Games:</strong> Arcade games to win even more prizes.</li>
@@ -49,8 +46,8 @@ export default function FuturePage() {
 
           {/* Section: Rewards & Loyalty */}
           <section>
-            <h2 className="text-2xl font-bold text-blue-600 mb-4">🎁 Bigger Rewards for Players</h2>
-            <ul className="space-y-2 list-disc list-inside">
+            <h2 className="font-bold text-black mt-10">🎁 Bigger Rewards for Players</h2>
+            <ul className="text-black mt-6">
               <li><strong>🚀 Bigger Prizes:</strong> Electronics, Pi NFTs, Pi Merch and more!</li>
               <li><strong>🎁 Loyalty Program:</strong> Earn exclusive rewards just for playing every day.</li>
               <li><strong>🛒 Prize Shop:</strong> Spend Pi to get special rewards directly from your account.</li>
@@ -60,8 +57,8 @@ export default function FuturePage() {
 
           {/* Section: Community Growth */}
           <section>
-            <h2 className="text-2xl font-bold text-blue-600 mb-4">👥 Growing the Community</h2>
-            <ul className="space-y-2 list-disc list-inside">
+            <h2 className="font-bold text-black mt-10">👥 Growing the Community</h2>
+            <ul className="text-black mt-6">
               <li><strong>👥 Friend Referrals:</strong> Invite your friends and get rewarded!</li>
               <li><strong>📈 Pi Leaderboards:</strong> Track top players, ticket buyers, and daily winners.</li>
               <li><strong>🤝 Partnering with Pi Projects:</strong> Work together with other Pi apps and businesses.</li>
