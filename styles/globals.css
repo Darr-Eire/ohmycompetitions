@@ -1,9 +1,9 @@
 /* === Theme Variables === */
 :root {
-  --primary-color:    #1897e6;
+  --primary-color:    #0052CC;
   --primary-hover:    #1834e6;
   --primary-text:     #ffffff;
-  --secondary-color:  #2718b3;
+  --secondary-color:   #0052CC;
   --secondary-hover:  #1834e6;
   --secondary-text:   #ffffff;
   --accent-color:     #0f1f7d;
@@ -289,15 +289,19 @@ footer {
   scroll-snap-align: start;
   scroll-snap-stop: always;
 }
-
-/* 2) “View More” placeholder now matches the card height and centers its content */
-.view-more-card {
-  flex: 0 0 280px;     /* same width as cards */
-  height: 480px;       /* same max-height as .competition-card */
-  display: flex;
-  align-items: center; /* vertical center */
-  justify-content: center; /* horizontal center */
+.view-more-container {
+  text-align: center;
+  margin-top: 1rem; /* space above button */
 }
+
+/* globals.css */
+.view-more-card .view-more-button {
+  display: inline-block !important;
+  width: auto          !important;
+}
+
+
+
 
 
 /* === “All X” Grid Pages === */

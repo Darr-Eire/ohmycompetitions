@@ -1,4 +1,3 @@
-// pages/index.js
 'use client'
 
 import { useRef, useEffect } from 'react'
@@ -14,7 +13,7 @@ export default function HomePage() {
   const premiumRef = useRef(null)
   const SCROLL_STEP = 75
 
-  // Reset scrollLeft when a carousel scrolls off‑screen
+  // Reset scrollLeft when a carousel scrolls off-screen
   useEffect(() => {
     const onScroll = () => {
       for (const ref of [dailyRef, freeRef, techRef, piRef, premiumRef]) {
@@ -28,7 +27,7 @@ export default function HomePage() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // Section: header + swipe‑native carousel
+  // Section: header + swipe-native carousel
   function Section({ title, items, containerRef, theme, viewMoreHref, className = '' }) {
     const headingStyles = {
       daily:   'bg-blue-600 text-white',
@@ -44,6 +43,8 @@ export default function HomePage() {
         <h2 className={`category-page-title inline-block px-4 py-2 rounded mb-4 ${headingClass}`}>
           {title}
         </h2>
+
+        {/* Scrollable carousel */}
         <div
           ref={containerRef}
           className={`${theme}-carousel flex space-x-4 overflow-x-auto scroll-smooth touch-pan-x`}
@@ -56,22 +57,17 @@ export default function HomePage() {
               theme={theme}
             />
           ))}
-
-          {/* View More card */}
-          <div className="view-more-card">
-            <Link
-              href={viewMoreHref}
-              className={`view-more-button view-more-${theme}`}
-            >
-              View More →
-            </Link>
-          </div>
         </div>
-      </section>
+
+  <Link
+    href={viewMoreHref}
+    className={`view-more-button view-more-${theme} !inline-block !w-auto`}
+  >
+    View More 
+  </Link>
+</section>
     )
   }
-
-  // === Data for each section ===
   const techItems = [
     {
       comp: { slug:'ps5-bundle-giveaway', entryFee:0.5, totalTickets:1100, ticketsSold:900, endsAt:'2025-05-07T14:00:00Z' },
@@ -127,21 +123,9 @@ export default function HomePage() {
   ]
 
   const dailyItems = [
-    {
-      comp: { slug:'everyday-pioneer', entryFee:0.314, totalTickets:1900, ticketsSold:1500, endsAt:'2025-05-04T12:00:00Z' },
-      title:'Everyday Pioneer', prize:'1,000 π', fee:'0.314 π',
-      href:'/competitions/everyday-pioneer', imageUrl:'/images/everyday.png', theme:'daily'
-    },
-    {
-      comp: { slug:'pi-to-the-moon', entryFee:0.25, totalTickets:2500, ticketsSold:2400, endsAt:'2025-05-05T15:00:00Z' },
-      title:'Pi To The Moon', prize:'5,000 π', fee:'1.314 π',
-      href:'/competitions/pi-to-the-moon', imageUrl:'/images/pitothemoon.jpeg', theme:'daily'
-    },
-    {
-      comp: { slug:'hack-the-vault', entryFee:0.375, totalTickets:2225, ticketsSold:1800, endsAt:'2025-05-03T23:59:59Z' },
-      title:'Hack The Vault', prize:'7,750 π', fee:'3.14 π',
-      href:'/competitions/hack-the-vault', imageUrl:'/images/vault.png', theme:'daily'
-    },
+    { comp:{slug:'daily-jackpot',entryFee:0.375,totalTickets:2225,ticketsSold:0,endsAt:'2025-05-03T23:59:59Z'}, title:'Daily Jackpot', prize:'750 π', fee:'0.375 π', href:'/competitions/daily-jackpot', imageUrl:'/images/jackpot.png', theme:'daily' },
+    { comp:{slug:'everyday-pioneer',entryFee:0.314,totalTickets:1900,ticketsSold:0,endsAt:'2025-05-03T15:14:00Z'}, title:'Everyday Pioneer', prize:'1,000 π', fee:'0.314 π', href:'/competitions/everyday-pioneer', imageUrl:'/images/everyday.jpeg', theme:'daily' },
+    { comp:{slug:'daily-pi-slice',entryFee:0.314,totalTickets:1900,ticketsSold:0,endsAt:'2025-05-03T15:14:00Z'}, title:'Daily Pi Slice', prize:'1,000 π', fee:'0.314 π', href:'/competitions/daily-pi-slice', imageUrl:'/images/daily.png', theme:'daily' },
   ]
 
   const freeItems = [

@@ -367,17 +367,6 @@ const COMPETITIONS = {
                           endsAt: '2025-05-15T21:00:00Z',
                           theme: 'premium'},
 
-                          
-                          'pi-powered-daily': {
-                            title: 'Pi Powered Daily',
-                            imageUrl: '/images/power.png',
-                            prize: '',
-                            entryFee: 20,
-                            totalTickets: 1000,
-                            ticketsSold: 0,
-                            endsAt: '2025-05-15T21:00:00Z',
-                            theme: 'premium'},
-
                             'daily-jackpot': {
                             title: 'Daily Jackpot',
                             imageUrl: '/images/.png',
@@ -398,15 +387,6 @@ const COMPETITIONS = {
                               endsAt: '2025-05-15T21:00:00Z',
                               theme: 'premium'},
   
-                              'the-daily-hustle': {
-                              title: 'The Daily Hustle',
-                              imageUrl: '/images/.png',
-                              prize: '',
-                              entryFee: 20,
-                              totalTickets: 1000,
-                              ticketsSold: 0,
-                              endsAt: '2025-05-15T21:00:00Z',
-                              theme: 'premium'},
 
 }
 

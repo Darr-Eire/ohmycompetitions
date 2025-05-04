@@ -4,13 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 export default function PartnersPage() {
   const integrations = [
-    {
-      name: 'Your Logo Here',
-      logo: '/images/your.png',
-      description: 'Want to see your DApp here? Contact us to get featured!',
-      link: '/partners/form',
-      isPlaceholder: true,
-    },
+   
     {
         name: 'Your Logo Here',
         logo: '/images/your.png',
