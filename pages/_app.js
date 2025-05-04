@@ -1,12 +1,10 @@
-// pages/_app.js
 import NextApp from 'next/app'
 import { SessionProvider } from 'next-auth/react'
 import Layout from '@/components/layout'
-import '../styles/globals.css'
+import 'styles/globals.css'
 import Script from 'next/script'
 
 class App extends NextApp {
-  // Next.js 15 requires getInitialProps on a custom App
   static async getInitialProps(appContext) {
     const appProps = await NextApp.getInitialProps(appContext)
     return { ...appProps }
@@ -18,13 +16,7 @@ class App extends NextApp {
 
     return (
       <SessionProvider session={session}>
-        {/* Load the Pi SDK before React hydrates */}
-        <Script
-          src="https://sdk.minepi.com/pi-sdk.js"
-          strategy="beforeInteractive"
-        />
-
-        {/* Initialize Pi SDK (sandbox in dev) */}
+        <Script src="https://sdk.minepi.com/pi-sdk.js" strategy="beforeInteractive" />
         <Script
           id="pi-init"
           strategy="beforeInteractive"
@@ -39,7 +31,6 @@ class App extends NextApp {
             `,
           }}
         />
-
         <Layout>
           <Component {...pageProps} />
         </Layout>

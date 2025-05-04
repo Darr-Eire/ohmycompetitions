@@ -39,7 +39,7 @@ export default function PartnersPage() {
           Partners/Sponsors
           </h1>
           <p className="mt-2 text-white text-1xl">
-            We Promote Community DApps
+      Community DApps
           </p>
         </header>
 
