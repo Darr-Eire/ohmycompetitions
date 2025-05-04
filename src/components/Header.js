@@ -79,6 +79,11 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
           <Link href="/how-we-got-started" onClick={handleLinkClick} className="dropdown-link">
             How We Got Started
           </Link>
+          <Link href="/partners" onClick={handleLinkClick} className="dropdown-link">
+           Partners & Sponsors
+          </Link>
+         
+
 
           <hr className="my-2 border-white/50" />
 
