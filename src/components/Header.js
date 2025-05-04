@@ -58,32 +58,14 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
           ref={menuRef}
           className="dropdown-menu"
         >
-          <Link href="/"             onClick={handleLinkClick} className="dropdown-link">
-            Home
-          </Link>
-          <Link href="/competitions" onClick={handleLinkClick} className="dropdown-link">
-            All Competitions
-          </Link>
-          <Link href="/try-your-luck" onClick={handleLinkClick} className="dropdown-link">
-            Try Your Luck
-          </Link>
-          <Link href="/forums"        onClick={handleLinkClick} className="dropdown-link">
-            Forums
-          </Link>
-          <Link href="/future"        onClick={handleLinkClick} className="dropdown-link">
-            The Future
-          </Link>
-          <Link href="/help-support"  onClick={handleLinkClick} className="dropdown-link">
-            Help & Support
-          </Link>
-          <Link href="/how-we-got-started" onClick={handleLinkClick} className="dropdown-link">
-            How We Got Started
-          </Link>
-          <Link href="/partners" onClick={handleLinkClick} className="dropdown-link">
-           Partners & Sponsors
-          </Link>
-         
-
+          <Link href="/"             onClick={handleLinkClick} className="dropdown-link">Home</Link>
+          <Link href="/competitions" onClick={handleLinkClick} className="dropdown-link">All Competitions</Link>
+          <Link href="/try-your-luck" onClick={handleLinkClick} className="dropdown-link">Try Your Luck</Link>
+          <Link href="/forums"        onClick={handleLinkClick} className="dropdown-link">Forums</Link>
+          <Link href="/future"        onClick={handleLinkClick} className="dropdown-link">The Future</Link>
+          <Link href="/help-support"  onClick={handleLinkClick} className="dropdown-link">Help & Support</Link>
+          <Link href="/how-we-got-started" onClick={handleLinkClick} className="dropdown-link">How We Got Started</Link>
+          <Link href="/partners" onClick={handleLinkClick} className="dropdown-link">Partners & Sponsors</Link>
 
           <hr className="my-2 border-white/50" />
 

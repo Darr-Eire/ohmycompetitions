@@ -1,3 +1,4 @@
+// src/components/CompetitionCard.js
 'use client'
 
 import Image from 'next/image'
@@ -16,7 +17,7 @@ export default function CompetitionCard({
   hideButton = false,
   children,
 }) {
-  // 1) Set up timeLeft state
+  // Countdown state
   const [timeLeft, setTimeLeft] = useState('')
 
   useEffect(() => {
@@ -35,7 +36,7 @@ export default function CompetitionCard({
     return () => clearInterval(id)
   }, [endsAt])
 
-  // 2) Banner classes by theme
+  // Banner styling by theme
   const bannerClass = {
     daily:   'bg-blue-600 text-white',
     free:    'bg-green-500 text-white',
@@ -64,10 +65,16 @@ export default function CompetitionCard({
 
       {/* Details */}
       <div className="competition-info flex-1 p-4 text-sm space-y-2">
-        <p><strong>Prize:</strong> <span className="font-bold">{prize}</span></p>
-        <p><strong>Ends In:</strong> <span className="font-bold">{timeLeft}</span></p>
         <p>
-          <strong>Tickets:</strong>{' '}
+          <strong>Prize:</strong>{' '}
+          <span className="font-bold">{prize}</span>
+        </p>
+        <p>
+          <strong>Ends In:</strong>{' '}
+          <span className="font-bold">{timeLeft}</span>
+        </p>
+        <p>
+          <strong>Total Tickets:</strong>{' '}
           <span className="font-bold">
             {comp.totalTickets?.toLocaleString() ?? '—'}
           </span>
@@ -80,19 +87,23 @@ export default function CompetitionCard({
               : '—'}
           </span>
         </p>
-        <p><strong>Entry Fee:</strong> <span className="font-bold">{fee}</span></p>
+        <p>
+          <strong>Entry Fee:</strong>{' '}
+          <span className="font-bold">{fee}</span>
+        </p>
       </div>
 
-      {/* Optional children */}
+      {/* Any nested children (e.g. custom labels) */}
       {children}
 
       {/* Enter Now button */}
       {!children && !hideButton && (
         <Link href={`/ticket-purchase/${comp.slug}`}>
-          <button className="comp-button w-full mt-4">Enter Now</button>
+          <button className="comp-button w-full mt-4">
+            Enter Now
+          </button>
         </Link>
       )}
     </div>
   )
 }
-
