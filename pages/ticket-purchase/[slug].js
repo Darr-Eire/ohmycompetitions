@@ -78,7 +78,7 @@ const COMPETITIONS = {
   },
   '55-inch-tv-giveaway': {
     title: '55" TV Giveaway',
-    imageUrl: '/images/vv.jpeg',
+    imageUrl: '/images/tv.jpg',
     prize: '55" Smart TV',
     entryFee: 0.25,
     totalTickets: 1400,

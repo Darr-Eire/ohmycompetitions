@@ -194,7 +194,7 @@ export default function HomePage() {
       prize: '55″ Smart TV',
       fee: '0.75 π',
       href: '/competitions/55-inch-tv-giveaway',
-      imageUrl: '/images/tv.jpeg',
+      imageUrl: '/images/tv.jpg',
       theme: 'tech'
     },
     {
