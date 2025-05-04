@@ -1,4 +1,3 @@
-// src/components/Header.js
 'use client'
 
 import Link from 'next/link'
@@ -29,19 +28,27 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
 
   return (
     <header className="relative z-50 flex items-center px-4 bg-blue-600 text-white">
-      {/* Menu Button */}
+      {/* Left: Menu Button */}
       <button
         ref={buttonRef}
         className="menu-button"
-        onClick={() => setMenuOpen((v) => !v)}
+        onClick={() => setMenuOpen(v => !v)}
         aria-label="Toggle menu"
       >
         Menu
       </button>
 
-      <div className="nav-spacer flex-1" />
+      {/* Center: App Title */}
+      <div className="absolute left-1/2 transform -translate-x-1/2">
+        <Link href="/" className="text-xl font-bold">
+          OhMyCompetitions
+        </Link>
+      </div>
 
-      {/* Login / Logout */}
+      {/* Spacer so login/logout sits at right edge */}
+      <div className="flex-1" />
+
+      {/* Right: Login / Logout */}
       {isLoggedIn ? (
         <button className="logout-button" onClick={onLogout}>
           Log Out
@@ -52,20 +59,33 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
         </button>
       )}
 
-      {/* Dropdown */}
+      {/* Dropdown Menu */}
       {menuOpen && (
-        <nav
-          ref={menuRef}
-          className="dropdown-menu"
-        >
-          <Link href="/"             onClick={handleLinkClick} className="dropdown-link">Home</Link>
-          <Link href="/competitions" onClick={handleLinkClick} className="dropdown-link">All Competitions</Link>
-          <Link href="/try-your-luck" onClick={handleLinkClick} className="dropdown-link">Try Your Luck</Link>
-          <Link href="/forums"        onClick={handleLinkClick} className="dropdown-link">Forums</Link>
-          <Link href="/future"        onClick={handleLinkClick} className="dropdown-link">The Future</Link>
-          <Link href="/help-support"  onClick={handleLinkClick} className="dropdown-link">Help & Support</Link>
-          <Link href="/how-we-got-started" onClick={handleLinkClick} className="dropdown-link">How We Got Started</Link>
-          <Link href="/partners" onClick={handleLinkClick} className="dropdown-link">Partners & Sponsors</Link>
+        <nav ref={menuRef} className="dropdown-menu">
+          <Link href="/" onClick={handleLinkClick} className="dropdown-link">
+            Home
+          </Link>
+          <Link href="/competitions" onClick={handleLinkClick} className="dropdown-link">
+            All Competitions
+          </Link>
+          <Link href="/try-your-luck" onClick={handleLinkClick} className="dropdown-link">
+            Try Your Luck
+          </Link>
+          <Link href="/forums" onClick={handleLinkClick} className="dropdown-link">
+            Forums
+          </Link>
+          <Link href="/future" onClick={handleLinkClick} className="dropdown-link">
+            The Future
+          </Link>
+          <Link href="/help-support" onClick={handleLinkClick} className="dropdown-link">
+            Help & Support
+          </Link>
+          <Link href="/how-we-got-started" onClick={handleLinkClick} className="dropdown-link">
+            How We Got Started
+          </Link>
+          <Link href="/partners" onClick={handleLinkClick} className="dropdown-link">
+            Partners & Sponsors
+          </Link>
 
           <hr className="my-2 border-white/50" />
 
@@ -95,3 +115,4 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
     </header>
   )
 }
+

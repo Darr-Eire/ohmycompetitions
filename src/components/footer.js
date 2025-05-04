@@ -1,12 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import {
-  FaTwitter,
-  FaFacebookF,
-  FaInstagram,
-  FaDiscord,
-} from 'react-icons/fa'
+import { SiX } from 'react-icons/si'
+import { FaFacebookF, FaInstagram, FaDiscord } from 'react-icons/fa'
 
 export default function Footer() {
   return (
@@ -17,21 +13,20 @@ export default function Footer() {
           href="/"
           className="inline-block bg-white text-blue-600 font-semibold px-4 py-2 rounded shadow hover:bg-gray-100 transition"
         >
-          ← Back to Home
+          Back to Home
         </Link>
       </div>
-{/* Copyright */}
-      <p className="text-sm">&copy; {new Date().getFullYear()} OhMyCompetitions</p>
+
       {/* Social Icons */}
       <div className="social-icons flex justify-center gap-6 mb-4">
         <a
-          href="https://twitter.com/yourprofile"
+          href="https://x.com/yourprofile"
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Twitter"
-          className="hover:text-blue-300 transition"
+          aria-label="X"
+          className="hover:text-green-800 transition"
         >
-          <FaTwitter size={24} />
+          <SiX size={24} />
         </a>
         <a
           href="https://facebook.com/yourprofile"
@@ -62,7 +57,7 @@ export default function Footer() {
         </a>
       </div>
 
-   
+      {/* Footer Links */}
       <div className="footer-links flex justify-center gap-6 mb-4">
         <Link href="/terms-conditions" className="hover:underline">
           Terms &amp; Conditions
@@ -72,8 +67,8 @@ export default function Footer() {
         </Link>
       </div>
 
-      
+      {/* Copyright */}
+      <p className="text-sm">&copy; {new Date().getFullYear()} OhMyCompetitions</p>
     </footer>
   )
 }
-
