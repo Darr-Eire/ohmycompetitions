@@ -74,7 +74,7 @@ function Section({ title, items, containerRef, theme, viewMoreHref, className = 
       </div>
 
       {/* View More button — also hide at lg */}
-      <div className="view-more-card mt-4 w-full flex justify-center lg:hidden">
+      <div className="view-more-card mt-2 mb-8 w-full flex justify-center">
         <Link
           href={viewMoreHref}
           className={`view-more-button view-more-${theme}`}
@@ -96,7 +96,7 @@ function Section({ title, items, containerRef, theme, viewMoreHref, className = 
     {
       comp: { slug:'55-inch-tv-giveaway', entryFee:0.75, totalTickets:1400, ticketsSold:1200, endsAt:'2025-05-08T11:30:00Z' },
       title:'55″ TV Giveaway', prize:'55″ Smart TV', fee:'0.75 π',
-      href:'/competitions/55-inch-tv-giveaway', imageUrl:'/images/tv.jpg', theme:'tech'
+      href:'/competitions/55-inch-tv-giveaway', imageUrl:'/images/tv.jpeg', theme:'tech'
     },
     {
       comp: { slug:'xbox-one-bundle', entryFee:0.6, totalTickets:2000, ticketsSold:1750, endsAt:'2025-05-09T17:45:00Z' },

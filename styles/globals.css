@@ -49,14 +49,21 @@ button {
 
 /* ── Brand title ── */
 .brand-title {
-  font-size: 1.5rem;     /* adjust to taste */
-  font-weight: 700;
+  font-size: 1.2rem;     /* adjust to taste */
+  font-weight: 200;
   color: var(--primary-text);
   position: absolute;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
   white-space: nowrap;   /* prevent wrapping on small screens */
+}
+/* in styles/globals.css */
+.brand-logo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
 }
 
 header {
@@ -246,15 +253,13 @@ footer {
   background: var(--secondary-hover);
   color: white; /* ensure it stays white on hover */
 }
-
-
-
-
 .view-more-card {
   display: flex;
   justify-content: center;
   width: 100%;
+ margin-bottom: 2rem;
 }
+
 
 /* “View More →” button styling */
 /* ── “View More →” Button Styling ── */
