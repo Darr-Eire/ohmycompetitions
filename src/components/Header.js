@@ -1,3 +1,4 @@
+// src/components/Header.js
 'use client'
 
 import Link from 'next/link'
@@ -27,92 +28,48 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
   const handleLinkClick = () => setMenuOpen(false)
 
   return (
-    <header className="relative z-50 flex items-center px-4 bg-blue-600 text-white">
-      {/* Left: Menu Button */}
-      <button
-        ref={buttonRef}
-        className="menu-button"
-        onClick={() => setMenuOpen(v => !v)}
-        aria-label="Toggle menu"
-      >
-        Menu
-      </button>
+    <header className="relative z-50">
+      {/* left controls and menu button */}
+      <div className="flex items-center px-4 bg-blue-600 text-white">
+        <button
+          ref={buttonRef}
+          className="menu-button"
+          onClick={() => setMenuOpen((v) => !v)}
+          aria-label="Toggle menu"
+        >
+          Menu
+        </button>
 
-      {/* Center: App Title */}
-      <div className="absolute left-1/2 transform -translate-x-1/2">
-        <Link href="/" className="text-xl font-bold">
-          OhMyCompetitions
-        </Link>
+        {/* spacer */}
+        <div className="flex-1" />
       </div>
 
-      {/* Spacer so login/logout sits at right edge */}
-      <div className="flex-1" />
+      {/* centered brand */}
+      <div className="absolute left-1/2 transform -translate-x-1/2 top-1/2 -translate-y-1/2 pointer-events-none">
+  <span className="brand-title">OhMyCompetitions</span>
+</div>
 
-      {/* Right: Login / Logout */}
-      {isLoggedIn ? (
-        <button className="logout-button" onClick={onLogout}>
-          Log Out
-        </button>
-      ) : (
-        <button className="login-button" onClick={onLogin}>
-          Log In With Pi
-        </button>
-      )}
+      {/* right controls */}
+      <div className="flex items-center px-4 bg-blue-600 text-white">
+        {isLoggedIn ? (
+          <button className="logout-button" onClick={onLogout}>
+            Log Out
+          </button>
+        ) : (
+          <button className="login-button" onClick={onLogin}>
+            Log In With Pi
+          </button>
+        )}
+      </div>
 
-      {/* Dropdown Menu */}
+      {/* dropdown nav */}
       {menuOpen && (
         <nav ref={menuRef} className="dropdown-menu">
-          <Link href="/" onClick={handleLinkClick} className="dropdown-link">
-            Home
-          </Link>
-          <Link href="/competitions" onClick={handleLinkClick} className="dropdown-link">
-            All Competitions
-          </Link>
-          <Link href="/try-your-luck" onClick={handleLinkClick} className="dropdown-link">
-            Try Your Luck
-          </Link>
-          <Link href="/forums" onClick={handleLinkClick} className="dropdown-link">
-            Forums
-          </Link>
-          <Link href="/future" onClick={handleLinkClick} className="dropdown-link">
-            The Future
-          </Link>
-          <Link href="/help-support" onClick={handleLinkClick} className="dropdown-link">
-            Help & Support
-          </Link>
-          <Link href="/how-we-got-started" onClick={handleLinkClick} className="dropdown-link">
-            How We Got Started
-          </Link>
-          <Link href="/partners" onClick={handleLinkClick} className="dropdown-link">
-            Partners & Sponsors
-          </Link>
-
-          <hr className="my-2 border-white/50" />
-
-          {isLoggedIn ? (
-            <button
-              className="logout-button dropdown-link block w-full text-left"
-              onClick={() => {
-                handleLinkClick()
-                onLogout()
-              }}
-            >
-              Log Out
-            </button>
-          ) : (
-            <button
-              className="login-button dropdown-link block w-full text-left"
-              onClick={() => {
-                handleLinkClick()
-                onLogin()
-              }}
-            >
-              Log In With Pi
-            </button>
-          )}
+          {/* ...links... */}
         </nav>
       )}
     </header>
   )
 }
+
 

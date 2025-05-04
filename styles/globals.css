@@ -44,14 +44,29 @@ button {
 }
 
 /* === Header & Nav === */
+/* styles/globals.css */
+.brand-title {
+  font-size: 1.6rem;     /* adjust to taste */
+  font-weight: 700;
+  color: var(--primary-text);
+}
+
 header {
   position: relative; /* ensure dropdown is positioned within this box */
   display: flex;
   align-items: center;
   padding: 0.5rem 1rem;
+  height: 3.5rem;
   background: var(--primary-color);
   color: var(--primary-text);
   z-index: 1000;
+}
+header > div.absolute {
+  pointer-events: none;          /* let clicks go through */
+}
+
+header span {
+  color: var(--primary-text);
 }
 
 .menu-button,
