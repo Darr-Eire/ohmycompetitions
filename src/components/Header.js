@@ -35,7 +35,7 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
         onClick={() => setMenuOpen(v => !v)}
         aria-label="Toggle menu"
       >
-        ☰
+        ☰ Menu
       </button>
 
       {/* Center: Logo */}

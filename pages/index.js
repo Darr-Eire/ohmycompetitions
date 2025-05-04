@@ -30,55 +30,60 @@ export default function HomePage() {
   // Section: header + swipe-native carousel
   // inside your HomePage component:
 
-  function Section({ title, items, containerRef, theme, viewMoreHref, className = '' }) {
-    const headingStyles = {
-      daily:   'bg-blue-600 text-white',
-      free:    'bg-green-500 text-white',
-      tech:    'bg-orange-500 text-white',
-      pi:      'bg-purple-600 text-white',
-      premium: 'bg-gray-800 text-white',
-    }
-    const headingClass = headingStyles[theme] || headingStyles.daily
-  
-    return (
-      <section className={`relative ${className}`}>
-        <h2 className={`category-page-title inline-block px-4 py-2 rounded mb-4 ${headingClass}`}>
-          {title}
-        </h2>
-  
-        {/* 1) Mobile carousel: flex + scroll. 2) Hide completely on lg+ */}
-        <div
-          ref={containerRef}
-          className={`
-            ${theme}-carousel
-            flex space-x-4 overflow-x-auto scroll-smooth touch-pan-x
-            lg:hidden
-          `}
+function Section({ title, items, containerRef, theme, viewMoreHref, className = '' }) {
+  const headingStyles = {
+    daily:   'bg-blue-600 text-white',
+    free:    'bg-green-500 text-white',
+    tech:    'bg-orange-500 text-white',
+    pi:      'bg-purple-600 text-white',
+    premium: 'bg-gray-800 text-white',
+  }
+  const headingClass = headingStyles[theme] || headingStyles.daily
+
+  return (
+    <section className={`relative ${className}`}>
+      <h2 className={`category-page-title inline-block px-4 py-2 rounded mb-4 ${headingClass}`}>
+        {title}
+      </h2>
+
+      {/* Scrollable carousel: visible only below lg, and no scrollbar at lg+ */}
+      <div
+        ref={containerRef}
+        className={`
+          ${theme}-carousel
+          flex space-x-4
+          overflow-x-auto
+          scroll-smooth
+          touch-pan-x
+
+          /* HIDE on large screens */
+          lg:hidden
+
+          /* If you did keep it visible, this would kill the scrollbar at lg+ */
+          lg:overflow-hidden
+        `}
+      >
+        {items.map(item => (
+          <CompetitionCard
+            key={item.comp.slug + item.comp.endsAt}
+            {...item}
+            small
+            theme={theme}
+          />
+        ))}
+      </div>
+
+      {/* View More button — also hide at lg */}
+      <div className="view-more-card mt-4 w-full flex justify-center lg:hidden">
+        <Link
+          href={viewMoreHref}
+          className={`view-more-button view-more-${theme}`}
         >
-          {items.map(item => (
-            <CompetitionCard
-              key={item.comp.slug + item.comp.endsAt}
-              {...item}
-              small
-              theme={theme}
-            />
-          ))}
-        </div>
-  
-        {/* View More: also hidden on lg+ */}
-        <div className="view-more-card mt-4 w-full flex justify-center lg:hidden">
-          <Link
-            href={viewMoreHref}
-            className={`view-more-button view-more-${theme}`}
-          >
-            View More →
-          </Link>
-        </div>
-      </section>
-    )
-  
-  
-  
+          View More →
+        </Link>
+      </div>
+    </section>
+  )
 
 
   }
