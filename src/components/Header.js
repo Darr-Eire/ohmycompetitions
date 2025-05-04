@@ -40,7 +40,7 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
 
       {/* Center: Logo */}
       <span className="brand-title nav-spacer">
-        <Link href="/">OhMyCompetitions</Link>
+        <Link href="/">OMC</Link>
       </span>
 
       {/* Right: Login / Logout */}

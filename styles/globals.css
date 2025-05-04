@@ -50,7 +50,7 @@ button {
 /* ── Brand title ── */
 .brand-title {
   font-size: 1.5rem;     /* adjust to taste */
-  font-weight: 350;
+  font-weight: 700;
   color: var(--primary-text);
   position: absolute;
   left: 50%;
