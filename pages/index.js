@@ -172,11 +172,11 @@ function Section({ title, items, containerRef, theme, viewMoreHref }) {
         {title}
       </h2>
 
-      {/* Mobile carousel */}
+       {/* Mobile carousel (centered snap) */}
       <div
         ref={containerRef}
-        className={`${theme}-carousel flex space-x-4 overflow-x-auto pb-4 lg:hidden`}
-      >
+        className={`centered-carousel lg:hidden`}
+    >
         {items.map(item => (
           <CompetitionCard key={item.comp.slug} {...item} small theme={theme} />
         ))}

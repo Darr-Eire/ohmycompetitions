@@ -29,26 +29,29 @@ const partnerItems = [
 
 export default function PartnersPage() {
   return (
-    <main className="bg-white min-h-screen py-8">
-      {/* Centered container with side padding */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <main
+      className="min-h-screen p-4"
+      style={{
+        backgroundImage: 'linear-gradient(to bottom right, #1E3A8A, #60A5FA)',
+      }}
+    >
+      <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
-        <header className="text-center mb-8">
-          <h1 className="inline-flex items-center justify-center text-2xl sm:text-3xl font-bold">
-            <span className="mr-2 text-2xl">🤝</span>
-          Partners/Sponsors
+        <header className="text-center">
+          <h1 className="text-3xl font-bold text-white mb-2">
+            🤝 Partners &amp; Sponsors
           </h1>
-          <p className="mt-2 text-white text-1xl">
-      Community DApps
+          <p className="text-white">
+            Community DApps
           </p>
         </header>
 
-        {/* Grid: 1col ↔ 2col@sm ↔ 3col@md ↔ 4col@lg */}
+        {/* Partners grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {partnerItems.map(partner => (
             <div
               key={partner.slug}
-              className="w-full flex flex-col items-center bg-white border border-gray-200 rounded-lg p-4 sm:p-6 shadow-sm text-center"
+              className="competition-card flex flex-col items-center p-6 text-center"
             >
               <Image
                 src={partner.logoUrl}
@@ -57,55 +60,50 @@ export default function PartnersPage() {
                 height={80}
                 className="object-contain mb-4"
               />
-              <h2 className="text-lg sm:text-xl font-semibold mb-2">
-                {partner.name}
-              </h2>
+              <h2 className="text-xl font-semibold mb-4">{partner.name}</h2>
               <Link
                 href={partner.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-auto text-blue-600 text-sm hover:underline"
               >
-                Visit Site →
+                <button className="comp-button w-full">
+                  Visit Site →
+                </button>
               </Link>
             </div>
           ))}
 
           {/* Become a Partner CTA */}
-          <div className="w-full flex flex-col items-center justify-center bg-gray-50 border border-dashed border-gray-300 rounded-lg p-6 text-center">
-            <div className="mb-4 text-gray-500 text-sm"></div>
-            <p className="text-gray-600 text-sm mb-4">
+          <div className="competition-card flex flex-col items-center p-6 text-center">
+            <div className="mb-4 text-gray-500">Your Logo Here</div>
+            <p className="mb-6 text-gray-700">
               Want your DApp featured? Contact us!
             </p>
-            <Link
-              href="/contact"
-              className="inline-block bg-blue-600 text-white text-sm py-2 px-4 rounded hover:bg-blue-700 transition"
-            >
-              Become a Partner →
+            <Link href="/contact">
+              <button className="comp-button w-full">
+                Become a Partner →
+              </button>
             </Link>
           </div>
         </div>
 
         {/* Why Partner section */}
-        <section className="mt-12 max-w-2xl mx-auto bg-white border border-gray-200 rounded-lg p-6 sm:p-8 shadow-sm">
-          <h2 className="text-xl sm:text-2xl font-semibold text-center mb-4">
+        <section className="competition-card p-6 text-left">
+          <h2 className="text-2xl font-semibold text-center mb-4">
             Why Partner With OhMyCompetitions?
           </h2>
-          <ul className="list-disc list-inside space-y-2 text-gray-700 text-sm sm:text-base">
+          <ul className="list-disc list-inside space-y-2 text-gray-800">
             <li>
-              <strong>Instant Trust &amp; Credibility:</strong> Align with a
-              top-ranked platform to build confidence in your DApp.
+              <strong>Instant Trust &amp; Credibility:</strong> Align with a top-ranked platform to build confidence in your DApp.
             </li>
             <li>
-              <strong>Massive Visibility:</strong> Get in front of thousands of
-              crypto-curious users every day.
+              <strong>Massive Visibility:</strong> Get in front of thousands of crypto-curious users every day.
             </li>
             <li>
               <strong>Easy Integration:</strong> A single API call and you’re live.
             </li>
             <li>
-              <strong>Shared Marketing:</strong> Cross-promote in our socials
-              and newsletter.
+              <strong>Shared Marketing:</strong> Cross-promote in our socials and newsletter.
             </li>
           </ul>
         </section>

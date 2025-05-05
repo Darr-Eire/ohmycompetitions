@@ -11,8 +11,12 @@ import {
 
 export default function HelpSupport() {
   return (
+
+
+
+    
     <main
-      className="flex justify-center py-8 px-4 min-h-screen"
+     className="pt-0 pb-12 px-2 min-h-screen"
       style={{
         backgroundImage: 'linear-gradient(to bottom right, #1E3A8A, #60A5FA)',
       }}
@@ -24,7 +28,7 @@ export default function HelpSupport() {
    className="competition-top-banner text-white text-center px-4 py-2"
    style={{ background: 'var(--primary-gradient)' }}
  >
-          🚀 Help And Support
+         Help & Support
         </div>
 
         {/* Body */}

@@ -110,7 +110,8 @@ header {
 .brand-title {
   background: var(--primary-gradient);
   -webkit-background-clip: text;
-  -webkit-text-fill-color: white;
+  -webkit-text-fill-color: white; 
+  background-clip: text;  
   font-size: 1.5rem;
   font-weight: 700;
 }
@@ -298,30 +299,27 @@ footer {
 /* =============================================================================
    Mobile Carousels
    ============================================================================= */
-.daily-carousel,
-.free-carousel,
-.tech-carousel,
-.pi-carousel,
-.premium-carousel {
-  display: flex;
-  gap: 1rem;
-  padding: 2.4rem 0;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
-  overscroll-behavior-x: contain;
-  padding-left: calc((200vw - 280px) / 2);
-  padding-right: calc((200vw - 280px) / 2);
-}
-.daily-carousel > *,
-.free-carousel > *,
-.tech-carousel > *,
-.pi-carousel > *,
-.premium-carousel > * {
-  flex: 0 0 780px;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
+/* =============================================================================
+   Mobile Carousels (old theme‑specific removed)
+   ============================================================================= */
+/* Instead of .daily‑carousel, .tech‑carousel, etc. use .centered-carousel */
+@layer utilities {
+  .centered-carousel {
+    display: flex;
+    justify-content: center;           /* center the whole row */
+    gap: 1rem;
+    padding: 2.4rem 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    overscroll-behavior-x: contain;
+  }
+  .centered-carousel > * {
+    flex: 0 0 80%;                      /* cards take 80% of viewport width */
+    scroll-snap-align: center;          /* snap each card to center */
+    scroll-snap-stop: always;
+  }
 }
 
 /* =============================================================================
@@ -332,11 +330,7 @@ footer {
   gap: 1.5rem;
   justify-items: center;
 }
-@media (min-width: 1024px) {
-  html, body {
-    overflow-x: hidden;
-  }
-}
+
 @media (max-width: 1023px) {
   .category-grid {
     display: flex;
@@ -352,22 +346,9 @@ footer {
   }
 }
 
+/* Prevent horizontal overflow on large screens */
 @media (min-width: 1024px) {
   html, body {
     overflow-x: hidden;
-  }
-}
-@media (max-width: 1023px) {
-  .category-grid {
-    display: flex;
-    overflow-x: auto;
-    gap: 1rem;
-    padding: 1rem 0;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-  }
-  .category-grid > * {
-    flex: 0 0 80%;
-    scroll-snap-align: center;
   }
 }

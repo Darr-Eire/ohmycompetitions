@@ -11,7 +11,7 @@ export default function HowWeGotStarted() {
       </Head>
 
       <main
-        className="flex justify-center py-8 px-4 min-h-screen"
+        className="flex justify-center py-0 px-4 min-h-screen"
         style={{
           backgroundImage: 'linear-gradient(to bottom right, #1E3A8A, #60A5FA)',
         }}
