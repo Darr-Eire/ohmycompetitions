@@ -298,28 +298,32 @@ footer {
 
 
 
-@layer utilities {
-  .centered-carousel {
+/* ─── Mobile carousels: center each card ─── */
+@media (max-width: 1023px) {
+  .daily-carousel,
+  .free-carousel,
+  .tech-carousel,
+  .pi-carousel,
+  .premium-carousel {
     display: flex;
     gap: 1rem;
-    padding: 2.4rem 0;
-
-    /* Calculate side padding to center first card */
-    padding-left: calc((100vw - 80%) / 2);
-    padding-right: calc((100vw - 80%) / 2);
-
     overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    padding: 1rem;               /* top/bottom & small side padding */
     scroll-snap-type: x mandatory;
-    scroll-behavior: smooth;
-    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
   }
-  .centered-carousel > * {
-    flex: 0 0 100%;
+
+  /* each card is 80% of the screen and snaps to center */
+  .daily-carousel > *,
+  .free-carousel > *,
+  .tech-carousel > *,
+  .pi-carousel > *,
+  .premium-carousel > * {
+    flex: 0 0 80%;
     scroll-snap-align: center;
-    scroll-snap-stop: always;
   }
 }
+
 
 
 /* =============================================================================
