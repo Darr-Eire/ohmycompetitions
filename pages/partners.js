@@ -73,7 +73,7 @@ export default function PartnersPage() {
 
           {/* Become a Partner CTA */}
           <div className="w-full flex flex-col items-center justify-center bg-gray-50 border border-dashed border-gray-300 rounded-lg p-6 text-center">
-            <div className="mb-4 text-gray-500 text-sm">Your Logo Here</div>
+            <div className="mb-4 text-gray-500 text-sm"></div>
             <p className="text-gray-600 text-sm mb-4">
               Want your DApp featured? Contact us!
             </p>

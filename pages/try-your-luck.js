@@ -41,15 +41,18 @@ export default function TryYourLuckPage() {
         <div className="max-w-xl mx-auto">
 
           {/* Banner */}
-          <div className="text-3xl font-bold text-white text-center py-4 mb-4">
-            🎯 Try Your Luck
-          </div>
-          <div className="h-1 w-24 bg-white/70 mx-auto rounded mb-8" />
+          <div
+   className="competition-top-banner text-white text-center px-4 py-2"
+   style={{ background: 'var(--primary-gradient)' }}
+ >
+          Try Your Luck
+        </div>
+    
 
           {/* Intro & streak */}
           <div className="text-center mb-8 px-2">
             <p className="text-xl sm:text-2xl font-semibold text-white mb-2">
-              🎉 Welcome to the OhMyCompetitions “Try Your Luck” Page!
+      
             </p>
             <p className="text-base sm:text-lg text-white mb-4">
               Win free tickets, unlock daily rewards, spin for mystery prizes,<br />

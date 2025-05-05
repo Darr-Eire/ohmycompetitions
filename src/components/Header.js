@@ -40,30 +40,18 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
 
   return (
     <header className="relative bg-transparent px-4 py-3 flex items-center z-20">
-      {/* ======================================================================= */}
-      {/* Menu toggle                                                           */}
-      {/* ======================================================================= */}
+
       <button
         ref={buttonRef}
         onClick={() => setMenuOpen(v => !v)}
         aria-label="Toggle menu"
         className="
           menu-button
-          bg-blue-600            /* blue background */
-          text-white             /* white text */
-          rounded
-          px-3 py-1
-          hover:bg-blue-700
-          transition
-          drop-shadow
+         bg-blue-600 text-white rounded px-2 py-2 text-2xl hover:bg-blue-700 transition drop-shadow
         "
       >
-        ☰ Menu
+        Menu
       </button>
-
-      {/* ======================================================================= */}
-      {/* Logo                                                                  */}
-      {/* ======================================================================= */}
       <div className="flex-1 text-center">
         <Link
           href="/"
@@ -73,9 +61,6 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
         </Link>
       </div>
 
-      {/* ======================================================================= */}
-      {/* Login / Logout                                                        */}
-      {/* ======================================================================= */}
       {isLoggedIn ? (
         <button
           onClick={onLogout}
@@ -102,13 +87,9 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
             transition drop-shadow
           "
         >
-          Log In With Pi
+          Log In
         </button>
       )}
-
-      {/* ======================================================================= */}
-      {/* Dropdown Menu                                                         */}
-      {/* ======================================================================= */}
       {menuOpen && (
         <nav
           ref={menuRef}
