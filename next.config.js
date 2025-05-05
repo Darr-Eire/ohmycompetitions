@@ -1,13 +1,9 @@
-
 const nextTranslate = require('next-translate-plugin')
-
-
 
 /** @type {import('next').NextConfig} */
 const nextConfig = nextTranslate({
-  reactStrictMode: true,
-
-  webpack(config) {
+  reactStrictMode: false,  // disable strict mode to see full errors
+  webpack(config, { dev }) {
     // Stub out Node.js core modules MongoDB driver depends on,
     // so Next.js’s client-side bundle build won’t error on import.
     config.resolve.fallback = {
@@ -20,6 +16,12 @@ const nextConfig = nextTranslate({
       child_process: false,
       'timers/promises': false,
     }
+
+    // In development, use eval sourcemaps so real errors show up
+    if (dev) {
+      config.devtool = 'eval'
+    }
+
     return config
   },
 })
