@@ -206,29 +206,41 @@ footer {
 /* =============================================================================
    Competition Card
    ============================================================================= */
+/* === Competition Card Base === */
 .competition-card {
   display: flex;
   flex-direction: column;
-  width: 100% !important;   /* full width of its container */
-    max-width: none !important;/* remove the 375px limit */
-    margin: 0.5rem 0;          /* tighten the vertical margin */
-    border-width: 4px solid white;
+  width: 100% !important;       /* full width of its container */
+  max-width: none !important;   /* remove any previous cap */
+  margin: 0.5rem 0;             /* tighten vertical spacing */
   background: #fff;
+  border: 4px solid var(--primary-text); /* white border */
   border-radius: var(--button-radius);
   box-shadow: 0 0 40px var(--primary-color);
   overflow: hidden;
   text-align: center;
 }
+
+/* Header banner (gradient‑clipped text) */
 .competition-card__header {
   padding: 0.5rem 1rem;
   font-size: 1.125rem;
   font-weight: 700;
-  text-align: center;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+          background-clip: text;
+          color: transparent;
 }
+
+/* Body copy */
 .competition-info {
   flex: 1;
   overflow-y: auto;
+  padding: 1rem;
 }
+
+/* Button */
 .comp-button {
   width: 100%;
   padding: 0.5rem;
@@ -241,9 +253,7 @@ footer {
   background: var(--secondary-hover);
 }
 
-/* =============================================================================
-   “View More” Button
-   ============================================================================= */
+/* “View More” button */
 .view-more-card {
   display: flex;
   justify-content: center;
@@ -251,50 +261,34 @@ footer {
   margin-bottom: 2rem;
 }
 .view-more-button {
-  display: inline-block;
   padding: 0.5rem 1rem;
   font-size: 1rem;
   background: var(--secondary-color);
   color: var(--secondary-text);
   border-radius: var(--button-radius);
-  text-decoration: none;
   transition: background-color var(--transition-dur), transform 0.1s ease-in-out;
 }
 .view-more-button:hover {
   background: var(--secondary-hover);
   transform: translateY(-1px);
 }
-.view-more-button:active {
-  transform: translateY(0);
-}
 
-/* =============================================================================
-   Section & Competition Title Styling
-   ============================================================================= */
+/* === Section Titles === */
 @layer components {
-  /* Center category titles with solid primary background & white text */
   section > h2 {
     display: block;
     width: 100%;
     text-align: center;
     margin: 0 auto 1rem;
-    background: var(--primary-color);
+    background: var(--primary-gradient);
     color: var(--primary-text);
     padding: 0.5rem 1rem;
     border-radius: var(--button-radius);
     font-size: 1.5rem;
     font-weight: 700;
   }
-
-  /* Competition‐card headers stay gradient text */
-  .competition-card__header {
-    background: var(--primary-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-            background-clip: text;
-            color: transparent;
-  }
 }
+
 @media (max-width: 1023px) {
   .daily-carousel,
   .free-carousel,
