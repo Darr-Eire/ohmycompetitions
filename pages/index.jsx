@@ -5,20 +5,21 @@ import Link from 'next/link'
 import CompetitionCard from '@/components/CompetitionCard'
 
 export default function HomePage() {
+  // Login state
   const [loadingLogin, setLoadingLogin] = useState(false)
   const [piUser, setPiUser] = useState(null)
   const scopes = ['username', 'payments']
 
+  // Trigger Pi login (SDK init in _app.js)
   async function handlePiLogin() {
     setLoadingLogin(true)
     try {
       const { accessToken, user } = await window.Pi.authenticate(
         scopes,
-        payment => console.warn('Incomplete payment:', payment)
+        (payment) => console.warn('Incomplete payment:', payment)
       )
       console.log('✅ Pioneer logged in:', user.uid)
       setPiUser(user)
-      // TODO: POST accessToken to /api/pi/verify
     } catch (err) {
       console.error('❌ Pi.authenticate error:', err)
       alert('Login failed—see console.')
@@ -34,7 +35,7 @@ export default function HomePage() {
   const dailyRef = useRef(null)
   const freeRef = useRef(null)
 
-  // Competition data
+  // Competition data arrays
   const techItems = [
     { comp: { slug: 'ps5-bundle-giveaway', entryFee: 0.8, totalTickets: 1100, ticketsSold: 0, endsAt: '2025-05-07T14:00:00Z' }, title: 'PS5 Bundle Giveaway', prize: 'PlayStation 5 + Extra Controller', fee: '0.8 π', href: '/competitions/ps5-bundle-giveaway', imageUrl: '/images/playstation.jpeg', theme: 'tech' },
     { comp: { slug: '55-inch-tv-giveaway', entryFee: 0.25, totalTickets: 1400, ticketsSold: 0, endsAt: '2025-05-08T11:30:00Z' }, title: '55″ TV Giveaway', prize: '55″ Smart TV', fee: '0.25 π', href: '/competitions/55-inch-tv-giveaway', imageUrl: '/images/tv.jpg', theme: 'tech' },
@@ -51,44 +52,41 @@ export default function HomePage() {
     { comp: { slug: 'pi-giveaway-50k', entryFee: 5, totalTickets: 17000, ticketsSold: 0, endsAt: '2025-05-11T00:00:00Z' }, title: '50 000 π Big Giveaway', prize: '50 000 π', fee: '5 π', href: '/competitions/pi-giveaway-50k', imageUrl: '/images/50000.png', theme: 'pi' }
   ]
   const dailyItems = [
-    { comp: { slug: 'daily-jackpot', entryFee: 0.375, totalTickets: 2225, ticketsSold: 0, endsAt: '2025-05-03T23:59:59Z' }, title: 'Daily Jackpot', prize: '750 π', fee: '0.375 π', href: '/competitions/daily-jackpot', imageUrl: '/images/jackpot.png', theme: 'daily' },
-    { comp: { slug: 'everyday-pioneer', entryFee: 0.314, totalTickets: 1900, ticketsSold: 0, endsAt: '2025-05-03T15:14:00Z' }, title: 'Everyday Pioneer', prize: '1,000 π', fee: '0.314 π', href: '/competitions/everyday-pioneer', imageUrl: '/images/everyday.png', theme: 'daily' },
-    { comp: { slug: 'daily-pi-slice', entryFee: 0.314, totalTickets: 1900, ticketsSold: 0, endsAt: '2025-05-03T15:14:00Z' }, title: 'Daily Pi Slice', prize: '1,000 π', fee: '0.314 π', href: '/competitions/daily-pi-slice', imageUrl: '/images/daily.png', theme: 'daily' }
+    { comp: { slug: 'daily-jackpot', entryFee: 0.375, totalTickets: 2225, ticketsSold: 0, endsAt: '2025-05-03T23:59:59Z' }, title: 'Daily Jackpot', prize: '750 π', fee: '0.375 π' },
+    { comp: { slug: 'everyday-pioneer', entryFee: 0.314, totalTickets: 1900, ticketsSold: 0, endsAt: '2025-05-03T15:14:00Z' }, title: 'Everyday Pioneer', prize: '1,000 π', fee: '0.314 π' },
+    { comp: { slug: 'daily-pi-slice', entryFee: 0.314, totalTickets: 1900, ticketsSold: 0, endsAt: '2025-05-03T15:14:00Z' }, title: 'Daily Pi Slice', prize: '1,000 π', fee: '0.314 π' }
   ]
   const freeItems = [
-    { comp: { slug: 'pi-day-freebie', entryFee: 0, totalTickets: 10000, ticketsSold: 0, endsAt: '2025-05-06T20:00:00Z' }, title: 'Pi-Day Freebie', prize: 'Special Badge', fee: 'Free', href: '/competitions/pi-day-freebie', imageUrl: '/images/piday.png', theme: 'free' },
-    { comp: { slug: 'pi-miners-bonanza', entryFee: 0, totalTickets: 10000, ticketsSold: 0, endsAt: '2025-05-10T18:00:00Z' }, title: 'Pi Miners Bonanza', prize: '5000 π', fee: 'Free', href: '/competitions/pi-miners-bonanza', imageUrl: '/images/bonanza.png', theme: 'free' },
-    { comp: { slug: 'weekly-giveaway', entryFee: 0, totalTickets: 5000, ticketsSold: 0, endsAt: '2025-05-05T23:59:59Z' }, title: 'Weekly Giveaway', prize: '1,000 π', fee: 'Free', href: '/competitions/weekly-pi-giveaway', imageUrl: '/images/weekly.png', theme: 'free' }
+    { comp: { slug: 'pi-day-freebie', entryFee: 0, totalTickets: 10000, ticketsSold: 0, endsAt: '2025-05-06T20:00:00Z' }, title: 'Pi-Day Freebie', prize: 'Special Badge', fee: 'Free' },
+    { comp: { slug: 'pi-miners-bonanza', entryFee: 0, totalTickets: 10000, ticketsSold: 0, endsAt: '2025-05-10T18:00:00Z' }, title: 'Pi Miners Bonanza', prize: '5000 π', fee: 'Free' },
+    { comp: { slug: 'weekly-giveaway', entryFee: 0, totalTickets: 5000, ticketsSold: 0, endsAt: '2025-05-05T23:59:59Z' }, title: 'Weekly Giveaway', prize: '1,000 π', fee: 'Free' }
   ]
 
+  // Reset carousel scroll
   useEffect(() => {
-    function onScroll() {
-      ;[techRef, premiumRef, piRef, dailyRef, freeRef].forEach(r => {
-        const el = r.current
-        if (el && el.getBoundingClientRect().bottom < 0) el.scrollLeft = 0
-      })
-    }
+    const onScroll = () => [techRef, premiumRef, piRef, dailyRef, freeRef].forEach(ref => {
+      const el = ref.current
+      if (el && el.getBoundingClientRect().bottom < 0) el.scrollLeft = 0
+    })
     window.addEventListener('scroll', onScroll)
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
   return (
     <>
+      {/* Pi Login */}
       <div className="mb-8 text-center">
         {piUser ? (
           <p className="text-green-600">Welcome, {piUser.username || piUser.uid}!</p>
         ) : (
-          <button
-            onClick={handlePiLogin}
-            disabled={loadingLogin}
-            className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition"
-          >
+          <button onClick={handlePiLogin} disabled={loadingLogin} className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
             {loadingLogin ? 'Logging in…' : 'Log in with Pi'}
           </button>
         )}
       </div>
 
-      <main className="pt-4 space-y-16 px-4"> 
+      {/* Competitions */}
+      <main className="space-y-16 px-4 pb-12">
         <Section title="Tech Giveaways" items={techItems} containerRef={techRef} theme="tech" viewMoreHref="/competitions/tech" />
         <Section title="Premium Competitions" items={premiumItems} containerRef={premiumRef} theme="premium" viewMoreHref="/competitions/premium" />
         <Section title="Pi Giveaways" items={piItems} containerRef={piRef} theme="pi" viewMoreHref="/competitions/pi" />
@@ -123,9 +121,10 @@ function Section({ title, items, containerRef, theme, viewMoreHref }) {
         ))}
       </div>
       <div className="text-center mt-4">
-        <Link href={viewMoreHref} className="inline-block bg-blue-600 text-white py-2 px-6 rounded-full hover:bg-blue-700 transition">
+        <Link href={viewMoreHref} className="inline-block bg-blue-600 text-white py-2 px-6 rounded-full hover:bg-blue-700">
           View More
         </Link>
       </div>
     </section>
+  )
 }
