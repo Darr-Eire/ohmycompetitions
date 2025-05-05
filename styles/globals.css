@@ -306,9 +306,13 @@ footer {
 @layer utilities {
   .centered-carousel {
     display: flex;
-    justify-content: center;           /* center the whole row */
     gap: 1rem;
     padding: 2.4rem 0;
+
+    /* Calculate side padding to center first card */
+    padding-left: calc((100vw - 80%) / 2);
+    padding-right: calc((100vw - 80%) / 2);
+
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scroll-snap-type: x mandatory;
@@ -316,11 +320,12 @@ footer {
     overscroll-behavior-x: contain;
   }
   .centered-carousel > * {
-    flex: 0 0 80%;                      /* cards take 80% of viewport width */
-    scroll-snap-align: center;          /* snap each card to center */
+    flex: 0 0 80%;
+    scroll-snap-align: center;
     scroll-snap-stop: always;
   }
 }
+
 
 /* =============================================================================
    “All X” Grid Pages
