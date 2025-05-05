@@ -140,7 +140,7 @@ const piComps = [
     },
   ]
 
-export default function AllTechCompsPage() {
+export default function AllPiCompsPage() {
   return (
     <main className="pt-4 pb-10 px-4">
       {/* Title moved up (pt-4) and in white */}
@@ -165,4 +165,3 @@ export default function AllTechCompsPage() {
     </main>
   )
 }
-

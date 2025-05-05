@@ -89,7 +89,7 @@ const premiumComps = [
       theme: 'premium',
     },
 ]
-export default function AllTechCompsPage() {
+export default function AllPremiumCompsPage() {
   return (
     <main className="pt-4 pb-10 px-4">
       {/* Title moved up (pt-4) and in white */}
@@ -97,7 +97,7 @@ export default function AllTechCompsPage() {
         className="category-page-title text-center text-2xl font-bold mb-6 text-white"
         style={{ marginTop: 0 }}
       >
-        All Premium Giveaways
+        A Premium Giveaways
       </h1>
 
       {/* Always 3 columns */}
