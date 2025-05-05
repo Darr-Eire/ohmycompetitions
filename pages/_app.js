@@ -15,23 +15,25 @@ class App extends NextApp {
     const { Component, pageProps } = this.props
     const { session } = pageProps
 
-    // pull Pi off window after it's loaded
     return (
       <SessionProvider session={session}>
-        {/* 
-          1) Load the Pi SDK as early as possible
-          2) Initialize it immediately on load
-        */}
+       {/* 1) Load Pi SDK before React mounts */}
         <Script
           src="https://sdk.minepi.com/pi-sdk.js"
           strategy="beforeInteractive"
-          onLoad={() => {
-            // at this point window.Pi is guaranteed to exist
-            window.Pi.init({
-              version: '2.0',
-              sandbox: process.env.NODE_ENV !== 'production',
-            })
-            console.log('✅ Pi SDK loaded & init')
+        />
+     {/* 2) Immediately init it before hydration */}
+        <Script
+          id="pi-init"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.Pi.init({
+                version: "2.0",
+                sandbox: ${process.env.NODE_ENV !== 'production'}
+              });
+              console.log("✅ Pi SDK initialized");
+            `,
           }}
         />
 

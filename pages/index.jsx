@@ -1,6 +1,6 @@
 // pages/index.jsx
-// @ts-nocheck
-import React, { useRef, useEffect, useState } from 'react'
+'use client'
+import React, { useState } from 'react'
 import Link from 'next/link'
 import CompetitionCard from '@/components/CompetitionCard'
 
@@ -20,8 +20,8 @@ export default function HomePage() {
       setPiUser(user)
       // TODO: POST accessToken to /api/pi/verify
     } catch (err) {
-      console.error('❌ Login error:', err)
-      alert('Login failed—see console.')
+      console.error('❌ Pi.authenticate error:', err)
+      alert('Login failed—check console.')
     } finally {
       setLoadingLogin(false)
     }
@@ -65,34 +65,8 @@ export default function HomePage() {
     },
   ]
 
-  const premiumItems = [
-    /* same structure as above for Tesla, Dubai, Penthouse */
-  ]
-  const piItems = [
-    /* your π giveaways */
-  ]
-  const dailyItems = [
-    /* your daily competitions */
-  ]
-  const freeItems = [
-    /* your free competitions */
-  ]
-
-  // Reset scroll when scrolled past
-  useEffect(() => {
-    function onScroll() {
-      ;[techRef, premiumRef, piRef, dailyRef, freeRef].forEach(r => {
-        const el = r.current
-        if (el?.getBoundingClientRect().bottom < 0) el.scrollLeft = 0
-      })
-    }
-    window.addEventListener('scroll', onScroll)
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
   return (
     <>
-      {/* Pi Login */}
       <div className="mb-8 text-center">
         {piUser ? (
           <p className="text-green-600">
@@ -109,88 +83,9 @@ export default function HomePage() {
         )}
       </div>
 
-      {/* Competitions */}
       <main className="space-y-16 px-4 pb-12">
-        <Section
-          title="Tech Giveaways"
-          items={techItems}
-          containerRef={techRef}
-          theme="tech"
-          viewMoreHref="/competitions/tech"
-        />
-        <Section
-          title="Premium Competitions"
-          items={premiumItems}
-          containerRef={premiumRef}
-          theme="premium"
-          viewMoreHref="/competitions/premium"
-        />
-        <Section
-          title="Pi Giveaways"
-          items={piItems}
-          containerRef={piRef}
-          theme="pi"
-          viewMoreHref="/competitions/pi"
-        />
-        <Section
-          title="Daily Competitions"
-          items={dailyItems}
-          containerRef={dailyRef}
-          theme="daily"
-          viewMoreHref="/competitions/daily"
-        />
-        <Section
-          title="Free Competitions"
-          items={freeItems}
-          containerRef={freeRef}
-          theme="free"
-          viewMoreHref="/competitions/free"
-        />
+        {/* render your <Section> components for each items array */}
       </main>
     </>
-  )
-}
-
-// Section component
-function Section({ title, items, containerRef, theme, viewMoreHref }) {
-  const headingStyles = {
-    tech: 'bg-orange-500 text-white',
-    premium: 'bg-gray-800 text-white',
-    pi: 'bg-purple-600 text-white',
-    daily: 'bg-blue-600 text-white',
-    free: 'bg-green-500 text-white',
-  }
-  const headingClass = headingStyles[theme] || headingStyles.tech
-
-  return (
-    <section ref={containerRef} className="mb-12">
-      <h2 className={`text-center px-4 py-2 rounded ${headingClass}`}>
-        {title}
-      </h2>
-
-      {/* Mobile carousel */}
-      <div className="centered-carousel lg:hidden">
-        {items.map(item => (
-          <CompetitionCard key={item.comp.slug} {...item} small />
-        ))}
-      </div>
-
-      {/* Desktop grid */}
-      <div className="hidden lg:grid lg:grid-cols-3 gap-6">
-        {items.map(item => (
-          <CompetitionCard key={item.comp.slug} {...item} />
-        ))}
-      </div>
-
-      {/* View More */}
-      <div className="text-center mt-4">
-        <Link
-          href={viewMoreHref}
-          className="inline-block bg-blue-600 text-white py-2 px-6 rounded-full hover:bg-blue-700"
-        >
-          View More
-        </Link>
-      </div>
-    </section>
   )
 }
