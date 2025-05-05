@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import Confetti from 'react-confetti'
 import { useWindowSize } from '@uidotdev/usehooks'
 
-const symbols = ['🥧','⭐','🔥','🔒','🪙','🎁']
+const symbols = ['🥧','⭐','🔥','🔒','🪙','🎁,🥧','⭐','🔥','🔒','🪙','🎁']
 
 export default function PiSlotMachine() {
   const canvasRef = useRef(null)

@@ -111,8 +111,8 @@ export default function HomePage() {
   const piItems = [
     {
       comp: { slug: 'pi-giveaway-250k' },
-      title: '250 000 π Mega Giveaway',
-      prize: '250 000 π',
+      title: '250,000 π Giveaway',
+      prize: '250,000 π',
       fee: '15 π',
       href: '/ticket-purchase/pi-giveaway-250k',
       imageUrl: '/images/250000.png',
@@ -120,8 +120,8 @@ export default function HomePage() {
     },
     {
       comp: { slug: 'pi-giveaway-100k' },
-      title: '100 000 π Grand Giveaway',
-      prize: '100 000 π',
+      title: '100,000 π Giveaway',
+      prize: '100,000 π',
       fee: '10 π',
       href: '/ticket-purchase/pi-giveaway-100k',
       imageUrl: '/images/100000.png',
@@ -129,8 +129,8 @@ export default function HomePage() {
     },
     {
       comp: { slug: 'pi-giveaway-50k' },
-      title: '50 000 π Big Giveaway',
-      prize: '50 000 π',
+      title: '50,000 π Giveaway',
+      prize: '50,000 π',
       fee: '5 π',
       href: '/ticket-purchase/pi-giveaway-50k',
       imageUrl: '/images/50000.png',
