@@ -1,3 +1,4 @@
+// pages/_app.js
 import NextApp from 'next/app'
 import { SessionProvider } from 'next-auth/react'
 import Layout from '@/components/layout'
@@ -16,7 +17,12 @@ class App extends NextApp {
 
     return (
       <SessionProvider session={session}>
-        <Script src="https://sdk.minepi.com/pi-sdk.js" strategy="beforeInteractive" />
+        {/* 1) Load the Pi SDK before anything else */}
+        <Script
+          src="https://sdk.minepi.com/pi-sdk.js"
+          strategy="beforeInteractive"
+        />
+        {/* 2) Init it right after */}
         <Script
           id="pi-init"
           strategy="beforeInteractive"

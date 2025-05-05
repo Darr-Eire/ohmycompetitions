@@ -1,37 +1,43 @@
 // pages/api/competitions/create.js
-import clientPromise from '../../../src/lib/mongodb'
+import { MongoClient } from 'mongodb'
+
+const uri = process.env.MONGODB_URI // define this in .env.local
+const client = new MongoClient(uri)
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    res.setHeader('Allow', ['POST'])
-    return res.status(405).end()
-  }
-
-  const { title, prize, entryFee, slug } = req.body
-  if (!title || !slug) {
-    return res.status(400).json({ error: 'Title and slug required' })
+    return res.status(405).json({ error: 'Method not allowed' })
   }
 
   try {
-    const client = await clientPromise
+    await client.connect()
     const db = client.db('ohmycompetitions')
-    const now = new Date()
-    const doc = {
-      title,
-      prize,
-      entryFee: entryFee != null ? entryFee : null,
-      slug,
-      createdAt: now,
-      ticketsSold: 0
-    }
-    const result = await db
-      .collection('competitions')
-      .insertOne(doc)
+    const competitions = db.collection('competitions')
 
-    // Return the new document
-    return res.status(201).json({ _id: result.insertedId, ...doc })
-  } catch (err) {
-    console.error('❌ POST /api/competitions/create error:', err)
-    return res.status(500).json({ error: err.message })
+    const comp = req.body
+
+    // Optional: basic validation
+    if (!comp.slug || !comp.title || !comp.entryFee || !comp.totalTickets) {
+      return res.status(400).json({ error: 'Missing required fields' })
+    }
+
+    const existing = await competitions.findOne({ slug: comp.slug })
+    if (existing) {
+      return res.status(409).json({ error: 'Competition with this slug already exists' })
+    }
+
+    const result = await competitions.insertOne({
+      ...comp,
+      ticketsSold: comp.ticketsSold || 0,
+      createdAt: new Date(),
+    })
+
+    res.status(201).json({ message: 'Competition created', id: result.insertedId })
+  } catch (error) {
+    console.error('Mongo error:', error)
+    res.status(500).json({ error: 'Database error', detail: error.message })
+  } finally {
+    await client.close()
   }
 }
+
