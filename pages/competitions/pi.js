@@ -153,11 +153,16 @@ export default function AllPiCompsPage() {
 
       {/* Always 3 columns */}
       <div className="category-grid mx-auto max-w-5xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {techComps.map(item => (
+        {piComps.map(item => (
           <CompetitionCard
             key={item.comp.slug}
-            {...item}
-            theme="orange"
+            comp={item.comp}
+            title={item.title}
+            prize={item.prize}
+            fee={item.fee}
+            href={item.href}
+            imageUrl={item.imageUrl}
+            theme={item.theme}
             small
           />
         ))}

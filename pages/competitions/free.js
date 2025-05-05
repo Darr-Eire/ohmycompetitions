@@ -112,6 +112,7 @@ const freeComps = [
 export default function AllFreeCompsPage() {
   return (
     <main className="pt-4 pb-10 px-4">
+      {/* Moved up and in white */}
       <h1
         className="category-page-title text-center text-2xl font-bold mb-6 text-white"
         style={{ marginTop: 0 }}
@@ -119,12 +120,18 @@ export default function AllFreeCompsPage() {
         All Free Competitions
       </h1>
 
+      {/* 3‑column grid */}
       <div className="category-grid mx-auto max-w-5xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {freeComps.map(item => (
           <CompetitionCard
             key={item.comp.slug}
-            {...item}
-            theme="free"
+            comp={item.comp}
+            title={item.title}
+            prize={item.prize}
+            fee={item.fee}
+            href={item.href}
+            imageUrl={item.imageUrl}
+            theme={item.theme}
             small
           />
         ))}
