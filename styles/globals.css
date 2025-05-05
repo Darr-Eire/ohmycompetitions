@@ -219,9 +219,10 @@ footer {
   text-align: center;}
   
 
+/* === Competition Card Base === */
 .competition-card {
-  height: auto;         
-  max-height: auto;
+  height: auto;
+  max-height: none;
 }
 
 /* Header banner (gradient‑clipped text) */
@@ -250,7 +251,7 @@ footer {
   background: var(--primary-color);
   color: var(--primary-text);
   font-size: 1.125rem;
-  transition: background-color var(--primary-colour);
+  transition: background-color var(--transition-dur);
 }
 .comp-button:hover {
   background: var(--secondary-hover);
@@ -266,7 +267,7 @@ footer {
 .view-more-button {
   padding: 0.5rem 1rem;
   font-size: 1rem;
-  background: var(--secondary-hover);
+  background: var(--primary-hover);
   color: var(--secondary-text);
   border-radius: var(--button-radius);
   transition: background-color var(--transition-dur), transform 0.1s ease-in-out;
@@ -294,39 +295,37 @@ footer {
 
 /* ── Mobile “swipe” carousels ── */
 @media (max-width: 1023px) {
-  .daily-carousel,
-  .free-carousel,
-  .tech-carousel,
-  .pi-carousel,
-  .premium-carousel {
+  .centered-carousel {
     display: flex;
     gap: 2rem;
-    padding: 1rem 0;                   /* only top/bottom padding */
+    padding: 1rem 0;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scroll-snap-type: x mandatory;
-    justify-content: center;          /* center the row when < 2 cards */
+    justify-content: center; /* center row if <2 cards */
   }
 
-  .daily-carousel > *,
-  .free-carousel > *,
-  .tech-carousel > *,
-  .pi-carousel > *,
-  .premium-carousel > * {
-    flex: 0 0 80%;                     /* each card is 80% of viewport */
+  .centered-carousel > * {
+    flex: 0 0 80%;           /* each card is 80% of viewport */
     max-width: 80%;
-    scroll-snap-align: center;         /* snap to center */
+    scroll-snap-align: center;
     scroll-snap-stop: always;
   }
 
   /* hide mobile scrollbar */
-  .daily-carousel::-webkit-scrollbar,
-  .free-carousel::-webkit-scrollbar,
-  .tech-carousel::-webkit-scrollbar,
-  .pi-carousel::-webkit-scrollbar,
-  .premium-carousel::-webkit-scrollbar {
+  .centered-carousel::-webkit-scrollbar {
     display: none;
   }
+}
+
+/* ── Tiny auto‑scroll strip (120px slides) ── */
+.centered-carousel.tiny-carousel {
+  padding: 0;
+  gap: 0;
+}
+.centered-carousel.tiny-carousel > * {
+  flex: 0 0 120px;       /* adjust width here */
+  max-width: 120px;
 }
 
 /* ── Single‑column pages ── */
@@ -337,7 +336,6 @@ footer {
     margin: 0.75rem auto;
   }
 }
-
 
 
 
