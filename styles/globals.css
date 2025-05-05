@@ -209,11 +209,11 @@ footer {
 .competition-card {
   display: flex;
   flex-direction: column;
-  width: 90%;
-  max-width: 375px;
-  margin: 1rem auto;
+  width: 100% !important;   /* full width of its container */
+    max-width: none !important;/* remove the 375px limit */
+    margin: 0.5rem 0;          /* tighten the vertical margin */
+    border-width: 4px solid white;
   background: #fff;
-  border: 5px solid white;
   border-radius: var(--button-radius);
   box-shadow: 0 0 40px var(--primary-color);
   overflow: hidden;
@@ -295,6 +295,7 @@ footer {
             color: transparent;
   }
 }
+
 
 
 @layer utilities {
