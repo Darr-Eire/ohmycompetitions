@@ -1,6 +1,6 @@
 // pages/competitions/premium.js
 import CompetitionCard from '@/components/CompetitionCard'
-
+export default function AllTechCompsPage() {
 const premiumComps = [
   {
     comp: {
@@ -90,14 +90,6 @@ const premiumComps = [
     },
 ]
 
-// pages/competitions/tech.js
-import CompetitionCard from '@/components/CompetitionCard'
-
-const techComps = [
-  /* …your array… */
-]
-
-export default function AllTechCompsPage() {
   return (
     <main className="pt-4 pb-10 px-4">
       {/* Title moved up (pt-4) and in white */}
