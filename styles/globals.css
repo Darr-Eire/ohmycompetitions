@@ -281,11 +281,12 @@ footer {
     color: var(--primary-text);
     padding: 0.5rem 1rem;
     border-radius: var(--button-radius);
-    font-size: 1.5rem;
+    font-size: 1.1rem;
     font-weight: 700;
   }
 }
 
+/* ── Mobile “swipe” carousels ── */
 @media (max-width: 1023px) {
   .daily-carousel,
   .free-carousel,
@@ -294,10 +295,11 @@ footer {
   .premium-carousel {
     display: flex;
     gap: 1rem;
-    overflow-x: auto;               /* restore horizontal scrolling */
-    padding: 1rem;                  /* keep small top/bottom & side padding */
-    scroll-snap-type: x mandatory;
+    padding: 1rem 0;                   /* only top/bottom padding */
+    overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    justify-content: center;          /* center the row when < 2 cards */
   }
 
   .daily-carousel > *,
@@ -305,11 +307,13 @@ footer {
   .tech-carousel > *,
   .pi-carousel > *,
   .premium-carousel > * {
-    flex: 0 0 80%;                  /* each card 80% of viewport width */
-    scroll-snap-align: center;      /* snap to center */
+    flex: 0 0 80%;                     /* each card is 80% of viewport */
+    max-width: 80%;
+    scroll-snap-align: center;         /* snap to center */
+    scroll-snap-stop: always;
   }
-  
-  /* hide default scrollbar in WebKit */
+
+  /* hide mobile scrollbar */
   .daily-carousel::-webkit-scrollbar,
   .free-carousel::-webkit-scrollbar,
   .tech-carousel::-webkit-scrollbar,
@@ -318,6 +322,17 @@ footer {
     display: none;
   }
 }
+
+/* ── Single‑column pages ── */
+@media (max-width: 640px) {
+  .competition-card {
+    width: 90%;       /* nearly full‑width on small screens */
+    max-width: none;  /* remove any cap */
+    margin: 0.75rem auto;
+  }
+}
+
+
 
 
 
