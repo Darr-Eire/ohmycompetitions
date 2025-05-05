@@ -223,7 +223,7 @@ export default function AllCompetitionsPage() {
       prize: '100 000 π',
       fee: '10 π',
       href: '/competitions/pi-giveaway-100k',
-      imageUrl: '/images/100,000.png',
+      imageUrl: '/images/100000.png',
       theme: 'purple',
     },
     {
@@ -257,22 +257,6 @@ export default function AllCompetitionsPage() {
       theme: 'purple',
     },
   
-
-      {
-        comp: {
-          slug: 'pi-giveaway-100k',
-          entryFee: 10,
-          totalTickets: 33000,
-          ticketsSold: 0,
-          endsAt: '2025-05-20T00:00:00Z',
-        },
-        title: '100 000 π Grand Giveaway',
-        prize: '100 000 π',
-        fee: '10 π',
-        href: '/competitions/pi-giveaway-100k',
-        imageUrl: '/images/100000.png',
-        theme: 'purple',
-      },
       {
         comp: {
           slug: 'pi-giveaway-60000',
@@ -332,16 +316,16 @@ export default function AllCompetitionsPage() {
         href: '/competitions/pi-giveaway-5000',
         imageUrl: '/images/5000.png',theme: 'purple',},
     { comp:{slug:'everyday-pioneer',entryFee:0.314,totalTickets:1900,ticketsSold:0,endsAt:'2025-05-03T15:14:00Z'}, title:'Everyday Pioneer', prize:'1,000 π', fee:'0.314 π', href:'/competitions/everyday-pioneer', imageUrl:'/images/everyday.png', theme:'daily' },
-    { comp:{slug:'pi-to-the-moon',entryFee:3.14,totalTickets:1900,ticketsSold:0,endsAt:'2025-05-04T12:00:00Z'}, title:'Pi to the Moon', prize:'5,000 π', fee:'3.14 π', href:'/competitions/pi-to-the-moon', imageUrl:'/images/pitothemoon.jpeg', theme:'daily' },
+    { comp:{slug:'pi-to-the-moon',entryFee:3.14,totalTickets:1900,ticketsSold:0,endsAt:'2025-05-04T12:00:00Z'}, title:'Pi to the Moon', prize:'5,000 π', fee:'3.14 π', href:'/competitions/pi-to-the-moon', imageUrl:'/images/pitothemoon.png', theme:'daily' },
     { comp: {slug:'hack-the-vault',entryFee: 0.375,totalTickets: 2225,ticketsSold: 1800,endsAt: '2025-05-03T23:59:59Z'},title: 'Hack The Vault',prize: '7,750 π',fee: '3.14 π',href: '/competitions/hack-the-vault',imageUrl: '/images/vault.png',theme: 'daily'},
     { comp:{slug:'daily-pi-slice',entryFee:0.314,totalTickets:1900,ticketsSold:0,endsAt:'2025-05-03T15:14:00Z'}, title:'Daily Pi Slice', prize:'1,000 π', fee:'0.314 π', href:'/competitions/daily-pi-slice', imageUrl:'/images/daily.png', theme:'daily' },
     { comp:{slug:'daily-jackpot',entryFee:0.375,totalTickets:2225,ticketsSold:0,endsAt:'2025-05-03T23:59:59Z'}, title:'Daily Jackpot', prize:'750 π', fee:'0.375 π', href:'/competitions/daily-jackpot', imageUrl:'/images/jackpot.png', theme:'daily' },
     { comp:{slug:'the-daily-dash',entryFee:3.14,totalTickets:1900,ticketsSold:0,endsAt:'2025-05-04T12:00:00Z'}, title:'The Daily Dash', prize:'5,000 π', fee:'3.14 π', href:'/competitions/the-daily-dash', imageUrl:'/images/dash.png', theme:'daily' },
-    { comp:{slug:'pi-day-freebie', entryFee:0, totalTickets:10000, ticketsSold:0, endsAt:'2025-05-06T20:00:00Z'}, title:'Pi‑Day Freebie', href:'/competitions/pi-day-freebie', prize:'Special Badge', fee:'Free', imageUrl:'/images/freebie.png', theme:'green' },
+    { comp:{slug:'pi-day-freebie', entryFee:0, totalTickets:10000, ticketsSold:0, endsAt:'2025-05-06T20:00:00Z'}, title:'Pi‑Day Freebie', href:'/competitions/pi-day-freebie', prize:'Special Badge', fee:'Free', imageUrl:'/images/piday.png', theme:'green' },
     
    
-    { comp:{slug:'pi-miners-bonanza', entryFee:0, totalTickets:10000, ticketsSold:0, endsAt:'2025-05-06T20:00:00Z'}, title:'Pi Miners Bonanza', href:'/competitions/pi-miners-bonanza', prize:'Special Badge', fee:'Free', imageUrl:'/images/freebie.png', theme:'green' },
-    { comp:{slug:'pi-nugget-giveaway',   entryFee:0, totalTickets:10000, ticketsSold:0, endsAt:'2025-05-10T18:00:00Z'}, title:"Pi Nugget Giveaway",    href:'/competitions/pi-nugget-giveaway', prize:'9,999 / 5,555 / 1,111 π', fee:'Free', imageUrl:'/images/everyone.png', theme:'green' },
+    { comp:{slug:'pi-miners-bonanza', entryFee:0, totalTickets:10000, ticketsSold:0, endsAt:'2025-05-06T20:00:00Z'}, title:'Pi Miners Bonanza', href:'/competitions/pi-miners-bonanza', prize:'Special Badge', fee:'Free', imageUrl:'/images/bonanza.png', theme:'green' },
+    { comp:{slug:'pi-nugget-giveaway',   entryFee:0, totalTickets:10000, ticketsSold:0, endsAt:'2025-05-10T18:00:00Z'}, title:"Pi Nugget Giveaway",    href:'/competitions/pi-nugget-giveaway', prize:'9,999 / 5,555 / 1,111 π', fee:'Free', imageUrl:'/images/winner.png', theme:'green' },
     ]
   return (
     <main

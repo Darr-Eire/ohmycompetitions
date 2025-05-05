@@ -29,7 +29,7 @@ const dailyComps = [
     prize: '5,000 π',
     fee: '3.14 π',
     href: '/competitions/pi-to-the-moon',
-    imageUrl: '/images/pitothemoon.jpeg',
+    imageUrl: '/images/pitothemoon.png',
     theme: 'daily',
   },
   {

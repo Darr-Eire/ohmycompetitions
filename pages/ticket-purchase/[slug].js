@@ -47,7 +47,7 @@ export default function TicketPurchasePage() {
     },
     'pi-day-freebie': {
       title: 'Pi Day Freebie',
-      imageUrl: '/images/freebie.png',
+      imageUrl: '/images/piday.png',
       prize: '🎉 Pi Day Badge',
       entryFee: 0,
       totalTickets: 10000,
@@ -55,26 +55,8 @@ export default function TicketPurchasePage() {
       endsAt: '2025-05-06T20:00:00Z',
       theme: 'free',
     },
-    'everyones-a-winner': {
-      title: "Everyone's A Winner",
-      imageUrl: '/images/everyone.png',
-      prize: '🎉 10,000 pi',
-      entryFee: 0,
-      totalTickets: 10000,
-      ticketsSold: 0,
-      endsAt: '2025-05-10T18:00:00Z',
-      theme: 'free',
-    },
-    'weekly-pi-giveaway': {
-      title: 'Weekly Pi Giveaway',
-      imageUrl: '/images/weekly.png',
-      prize: '1,000 π Giveaway',
-      entryFee: 0,
-      totalTickets: 5000,
-      ticketsSold: 0,
-      endsAt: '2025-05-05T23:59:59Z',
-      theme: 'free',
-    },
+  
+
     'ps5-bundle-giveaway': {
       title: 'PS5 Bundle Giveaway',
       imageUrl: '/images/playstation.jpeg',
@@ -115,6 +97,17 @@ export default function TicketPurchasePage() {
       endsAt: '2025-05-11T00:00:00Z',
       theme: 'pi',
     },
+    'weekly-giveaway': {
+  title: 'Weekly Giveaway',
+  imageUrl: '/images/weekly.png', // Ensure this image is in your public/images folder
+  prize: 'Exciting New Prizes Every Week',
+  entryFee: 5,
+  totalTickets: 500,
+  ticketsSold: 0,
+  endsAt: '2025-05-12T21:00:00Z',
+  theme: 'daily'
+},
+
     'pi-giveaway-50k': {
       title: '50 000 π Giveaway',
       imageUrl: '/images/50000.png',
@@ -208,7 +201,7 @@ export default function TicketPurchasePage() {
   
           'pi-giveaway-100k': {
           title: '100,000 π Giveaway',
-          imageUrl: '/images/first.jpeg',
+          imageUrl: '/images/100000.png',
           prize: '25 000 π',
           entryFee: 20,
           totalTickets: 15000,
@@ -318,7 +311,7 @@ export default function TicketPurchasePage() {
   
                     'pi-miners-bonanza': {
                       title: 'Pi Miners Bonanza',
-                      imageUrl: '/images/bike.jpeg',
+                      imageUrl: '/images/bonanza.png',
                       prize: '',
                       entryFee: 20,
                       totalTickets: 1000,
@@ -328,37 +321,18 @@ export default function TicketPurchasePage() {
   
                       'pi-nugget-giveaway': {
                         title: 'Pi-Nugget-Giveaway',
-                        imageUrl: '/images/bike.jpeg',
+                        imageUrl: '/images/nugget.png',
                         prize: '',
                         entryFee: 20,
                         totalTickets: 1000,
                         ticketsSold: 0,
                         endsAt: '2025-05-15T21:00:00Z',
                         theme: 'premium'},
-  
-                        'free-for-all': {
-                          title: 'Free For All',
-                          imageUrl: '/images/bike.jpeg',
-                          prize: '',
-                          entryFee: 20,
-                          totalTickets: 1000,
-                          ticketsSold: 0,
-                          endsAt: '2025-05-15T21:00:00Z',
-                          theme: 'premium'},
-  
-                          'freebie-frenzy': {
-                            title: 'freebie-frenzy',
-                            imageUrl: '/images/bike.jpeg',
-                            prize: '',
-                            entryFee: 20,
-                            totalTickets: 1000,
-                            ticketsSold: 0,
-                            endsAt: '2025-05-15T21:00:00Z',
-                            theme: 'premium'},
+
   
                             'daily-pi-slice': {
                             title: 'Daily Pi Slice',
-                            imageUrl: '/images/bike.jpeg',
+                            imageUrl: '/images/daily.png',
                             prize: '',
                             entryFee: 20,
                             totalTickets: 1000,
@@ -368,7 +342,7 @@ export default function TicketPurchasePage() {
   
                               'daily-jackpot': {
                               title: 'Daily Jackpot',
-                              imageUrl: '/images/.png',
+                              imageUrl: '/images/jackpot.png',
                               prize: '',
                               entryFee: 20,
                               totalTickets: 1000,
