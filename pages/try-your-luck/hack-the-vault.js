@@ -5,196 +5,169 @@ import { useEffect, useRef, useState } from 'react'
 
 export default function HackTheVaultPage() {
   const canvasRef = useRef(null)
-  const [status, setStatus] = useState('idle')        // 'idle' | 'hacking' | 'won' | 'lost'
+  const [status, setStatus]     = useState('idle')    // 'idle' | 'hacking' | 'shake' | 'won' | 'lost'
   const [countdown, setCountdown] = useState(60)
-  const [digits, setDigits] = useState([0, 0, 0])      // the three wheels
-
-  const target = [4, 2, 9]    // secret combo
-  const boxW = 380, boxH = 140
+  const [digits, setDigits]      = useState([0, 0, 0])
+  const target = [4, 2, 9]
+  const boxW = 350, boxH = 120        // logical drawing size
   const dialCount = digits.length
 
-  // Change a dial up/down
-  const changeDigit = (idx, delta) => {
+  const changeDigit = (i, delta) => {
     if (status !== 'hacking') return
     setDigits(d => {
       const nd = [...d]
-      nd[idx] = (nd[idx] + delta + 10) % 10
+      nd[i] = (nd[i] + delta + 10) % 10
       return nd
     })
   }
-
-  // Handle “Enter Code”
   const enterCode = () => {
     if (status !== 'hacking') return
-    if (digits.every((d, i) => d === target[i])) {
-      setStatus('won')
-    } else {
-      // Shake effect on wrong entry
+    if (digits.every((d,i)=>d===target[i])) setStatus('won')
+    else {
       setStatus('shake')
-      setTimeout(() => {
-        setStatus('hacking')
-      }, 500)
+      setTimeout(()=> setStatus('hacking'), 300)
     }
   }
 
-  // Canvas render & timer
+  // draw + timer
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
+    // scale for high‑DPI and responsive
+    const containerW = canvas.parentElement.clientWidth
+    canvas.width = boxW
+    canvas.height = boxH + 40
+    canvas.style.width = '100%'
+    canvas.style.height = `${((boxH+40)/boxW)*100}%`
 
-    // Ensure pixel-perfect
-    canvas.width = 500
-    canvas.height = 300
-    canvas.style.width = '500px'
-    canvas.style.height = '300px'
+    let raf, countdownId, shakeProg = 0
+    const easeOut = t => t*(2-t)
 
-    let renderId, countdownId, shakeProgress = 0
-
-    const easeOut = t => t * (2 - t)
-
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-      // Background gradient
-      const bg = ctx.createLinearGradient(0, 0, 0, canvas.height)
-      bg.addColorStop(0, '#1e3a8a')
-      bg.addColorStop(1, '#2563eb')
-      ctx.fillStyle = bg
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-      // Title
-      ctx.font = '28px monospace'
-      ctx.textAlign = 'center'
-      ctx.fillStyle = '#fff'
-      ctx.fillText('HACK THE VAULT', canvas.width/2, 40)
-
-      // Timer
-      if (status === 'hacking') {
-        const flash = countdown < 10 && Math.floor(performance.now()/500)%2
-        ctx.font = '20px monospace'
-        ctx.fillStyle = flash ? '#fee' : '#fff'
-        ctx.fillText(`Time left: ${countdown}s`, canvas.width/2, 70)
+    const draw = () => {
+      ctx.clearRect(0,0,canvas.width,canvas.height)
+      // background
+      const bg = ctx.createLinearGradient(0,0,0,canvas.height)
+      bg.addColorStop(0,'#1E3A8A'); bg.addColorStop(1,'#2563eb')
+      ctx.fillStyle = bg; ctx.fillRect(0,0,canvas.width,canvas.height)
+      // title
+      ctx.fillStyle = '#fff'; ctx.font='20px monospace'; ctx.textAlign='center'
+      ctx.fillText('HACK THE VAULT', canvas.width/2, 24)
+      // timer
+      if (status==='hacking') {
+        const flash = countdown<10 && Math.floor(performance.now()/500)%2
+        ctx.fillStyle = flash ? '#fee':'#fff'
+        ctx.font='16px monospace'
+        ctx.fillText(`Time: ${countdown}s`, canvas.width/2, 44)
       }
-
-      // Box position, shake on wrong code
-      const boxX0 = (canvas.width - boxW)/2
-      const boxY0 = 90
-      let boxX = boxX0, boxY = boxY0
-      if (status === 'shake' && shakeProgress < 1) {
-        const s = easeOut(shakeProgress)*8
-        boxX += (Math.random()*2-1)*s
-        boxY += (Math.random()*2-1)*s
-        shakeProgress += 0.1
+      // box
+      const bx = (canvas.width-boxW)/2, by=50
+      let ox=bx, oy=by
+      if (status==='shake' && shakeProg<1) {
+        const s = easeOut(shakeProg)*6
+        ox += (Math.random()*2-1)*s
+        oy += (Math.random()*2-1)*s
+        shakeProg += 0.1
       }
-
-      // Vault border glow
-      ctx.shadowColor = 'rgba(96,165,250,0.8)'
-      ctx.shadowBlur = 20
-      ctx.lineWidth = 4
-      ctx.strokeStyle = '#60a5fa'
-      ctx.strokeRect(boxX, boxY, boxW, boxH)
-      ctx.shadowBlur = 0
-
-      // Draw dials
-      const dialW = boxW / dialCount
-      digits.forEach((digit, i) => {
-        const cx = boxX + i*dialW + dialW/2
-        const cy = boxY + boxH/2
-
-        // Face gradient
-        const grad = ctx.createRadialGradient(cx, cy, 10, cx, cy, 40)
-        grad.addColorStop(0, '#93c5fd')
-        grad.addColorStop(1, '#1e3a8a')
-        ctx.fillStyle = grad
-        ctx.beginPath()
-        ctx.arc(cx, cy, 40, 0, Math.PI*2)
-        ctx.fill()
-
-        // Ring
-        ctx.lineWidth = 3
-        ctx.strokeStyle = '#60a5fa'
-        ctx.beginPath()
-        ctx.arc(cx, cy, 40, 0, Math.PI*2)
-        ctx.stroke()
-
-        // Number
-        ctx.fillStyle = '#fff'
-        ctx.font = '36px monospace'
-        ctx.textAlign = 'center'
-        ctx.fillText(String(digit), cx, cy+12)
+      ctx.save()
+      ctx.shadowColor='rgba(96,165,250,0.8)'; ctx.shadowBlur=15
+      ctx.strokeStyle='#60a5fa'; ctx.lineWidth=4
+      ctx.strokeRect(ox,oy,boxW,boxH)
+      ctx.restore()
+      // dials
+      const dw = boxW/dialCount, cy=oy+boxH/2
+      digits.forEach((d,i)=>{
+        const cx = ox + i*dw + dw/2
+        // face
+        const grad = ctx.createRadialGradient(cx,cy,8,cx,cy,dw*0.4)
+        grad.addColorStop(0,'#93c5fd'); grad.addColorStop(1,'#1e3a8a')
+        ctx.fillStyle=grad; ctx.beginPath()
+        ctx.arc(cx,cy,dw*0.4,0,2*Math.PI); ctx.fill()
+        // ring
+        ctx.strokeStyle='#60a5fa'; ctx.lineWidth=2
+        ctx.beginPath(); ctx.arc(cx,cy,dw*0.4,0,2*Math.PI); ctx.stroke()
+        // digit
+        ctx.fillStyle='#fff'; ctx.font='24px monospace'
+        ctx.textAlign='center'; ctx.fillText(d,cx,cy+8)
       })
-
-      renderId = requestAnimationFrame(draw)
+      // pointer
+      ctx.fillStyle='#fff'
+      ctx.beginPath()
+      ctx.moveTo(canvas.width/2 - 10, oy-5)
+      ctx.lineTo(canvas.width/2 + 10, oy-5)
+      ctx.lineTo(canvas.width/2, oy+10)
+      ctx.fill()
+      raf=requestAnimationFrame(draw)
     }
-
     draw()
-
-    // Countdown
-    if (status === 'hacking') {
-      countdownId = setInterval(() => {
-        setCountdown(c => {
-          if (c <= 1) {
-            clearInterval(countdownId)
-            setStatus('lost')
-            return 0
-          }
+    if (status==='hacking') {
+      countdownId=setInterval(()=>{
+        setCountdown(c=>{
+          if (c<=1) { clearInterval(countdownId); setStatus('lost'); return 0 }
           return c-1
         })
-      }, 1000)
+      },1000)
     }
-
-    return () => {
-      cancelAnimationFrame(renderId)
+    return ()=>{
+      cancelAnimationFrame(raf)
       clearInterval(countdownId)
     }
-  }, [digits, status, countdown])
+  },[digits,status,countdown])
 
   return (
-    <div style={{ textAlign:'center', padding:'2rem', color:'#fff' }}>
+    <div className="p-4 text-center text-white">
       {status==='idle' && (
         <button
-          style={{ padding:'0.5rem 1rem', fontSize:'1rem', background:'#60a5fa',
-                   border:'none', borderRadius:'4px', color:'#05082a', cursor:'pointer' }}
+          className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded mb-4 w-2/3 max-w-xs mx-auto"
           onClick={()=>{
-            setStatus('hacking')
-            setCountdown(60)
-            setDigits([0,0,0])
+            setStatus('hacking'); setCountdown(60); setDigits([0,0,0])
           }}
         >
           Start Hacking
         </button>
       )}
 
-      {status==='won' && (
-        <p style={{ color:'#a3e635', fontSize:'1.25rem' }}>🎉 Vault Opened! You Win! 🎉</p>
-      )}
-      {status==='lost' && (
-        <p style={{ color:'#f87171', fontSize:'1.25rem' }}>💥 Time’s up. You Lost. 💥</p>
+      {(status==='won' || status==='lost') && (
+        <p className={`text-lg font-bold mb-4 ${status==='won' ? 'text-green-400':'text-red-400'}`}>
+          {status==='won' ? '🎉 Vault Opened! You Win!':'💥 Time’s up. You Lost.'}
+        </p>
       )}
 
-      <canvas
-        ref={canvasRef}
-        style={{ display:'block', margin:'1rem auto', borderRadius:'8px' }}
-      />
+      <div className="w-full max-w-md mx-auto">
+        <canvas ref={canvasRef} className="rounded-lg shadow-md" />
+      </div>
 
       {status==='hacking' && (
-        <div style={{ display:'flex', justifyContent:'center', gap:'2rem', marginTop:'1rem' }}>
+        <div className="flex flex-wrap justify-center gap-4 mt-4">
           {digits.map((d,i)=>(
-            <div key={i} style={{ textAlign:'center' }}>
-              <button onClick={()=>changeDigit(i,+1)}>▲</button>
-              <div style={{ fontSize:'1.5rem', margin:'0.5rem 0' }}>{d}</div>
-              <button onClick={()=>changeDigit(i,-1)}>▼</button>
+            <div key={i} className="flex flex-col items-center">
+              <button
+                onClick={()=>changeDigit(i,1)}
+                className="bg-blue-600 hover:bg-blue-700 text-white w-8 h-8 rounded"
+              >
+                ▲
+              </button>
+              <div className="text-xl my-1">{d}</div>
+              <button
+                onClick={()=>changeDigit(i,-1)}
+                className="bg-blue-600 hover:bg-blue-700 text-white w-8 h-8 rounded"
+              >
+                ▼
+              </button>
             </div>
           ))}
         </div>
       )}
 
       {status==='hacking' && (
-        <button className="btn-primary mt-4" onClick={enterCode}>
+        <button
+          className="btn-primary mt-6 py-2 px-6 w-2/3 max-w-xs mx-auto block"
+          onClick={enterCode}
+        >
           Enter Code
-       </button>
+        </button>
       )}
     </div>
   )
 }
+

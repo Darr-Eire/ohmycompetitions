@@ -188,16 +188,6 @@ function Section({ title, items, containerRef, theme, viewMoreHref }) {
           <CompetitionCard key={item.comp.slug} {...item} theme={theme} />
         ))}
       </div>
-
-      {/* “View More” (mobile only) */}
-      <div className="view-more-card mt-4 flex justify-center lg:hidden">
-        <Link
-          href={viewMoreHref}
-          className={`view-more-button view-more-${theme}`}
-        >
-          View More
-        </Link>
-      </div>
       <div className="comp-button bg-blue-600 text-white py-2 px-6 rounded-full hover:bg-blue-700 transition mx-auto text-center"
       >
         <Link
