@@ -22,21 +22,18 @@ class App extends NextApp {
           src="https://sdk.minepi.com/pi-sdk.js"
           strategy="beforeInteractive"
         />
-        {/* 2) Init it right after */}
-        <Script
-          id="pi-init"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              if (window.Pi) {
-                window.Pi.init({
-                  version: "2.0",
-                  sandbox: ${process.env.NODE_ENV !== 'production'}
-                });
-              }
-            `,
-          }}
-        />
+              {/* Load & init the Pi SDK as soon as it's loaded */}
+       <Script
+         src="https://sdk.minepi.com/pi-sdk.js"
+         strategy="beforeInteractive"
+         onLoad={() => {
+           window.Pi.init({
+             version: "2.0",
+             sandbox: process.env.NODE_ENV !== 'production'
+           })
+           console.log('✅ Pi SDK initialized')
+         }}
+      />
         <Layout>
           <Component {...pageProps} />
         </Layout>
