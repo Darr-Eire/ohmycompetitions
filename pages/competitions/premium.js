@@ -13,8 +13,9 @@ const premiumComps = [
     title: 'Tesla Model 3 Giveaway',
     href: '/competitions/tesla-model-3-giveaway',
     prize: 'Tesla Model 3',
-    fee: '40 π',
+    fee: '40 π',
     imageUrl: '/images/tesla.jpeg',
+    theme: 'premium',
   },
   {
     comp: {
@@ -26,9 +27,10 @@ const premiumComps = [
     },
     title: 'Dubai Luxury Holiday',
     href: '/competitions/dubai-luxury-holiday',
-    prize: '7-Day Dubai Trip',
-    fee: '20 π',
+    prize: '7‑Day Dubai Trip',
+    fee: '20 π',
     imageUrl: '/images/dubai-luxury-holiday.jpg',
+    theme: 'premium',
   },
   {
     comp: {
@@ -39,12 +41,12 @@ const premiumComps = [
       endsAt: '2025-05-15T21:00:00Z',
     },
     title: 'Penthouse Hotel Stay',
-    href: '/competitions/macbook-pro-2025-giveaway',
+    href: '/competitions/penthouse-hotel-stay',
     prize: 'Penthouse Hotel Stay of your choice',
-    fee: '15 π',
+    fee: '15 π',
     imageUrl: '/images/hotel.jpeg',
+    theme: 'premium',
   },
-  
   {
     comp: {
       slug: 'the-crown-jewels',
@@ -55,9 +57,10 @@ const premiumComps = [
     },
     title: 'The Crown Jewels',
     href: '/competitions/the-crown-jewels',
-    prize: 'Jewels',
-    fee: '20 π',
+    prize: 'Crown Jewels',
+    fee: '20 π',
     imageUrl: '/images/jew.jpeg',
+    theme: 'premium',
   },
   {
     comp: {
@@ -69,26 +72,28 @@ const premiumComps = [
     },
     title: 'First Class Flight',
     href: '/competitions/first-class-flight',
-    prize: 'Return flights to anywhere in the wORLD',
-    fee: '15 π',
+    prize: 'Return flights to anywhere in the world',
+    fee: '15 π',
     imageUrl: '/images/first.jpeg',
+    theme: 'premium',
   },
   {
-      comp: {
-        slug: 'luxury-yacht-weekend',
-        entryFee: 30,
-        totalTickets: 8000,
-        ticketsSold: 0,
-        endsAt: '2025-06-10T00:00:00Z',
-      },
-      title: 'Luxury Yacht Weekend',
-      prize: '3 day Mediterranean Yacht Cruise',
-      fee: '30 π',
-      href: '/competitions/luxury-yacht-weekend',
-      imageUrl: '/images/yacht.jpeg',
-      theme: 'premium',
+    comp: {
+      slug: 'luxury-yacht-weekend',
+      entryFee: 30,
+      totalTickets: 8000,
+      ticketsSold: 0,
+      endsAt: '2025-06-10T00:00:00Z',
     },
+    title: 'Luxury Yacht Weekend',
+    href: '/competitions/luxury-yacht-weekend',
+    prize: '3‑day Mediterranean Yacht Cruise',
+    fee: '30 π',
+    imageUrl: '/images/yacht.jpeg',
+    theme: 'premium',
+  },
 ]
+
 export default function AllPremiumCompsPage() {
   return (
     <main className="pt-4 pb-10 px-4">
@@ -97,16 +102,15 @@ export default function AllPremiumCompsPage() {
         className="category-page-title text-center text-2xl font-bold mb-6 text-white"
         style={{ marginTop: 0 }}
       >
-        A Premium Giveaways
+        All Premium Giveaways
       </h1>
 
       {/* Always 3 columns */}
       <div className="category-grid mx-auto max-w-5xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {techComps.map(item => (
+        {premiumComps.map(item => (
           <CompetitionCard
             key={item.comp.slug}
             {...item}
-            theme="orange"
             small
           />
         ))}
@@ -114,4 +118,3 @@ export default function AllPremiumCompsPage() {
     </main>
   )
 }
-
