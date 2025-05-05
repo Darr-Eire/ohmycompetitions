@@ -1,27 +1,157 @@
-// pages/ticket-purchase/[slug].js
 'use client'
-import { useRouter } from 'next/router'
-import BuyTicketButton from '@/components/BuyTicketButton'
+// pages/index.jsx
+import React, { useState, useRef, useEffect } from 'react'
+import CompetitionCard from '@/components/CompetitionCard'
+import Link from 'next/link'
 
-const DATA = {
-  'ps5-bundle-giveaway': { title: 'PS5 Bundle Giveaway', entryFee: 0.8 },
-  // …other slugs…
-}
+export default function HomePage() {
+  const [piUser, setPiUser]         = useState(null)
+  const [loadingLogin, setLoading]  = useState(false)
+  const scopes = ['username','payments']
 
-export default function TicketPurchasePage() {
-  const { slug } = useRouter().query
-  if (!slug) return <p>Loading…</p>
-  const comp = DATA[slug]
-  if (!comp) return <p>Competition “{slug}” not found</p>
+  // Pi login
+  async function handlePiLogin() {
+    setLoading(true)
+    try {
+      const { user } = await window.Pi.authenticate(scopes)
+      setPiUser(user)
+    } catch (e) {
+      console.error(e)
+      alert('Login failed—check console')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Carousel refs
+  const dailyRef   = useRef(null)
+  const freeRef    = useRef(null)
+  const techRef    = useRef(null)
+  const piRef      = useRef(null)
+  const premiumRef = useRef(null)
+
+  // Reset scroll for all carousels
+  useEffect(() => {
+    const onScroll = () => {
+      [dailyRef, freeRef, techRef, piRef, premiumRef].forEach(r => {
+        const el = r.current
+        if (el && el.getBoundingClientRect().bottom < 0) el.scrollLeft = 0
+      })
+    }
+    window.addEventListener('scroll', onScroll)
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  // === Competition data ===
+  const techItems = [
+    { comp: { slug: 'ps5-bundle-giveaway', entryFee: 0.8, totalTickets:1100, ticketsSold:0, endsAt:'2025-05-07T14:00:00Z' },
+      title:'PS5 Bundle Giveaway', prize:'PlayStation 5 + Controller', fee:'0.8 π',
+      href:'/ticket-purchase/ps5-bundle-giveaway', imageUrl:'/images/playstation.jpeg', theme:'tech' },
+    { comp: { slug: '55-inch-tv-giveaway', entryFee: 0.25, totalTickets:1400, ticketsSold:0, endsAt:'2025-05-08T11:30:00Z' },
+      title:'55″ TV Giveaway', prize:'55″ Smart TV', fee:'0.25 π',
+      href:'/ticket-purchase/55-inch-tv-giveaway', imageUrl:'/images/tv.jpg', theme:'tech' },
+    { comp: { slug: 'xbox-one-bundle', entryFee: 0.3, totalTickets:2000, ticketsSold:0, endsAt:'2025-05-09T17:45:00Z' },
+      title:'Xbox One Bundle', prize:'Xbox One + Game Pass', fee:'0.3 π',
+      href:'/ticket-purchase/xbox-one-bundle', imageUrl:'/images/xbox.jpeg', theme:'tech' }
+  ]
+
+  const premiumItems = [
+    { comp:{slug:'tesla-model-3-giveaway',entryFee:40,totalTickets:20000,ticketsSold:5120,endsAt:'2025-05-20T23:59:00Z'},
+      title:'Tesla Model 3 Giveaway', prize:'Tesla Model 3', fee:'40 π',
+      href:'/ticket-purchase/tesla-model-3-giveaway', imageUrl:'/images/tesla.jpeg', theme:'premium' },
+    { comp:{slug:'dubai-luxury-holiday',entryFee:20,totalTickets:15000,ticketsSold:7100,endsAt:'2025-05-18T22:00:00Z'},
+      title:'Dubai Luxury Holiday', prize:'7-Day Dubai Trip', fee:'20 π',
+      href:'/ticket-purchase/dubai-luxury-holiday', imageUrl:'/images/dubai-luxury-holiday.jpg', theme:'premium' },
+    { comp:{slug:'penthouse-hotel-stay',entryFee:15,totalTickets:5000,ticketsSold:4875,endsAt:'2025-05-15T21:00:00Z'},
+      title:'Penthouse Hotel Stay', prize:'Penthouse Hotel Stay', fee:'15 π',
+      href:'/ticket-purchase/penthouse-hotel-stay', imageUrl:'/images/hotel.jpeg', theme:'premium' }
+  ]
+
+  const piItems = [
+    { comp:{slug:'pi-giveaway-250k',entryFee:15,totalTickets:50000,ticketsSold:0,endsAt:'2025-06-01T00:00:00Z'},
+      title:'250 000 π Mega Giveaway', prize:'250 000 π', fee:'15 π',
+      href:'/ticket-purchase/pi-giveaway-250k', imageUrl:'/images/250000.png', theme:'pi' },
+    { comp:{slug:'pi-giveaway-100k',entryFee:10,totalTickets:33000,ticketsSold:0,endsAt:'2025-05-20T00:00:00Z'},
+      title:'100 000 π Grand Giveaway', prize:'100 000 π', fee:'10 π',
+      href:'/ticket-purchase/pi-giveaway-100k', imageUrl:'/images/100000.png', theme:'pi' },
+    { comp:{slug:'pi-giveaway-50k',entryFee:5,totalTickets:17000,ticketsSold:0,endsAt:'2025-05-11T00:00:00Z'},
+      title:'50 000 π Big Giveaway', prize:'50 000 π', fee:'5 π',
+      href:'/ticket-purchase/pi-giveaway-50k', imageUrl:'/images/50000.png', theme:'pi' }
+  ]
+
+  const dailyItems = [
+    { comp:{slug:'daily-jackpot',entryFee:0.375,totalTickets:2225,ticketsSold:0,endsAt:'2025-05-03T23:59:59Z'},
+      title:'Daily Jackpot', prize:'750 π', fee:'0.375 π',
+      href:'/ticket-purchase/daily-jackpot', imageUrl:'/images/jackpot.png', theme:'daily' },
+    { comp:{slug:'everyday-pioneer',entryFee:0.314,totalTickets:1900,ticketsSold:0,endsAt:'2025-05-03T15:14:00Z'},
+      title:'Everyday Pioneer', prize:'1 000 π', fee:'0.314 π',
+      href:'/ticket-purchase/everyday-pioneer', imageUrl:'/images/everyday.png', theme:'daily' },
+    { comp:{slug:'daily-pi-slice',entryFee:0.314,totalTickets:1900,ticketsSold:0,endsAt:'2025-05-03T15:14:00Z'},
+      title:'Daily Pi Slice', prize:'1 000 π', fee:'0.314 π',
+      href:'/ticket-purchase/daily-pi-slice', imageUrl:'/images/daily.png', theme:'daily' }
+  ]
+
+  const freeItems = [
+    { comp:{slug:'pi-day-freebie',entryFee:0,totalTickets:10000,ticketsSold:0,endsAt:'2025-05-06T20:00:00Z'},
+      title:'Pi-Day Freebie', prize:'Special Badge', fee:'Free',
+      href:'/ticket-purchase/pi-day-freebie', imageUrl:'/images/piday.png', theme:'free' },
+    { comp:{slug:'pi-miners-bonanza',entryFee:0,totalTickets:10000,ticketsSold:0,endsAt:'2025-05-10T18:00:00Z'},
+      title:'Pi Miners Bonanza', prize:'5000 π', fee:'Free',
+      href:'/ticket-purchase/pi-miners-bonanza', imageUrl:'/images/bonanza.png', theme:'free' },
+    { comp:{slug:'weekly-giveaway',entryFee:0,totalTickets:5000,ticketsSold:0,endsAt:'2025-05-05T23:59:59Z'},
+      title:'Weekly Giveaway', prize:'1 000 π', fee:'Free',
+      href:'/ticket-purchase/weekly-giveaway', imageUrl:'/images/weekly.png', theme:'free' }
+  ]
 
   return (
-    <div className="p-6 max-w-md mx-auto">
-      <h1 className="text-2xl font-bold mb-4">{comp.title}</h1>
-      <p className="mb-4">Entry Fee: {comp.entryFee} π</p>
-      <BuyTicketButton
-        entryFee={comp.entryFee}
-        competitionSlug={slug}
-      />
-    </div>
+    <>
+      <div className="mb-8 text-center">
+        {piUser
+          ? <p className="text-green-600">Welcome, {piUser.username || piUser.uid}!</p>
+          : <button
+              onClick={handlePiLogin}
+              disabled={loadingLogin}
+              className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+            >
+              {loadingLogin ? 'Logging in…' : 'Log in with Pi'}
+            </button>
+        }
+      </div>
+
+      <main className="space-y-16 px-4 pb-12">
+        <Section title="Tech Giveaways"      items={techItems}      containerRef={techRef}    theme="tech"    />
+        <Section title="Premium Competitions" items={premiumItems}  containerRef={premiumRef} theme="premium" />
+        <Section title="Pi Giveaways"        items={piItems}        containerRef={piRef}      theme="pi"      />
+        <Section title="Daily Competitions"  items={dailyItems}     containerRef={dailyRef}   theme="daily"   />
+        <Section title="Free Competitions"   items={freeItems}      containerRef={freeRef}    theme="free"    />
+      </main>
+    </>
+  )
+}
+
+function Section({ title, items, containerRef, theme }) {
+  const headingStyles = {
+    tech:    'bg-orange-500 text-white',
+    premium: 'bg-gray-800 text-white',
+    pi:      'bg-purple-600 text-white',
+    daily:   'bg-blue-600 text-white',
+    free:    'bg-green-500 text-white',
+  }
+  const headingClass = headingStyles[theme] || ''
+
+  return (
+    <section ref={containerRef} className="mb-12">
+      <h2 className={`text-center px-4 py-2 rounded ${headingClass}`}>{title}</h2>
+      <div className="centered-carousel lg:hidden">
+        {items.map(item => (
+          <CompetitionCard key={item.comp.slug} {...item} small theme={theme} />
+        ))}
+      </div>
+      <div className="hidden lg:grid lg:grid-cols-3 gap-6">
+        {items.map(item => (
+          <CompetitionCard key={item.comp.slug} {...item} theme={theme} />
+        ))}
+      </div>
+    </section>
   )
 }
