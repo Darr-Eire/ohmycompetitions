@@ -126,13 +126,17 @@ const techComps = [
 
 export default function AllTechCompsPage() {
   return (
-    <main className="py-10 px-4">
-      <h1 className="category-page-title text-center text-2xl font-bold mb-6">
+    <main className="pt-4 pb-10 px-4">
+      {/* Title moved up (pt-4) and in white */}
+      <h1
+        className="category-page-title text-center text-2xl font-bold mb-6 text-white"
+        style={{ marginTop: 0 }}
+      >
         All Tech Giveaways
       </h1>
 
       {/* Always 3 columns */}
-      <div className="category-grid mx-auto max-w-5xl grid grid-cols-3 gap-6">
+      <div className="category-grid mx-auto max-w-5xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {techComps.map(item => (
           <CompetitionCard
             key={item.comp.slug}
