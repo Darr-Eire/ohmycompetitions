@@ -133,28 +133,32 @@ header {
 .menu-button,
 .login-button,
 .logout-button {
-  font-size: 1rem;
+  font-size: .80rem;
   border-radius: var(--button-radius);
   transition: background-color var(--transition-dur);
+  padding: 0.5rem 1rem;        /* same for all buttons */
+  min-width: 4rem;            /* ensure a minimum width */
+  text-align: center;         /* center the text */
 }
+
 .menu-button {
   background: var(--primary-color);
   color: var(--primary-text);
-  padding: 0.25rem 0.5rem;
 }
 .menu-button:hover {
   background: var(--primary-hover);
 }
+
 .login-button,
 .logout-button {
   background: var(--primary-color);
   color: var(--primary-text);
-  padding: 0.25rem 0.5rem;
 }
 .login-button:hover,
 .logout-button:hover {
   background: var(--primary-hover);
 }
+
 
 /* =============================================================================
    Dropdown
