@@ -207,18 +207,24 @@ footer {
    Competition Card
    ============================================================================= */
 /* === Competition Card Base === */
+/* =============================================================================
+   Uniform Competition‑Card Sizing with White Border
+   ============================================================================= */
+   .competition-card {
+    width: 280px;               /* fixed width for uniformity */
+    max-width: 280px;
+    margin: 1rem auto;          /* center with vertical spacing */
+    background: #fff;
+    border: 4px solid #fff;     /* white border */
+    border-radius: var(--button-radius);
+    box-shadow: 0 0 40px var(--primary-color);
+    overflow: hidden;
+    text-align: center;
+  }
+  
 .competition-card {
-  display: flex;
-  flex-direction: column;
-  width: 100% !important;       /* full width of its container */
-  max-width: none !important;   /* remove any previous cap */
-  margin: 0.5rem 0;             /* tighten vertical spacing */
-  background: #fff;
-  border: 4px solid var(--primary-text); /* white border */
-  border-radius: var(--button-radius);
-  box-shadow: 0 0 40px var(--primary-color);
-  overflow: hidden;
-  text-align: center;
+  height: 480px;         
+  max-height: 480px;
 }
 
 /* Header banner (gradient‑clipped text) */
