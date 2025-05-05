@@ -14,6 +14,7 @@ export default function TicketPurchasePage() {
   const [total, setTotal]             = useState(0)
 
   const COMPETITIONS = {
+ 
     'everyday-pioneer': {
       title: 'Everyday Pioneer',
       imageUrl: '/images/everyday.png',
@@ -104,19 +105,19 @@ export default function TicketPurchasePage() {
       endsAt: '2025-05-09T17:45:00Z',
       theme: 'tech',
     },
-    'pi-giveaway-100k': {
+   'pi-giveaway-100k': {
       title: '100,000 π Giveaway',
-      imageUrl: '/images/100,000.png',
+      imageUrl: '/images/100000.png',
       prize: '100,000 π',
-      entryFee: 10,
-      totalTickets: 10600,
+      entryFee: 3.14,
+      totalTickets: 17000,
       ticketsSold: 0,
-      endsAt: '2025-05-12T00:00:00Z',
+      endsAt: '2025-05-11T00:00:00Z',
       theme: 'pi',
     },
     'pi-giveaway-50k': {
       title: '50 000 π Giveaway',
-      imageUrl: '/images/50,000.png',
+      imageUrl: '/images/50000.png',
       prize: '50 000 π',
       entryFee: 3.14,
       totalTickets: 17000,
@@ -126,7 +127,7 @@ export default function TicketPurchasePage() {
     },
     'pi-giveaway-25k': {
       title: '25 000 π Giveaway',
-      imageUrl: '/images/25,000.png',
+      imageUrl: '/images/25000.png',
       prize: '25 000 π',
       entryFee: 2.5,
       totalTickets: 11200,
@@ -197,7 +198,7 @@ export default function TicketPurchasePage() {
   
         'pi-giveaway-250k': {
           title: '25,000 π Giveaway',
-          imageUrl: '/images/first.jpeg',
+          imageUrl: '/images/250000.png',
           prize: '25 000 π',
           entryFee: 20,
           totalTickets: 15000,
@@ -217,7 +218,7 @@ export default function TicketPurchasePage() {
   
           'pi-giveaway-60000': {
             title: '60,000 π Giveaway',
-            imageUrl: '/images/first.jpeg',
+            imageUrl: '/images/60000.png',
             prize: '25 000 π',
             entryFee: 20,
             totalTickets: 15000,
@@ -227,7 +228,7 @@ export default function TicketPurchasePage() {
   
             'pi-giveaway-25k': {
               title: '100,000 π Giveaway',
-              imageUrl: '/images/first.jpeg',
+              imageUrl: '/images/100000.png',
               prize: '100,000 π',
               entryFee: 20,
               totalTickets: 15000,
@@ -237,7 +238,7 @@ export default function TicketPurchasePage() {
   
               'pi-giveaway-25000': {
               title: '25,000 Giveaway',
-              imageUrl: '/images/first.jpeg',
+              imageUrl: '/images/25000.png',
               prize: '25,000 π',
               entryFee: 20,
               totalTickets: 15000,
@@ -247,7 +248,7 @@ export default function TicketPurchasePage() {
   
               'pi-giveaway-10000': {
                 title: '10,000 Giveaway',
-                imageUrl: '/images/first.jpeg',
+                imageUrl: '/images/10000.png',
                 prize: '10,000 π',
                 entryFee: 20,
                 totalTickets: 15000,
@@ -257,7 +258,7 @@ export default function TicketPurchasePage() {
   
                 'pi-giveaway-5000': {
                 title: '5000 Giveaway',
-                imageUrl: '/images/first.jpeg',
+                imageUrl: '/images/5000.png',
                 prize: '5000 π',
                 entryFee: 20,
                 totalTickets: 5000,
@@ -265,17 +266,7 @@ export default function TicketPurchasePage() {
                 endsAt: '2025-05-15T21:00:00Z',
                 theme: 'premium'},
   
-                'pi-giveaway-1000': {
-                title: '1000 Giveaway',
-                imageUrl: '/images/first.jpeg',
-                prize: '1000 π',
-                entryFee: 20,
-                totalTickets: 1000,
-                ticketsSold: 0,
-                endsAt: '2025-05-15T21:00:00Z',
-                theme: 'premium'},
-  
-                'apple-iphone': {
+                 'apple-iphone': {
                 title: 'Apple Iphone',
                 imageUrl: '/images/iphone.jpeg',
                 prize: 'Iphone',

@@ -4,81 +4,36 @@ import CompetitionCard from '@/components/CompetitionCard'
 const piComps = [
   {
     comp: {
+      slug: 'pi-giveaway-250k',
+      entryFee: 15,
+      totalTickets: 50000,
+      ticketsSold: 0,
+      endsAt: '2025-06-01T00:00:00Z',
+    },
+    title: '250,000 π Mega Giveaway',
+    prize: '250,000 π',
+    fee: '15 π',
+    href: '/competitions/pi-giveaway-250k',
+    imageUrl: '/images/250000.png',
+    theme: 'purple',
+  },
+  {
+    comp: {
       slug: 'pi-giveaway-100k',
       entryFee: 10,
       totalTickets: 33000,
       ticketsSold: 0,
-      endsAt: '2025-05-12T00:00:00Z',
+      endsAt: '2025-05-20T00:00:00Z',
     },
-    title: '100 000 π Mega Giveaway',
+    title: '100 000 π Grand Giveaway',
     prize: '100 000 π',
     fee: '10 π',
     href: '/competitions/pi-giveaway-100k',
-    imageUrl: '/images/100,000.png',
+    imageUrl: '/images/100000.png',
     theme: 'purple',
   },
-  {
-    comp: {
-      slug: 'pi-giveaway-50k',
-      entryFee: 5,
-      totalTickets: 17000,
-      ticketsSold: 0,
-      endsAt: '2025-05-11T00:00:00Z',
-    },
-    title: '50 000 π Big Giveaway',
-    prize: '50 000 π',
-    fee: '5 π',
-    href: '/competitions/pi-giveaway-50k',
-    imageUrl: '/images/50,000.png',
-    theme: 'purple',
-  },
-  {
-    comp: {
-      slug: 'pi-giveaway-25k',
-      entryFee: 1.5,
-      totalTickets: 18500,
-      ticketsSold: 0,
-      endsAt: '2025-05-10T00:00:00Z',
-    },
-    title: '25 000 π Weekly Giveaway',
-    prize: '25 000 π',
-    fee: '1.5 π',
-    href: '/competitions/pi-giveaway-25k',
-    imageUrl: '/images/25,000.png',
-    theme: 'purple',
-  },
-
-    {
-      comp: {
-        slug: 'pi-giveaway-250k',
-        entryFee: 15,
-        totalTickets: 50000,
-        ticketsSold: 0,
-        endsAt: '2025-06-01T00:00:00Z',
-      },
-      title: '250 000 π Mega Giveaway',
-      prize: '250 000 π',
-      fee: '15 π',
-      href: '/competitions/pi-giveaway-250k',
-      imageUrl: '/images/250000.png',
-      theme: 'purple',
-    },
-    {
-      comp: {
-        slug: 'pi-giveaway-100k',
-        entryFee: 10,
-        totalTickets: 33000,
-        ticketsSold: 0,
-        endsAt: '2025-05-20T00:00:00Z',
-      },
-      title: '100 000 π Grand Giveaway',
-      prize: '100 000 π',
-      fee: '10 π',
-      href: '/competitions/pi-giveaway-100k',
-      imageUrl: '/images/100000.png',
-      theme: 'purple',
-    },
-    {
+  
+      {
       comp: {
         slug: 'pi-giveaway-60000',
         entryFee: 6,
@@ -93,6 +48,21 @@ const piComps = [
       imageUrl: '/images/60000.png',
       theme: 'purple',
     },
+  {
+    comp: {
+      slug: 'pi-giveaway-50k',
+      entryFee: 5,
+      totalTickets: 17000,
+      ticketsSold: 0,
+      endsAt: '2025-05-11T00:00:00Z',
+    },
+    title: '50,000 π Big Giveaway',
+    prize: '50,000 π',
+    fee: '5 π',
+    href: '/competitions/pi-giveaway-50k',
+    imageUrl: '/images/50000.png',
+    theme: 'purple',
+  },
     {
       comp: {
         slug: 'pi-giveaway-25000',
