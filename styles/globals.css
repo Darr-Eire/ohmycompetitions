@@ -250,7 +250,7 @@ footer {
   background: var(--primary-color);
   color: var(--primary-text);
   font-size: 1.125rem;
-  transition: background-color var(--transition-dur);
+  transition: background-color var(--primary-colour);
 }
 .comp-button:hover {
   background: var(--secondary-hover);
@@ -266,7 +266,7 @@ footer {
 .view-more-button {
   padding: 0.5rem 1rem;
   font-size: 1rem;
-  background: var(--secondary-color);
+  background: var(--secondary-hover);
   color: var(--secondary-text);
   border-radius: var(--button-radius);
   transition: background-color var(--transition-dur), transform 0.1s ease-in-out;

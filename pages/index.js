@@ -183,10 +183,13 @@ function Section({ title, items, containerRef, theme, viewMoreHref }) {
       </div>
 
       {/* Desktop grid */}
-      <div className="hidden lg:grid lg:grid-cols-3 gap-6">
-        {items.map(item => (
-          <CompetitionCard key={item.comp.slug} {...item} theme={theme} />
-        ))}
+      <div
+  ref={containerRef}
+  className={`${theme}-carousel flex space-x-4 overflow-x-auto scroll-smooth touch-pan-x`}
+>
+  {items.map(item => (
+    <CompetitionCard key={item.comp.slug} {...item} small theme={theme}/>
+  ))}
       </div>
 
       {/* “View More” (mobile only) */}
