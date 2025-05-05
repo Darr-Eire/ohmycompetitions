@@ -1,6 +1,7 @@
 // src/components/Footer.js
 'use client'
 
+import Link from 'next/link'
 import { SiX } from 'react-icons/si'
 import { FaFacebookF, FaInstagram, FaDiscord } from 'react-icons/fa'
 
@@ -9,12 +10,11 @@ export default function Footer() {
     <footer className="bg-blue-600 text-white py-6 mt-auto">
       {/* Back to Home */}
       <div className="mb-6 text-center">
-        <a
-          href="/"
-          className="inline-block bg-white text-blue-600 font-semibold px-4 py-2 rounded shadow hover:bg-gray-100 transition"
-        >
-          Back to Home
-        </a>
+        <Link href="/" legacyBehavior>
+          <a className="comp-button inline-block max-w-max mx-auto">
+            Back to Home
+          </a>
+        </Link>
       </div>
 
       {/* Social Icons */}
@@ -59,12 +59,12 @@ export default function Footer() {
 
       {/* Footer Links */}
       <div className="footer-links flex justify-center gap-6 mb-4 text-sm">
-        <a href="/terms-conditions" className="hover:underline">
-          Terms &amp; Conditions
-        </a>
-        <a href="/privacy-policy" className="hover:underline">
-          Privacy Policy
-        </a>
+        <Link href="/terms-conditions" legacyBehavior>
+          <a className="hover:underline">Terms &amp; Conditions</a>
+        </Link>
+        <Link href="/privacy-policy" legacyBehavior>
+          <a className="hover:underline">Privacy Policy</a>
+        </Link>
       </div>
 
       {/* Copyright */}
