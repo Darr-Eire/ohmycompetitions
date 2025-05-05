@@ -7,7 +7,27 @@
     { comp:{slug:'daily-jackpot',entryFee:0.375,totalTickets:2225,ticketsSold:0,endsAt:'2025-05-03T23:59:59Z'}, title:'Daily Jackpot', prize:'750 π', fee:'0.375 π', href:'/competitions/daily-jackpot', imageUrl:'/images/jackpot.png', theme:'daily' },
     { comp:{slug:'the-daily-dash',entryFee:3.14,totalTickets:1900,ticketsSold:0,endsAt:'2025-05-04T12:00:00Z'}, title:'The Daily Dash', prize:'5,000 π', fee:'3.14 π', href:'/competitions/the-daily-dash', imageUrl:'/images/dash.png', theme:'daily' },
     ]
-    return (<main className="py-10 px-4"><h1 className="category-page-title text-center text-2xl font-bold mb-6">All Daily Competitions</h1>
-    <div className="category-grid mx-auto max-w-5xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-    {dailyComps.map(item => (
-    <CompetitionCard key={item.comp.slug} {...item} small />))}</div></main> )}
+        return (
+          <main className="pt-4 pb-10 px-4">
+            {/* Title moved up (pt-4) and in white */}
+            <h1
+              className="category-page-title text-center text-2xl font-bold mb-6 text-white"
+              style={{ marginTop: 0 }}
+            >
+              All Tech Giveaways
+            </h1>
+      
+            {/* Always 3 columns */}
+            <div className="category-grid mx-auto max-w-5xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {techComps.map(item => (
+                <CompetitionCard
+                  key={item.comp.slug}
+                  {...item}
+                  theme="orange"
+                  small
+                />
+              ))}
+            </div>
+          </main>
+        )
+      }
