@@ -112,7 +112,7 @@ header {
   -webkit-background-clip: text;
   -webkit-text-fill-color: white; 
   background-clip: text;  
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 700;
 }
 
@@ -287,7 +287,7 @@ footer {
     color: var(--primary-text);
     padding: 0.5rem 1rem;
     border-radius: var(--button-radius);
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
   }
 }
