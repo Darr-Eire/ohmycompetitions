@@ -1,6 +1,6 @@
 // pages/competitions/pi.js
 import CompetitionCard from '@/components/CompetitionCard'
-export default function AllTechCompsPage() {
+
 const piComps = [
   {
     comp: {
@@ -140,7 +140,7 @@ const piComps = [
     },
   ]
 
-
+export default function AllTechCompsPage() {
   return (
     <main className="pt-4 pb-10 px-4">
       {/* Title moved up (pt-4) and in white */}
