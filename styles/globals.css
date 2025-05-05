@@ -296,13 +296,7 @@ footer {
   }
 }
 
-/* =============================================================================
-   Mobile Carousels
-   ============================================================================= */
-/* =============================================================================
-   Mobile Carousels (old theme‑specific removed)
-   ============================================================================= */
-/* Instead of .daily‑carousel, .tech‑carousel, etc. use .centered-carousel */
+
 @layer utilities {
   .centered-carousel {
     display: flex;
@@ -320,7 +314,7 @@ footer {
     overscroll-behavior-x: contain;
   }
   .centered-carousel > * {
-    flex: 0 0 80%;
+    flex: 0 0 100%;
     scroll-snap-align: center;
     scroll-snap-stop: always;
   }
