@@ -7,7 +7,9 @@ module.exports = {
   theme: {
     extend: {},
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/aspect-ratio'),
+  ],
   safelist: [
     // gradients for FUT cards
     'from-blue-600',
@@ -29,4 +31,3 @@ module.exports = {
     'text-white',
   ],
 }
-

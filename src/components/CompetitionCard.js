@@ -52,16 +52,16 @@ export default function CompetitionCard({
         {title}
       </div>
 
-      {/* Image */}
-      <div className="competition-image h-40 overflow-hidden">
-        <Image
-          src={imageUrl || '/pi.jpeg'}
-          alt={title}
-          width={300}
-          height={180}
-          className="w-full h-full object-cover"
-        />
-      </div>
+    {/* Image with fixed 5:3 aspect ratio */}
+<div className="competition-image w-full relative" style={{ paddingTop: '20%' }}>
+  <Image
+    src={imageUrl || '/pi.jpeg'}
+    alt={title}
+    fill
+    className="object-fit"
+  />
+</div>
+
 
       {/* Details */}
       <div className="competition-info flex-1 p-4 text-sm space-y-2">
@@ -99,7 +99,7 @@ export default function CompetitionCard({
       {/* Enter Now button */}
       {!children && !hideButton && (
         <Link href={`/ticket-purchase/${comp.slug}`}>
-          <button className="comp-button w-full mt-4">
+          <button className="comp-button w-full mt-4 text-center">
             Enter Now
           </button>
         </Link>
