@@ -198,6 +198,15 @@ function Section({ title, items, containerRef, theme, viewMoreHref }) {
           View More
         </Link>
       </div>
+      <div className="comp-button bg-blue-600 text-white py-2 px-6 rounded-full hover:bg-blue-700 transition mx-auto text-center"
+      >
+        <Link
+          href={viewMoreHref}
+          className="comp-button bg-blue-600 text-white py-2 px-6 rounded-full hover:bg-blue-700 transition mx-auto"
+        >
+          View More
+        </Link>
+      </div>
     </section>
   )
 }
