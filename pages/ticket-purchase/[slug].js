@@ -23,6 +23,7 @@ export default function TicketPurchasePage() {
 
   const [piUser, setPiUser] = useState(null)
   const [loadingUser, setLoadingUser] = useState(true)
+  const [loadingLogin, setLoadingLogin] = useState(false)
 
   // Restore Pi session on load
   useEffect(() => {
@@ -38,6 +39,22 @@ export default function TicketPurchasePage() {
       .catch(console.error)
       .finally(() => setLoadingUser(false))
   }, [router.isReady])
+
+  Centralized login handler for this page
+ async function handlePiLogin() {
+   setLoadingLogin(true)
+   try {
+     await window.Pi.authenticate(['username','payments'])
+     const user = await window.Pi.getCurrentPioneer()
+     console.log('✅ Pioneer logged in:', user.uid)
+     setPiUser(user)
+   } catch (err) {
+     console.error('❌ Purchase‑page login error:', err)
+     alert('Login failed—see console.')
+   } finally {
+     setLoadingLogin(false)
+   }
+ }
 
   if (!router.isReady) return null
   const comp = COMPETITIONS[slug]
@@ -83,15 +100,12 @@ export default function TicketPurchasePage() {
           <p className="text-center text-gray-500">Checking session…</p>
         ) : !piUser ? (
           <button
-            onClick={async () => {
-              await window.Pi.authenticate(['username', 'payments'])
-              const user = await window.Pi.getCurrentPioneer()
-              setPiUser(user)
-            }}
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
-          >
-            Log in with Pi to continue
-          </button>
+                     onClick={handlePiLogin}
+                     disabled={loadingLogin}
+                     className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+                   >
+                     {loadingLogin ? 'Logging in…' : 'Log in with Pi to continue'}
+                   </button>
         ) : (
           <BuyTicketButton
             competitionSlug={slug}
