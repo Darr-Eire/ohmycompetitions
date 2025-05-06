@@ -45,10 +45,7 @@ async function handlePiLogin() {
   setLoadingLogin(true)
   try {
     // Ask for username+payments scope up‑front
-    const { accessToken, user } = await window.Pi.authenticate([
-      'username',
-      'payments'
-    ])
+    const { accessToken, user } = await window.Pi.authenticate(['username','payments'])
     console.log('✅ Pioneer logged in:', user)
     setPiUser(user)
   } catch (err) {

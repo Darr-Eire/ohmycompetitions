@@ -7,9 +7,7 @@ export default class MyDocument extends Document {
     return (
       <Html>
         <Head>
-          {/* 1) Load the Pi SDK as early as possible */}
-          <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-          {/* 2) Initialize it immediately on load */}
+        <script src="https://sdk.minepi.com/pi-sdk.js"></script>  
           <script
             dangerouslySetInnerHTML={{
               __html: `
