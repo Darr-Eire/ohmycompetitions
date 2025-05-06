@@ -1,54 +1,80 @@
-// src/components/BuyTicketButton.jsx
 'use client'
+import { useState } from 'react'
 
-import React, { useState } from 'react'
-
-export default function BuyTicketButton() {
+export default function BuyTicketButton({ entryFee, competitionSlug }) {
   const [loading, setLoading] = useState(false)
 
-  async function handleBuyTicket() {
+  const handleBuy = () => {
+    alert('🛒 createPayment called') // Debug alert
     setLoading(true)
-    try {
-      const payment = await window.Pi.createPayment({
-        amount: 0.314,
-        memo: 'Buy ticket for PS5',
-        metadata: { competitionId: 'ps5-bundle-giveaway' },
-        onReadyForServerApproval: async (paymentId) => {
-          console.log('Approving payment:', paymentId)
-          const res = await fetch('/api/pi/approve', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paymentId }),
-          })
-          if (!res.ok) throw new Error('Approval failed')
-        },
-        onReadyForServerCompletion: async (paymentId, txid) => {
-          const res = await fetch('/api/pi/complete', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paymentId, txid }),
-          })
-          if (!res.ok) throw new Error('Completion failed')
-          alert('Ticket purchased successfully!')
-        },
-        onCancel: () => alert('Payment cancelled'),
-        onError: (err) => alert('Payment error: ' + err.message),
-      })
-    } catch (err) {
-      console.error('Pi payment failed:', err)
-      alert('Something went wrong')
-    } finally {
+
+    if (!window?.Pi?.createPayment) {
+      alert('Pi SDK not found. Are you in the Pi Browser?')
       setLoading(false)
+      return
     }
+
+    window.Pi.createPayment(
+      {
+        amount: entryFee,
+        memo: competitionSlug,
+        metadata: { slug: competitionSlug },
+      },
+      {
+        onReadyForServerApproval: async (paymentId) => {
+          try {
+            const res = await fetch('/api/pi/approve', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ paymentId }),
+            })
+            if (!res.ok) throw new Error(await res.text())
+            console.log('✅ Payment approved on server')
+          } catch (err) {
+            console.error('❌ Approval failed', err)
+            alert('Approval failed')
+            setLoading(false)
+          }
+        },
+
+        onReadyForServerCompletion: async (paymentId, txid) => {
+          try {
+            const res = await fetch('/api/pi/complete', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ paymentId, txid }),
+            })
+            if (!res.ok) throw new Error(await res.text())
+            alert('🎉 Ticket purchased!')
+          } catch (err) {
+            console.error('❌ Completion failed', err)
+            alert('Completion failed')
+          } finally {
+            setLoading(false)
+          }
+        },
+
+        onCancel: () => {
+          console.warn('⚠️ User cancelled payment')
+          setLoading(false)
+        },
+
+        onError: (error) => {
+          console.error('🛑 Pi payment error', error)
+          alert('Payment error')
+          setLoading(false)
+        },
+      }
+    )
   }
 
   return (
     <button
-      onClick={handleBuyTicket}
+      onClick={handleBuy}
       disabled={loading}
-      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+      className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
     >
-      {loading ? 'Processing…' : 'Buy Ticket'}
+      {loading ? 'Processing…' : `Buy Ticket (${entryFee} π)`}
     </button>
   )
 }
