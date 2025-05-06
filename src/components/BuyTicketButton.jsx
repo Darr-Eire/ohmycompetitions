@@ -7,6 +7,11 @@ export default function BuyTicketButton({ entryFee, competitionSlug }) {
 
   const handleBuy = async () => {
     alert('🛒 createPayment called')
+
+    // ✅ Debug Pi SDK availability
+    alert('Pi object: ' + typeof window.Pi)
+    alert('Pi.authenticate: ' + typeof window.Pi?.authenticate)
+
     setLoading(true)
 
     if (!window?.Pi?.createPayment) {
@@ -24,7 +29,7 @@ export default function BuyTicketButton({ entryFee, competitionSlug }) {
       {
         onReadyForServerApproval: async (paymentId, paymentData, signature) => {
           console.log('📩 Approving payment:', paymentId)
-          alert('📩 Approving payment: ' + paymentId) // 👈 shows the ID
+          alert('📩 Approving payment: ' + paymentId) // 👈 show real payment ID
 
           try {
             const res = await fetch('/api/pi/approve', {
