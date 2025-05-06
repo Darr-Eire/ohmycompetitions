@@ -10,11 +10,11 @@ import Link from 'next/link'
 const COMPETITIONS = {
   'ps5-bundle-giveaway': {
     title: 'PS5 Bundle Giveaway',
-    prize: 'PlayStation 5 + Extra Controller',
+    prize: 'PlayStation\u00A05 + Extra Controller',
     entryFee: 0.8,
     imageUrl: '/images/playstation.jpeg',
   },
-  // …other slugs…
+  // Add more competitions here as needed
 }
 
 export default function TicketPurchasePage() {
@@ -40,23 +40,20 @@ export default function TicketPurchasePage() {
       .finally(() => setLoadingUser(false))
   }, [router.isReady])
 
-// Centralized login handler for this page
-async function handlePiLogin() {
-  setLoadingLogin(true)
-  try {
-    // Ask for username+payments scope up‑front
-    const { accessToken, user } = await window.Pi.authenticate(['username','payments'])
-    console.log('✅ Pioneer logged in:', user)
-    setPiUser(user)
-  } catch (err) {
-    console.error('❌ Purchase‑page login error:', err)
-    // show the real error message
-    alert(`Login failed: ${err.message || err}`)
-  } finally {
-    setLoadingLogin(false)
+  // Centralized login handler for this page
+  async function handlePiLogin() {
+    setLoadingLogin(true)
+    try {
+      const { accessToken, user } = await window.Pi.authenticate(['username', 'payments'])
+      console.log('✅ Pioneer logged in:', user)
+      setPiUser(user)
+    } catch (err) {
+      console.error('❌ Purchase‑page login error:', err)
+      alert(`Login failed: ${err.message || err}`)
+    } finally {
+      setLoadingLogin(false)
+    }
   }
-}
-
 
   if (!router.isReady) return null
   const comp = COMPETITIONS[slug]
@@ -77,7 +74,7 @@ async function handlePiLogin() {
       {/* Hero */}
       <div className="text-center space-y-2">
         <h1 className="text-3xl font-extrabold">{comp.title}</h1>
-        <p className="text-gray-600">Entry Fee: {comp.entryFee} π</p>
+        <p className="text-gray-600">Entry Fee: {comp.entryFee}\u00A0π</p>
       </div>
 
       {/* Prize Image */}
@@ -94,7 +91,7 @@ async function handlePiLogin() {
         <h2 className="text-xl font-semibold">Your Ticket</h2>
         <p className="text-gray-700">
           You’re about to enter for <strong>{comp.prize}</strong> at{' '}
-          <strong>{comp.entryFee} π</strong> per ticket.
+          <strong>{comp.entryFee}\u00A0π</strong> per ticket.
         </p>
 
         {loadingUser ? (
