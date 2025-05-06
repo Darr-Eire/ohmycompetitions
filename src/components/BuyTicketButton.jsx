@@ -36,6 +36,23 @@ export default function BuyTicketButton({ entryFee, competitionSlug }) {
             setLoading(false)
           }
         },
+        onReadyForServerApproval: async (paymentId) => {
+          alert('Calling /api/pi/approve with ID: ' + paymentId); // ✅ Confirm it's being hit
+          console.log('Calling /api/pi/approve with ID:', paymentId); // Also log it to console
+        
+          const res = await fetch('/api/pi/approve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId }),
+          });
+        
+          if (!res.ok) {
+            const errorData = await res.json();
+            console.error('Approval failed:', errorData);
+            throw new Error('Approval failed: ' + errorData?.error || 'Unknown error');
+          }
+        }
+        
 
         onReadyForServerCompletion: async (paymentId, txid) => {
           try {
@@ -53,6 +70,7 @@ export default function BuyTicketButton({ entryFee, competitionSlug }) {
             setLoading(false)
           }
         },
+      
 
         onCancel: () => {
           console.warn('⚠️ User cancelled payment')
