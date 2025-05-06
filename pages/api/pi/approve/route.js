@@ -1,30 +1,33 @@
 import { NextResponse } from 'next/server'
 
 export async function POST(req) {
+  const { paymentId } = await req.json()
+
+  const apiKey = process.env.PI_API_KEY
+  if (!apiKey) {
+    console.error('❌ PI_API_KEY is missing from environment')
+    return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 })
+  }
+
   try {
-    const { paymentId } = await req.json()
-
-    console.log('Approving payment with ID:', paymentId)
-    console.log('Using Pi API key:', process.env.PI_API_KEY)
-
-    const res = await fetch(`https://api.minepi.com/v2/payments/${paymentId}/approve`, {
+    const piRes = await fetch(`https://api.minepi.com/v2/payments/${paymentId}/approve`, {
       method: 'POST',
       headers: {
-        Authorization: `Key ${process.env.PI_API_KEY}`,
+        Authorization: `Key ${apiKey}`,
         'Content-Type': 'application/json',
       },
     })
 
-    const data = await res.json()
-
-    if (!res.ok) {
-      console.error('Approval error:', data)
-      return NextResponse.json({ error: data }, { status: 500 })
+    if (!piRes.ok) {
+      const errData = await piRes.json()
+      console.error('❌ Pi approval failed:', errData)
+      return NextResponse.json({ error: 'Payment approval failed' }, { status: 500 })
     }
 
+    const data = await piRes.json()
     return NextResponse.json({ message: 'Payment approved', data })
   } catch (err) {
-    console.error('Approval failed:', err)
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    console.error('❌ Approval error:', err)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
