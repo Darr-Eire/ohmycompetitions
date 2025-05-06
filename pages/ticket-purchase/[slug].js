@@ -40,21 +40,26 @@ export default function TicketPurchasePage() {
       .finally(() => setLoadingUser(false))
   }, [router.isReady])
 
-  // Centralized login handler for this page
-  async function handlePiLogin() {
-    setLoadingLogin(true)
-    try {
-      await window.Pi.authenticate(['username', 'payments'])
-      const user = await window.Pi.getCurrentPioneer()
-      console.log('✅ Pioneer logged in:', user.uid)
-      setPiUser(user)
-    } catch (err) {
-      console.error('❌ Purchase‑page login error:', err)
-      alert('Login failed—see console.')
-    } finally {
-      setLoadingLogin(false)
-    }
+// Centralized login handler for this page
+async function handlePiLogin() {
+  setLoadingLogin(true)
+  try {
+    // Ask for username+payments scope up‑front
+    const { accessToken, user } = await window.Pi.authenticate([
+      'username',
+      'payments'
+    ])
+    console.log('✅ Pioneer logged in:', user)
+    setPiUser(user)
+  } catch (err) {
+    console.error('❌ Purchase‑page login error:', err)
+    // show the real error message
+    alert(`Login failed: ${err.message || err}`)
+  } finally {
+    setLoadingLogin(false)
   }
+}
+
 
   if (!router.isReady) return null
   const comp = COMPETITIONS[slug]
