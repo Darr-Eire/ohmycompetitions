@@ -2,8 +2,10 @@
 
 import Link from 'next/link'
 import { useState, useRef, useEffect } from 'react'
+import { usePiAuth } from '@/contexts/PiAuthContext'
 
-export default function Header({ isLoggedIn, onLogin, onLogout }) {
+export default function Header() {
+  const { piUser, loading, login, logout } = usePiAuth()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef   = useRef(null)
   const buttonRef = useRef(null)
@@ -37,7 +39,7 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
 
   return (
     <header className="relative bg-transparent px-4 py-3 flex items-center z-20">
-
+      {/* Menu toggle */}
       <button
         ref={buttonRef}
         onClick={() => setMenuOpen(v => !v)}
@@ -47,6 +49,7 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
         ☰
       </button>
 
+      {/* Brand */}
       <div className="flex-1 text-center">
         <Link
           href="/"
@@ -56,22 +59,25 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
         </Link>
       </div>
 
-      {isLoggedIn ? (
+      {/* Auth button */}
+      {piUser ? (
         <button
-          onClick={onLogout}
+          onClick={logout}
           className="bg-white/60 backdrop-blur text-blue-600 rounded px-3 py-1 hover:bg-white/80 transition drop-shadow"
         >
           Log Out
         </button>
       ) : (
         <button
-          onClick={onLogin}
+          onClick={login}
+          disabled={loading}
           className="bg-white/60 backdrop-blur text-blue-600 rounded px-3 py-1 hover:bg-white/80 transition drop-shadow"
         >
-          Log In
+          {loading ? 'Logging in…' : 'Log In with Pi'}
         </button>
       )}
 
+      {/* Dropdown menu */}
       {menuOpen && (
         <nav
           ref={menuRef}
@@ -90,23 +96,24 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
 
           <hr className="border-blue-600 my-1" />
 
-          {isLoggedIn ? (
+          {piUser ? (
             <button
               className="block w-full text-left px-4 py-2 text-white hover:bg-blue-600 transition"
-              onClick={() => { setMenuOpen(false); onLogout() }}
+              onClick={() => { setMenuOpen(false); logout() }}
             >
               Log Out
             </button>
           ) : (
             <button
+              onClick={() => { setMenuOpen(false); login() }}
+              disabled={loading}
               className="block w-full text-left px-4 py-2 text-white hover:bg-blue-600 transition"
-              onClick={() => { setMenuOpen(false); onLogin() }}
             >
-              Log In With Pi
+              {loading ? 'Logging in…' : 'Log In with Pi'}
             </button>
           )}
         </nav>
       )}
     </header>
-)
+  )
 }
