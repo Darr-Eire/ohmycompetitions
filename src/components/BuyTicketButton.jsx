@@ -1,86 +1,54 @@
+// src/components/BuyTicketButton.jsx
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 
-export default function BuyTicketButton({ competitionSlug, entryFee }) {
-  async function handleBuy() {
-    if (!window.Pi || !window.Pi.createPayment) {
-      alert('Pi Network SDK not available. Use Pi Browser.')
-      return
-    }
+export default function BuyTicketButton() {
+  const [loading, setLoading] = useState(false)
 
+  async function handleBuyTicket() {
+    setLoading(true)
     try {
       const payment = await window.Pi.createPayment({
-        amount: entryFee.toString(),
-        memo: `${competitionSlug} entry`,
-        metadata: { competitionSlug },
-
-        onReadyForServerApproval: async (paymentId, paymentData, signature) => {
-          try {
-            const res = await fetch('/api/pi/approve', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                paymentId,
-                paymentData,
-                signature,
-                uid: localStorage.getItem('pi_user_uid'),
-              }),
-            })
-            const data = await res.json()
-            if (!res.ok) throw new Error(data.error || 'Approval failed')
-            console.log('✅ Approved by server:', data)
-          } catch (err) {
-            console.error('❌ Server approval error:', err)
-            alert('Payment approval failed. Try again.')
-          }
+        amount: 0.314,
+        memo: 'Buy ticket for PS5',
+        metadata: { competitionId: 'ps5-bundle-giveaway' },
+        onReadyForServerApproval: async (paymentId) => {
+          console.log('Approving payment:', paymentId)
+          const res = await fetch('/api/pi/approve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId }),
+          })
+          if (!res.ok) throw new Error('Approval failed')
         },
-
         onReadyForServerCompletion: async (paymentId, txid) => {
-          try {
-            const res = await fetch('/api/pi/complete', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                paymentId,
-                txid,
-                uid: localStorage.getItem('pi_user_uid'),
-              }),
-            })
-            const data = await res.json()
-            if (!res.ok) throw new Error(data.error || 'Completion failed')
-            console.log('✅ Payment completed:', data)
-            alert('🎉 Entry confirmed! Good luck!')
-          } catch (err) {
-            console.error('❌ Completion error:', err)
-            alert('Payment completion failed. Contact support.')
-          }
+          const res = await fetch('/api/pi/complete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId, txid }),
+          })
+          if (!res.ok) throw new Error('Completion failed')
+          alert('Ticket purchased successfully!')
         },
-
-        onCancel: () => {
-          console.warn('User canceled payment.')
-        },
-
-        onError: (err) => {
-          console.error('Pi payment error:', err)
-          alert('Something went wrong. Try again.')
-        },
+        onCancel: () => alert('Payment cancelled'),
+        onError: (err) => alert('Payment error: ' + err.message),
       })
-
-      console.log('Payment object:', payment)
     } catch (err) {
-      console.error('createPayment error:', err)
-      alert('Could not initiate payment. Are you in the Pi Browser?')
+      console.error('Pi payment failed:', err)
+      alert('Something went wrong')
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
     <button
-      onClick={handleBuy}
-      className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition"
+      onClick={handleBuyTicket}
+      disabled={loading}
+      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
     >
-      Pay with Pi to Enter
+      {loading ? 'Processing…' : 'Buy Ticket'}
     </button>
   )
 }
-
