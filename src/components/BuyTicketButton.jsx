@@ -1,4 +1,5 @@
 'use client'
+
 import { useState } from 'react'
 
 export default function BuyTicketButton({ entryFee, competitionSlug }) {
@@ -9,41 +10,66 @@ export default function BuyTicketButton({ entryFee, competitionSlug }) {
     setLoading(true)
 
     if (!window?.Pi?.createPayment) {
-      alert('Pi SDK not found. Open in Pi Browser')
+      alert('Pi SDK not found. Use Pi Browser.')
       setLoading(false)
       return
     }
 
     window.Pi.createPayment(
       {
-        amount: entryFee,
+        amount: entryFee.toString(),
         memo: `Ticket for ${competitionSlug}`,
         metadata: { competitionSlug },
       },
       {
-        onReadyForServerApproval: async (paymentId) => {
-          console.log('📩 Approving payment:', paymentId)
-          const res = await fetch('/api/pi/approve', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paymentId }),
-          })
-          if (!res.ok) throw new Error('Approval failed')
+        onReadyForServerApproval: async (paymentId, paymentData, signature) => {
+          try {
+            console.log('📩 Approving payment:', paymentId)
+            const res = await fetch('/api/pi/approve', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                paymentId,
+                paymentData,
+                signature,
+                uid: localStorage.getItem('pi_user_uid'),
+              }),
+            })
+            if (!res.ok) throw new Error('Approval failed')
+          } catch (err) {
+            console.error('❌ Approval error:', err)
+            alert('Approval failed: ' + err.message)
+            setLoading(false)
+          }
         },
+
         onReadyForServerCompletion: async (paymentId, txid) => {
-          console.log('✅ Completing payment:', paymentId, txid)
-          const res = await fetch('/api/pi/complete', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paymentId, txid }),
-          })
-          if (!res.ok) throw new Error('Completion failed')
-          alert('🎉 Ticket purchased!')
+          try {
+            console.log('✅ Completing payment:', paymentId, txid)
+            const res = await fetch('/api/pi/complete', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                paymentId,
+                txid,
+                uid: localStorage.getItem('pi_user_uid'),
+              }),
+            })
+            if (!res.ok) throw new Error('Completion failed')
+            alert('🎉 Ticket purchased!')
+          } catch (err) {
+            console.error('❌ Completion error:', err)
+            alert('Completion failed: ' + err.message)
+          } finally {
+            setLoading(false)
+          }
         },
+
         onCancel: () => {
           alert('Payment cancelled.')
           setLoading(false)
         },
+
         onError: (err) => {
           console.error('Pi SDK error:', err)
           alert('Payment error: ' + err.message)
@@ -63,3 +89,4 @@ export default function BuyTicketButton({ entryFee, competitionSlug }) {
     </button>
   )
 }
+

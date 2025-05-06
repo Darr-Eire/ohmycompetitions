@@ -13,14 +13,21 @@ export default async function handler(req, res) {
     }
 
     const client = await clientPromise;
-    const db = client.db(); // uses DB from connection string
+    const db = client.db();
     const entries = db.collection('entries');
 
+    // Optional: prevent duplicate entries
+    const existing = await entries.findOne({ paymentId });
+    if (existing) {
+      return res.status(409).json({ error: 'Duplicate paymentId' });
+    }
+
+    // Save entry
     const entry = {
       paymentId,
       txid,
       userUid: uid,
-      competitionSlug: 'ps5-bundle-giveaway', // make dynamic later
+      competitionSlug: 'ps5-bundle-giveaway', // TODO: make dynamic later
       status: 'confirmed',
       createdAt: new Date(),
     };
@@ -29,7 +36,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ success: true, message: 'Entry saved' });
   } catch (err) {
-    console.error('❌ Error in /api/pi/complete.js:', err);
+    console.error('❌ Error in complete.js:', err);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 }
