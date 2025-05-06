@@ -20,4 +20,8 @@ export default async function handler(req, res) {
       paymentId,
       txid,
       userUid: uid,
-      competitionSlug: 'ps5-bundle-giveaway', /
+      competitionSlug: 'ps5-bundle-giveaway',
+      status: 'confirmed',
+      createdAt: new Date(),
+    };
+    
