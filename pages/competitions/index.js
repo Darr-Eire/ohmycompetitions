@@ -127,17 +127,17 @@ export default function AllCompetitionsPage() {
     },
     {
       comp: {
-        slug: 'tesla-model-3-giveaway',
-        entryFee: 40,
-        totalTickets: 20000,
-        ticketsSold: 5120,
+        slug: 'matchday-tickets',
+        entryFee: 2.2,
+        totalTickets: 250,
+        ticketsSold: 0,
         endsAt: '2025-05-20T23:59:00Z',
       },
-      title: 'Tesla Model 3 Giveaway',
-      href: '/competitions/tesla-model-3-giveaway',
-      prize: 'Tesla Model 3',
-      fee: '40 π',
-      imageUrl: '/images/tesla.jpeg',
+      title: 'Matchday Tickets',
+      href: '/competitions/matchday-tickets',
+      prize: 'Matchday Tickets',
+      fee: '2.2 π',
+      imageUrl: '/images/liverpool.jpeg',
     },
     {
       comp: {

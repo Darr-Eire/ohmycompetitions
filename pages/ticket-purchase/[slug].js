@@ -14,6 +14,12 @@ const COMPETITIONS = {
     entryFee: 0.8,
     imageUrl: '/images/playstation.jpeg',
   },
+  'matchday-tickets': {
+    title: 'Matchday Tickets',
+    prize: 'x2 Tickets to Liverpool Vs CrystalPalace ',
+    entryFee: 0.8,
+    imageUrl: '/images/liverpool.jpeg',
+  },
   // …other slugs…
 }
 
