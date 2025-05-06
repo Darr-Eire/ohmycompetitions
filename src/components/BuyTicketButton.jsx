@@ -23,8 +23,10 @@ export default function BuyTicketButton({ entryFee, competitionSlug }) {
       },
       {
         onReadyForServerApproval: async (paymentId, paymentData, signature) => {
+          console.log('📩 Approving payment:', paymentId)
+          alert('📩 Approving payment: ' + paymentId) // 👈 shows the ID
+
           try {
-            console.log('📩 Approving payment:', paymentId)
             const res = await fetch('/api/pi/approve', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -89,4 +91,3 @@ export default function BuyTicketButton({ entryFee, competitionSlug }) {
     </button>
   )
 }
-
