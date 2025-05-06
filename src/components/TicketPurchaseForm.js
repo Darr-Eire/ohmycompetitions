@@ -8,7 +8,8 @@ export default function TicketPurchaseForm({ competition }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     // TODO: replace with real purchase logic (e.g. API call)
-    console.log(`Purchasing ${quantity} ticket(s) for ${competition.slug}`);
+    alert('🔔 createPayment called')
+   console.log('🛒 createPayment start', { entryFee, competitionSlug })
     alert(`Purchased ${quantity} ticket(s) for ${competition.title}!`);
   };
 
