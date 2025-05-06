@@ -1,5 +1,5 @@
 'use client'
-// pages/ticket-purchase/[slug].jsx
+// pages/ticket-purchase/[slug].js
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
@@ -14,7 +14,7 @@ const COMPETITIONS = {
     entryFee: 0.8,
     imageUrl: '/images/playstation.jpeg',
   },
-  // …add other slugs here…
+  // …other slugs…
 }
 
 export default function TicketPurchasePage() {
@@ -40,21 +40,21 @@ export default function TicketPurchasePage() {
       .finally(() => setLoadingUser(false))
   }, [router.isReady])
 
-  Centralized login handler for this page
- async function handlePiLogin() {
-   setLoadingLogin(true)
-   try {
-     await window.Pi.authenticate(['username','payments'])
-     const user = await window.Pi.getCurrentPioneer()
-     console.log('✅ Pioneer logged in:', user.uid)
-     setPiUser(user)
-   } catch (err) {
-     console.error('❌ Purchase‑page login error:', err)
-     alert('Login failed—see console.')
-   } finally {
-     setLoadingLogin(false)
-   }
- }
+  // Centralized login handler for this page
+  async function handlePiLogin() {
+    setLoadingLogin(true)
+    try {
+      await window.Pi.authenticate(['username', 'payments'])
+      const user = await window.Pi.getCurrentPioneer()
+      console.log('✅ Pioneer logged in:', user.uid)
+      setPiUser(user)
+    } catch (err) {
+      console.error('❌ Purchase‑page login error:', err)
+      alert('Login failed—see console.')
+    } finally {
+      setLoadingLogin(false)
+    }
+  }
 
   if (!router.isReady) return null
   const comp = COMPETITIONS[slug]
@@ -95,17 +95,16 @@ export default function TicketPurchasePage() {
           <strong>{comp.entryFee} π</strong> per ticket.
         </p>
 
-        {/* Login guard */}
         {loadingUser ? (
           <p className="text-center text-gray-500">Checking session…</p>
         ) : !piUser ? (
           <button
-                     onClick={handlePiLogin}
-                     disabled={loadingLogin}
-                     className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
-                   >
-                     {loadingLogin ? 'Logging in…' : 'Log in with Pi to continue'}
-                   </button>
+            onClick={handlePiLogin}
+            disabled={loadingLogin}
+            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+          >
+            {loadingLogin ? 'Logging in…' : 'Log in with Pi to continue'}
+          </button>
         ) : (
           <BuyTicketButton
             competitionSlug={slug}
