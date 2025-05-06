@@ -10,6 +10,20 @@ export default function HomePage() {
   const [piUser, setPiUser] = useState(null)
   const scopes = ['username', 'payments']
 
+  // 1) Restore session on mount
+  useEffect(() => {
+    if (window.Pi?.getCurrentPioneer) {
+      window.Pi.getCurrentPioneer()
+        .then(user => {
+          if (user) {
+            console.log('♻️ Restored Pi session:', user.uid)
+            setPiUser(user)
+          }
+        })
+        .catch(err => console.error('Error restoring Pi session', err))
+    }
+  }, [])
+
   // Trigger Pi login
   async function handlePiLogin() {
     setLoadingLogin(true)
@@ -28,7 +42,7 @@ export default function HomePage() {
   // Carousel ref
   const techRef = useRef(null)
 
-  // Reset scroll‐out
+  // Reset scroll‑out
   useEffect(() => {
     const onScroll = () => {
       const el = techRef.current
