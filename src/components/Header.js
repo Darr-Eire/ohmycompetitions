@@ -42,13 +42,11 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
         ref={buttonRef}
         onClick={() => setMenuOpen(v => !v)}
         aria-label="Toggle menu"
-        className="
-          menu-button
-         bg-blue-600 text-white rounded px-2 py-2 text-2xl hover:bg-blue-700 transition drop-shadow
-        "
+        className="bg-blue-600 text-white rounded px-2 py-2 text-2xl hover:bg-blue-700 transition drop-shadow"
       >
-        Menu
+        ☰
       </button>
+
       <div className="flex-1 text-center">
         <Link
           href="/"
@@ -61,54 +59,29 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
       {isLoggedIn ? (
         <button
           onClick={onLogout}
-          className="
-            logout-button
-            bg-white/60 backdrop-blur
-            text-blue-600
-            rounded px-3 py-1
-            hover:bg-white/80
-            transition drop-shadow
-          "
+          className="bg-white/60 backdrop-blur text-blue-600 rounded px-3 py-1 hover:bg-white/80 transition drop-shadow"
         >
           Log Out
         </button>
       ) : (
         <button
           onClick={onLogin}
-          className="
-            login-button
-            bg-white/60 backdrop-blur
-            text-blue-600
-            rounded px-3 py-1
-            hover:bg-white/80
-            transition drop-shadow
-          "
+          className="bg-white/60 backdrop-blur text-blue-600 rounded px-3 py-1 hover:bg-white/80 transition drop-shadow"
         >
           Log In
         </button>
       )}
+
       {menuOpen && (
         <nav
           ref={menuRef}
-          className="
-            dropdown-menu
-            absolute top-full left-0 mt-1
-            bg-blue-500 backdrop-blur
-            border border-blue-600
-            rounded shadow-lg w-48
-          "
+          className="absolute top-full left-0 mt-1 bg-blue-500 backdrop-blur border border-blue-600 rounded shadow-lg w-48"
         >
           {navItems.map(([label, href]) => (
             <Link
               key={href}
               href={href}
-              className="
-                dropdown-link
-                block px-4 py-2
-                text-white
-                hover:bg-blue-600
-                transition
-              "
+              className="block px-4 py-2 text-white hover:bg-blue-600 transition"
               onClick={() => setMenuOpen(false)}
             >
               {label}
@@ -119,26 +92,14 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
 
           {isLoggedIn ? (
             <button
-              className="
-                dropdown-link
-                block w-full text-left px-4 py-2
-                text-white
-                hover:bg-blue-600
-                transition
-              "
+              className="block w-full text-left px-4 py-2 text-white hover:bg-blue-600 transition"
               onClick={() => { setMenuOpen(false); onLogout() }}
             >
               Log Out
             </button>
           ) : (
             <button
-              className="
-                dropdown-link
-                block w-full text-left px-4 py-2
-                text-white
-                hover:bg-blue-600
-                transition
-              "
+              className="block w-full text-left px-4 py-2 text-white hover:bg-blue-600 transition"
               onClick={() => { setMenuOpen(false); onLogin() }}
             >
               Log In With Pi
@@ -147,5 +108,5 @@ export default function Header({ isLoggedIn, onLogin, onLogout }) {
         </nav>
       )}
     </header>
-  )
+)
 }
