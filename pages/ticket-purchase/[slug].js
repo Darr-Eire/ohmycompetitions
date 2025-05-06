@@ -1,57 +1,108 @@
 'use client'
-// pages/ticket-purchase/[slug].js
+// pages/ticket-purchase/[slug].jsx
 
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import BuyTicketButton from '@/components/BuyTicketButton'
+import Link from 'next/link'
 
+// Competition lookup
 const COMPETITIONS = {
-  // Tech
-  'ps5-bundle-giveaway':    { title: 'PS5 Bundle Giveaway',        entryFee: 0.8  },
-  '55-inch-tv-giveaway':     { title: '55″ TV Giveaway',             entryFee: 0.25 },
-  'xbox-one-bundle':         { title: 'Xbox One Bundle',             entryFee: 0.3  },
-
-  // Premium
-  'tesla-model-3-giveaway':  { title: 'Tesla Model 3 Giveaway',      entryFee: 40   },
-  'dubai-luxury-holiday':    { title: 'Dubai Luxury Holiday',        entryFee: 20   },
-  'penthouse-hotel-stay':    { title: 'Penthouse Hotel Stay',        entryFee: 15   },
-
-  // Pi
-  'pi-giveaway-250k':        { title: '250 000 π Mega Giveaway',      entryFee: 15   },
-  'pi-giveaway-100k':        { title: '100 000 π Grand Giveaway',      entryFee: 10   },
-  'pi-giveaway-50k':         { title: '50 000 π Big Giveaway',        entryFee: 5    },
-
-  // Daily
-  'daily-jackpot':           { title: 'Daily Jackpot',               entryFee: 0.375},
-  'everyday-pioneer':        { title: 'Everyday Pioneer',            entryFee: 0.314},
-  'daily-pi-slice':          { title: 'Daily Pi Slice',              entryFee: 0.314},
-
-  // Free
-  'pi-day-freebie':          { title: 'Pi-Day Freebie',              entryFee: 0    },
-  'pi-miners-bonanza':       { title: 'Pi Miners Bonanza',           entryFee: 0    },
-  'weekly-giveaway':         { title: 'Weekly Giveaway',             entryFee: 0    },
+  'ps5-bundle-giveaway': {
+    title: 'PS5 Bundle Giveaway',
+    prize: 'PlayStation 5 + Extra Controller',
+    entryFee: 0.8,
+    imageUrl: '/images/playstation.jpeg',
+  },
+  // …add other slugs here…
 }
 
 export default function TicketPurchasePage() {
-  const { query, isReady } = useRouter()
-  // normalize slug (could be array)
-  const slug = isReady
-    ? Array.isArray(query.slug)
-      ? query.slug[0]
-      : query.slug
-    : null
+  const router = useRouter()
+  const { slug } = router.query
 
-  if (!slug) return <p>Loading…</p>
+  const [piUser, setPiUser] = useState(null)
+  const [loadingUser, setLoadingUser] = useState(true)
+
+  // Restore Pi session on load
+  useEffect(() => {
+    if (!router.isReady) return
+    if (!window.Pi?.getCurrentPioneer) {
+      setLoadingUser(false)
+      return
+    }
+    window.Pi.getCurrentPioneer()
+      .then(user => {
+        if (user) setPiUser(user)
+      })
+      .catch(console.error)
+      .finally(() => setLoadingUser(false))
+  }, [router.isReady])
+
+  if (!router.isReady) return null
   const comp = COMPETITIONS[slug]
-  if (!comp) return <p>Competition “{slug}” not found</p>
+  if (!comp) {
+    return (
+      <div className="p-6 text-center">
+        <h1 className="text-2xl font-bold">Competition Not Found</h1>
+        <p className="mt-4">We couldn’t find “{slug}”.</p>
+        <Link href="/" className="mt-6 inline-block text-blue-600 underline">
+          Back to Home
+        </Link>
+      </div>
+    )
+  }
 
   return (
-    <div className="max-w-md mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">{comp.title}</h1>
-      <p className="mb-6">Entry Fee: {comp.entryFee} π</p>
-      <BuyTicketButton
-        entryFee={comp.entryFee}
-        competitionSlug={slug}
-      />
+    <div className="max-w-lg mx-auto p-6 space-y-8">
+      {/* Hero */}
+      <div className="text-center space-y-2">
+        <h1 className="text-3xl font-extrabold">{comp.title}</h1>
+        <p className="text-gray-600">Entry Fee: {comp.entryFee} π</p>
+      </div>
+
+      {/* Prize Image */}
+      {comp.imageUrl && (
+        <img
+          src={comp.imageUrl}
+          alt={comp.title}
+          className="w-full rounded-xl shadow-lg"
+        />
+      )}
+
+      {/* Purchase Card */}
+      <div className="bg-white rounded-xl shadow p-6 space-y-4">
+        <h2 className="text-xl font-semibold">Your Ticket</h2>
+        <p className="text-gray-700">
+          You’re about to enter for <strong>{comp.prize}</strong> at{' '}
+          <strong>{comp.entryFee} π</strong> per ticket.
+        </p>
+
+        {/* Login guard */}
+        {loadingUser ? (
+          <p className="text-center text-gray-500">Checking session…</p>
+        ) : !piUser ? (
+          <button
+            onClick={async () => {
+              await window.Pi.authenticate(['username', 'payments'])
+              const user = await window.Pi.getCurrentPioneer()
+              setPiUser(user)
+            }}
+            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+          >
+            Log in with Pi to continue
+          </button>
+        ) : (
+          <BuyTicketButton
+            competitionSlug={slug}
+            entryFee={comp.entryFee}
+          />
+        )}
+      </div>
+
+      <Link href="/" className="block text-center text-blue-600 underline">
+        ← Back to Competitions
+      </Link>
     </div>
   )
 }
