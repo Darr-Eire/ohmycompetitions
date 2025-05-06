@@ -1,5 +1,4 @@
 import crypto from 'crypto';
-import clientPromise from '@/lib/mongodb';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -13,32 +12,35 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Verify signature using your Pi App Secret
+    // Verify HMAC
     const secret = process.env.PI_APP_SECRET;
     const hmac = crypto.createHmac('sha256', secret);
     hmac.update(paymentData);
     const digest = hmac.digest('hex');
 
     if (digest !== signature) {
-      console.warn('❌ Invalid payment signature');
-      return res.status(403).json({ error: 'Invalid payment signature' });
+      console.warn('❌ Invalid signature');
+      return res.status(403).json({ error: 'Invalid signature' });
     }
 
-    const client = await clientPromise;
-    const db = client.db();
-    const approvals = db.collection('approvals');
-
-    // Optional: save approval for audit/logging/debugging
-    await approvals.insertOne({
-      paymentId,
-      userUid: uid,
-      status: 'approved',
-      createdAt: new Date(),
+    // ✅ Approve payment with Pi
+    const piRes = await fetch(`https://api.minepi.com/v2/payments/${paymentId}/approve`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Key ${process.env.PI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
     });
+
+    if (!piRes.ok) {
+      const text = await piRes.text();
+      console.error('❌ Pi approval failed:', text);
+      return res.status(500).json({ error: 'Pi approval failed', detail: text });
+    }
 
     return res.status(200).json({ success: true });
   } catch (err) {
-    console.error('❌ Error in approve.js:', err);
+    console.error('❌ Approve.js error:', err);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 }
