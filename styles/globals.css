@@ -100,9 +100,7 @@ button {
 }
 
 /* =============================================================================
-   Components Layer
-   ============================================================================= */
-@layer components {
+ @layer components {
   /* Neon Button */
   .neon-button {
     background: linear-gradient(135deg, #00ffd5, #0077ff);
@@ -147,6 +145,14 @@ button {
     background-clip: text;
     font-weight: bold;
   }
+
+  /* Competition Card Header */
+  .card-header-gradient {
+    @apply flex justify-between items-center px-4 py-2 text-sm text-white font-bold uppercase;
+    background: linear-gradient(135deg, #00ffd5, #0077ff);
+    font-family: 'Orbitron', sans-serif;
+  }
+
 
   /* Competition Card Header */
   .card-header-gradient {
@@ -196,7 +202,7 @@ button {
     @apply title-gradient;
     margin: 0 auto 1rem;
   }
-}
+
 
 /* =============================================================================
    Competition Card
@@ -271,6 +277,7 @@ button {
 }
 
 
+
 .centered-carousel::-webkit-scrollbar {
   display: none;
 }
@@ -284,6 +291,11 @@ button {
 .centered-carousel.tiny-carousel > * {
   flex: 0 0 120px;
   max-width: 120px;
+}
+/* in styles/globals.css, under @layer components */
+.competition-top-banner {
+  /* remove any text-color in title-gradient, then: */
+  @apply text-black; 
 }
 
 /* =============================================================================

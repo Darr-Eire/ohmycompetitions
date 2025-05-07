@@ -27,14 +27,14 @@ const partnerItems = [
 
 export default function PartnersPage() {
   return (
-    <main className="app-background min-h-screen p-4 text-white">
+    <main className="pages-partners app-background min-h-screen p-4 text-white">
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
         <header className="text-center">
           <div className="competition-top-banner title-gradient mb-2">
-            🤝 Partners &amp; Sponsors
+            🤝 Partners & Sponsors
           </div>
-          <p className="text-white">
+          <p className="text-black">
             Community DApps
           </p>
         </header>
@@ -53,7 +53,7 @@ export default function PartnersPage() {
                 height={80}
                 className="object-contain mb-4"
               />
-              <h2 className="text-xl font-semibold gradient-text mb-4">
+              <h2 className="text-xl font-semibold gradient-text mb-4 text-black">
                 {partner.name}
               </h2>
               <Link
@@ -70,7 +70,7 @@ export default function PartnersPage() {
 
           {/* Become a Partner CTA */}
           <div className="competition-card flex flex-col items-center p-6 bg-white bg-opacity-10 rounded-2xl shadow-lg text-center">
-            <div className="mb-4 gradient-text">Your Logo Here</div>
+            <div className="mb-4 gradient-text text-black">Your Logo Here</div>
             <p className="mb-6 text-white">
               Want your DApp featured? Contact us!
             </p>
@@ -84,24 +84,29 @@ export default function PartnersPage() {
 
         {/* Why Partner section */}
         <section className="competition-card p-6 bg-white bg-opacity-10 rounded-2xl shadow-lg">
-          <h2 className="text-2xl font-semibold title-gradient mb-4 text-center">
-            Why Partner With OhMyCompetitions?
-          </h2>
+          {/* Neon gradient bar with black text */}
+          <div className="bg-gradient-to-r from-[#00ffd5] to-[#0077ff] rounded px-4 py-2 mb-4">
+            <h2 className="text-1xl text-center text-black">
+              Why Partner With OhMyCompetitions?
+            </h2>
+          </div>
+
           <ul className="list-disc list-inside space-y-2 text-white">
             <li>
-              <strong className="gradient-text">Instant Trust &amp; Credibility:</strong> Align with a top-ranked platform to build confidence in your DApp.
+              <strong className="gradient-text">Instant Trust &amp; Credibility:</strong> Align with a top‑ranked platform to build confidence in your DApp.
             </li>
             <li>
-              <strong className="gradient-text">Massive Visibility:</strong> Get in front of thousands of crypto-curious users every day.
+              <strong className="gradient-text">Massive Visibility:</strong> Get in front of thousands of crypto‑curious users every day.
             </li>
             <li>
               <strong className="gradient-text">Easy Integration:</strong> A single API call and you’re live.
             </li>
             <li>
-              <strong className="gradient-text">Shared Marketing:</strong> Cross-promote in our socials and newsletter.
+              <strong className="gradient-text">Shared Marketing:</strong> Cross‑promote in our socials and newsletter.
             </li>
           </ul>
         </section>
+
       </div>
     </main>
   )
