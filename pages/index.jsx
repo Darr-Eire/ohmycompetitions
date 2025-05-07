@@ -189,6 +189,9 @@ export default function HomePage() {
             {title}
           </h2>
         </div>
+      </section>
+    );
+    
   
         {/* Mobile carousel */}
         <div className="centered-carousel lg:hidden">
