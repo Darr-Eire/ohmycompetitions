@@ -65,12 +65,12 @@ export default function HomePage() {
       theme: 'tech',
     },
     {
-      comp: { slug: 'tesla-model-3-giveaway', entryFee: 40, totalTickets: 20000, ticketsSold: 5120, endsAt: '2025-05-20T23:59:00Z' },
-      title: 'Tesla',
-      prize: 'Tesla Model 3',
+      comp: { slug: 'matchday-tickets', entryFee: 40, totalTickets: 20000, ticketsSold: 5120, endsAt: '2025-05-20T23:59:00Z' },
+      title: 'Matchday Tickets',
+      prize: 'Matchday Tickets',
       fee: '40 π',
-      href: '/competitions/tesla-model-3-giveaway',
-      imageUrl: '/images/tesla.jpeg',
+      href: '/competitions/matchday-tickets',
+      imageUrl: '/images/liverpool.jpeg',
       theme: 'premium',
     },
     {
@@ -186,8 +186,6 @@ export default function HomePage() {
 
   return (
     <>
-    
-  
       {/* Competitions Section */}
       <main className="max-w-screen-lg mx-auto px-4 py-8">
         <Section
@@ -195,40 +193,51 @@ export default function HomePage() {
           items={techItems}
           viewMoreHref="/competitions"
         />
+  
+        {/* More Competitions Section in 2-Column Grid */}
+        <section className="mt-10">
+        <h2 className="text-center px-4 py-2 text-lg font-bold text-white bg-gradient-to-r from-[#00ffd5] to-[#0077ff] rounded shadow mb-6 font-orbitron">
+  More Competitions
+</h2>
+
+  
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {[...piItems, ...dailyItems, ...freeItems].map(item => (
+              <CompetitionCard key={item.comp.slug} {...item} />
+            ))}
+          </div>
+        </section>
       </main>
     </>
   )
-
-function Section({ title, items, viewMoreHref }) {
-  return (
-    <section className="mb-12">
-      <h2 className="text-center px-4 py-2 text-lg font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-600 rounded shadow mb-6 font-orbitron">
-        {title}
-      </h2>
-
-      {/* Mobile carousel */}
-      <div className="centered-carousel lg:hidden">
-        {items.map(item => (
-          <CompetitionCard key={item.comp.slug} {...item} small />
-        ))}
-      </div>
-
-      {/* Desktop grid */}
-      <div className="hidden lg:grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-        {items.map(item => (
-          <CompetitionCard key={item.comp.slug} {...item} />
-        ))}
-      </div>
-
-      <div className="text-center mt-6">
-        <Link
-          href={viewMoreHref}
-          className="neon-button"
-        >
-          View More
-        </Link>
-      </div>
-    </section>
-  )
-}
-}
+  
+  function Section({ title, items, viewMoreHref }) {
+    return (
+      <section className="mb-12">
+        <h2 className="text-center px-4 py-2 text-lg font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-600 rounded shadow mb-6 font-orbitron">
+          {title}
+        </h2>
+  
+        {/* Mobile carousel */}
+        <div className="centered-carousel lg:hidden">
+          {items.map(item => (
+            <CompetitionCard key={item.comp.slug} {...item} small />
+          ))}
+        </div>
+  
+        {/* Desktop grid */}
+        <div className="hidden lg:grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+          {items.map(item => (
+            <CompetitionCard key={item.comp.slug} {...item} />
+          ))}
+        </div>
+  
+        <div className="text-center mt-6">
+          <Link href={viewMoreHref} className="neon-button">
+            View More
+          </Link>
+        </div>
+      </section>
+    )
+  }
+  

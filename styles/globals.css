@@ -269,6 +269,7 @@ button {
   scroll-snap-stop: always;
 }
 
+
 .centered-carousel::-webkit-scrollbar {
   display: none;
 }
@@ -340,4 +341,23 @@ button {
   body {
     overflow-x: hidden;
   }
+}
+.vault-container {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  margin: auto;
+}
+
+.vault-bg {
+  position: absolute;
+  width: 100%;
+  height: auto;
+  z-index: 1;
+  opacity: 0.8;
+}
+
+.vault-canvas {
+  position: relative;
+  z-index: 2;
 }

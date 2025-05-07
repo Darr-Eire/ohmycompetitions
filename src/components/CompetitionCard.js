@@ -51,7 +51,7 @@ export default function CompetitionCard({
         <span
           className={`px-3 py-1 rounded-full text-xs sm:text-sm font-bold shadow ${
             status === 'LIVE'
-              ? 'bg-green-400 text-black animate-pulse'
+              ? 'bg-green-600 text-black animate-pulse'
               : 'bg-red-500 text-white'
           }`}
         >
@@ -75,13 +75,15 @@ export default function CompetitionCard({
       </div>
 
       {/* Info */}
-      <div className="p-4 text-xs sm:text-sm space-y-1">
-        <p><span className="text-cyan-300">Prize:</span> {prize}</p>
-        <p><span className="text-cyan-300">Ends In:</span> {timeLeft}</p>
-        <p><span className="text-cyan-300">Total Tickets:</span> {comp.totalTickets?.toLocaleString() ?? '—'}</p>
-        <p><span className="text-cyan-300">Remaining:</span> {typeof comp.ticketsSold === 'number' ? (comp.totalTickets - comp.ticketsSold).toLocaleString() : '—'}</p>
-        <p><span className="text-cyan-300">Entry Fee:</span> {fee}</p>
-      </div>
+   {/* Info - Centered */}
+<div className="p-4 text-xs sm:text-sm space-y-1 text-center">
+  <p><span className="text-cyan-300 font-semibold">Prize:</span> {prize}</p>
+  <p><span className="text-cyan-300 font-semibold">Ends In:</span> {timeLeft}</p>
+  <p><span className="text-cyan-300 font-semibold">Total Tickets:</span> {comp.totalTickets?.toLocaleString() ?? '—'}</p>
+  <p><span className="text-cyan-300 font-semibold">Remaining:</span> {typeof comp.ticketsSold === 'number' ? (comp.totalTickets - comp.ticketsSold).toLocaleString() : '—'}</p>
+  <p><span className="text-cyan-300 font-semibold">Entry Fee:</span> {fee}</p>
+</div>
+
 
       {/* Custom Content Slot */}
       {children}
