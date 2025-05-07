@@ -179,8 +179,9 @@ export default function HomePage() {
             {title}
           </h2>
         </div>
-      </section> // Ensure this closing section tag is correctly placed.
+      </section>
     );
+    
     
     
   
