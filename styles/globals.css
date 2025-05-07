@@ -118,6 +118,7 @@ button {
     box-shadow: 0 0 15px #00faff;
     transform: scale(1.03);
   }
+/* globals.css */
 
   .btn-gradient {
     @apply neon-button;
@@ -297,6 +298,44 @@ button {
   /* remove any text-color in title-gradient, then: */
   @apply text-black; 
 }
+:root {
+  --neon-blue: #00ffff;
+  --neon-purple: #bf00ff;
+  --dark-bg: #0f0f1a;
+  --font-primary: 'Orbitron', sans-serif;
+}
+
+body {
+  background-color: var(--dark-bg);
+  color: var(--neon-blue);
+  font-family: var(--font-primary);
+  margin: 0;
+  padding: 0;
+}
+
+.glow-button {
+  background-color: transparent;
+  border: 2px solid var(--neon-purple);
+  color: var(--neon-purple);
+  padding: 10px 20px;
+  border-radius: 5px;
+  text-transform: uppercase;
+  transition: box-shadow 0.3s ease;
+}
+
+.glow-button:hover {
+  box-shadow: 0 0 10px var(--neon-purple), 0 0 20px var(--neon-purple);
+  cursor: pointer;
+}
+
+.card {
+  background-color: #1a1a2e;
+  border: 1px solid var(--neon-blue);
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 0 10px var(--neon-blue);
+}
+
 
 /* =============================================================================
    Responsive Cards

@@ -10,7 +10,7 @@ export default function HomePage() {
     {
       comp: { slug: 'ps5-bundle-giveaway', entryFee: 0.8, totalTickets: 1100, ticketsSold: 0, endsAt: '2025-05-07T14:00:00Z' },
       title: 'PS5 Bundle',
-      prize: 'PlayStation 5 + Extra Controller',
+      prize: 'PlayStation 5',
       fee: '0.8 π',
       href: '/competitions/ps5-bundle-giveaway',
       imageUrl: '/images/playstation.jpeg',
@@ -141,21 +141,23 @@ export default function HomePage() {
       />
   
       {/* Pi Giveaways */}
-      <CategorySection
-        title="Pi Giveaways"
-        items={piItems}
-        viewMoreHref="/competitions?theme=pi"
-      />
+      <Section
+  title="Pi Giveaways"
+  items={piItems}
+  viewMoreHref="/competitions?theme=pi"
+/>
+
   
       {/* Daily Competitions */}
-      <CategorySection
-        title="Daily Competitions"
-        items={dailyItems}
-        viewMoreHref="/competitions?theme=daily"
-      />
+      <Section
+  title="Daily Competitions"
+  items={dailyItems}
+  viewMoreHref="/competitions?theme=daily"
+/>
+
   
       {/* Free Competitions */}
-      <CategorySection
+      <Section
         title="Free Competitions"
         items={freeItems}
         viewMoreHref="/competitions?theme=free"
@@ -172,13 +174,21 @@ export default function HomePage() {
   }) {
     return (
       <section className="mb-12">
-        <h2 className="
-          text-center px-4 py-2 text-base font-bold text-black
-          bg-gradient-to-r from-[#00ffd5] to-[#0077ff]
-          rounded shadow mb-6 font-orbitron
-        ">
-          {title}
-        </h2>
+        <div className="text-center mb-2">
+          <h2 className="
+            inline-block
+            text-sm
+            font-medium
+            text-black
+            bg-gradient-to-r from-[#00ffd5] to-[#0077ff]
+            px-4 py-2
+            rounded-lg
+            shadow
+            font-orbitron
+          ">
+            {title}
+          </h2>
+        </div>
   
         {/* Mobile carousel */}
         <div className="centered-carousel lg:hidden">
@@ -194,45 +204,10 @@ export default function HomePage() {
           ))}
         </div>
   
+        {/* View More Button */}
         <div className="text-center mt-6">
           <Link href={viewMoreHref} className={viewMoreClassName}>
             {viewMoreText}
-          </Link>
-        </div>
-      </section>
-    )
-  }
-  
-  function CategorySection({ title, items, viewMoreHref }) {
-    return (
-      <section className="mb-12">
-       <h2 className="
-  text-center
-  px-4 py-2
-  text-base       /* font-size: 1rem */
-  sm:text-lg      /* font-size: 1.125rem on small+ screens */
-  font-semibold   /* font-weight: 600 */
-  text-black      /* text-color: black */
-  bg-gradient-to-r from-[#00ffd5] to-[#0077ff]
-  rounded shadow mb-6 font-orbitron
-">
-  {title}
-</h2>
-
-  
-        {/* Combined mobile+desktop grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-          {items.map(item => (
-            <CompetitionCard key={item.comp.slug} {...item} />
-          ))}
-        </div>
-  
-        <div className="text-center mt-6">
-          <Link
-            href={viewMoreHref}
-            className="btn-gradient text-white inline-block px-4 py-2 rounded-lg"
-          >
-            View All {title}
           </Link>
         </div>
       </section>

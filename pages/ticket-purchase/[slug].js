@@ -1,129 +1,200 @@
-'use client'
-// pages/ticket-purchase/[slug].js
+'use client';
 
-import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/router'
-import BuyTicketButton from '@/components/BuyTicketButton'
-import Link from 'next/link'
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import Link from 'next/link';
+import BuyTicketButton from '@/components/BuyTicketButton';
 
-// Competition lookup
 const COMPETITIONS = {
   'ps5-bundle-giveaway': {
     title: 'PS5 Bundle Giveaway',
-    prize: 'PlayStation 5 + Extra Controller',
+    prize: 'PlayStation 5 + Extra Controller',
     entryFee: 0.8,
     imageUrl: '/images/playstation.jpeg',
+    date: 'June 14, 2025',
+    time: '3:14 PM UTC',
+    location: 'Online',
+    endsAt: '2025-06-14T15:14:00Z',
   },
   'matchday-tickets': {
     title: 'Matchday Tickets',
-    prize: 'x2 Tickets to Liverpool Vs CrystalPalace ',
+    prize: 'x2 Tickets to Liverpool Vs Crystal Palace',
     entryFee: 0.8,
     imageUrl: '/images/liverpool.jpeg',
+    date: 'July 20, 2025',
+    time: '1:30 PM UTC',
+    location: 'Anfield Stadium, Liverpool',
+    endsAt: '2025-07-20T13:30:00Z',
   },
-  // …other slugs…
-}
+};
 
 export default function TicketPurchasePage() {
-  const router = useRouter()
-  const { slug } = router.query
+  const router = useRouter();
+  const { slug } = router.query;
 
-  const [piUser, setPiUser] = useState(null)
-  const [loadingUser, setLoadingUser] = useState(true)
-  const [loadingLogin, setLoadingLogin] = useState(false)
+  const [piUser, setPiUser] = useState(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+  const [loadingLogin, setLoadingLogin] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+  const [discount, setDiscount] = useState(0);
+  const [timeLeft, setTimeLeft] = useState('');
 
-  // Restore Pi session on load
   useEffect(() => {
-    if (!router.isReady) return
+    if (!router.isReady) return;
     if (!window.Pi?.getCurrentPioneer) {
-      setLoadingUser(false)
-      return
+      setLoadingUser(false);
+      return;
     }
     window.Pi.getCurrentPioneer()
       .then(user => {
-        if (user) setPiUser(user)
+        if (user) setPiUser(user);
       })
       .catch(console.error)
-      .finally(() => setLoadingUser(false))
-  }, [router.isReady])
+      .finally(() => setLoadingUser(false));
+  }, [router.isReady]);
 
-// Centralized login handler for this page
-async function handlePiLogin() {
-  setLoadingLogin(true)
-  try {
-    // Ask for username+payments scope up‑front
-    const { accessToken, user } = await window.Pi.authenticate(['username','payments'])
-    console.log('✅ Pioneer logged in:', user)
-    setPiUser(user)
-  } catch (err) {
-    console.error('❌ Purchase‑page login error:', err)
-    // show the real error message
-    alert(`Login failed: ${err.message || err}`)
-  } finally {
-    setLoadingLogin(false)
-  }
-}
+  useEffect(() => {
+    if (!COMPETITIONS[slug]?.endsAt) return;
 
+    const interval = setInterval(() => {
+      const end = new Date(COMPETITIONS[slug].endsAt).getTime();
+      const now = Date.now();
+      const diff = end - now;
 
-  if (!router.isReady) return null
-  const comp = COMPETITIONS[slug]
+      if (diff <= 0) {
+        setTimeLeft('Ended');
+        clearInterval(interval);
+        return;
+      }
+
+      const hrs = Math.floor(diff / (1000 * 60 * 60));
+      const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setTimeLeft(`${hrs}h ${mins}m ${secs}s`);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [slug]);
+
+  const handlePiLogin = async () => {
+    setLoadingLogin(true);
+    try {
+      const { user } = await window.Pi.authenticate(['username', 'payments']);
+      setPiUser(user);
+    } catch (err) {
+      alert(`Login failed: ${err.message || err}`);
+    } finally {
+      setLoadingLogin(false);
+    }
+  };
+
+  if (!router.isReady) return null;
+  const comp = COMPETITIONS[slug];
   if (!comp) {
     return (
-      <div className="p-6 text-center">
-        <h1 className="text-2xl font-bold">Competition Not Found</h1>
+      <div className="p-6 text-center text-white bg-[#0b1120] min-h-screen">
+        <h1 className="text-2xl font-bold text-red-500">Competition Not Found</h1>
         <p className="mt-4">We couldn’t find “{slug}”.</p>
-        <Link href="/" className="mt-6 inline-block text-blue-600 underline">
-          Back to Home
+        <Link href="/" className="mt-6 inline-block text-blue-400 underline font-semibold">
+          ← Back to Home
         </Link>
       </div>
-    )
+    );
   }
 
+  const currentPrice = comp.entryFee - discount;
+  const totalPrice = currentPrice * quantity;
+
   return (
-    <div className="max-w-lg mx-auto p-6 space-y-8">
-      {/* Hero */}
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl font-extrabold">{comp.title}</h1>
-        <p className="text-gray-600">Entry Fee: {comp.entryFee} π</p>
+    <div className="bg-[#0b1120] min-h-screen text-white py-6 px-4">
+      <div className="max-w-xl mx-auto border border-blue-500 rounded-xl shadow-xl overflow-hidden bg-[#0b1120]">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-cyan-400 to-blue-500 px-4 py-3 text-center">
+          <h1 className="text-xl sm:text-2xl font-bold text-black uppercase">{comp.title}</h1>
+        </div>
+
+        {/* Body */}
+        <div className="p-4 space-y-4 text-center">
+          {/* Image */}
+          {comp.imageUrl && (
+            <img
+              src={comp.imageUrl}
+              alt={comp.title}
+              className="w-full max-h-64 object-cover rounded-lg border border-blue-500 mx-auto"
+            />
+          )}
+
+          {/* Prize Info */}
+          <p className="text-gray-300"><strong>Prize:</strong> {comp.prize}</p>
+
+          {/* Countdown */}
+          {timeLeft && (
+            <div className="bg-gradient-to-r from-cyan-400 to-blue-500 px-4 py-2 rounded-lg inline-block mx-auto">
+              <p className="text-sm text-black font-mono font-bold">
+                ⏳ Ends In: <span>{timeLeft}</span>
+              </p>
+            </div>
+          )}
+
+          {/* Event Info */}
+          <div className="space-y-1 text-sm">
+            <p><strong>Date:</strong> {comp.date}</p>
+            <p><strong>Time:</strong> {comp.time}</p>
+            <p><strong>Location:</strong> {comp.location}</p>
+          </div>
+
+          {/* Ticket Info */}
+          <div className="space-y-1 text-sm">
+            <p>Entry Fee: <strong>{comp.entryFee} π</strong></p>
+            {discount > 0 && (
+              <p className="text-green-400">Discount: <strong>-{discount} π</strong></p>
+            )}
+            <p className="font-semibold">Price per ticket: {currentPrice.toFixed(2)} π</p>
+            <div className="flex items-center justify-center gap-3 mt-2">
+              <button
+                onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                className="bg-blue-500 text-white px-4 py-1 rounded-full font-bold disabled:opacity-50"
+                disabled={quantity <= 1}
+              >−</button>
+              <span className="text-lg font-semibold">{quantity}</span>
+              <button
+                onClick={() => setQuantity(q => q + 1)}
+                className="bg-blue-500 text-white px-4 py-1 rounded-full font-bold"
+              >+</button>
+            </div>
+          </div>
+
+          {/* Total */}
+          <div>
+            <p className="text-lg font-bold">Total: {totalPrice.toFixed(2)} π</p>
+          </div>
+
+          {/* Description */}
+          <p className="text-gray-300 text-sm">
+            Secure your entry to win <strong>{comp.prize}</strong> — don’t miss out!
+          </p>
+
+          {/* Action Button */}
+          {loadingUser ? (
+            <p className="text-center text-gray-400">Checking session…</p>
+          ) : !piUser ? (
+            <button
+              onClick={handlePiLogin}
+              disabled={loadingLogin}
+              className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-black font-bold py-3 px-4 rounded-xl shadow-lg"
+            >
+              {loadingLogin ? 'Logging in…' : 'Log in with Pi to continue'}
+            </button>
+          ) : (
+            <BuyTicketButton
+              competitionSlug={slug}
+              entryFee={currentPrice}
+              quantity={quantity}
+            />
+          )}
+        </div>
       </div>
-
-      {/* Prize Image */}
-      {comp.imageUrl && (
-        <img
-          src={comp.imageUrl}
-          alt={comp.title}
-          className="w-full rounded-xl shadow-lg"
-        />
-      )}
-
-      {/* Purchase Card */}
-      <div className="bg-white rounded-xl shadow p-6 space-y-4">
-        <h2 className="text-xl font-semibold">Your Ticket</h2>
-        <p className="text-gray-700">
-          You’re about to enter for <strong>{comp.prize}</strong> at{' '}
-          <strong>{comp.entryFee} π</strong> per ticket.
-        </p>
-
-        {loadingUser ? (
-          <p className="text-center text-gray-500">Checking session…</p>
-        ) : !piUser ? (
-          <button
-            onClick={handlePiLogin}
-            disabled={loadingLogin}
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
-          >
-            {loadingLogin ? 'Logging in…' : 'Log in with Pi to continue'}
-          </button>
-        ) : (
-          <BuyTicketButton
-            competitionSlug={slug}
-            entryFee={comp.entryFee}
-          />
-        )}
-      </div>
-
-      <Link href="/" className="block text-center text-blue-600 underline">
-        ← Back to Competitions
-      </Link>
     </div>
-  )
+  );
 }

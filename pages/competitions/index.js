@@ -327,27 +327,28 @@ export default function AllCompetitionsPage() {
     { comp:{slug:'pi-miners-bonanza', entryFee:0, totalTickets:10000, ticketsSold:0, endsAt:'2025-05-06T20:00:00Z'}, title:'Pi Miners Bonanza', href:'/competitions/pi-miners-bonanza', prize:'Special Badge', fee:'Free', imageUrl:'/images/bonanza.png', theme:'green' },
     { comp:{slug:'pi-nugget-giveaway',   entryFee:0, totalTickets:10000, ticketsSold:0, endsAt:'2025-05-10T18:00:00Z'}, title:"Pi Nugget Giveaway",    href:'/competitions/pi-nugget-giveaway', prize:'9,999 / 5,555 / 1,111 π', fee:'Free', imageUrl:'/images/winner.png', theme:'green' },
     ]
-    return (
-      <main className="app-background min-h-screen p-4 text-white">
-        <div className="competition-top-banner title-gradient mb-6">
-          All Competitions
-        </div>
-  
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {allComps.map(item => (
-            <CompetitionCard
-              key={item.comp.slug}
-              comp={item.comp}
-              title={item.title}
-              prize={item.prize}
-              fee={item.fee}
-              theme={item.theme}
-              imageUrl={item.imageUrl}
-              endsAt={item.comp.endsAt}
-            />
-          ))}
-        </div>
-      </main>
-    )
-  }
-  
+
+
+  return (
+    <main className="app-background min-h-screen p-4 text-white">
+      <div className="competition-top-banner title-gradient mb-6 text-black">
+        All Competitions
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {allComps.map(item => (
+          <CompetitionCard
+            key={item.comp.slug}
+            comp={item.comp}
+            title={item.title}
+            prize={item.prize}
+            fee={item.fee}
+            theme={item.theme}
+            imageUrl={item.imageUrl}
+            endsAt={item.comp.endsAt}
+          />
+        ))}
+      </div>
+    </main>
+  )
+}
