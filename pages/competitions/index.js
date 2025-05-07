@@ -6,6 +6,7 @@ import CompetitionCard from '@/components/CompetitionCard'
 export default function AllCompetitionsPage() {
   const allComps = [
     {
+
       comp: {
         slug: 'ps5-bundle-giveaway',
         entryFee: 0.8,
@@ -49,6 +50,20 @@ export default function AllCompetitionsPage() {
       href: '/competitions/xbox-one-bundle',
       imageUrl: '/images/xbox.jpeg',
       theme: 'orange',
+    },
+    {
+      comp: {
+        slug: 'matchday-tickets',
+        entryFee: 2.2,
+        totalTickets: 250,
+        ticketsSold: 0,
+        endsAt: '2025-05-20T23:59:00Z',
+      },
+      title: 'Matchday Tickets',
+      href: '/competitions/matchday-tickets',
+      prize: 'Matchday Tickets',
+      fee: '2.2 π',
+      imageUrl: '/images/liverpool.jpeg',
     },
     {
       comp: {
@@ -127,20 +142,6 @@ export default function AllCompetitionsPage() {
     },
     {
       comp: {
-        slug: 'matchday-tickets',
-        entryFee: 2.2,
-        totalTickets: 250,
-        ticketsSold: 0,
-        endsAt: '2025-05-20T23:59:00Z',
-      },
-      title: 'Matchday Tickets',
-      href: '/competitions/matchday-tickets',
-      prize: 'Matchday Tickets',
-      fee: '2.2 π',
-      imageUrl: '/images/liverpool.jpeg',
-    },
-    {
-      comp: {
         slug: 'dubai-luxury-holiday',
         entryFee: 20,
         totalTickets: 15000,
@@ -166,21 +167,6 @@ export default function AllCompetitionsPage() {
       prize: 'Penthouse Hotel Stay of your choice',
       fee: '15 π',
       imageUrl: '/images/hotel.jpeg',
-    },
-    
-    {
-      comp: {
-        slug: 'the-crown-jewels',
-        entryFee: 20,
-        totalTickets: 15000,
-        ticketsSold: 7100,
-        endsAt: '2025-05-18T22:00:00Z',
-      },
-      title: 'The Crown Jewels',
-      href: '/competitions/the-crown-jewels',
-      prize: 'Jewels',
-      fee: '20 π',
-      imageUrl: '/images/jew.jpeg',
     },
     {
       comp: {
