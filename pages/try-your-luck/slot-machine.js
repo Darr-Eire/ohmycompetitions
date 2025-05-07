@@ -5,7 +5,11 @@ import { useEffect, useRef, useState } from 'react'
 import Confetti from 'react-confetti'
 import { useWindowSize } from '@uidotdev/usehooks'
 
-const symbols = ['🥧','⭐','🔥','🔒','🪙','🎁']
+// Extended symbols array with 5 more icons
+const symbols = [
+  '🥧', '⭐', '🔥', '🔒', '🪙', '🎁',
+  '💎', '🍀', '🎲', '🥇', '🎫'
+]
 
 export default function PiSlotMachine() {
   const canvasRef = useRef(null)
@@ -14,7 +18,7 @@ export default function PiSlotMachine() {
   const [played, setPlayed] = useState(false)
   const { width, height } = useWindowSize()
 
-  // Prevent replay
+  // Prevent replay today
   useEffect(() => {
     if (localStorage.getItem('slotMachinePlayed') === new Date().toDateString()) {
       setPlayed(true)
@@ -22,73 +26,76 @@ export default function PiSlotMachine() {
   }, [])
 
   // Reel state
-  const reels = useRef([0,0,0])
-  const velocities = useRef([0,0,0])
+  const reels = useRef([0, 0, 0])
+  const velocities = useRef([0.5, 0.4, 0.3])
 
   const startSpin = () => {
     if (spinning || played) return
     setResult(null)
     setSpinning(true)
-    // initialize velocities
-    velocities.current = [0.5,0.4,0.3]
+    // reset velocities
+    velocities.current = [0.5, 0.4, 0.3]
   }
 
-  // Draw loop
+  // Drawing loop
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
-    const W = canvas.width = 300
-    const H = canvas.height = 200
+    const W = (canvas.width = 300)
+    const H = (canvas.height = 200)
     let raf
 
     const draw = () => {
-      ctx.clearRect(0,0,W,H)
-      // background
-      const bg = ctx.createLinearGradient(0,0,0,H)
-      bg.addColorStop(0,'#001f3f')
-      bg.addColorStop(1,'#001740')
+      ctx.clearRect(0, 0, W, H)
+      // background gradient
+      const bg = ctx.createLinearGradient(0, 0, 0, H)
+      bg.addColorStop(0, '#001f3f')
+      bg.addColorStop(1, '#001740')
       ctx.fillStyle = bg
-      ctx.fillRect(0,0,W,H)
-      // frosted slot area
-      const slotW = W/3
-      reels.current.forEach((pos,i) => {
-        const x = i*slotW
+      ctx.fillRect(0, 0, W, H)
+
+      const slotW = W / 3
+      reels.current.forEach((pos, i) => {
+        const x = i * slotW
         ctx.save()
-        ctx.fillStyle='rgba(255,255,255,0.1)'
-        ctx.fillRect(x,0,slotW,H)
-        ctx.fillStyle='rgba(255,255,255,0.15)'
-        ctx.fillRect(x+4,4,slotW-8,H-8)
-        ctx.strokeStyle='rgba(255,255,255,0.6)'
-        ctx.lineWidth=3
-        ctx.strokeRect(x+2,2,slotW-4,H-4)
+        ctx.fillStyle = 'rgba(255,255,255,0.1)'
+        ctx.fillRect(x, 0, slotW, H)
+        ctx.fillStyle = 'rgba(255,255,255,0.15)'
+        ctx.fillRect(x + 4, 4, slotW - 8, H - 8)
+        ctx.strokeStyle = 'rgba(255,255,255,0.6)'
+        ctx.lineWidth = 3
+        ctx.strokeRect(x + 2, 2, slotW - 4, H - 4)
         ctx.restore()
-        // update spin
-        if(spinning) {
+
+        if (spinning) {
           velocities.current[i] = Math.max(0, velocities.current[i] - 0.005)
-          if(velocities.current[i] > 0) {
+          if (velocities.current[i] > 0) {
             reels.current[i] = (pos + velocities.current[i]) % symbols.length
           }
         }
-        // draw symbol
-        ctx.font='48px monospace'
-        ctx.textAlign='center'
-        ctx.textBaseline='middle'
-        ctx.fillStyle='#fff'
+
+        ctx.font = '48px monospace'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillStyle = '#fff'
         const idx = Math.floor(reels.current[i])
-        ctx.fillText(symbols[idx], x+slotW/2, H/2)
+        ctx.fillText(symbols[idx], x + slotW / 2, H / 2)
       })
+
       // stop condition
-      if(spinning && velocities.current.every(v=>v===0)) {
+      if (spinning && velocities.current.every(v => v === 0)) {
         setSpinning(false)
         setPlayed(true)
         localStorage.setItem('slotMachinePlayed', new Date().toDateString())
-        const [a,b,c] = reels.current.map(r=>Math.floor(r))
-        if(a===b && b===c) setResult('🎉 Jackpot! You matched all 3!')
+        const [a, b, c] = reels.current.map(r => Math.floor(r))
+        if (a === b && b === c) setResult('🎉 Jackpot! You matched all 3!')
         else setResult('❌ No match. Try again tomorrow!')
       }
+
       raf = requestAnimationFrame(draw)
     }
+
     draw()
     return () => cancelAnimationFrame(raf)
   }, [spinning])
@@ -110,10 +117,10 @@ export default function PiSlotMachine() {
 
             <button
               onClick={startSpin}
-              disabled={spinning||played}
-              className={`btn-gradient w-full py-3 text-xl ${spinning||played?'opacity-50 cursor-not-allowed':''}`}
+              disabled={spinning || played}
+              className={`btn-gradient w-full py-3 text-xl ${spinning || played ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              {spinning? 'Spinning...' : played? 'Already Played Today' : 'SPIN!'}
+              {spinning ? 'Spinning...' : played ? 'Already Played Today' : 'SPIN!'}
             </button>
 
             {result && (
