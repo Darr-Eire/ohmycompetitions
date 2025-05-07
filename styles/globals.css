@@ -1,4 +1,3 @@
-/* styles/globals.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -22,26 +21,25 @@
       0 0 12px var(--primary-glow),
       0 0 16px var(--primary-glow);
   }
-
-  .btn-neon-primary {
-    background-color: var(--primary-color);
-    color: var(--primary-text);
-    border: none;
-    border-radius: var(--button-radius);
-    padding: 0.5rem 1rem;
-    box-shadow:
-      0 0 8px  var(--primary-color),
-      0 0 16px var(--primary-glow),
-      0 0 24px var(--primary-glow);
-    transition: box-shadow var(--transition-dur);
-  }
-  .btn-neon-primary:hover {
-    box-shadow:
-      0 0 12px var(--primary-color),
-      0 0 24px var(--primary-glow),
-      0 0 36px var(--primary-glow);
-  }
 }
+/* Neon Gradient Button */
+.neon-button {
+  background: linear-gradient(135deg, #00ffd5, #0077ff);
+  font-weight: bold;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+
+.neon-button:hover {
+  box-shadow: 0 0 15px #00faff;
+  transform: scale(1.03);
+}
+
 
 /* =============================================================================
    Theme Variables
@@ -99,162 +97,112 @@ button {
 }
 
 /* =============================================================================
-   Header & Nav
+   Components Layer (Unified Gradient Styles)
    ============================================================================= */
-/* blend the header & brand together */
-header {
-  background: var(--primary-gradient); /* your blue‑900 → blue‑400 */
-}
+@layer components {
+  .btn-gradient {
+    background: linear-gradient(135deg, #00ffd5, #0077ff);
+    color: #0d0f1b;
+    font-weight: bold;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+    transition: all 0.3s ease;
+    text-align: center;
+    display: inline-block;
+  }
 
-/* make the brand title text gradient‑filled */
-.brand-title {
-  background: var(--primary-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: white; 
-  background-clip: text;  
-  font-size: 1rem;
-  font-weight: 700;
-}
+  .btn-gradient:hover {
+    box-shadow: 0 0 15px #00faff;
+    transform: scale(1.03);
+  }
 
-/* optional: lightly blur behind the brand, so the gradient shows through but text stands out */
-.brand-container {
-  backdrop-filter: blur(4px);
-  padding: 0 0.5rem;
-  border-radius: var(--button-radius);
-}
+  .title-gradient {
+    background: linear-gradient(135deg, #00ffd5, #0077ff);
+    color: white;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 0.5rem 1rem;
+    text-align: center;
+    border-radius: 0.5rem;
+    box-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+  }
 
-.brand-logo {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  white-space: nowrap;
-}
-.menu-button,
-.login-button,
-.logout-button {
-  font-size: .80rem;
-  border-radius: var(--button-radius);
-  transition: background-color var(--transition-dur);
-  padding: 0.5rem 1rem;        /* same for all buttons */
-  min-width: 4rem;            /* ensure a minimum width */
-  text-align: center;         /* center the text */
-}
+  .card-header-gradient {
+    @apply flex justify-between items-center px-3 py-2 text-sm text-white font-bold uppercase rounded-t;
+    background: linear-gradient(135deg, #00ffd5, #0077ff);
+    font-family: 'Orbitron', sans-serif;
+  }
 
-.menu-button {
-  background: var(--primary-color);
-  color: var(--primary-text);
-}
-.menu-button:hover {
-  background: var(--primary-hover);
-}
+  .footer {
+    background: #0f172a;
+    padding: 2rem 1rem;
+    border-top: 1px solid var(--primary-hover);
+    text-align: center;
+  }
 
-.login-button,
-.logout-button {
-  background: var(--primary-color);
-  color: var(--primary-text);
-}
-.login-button:hover,
-.logout-button:hover {
-  background: var(--primary-hover);
-}
+  .social-icons {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+  }
 
+  .social-icons a {
+    transition: color var(--transition-dur);
+  }
 
-/* =============================================================================
-   Dropdown
-   ============================================================================= */
-.dropdown-menu {
-  position: absolute;
-  top: 100%;
-  left: 1rem;
-  background: var(--primary-color);
-  border: 1px solid var(--primary-text);
-  border-radius: var(--button-radius);
-  padding: 0.5rem;
-  z-index: 1100;
-  width: max-content;
-  min-width: 10rem;
-}
-.dropdown-link {
-  display: block;
-  color: var(--primary-text);
-  padding: 0.5rem 0.75rem;
-  border-radius: var(--button-radius);
-}
-.dropdown-link:hover {
-  background: rgba(255,255,255,0.2);
+  .social-icons a:hover {
+    color: var(--primary-hover);
+  }
+
+  .footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+    font-size: 0.875rem;
+  }
+
+  .footer-links a:hover {
+    color: var(--accent-hover);
+    text-decoration: underline;
+  }
+
+  section > h2 {
+    @apply title-gradient;
+    margin: 0 auto 1rem;
+  }
 }
 
 /* =============================================================================
-   Footer
+   Competition Card Styles
    ============================================================================= */
-footer {
-  margin-top: auto;
-  padding: 0.5rem 1rem;
-  background: var(--primary-color);
-  color: var(--primary-text);
-  text-align: center;
-  font-size: 1rem;
-}
-.footer-links,
-.social-icons {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 0.5rem;
-}
-.footer-links a:hover {
-  color: var(--accent-hover);
-}
-
 .competition-card {
-  width: 100%;
-  max-width: 500px;
-  margin: 2rem auto;          /* horizontal centering */
-  background: #fff;
-  border: 4px solid #fff;
-  border-radius: var(--button-radius);
-  box-shadow: 0 0 40px var(--primary-color);
+  position: relative;
   overflow: hidden;
-  text-align: center;}
-  
-
-/* === Competition Card Base === */
-.competition-card {
-  height: auto;
-  max-height: none;
+  border-radius: 1rem;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  box-shadow: 0 0 12px rgba(0, 255, 255, 0.1);
+  transition: transform 0.3s ease;
 }
-
-/* Header banner (gradient‑clipped text) */
-.competition-card__header {
-  padding: 0.5rem 1rem;
-  font-size: 1.125rem;
-  font-weight: 700;
-  background: var(--primary-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-          background-clip: text;
-          color: transparent;
+.competition-card:hover {
+  transform: translateY(-5px) scale(1.02);
 }
-
-/* Body copy */
 .competition-info {
-  flex: 1;
-  overflow-y: auto;
   padding: 1rem;
+  color: #e0f7ff;
+  font-family: 'Orbitron', sans-serif;
 }
 
-/* Button */
 .comp-button {
+  @apply btn-gradient;
   width: 100%;
-  padding: 0.5rem;
-  background: var(--primary-color);
-  color: var(--primary-text);
-  font-size: 1.125rem;
-  transition: background-color var(--transition-dur);
-}
-.comp-button:hover {
-  background: var(--secondary-hover);
 }
 
 /* “View More” button */
@@ -276,48 +224,30 @@ footer {
   background: var(--secondary-hover);
   transform: translateY(-1px);
 }
-/* globals.css */
 
-/* Make sure the image wrapper has a fixed height and hides overflow */
-/* globals.css */
-
-/* 70% wide wrapper, centered on the page */
+/* =============================================================================
+   Image Wrapper
+   ============================================================================= */
 .competition-image {
   position: relative;
-  width: 80%;
-  margin: 0 auto;      /* center it */
-  height: 12rem;       /* fixed height, same as h-40 */
+  width: 70%;
+  margin: 0 auto;
+  height: 12rem;
   overflow: hidden;
 }
-
-/* Make Next.js <Image> fill and cover that wrapper */
-.competition-image :global(img) {
+.competition-image img {
   position: absolute !important;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;    /* fill & crop */
+  object-fit: cover;
   object-position: center center;
 }
 
-/* === Section Titles === */
-@layer components {
-  section > h2 {
-    display: block;
-    width: 100%;
-    text-align: center;
-    margin: 0 auto 1rem;
-    background: var(--primary-gradient);
-    color: var(--primary-text);
-    padding: 0.5rem 1rem;
-    border-radius: var(--button-radius);
-    font-size: 1rem;
-    font-weight: 700;
-  }
-}
-
-/* ── Mobile “swipe” carousels ── */
+/* =============================================================================
+   Mobile Carousel
+   ============================================================================= */
 @media (max-width: 1023px) {
   .centered-carousel {
     display: flex;
@@ -326,54 +256,48 @@ footer {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scroll-snap-type: x mandatory;
-    justify-content: center; /* center row if <2 cards */
+    justify-content: center;
   }
 
   .centered-carousel > * {
-    flex: 0 0 80%;           /* each card is 80% of viewport */
+    flex: 0 0 80%;
     max-width: 80%;
     scroll-snap-align: center;
     scroll-snap-stop: always;
   }
 
-  /* hide mobile scrollbar */
   .centered-carousel::-webkit-scrollbar {
     display: none;
   }
 }
 
-/* ── Tiny auto‑scroll strip (120px slides) ── */
+/* Tiny Carousel */
 .centered-carousel.tiny-carousel {
   padding: 0;
   gap: 0;
 }
 .centered-carousel.tiny-carousel > * {
-  flex: 0 0 120px;       /* adjust width here */
+  flex: 0 0 120px;
   max-width: 120px;
 }
 
-/* ── Single‑column pages ── */
+/* Small Screens */
 @media (max-width: 640px) {
   .competition-card {
-    width: 90%;       /* nearly full‑width on small screens */
-    max-width: none;  /* remove any cap */
+    width: 90%;
+    max-width: none;
     margin: 0.75rem auto;
   }
 }
 
-
-
-
-
 /* =============================================================================
-   “All X” Grid Pages
+   Category Grid Pages
    ============================================================================= */
 .category-grid {
   display: grid;
   gap: 1.5rem;
   justify-items: center;
 }
-
 @media (max-width: 1023px) {
   .category-grid {
     display: flex;
@@ -388,10 +312,27 @@ footer {
     scroll-snap-align: center;
   }
 }
-
-/* Prevent horizontal overflow on large screens */
 @media (min-width: 1024px) {
   html, body {
     overflow-x: hidden;
+  }
+}
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.2s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+@layer components {
+  .gradient-text {
+    background: linear-gradient(135deg, #00ffd5, #0077ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: bold;
   }
 }

@@ -5,12 +5,10 @@ import Link from 'next/link'
 import CompetitionCard from '@/components/CompetitionCard'
 
 export default function HomePage() {
-  // — Pi login state —
   const [loadingLogin, setLoadingLogin] = useState(false)
   const [piUser, setPiUser] = useState(null)
   const scopes = ['username', 'payments']
 
-  // 1) Restore session on mount
   useEffect(() => {
     if (window.Pi?.getCurrentPioneer) {
       window.Pi.getCurrentPioneer()
@@ -24,7 +22,6 @@ export default function HomePage() {
     }
   }, [])
 
-  // Trigger Pi login
   async function handlePiLogin() {
     setLoadingLogin(true)
     try {
@@ -39,31 +36,60 @@ export default function HomePage() {
     }
   }
 
-  // Carousel ref
-  const techRef = useRef(null)
-
-  // Reset scroll‑out
-  useEffect(() => {
-    const onScroll = () => {
-      const el = techRef.current
-      if (el && el.getBoundingClientRect().bottom < 0) {
-        el.scrollLeft = 0
-      }
-    }
-    window.addEventListener('scroll', onScroll)
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
-  // Only one competition for now
   const techItems = [
     {
-      comp: { slug: 'ps5-bundle-giveaway' },
+      comp: { slug: 'ps5-bundle-giveaway', entryFee: 0.8, totalTickets: 1100, ticketsSold: 0, endsAt: '2025-05-07T14:00:00Z' },
       title: 'PS5 Bundle Giveaway',
-      prize: 'PlayStation 5 + Extra Controller',
-      fee: '0.8 π',
-      href: '/ticket-purchase/ps5-bundle-giveaway',
+      prize: 'PlayStation 5 + Extra Controller',
+      fee: '0.8 π',
+      href: '/competitions/ps5-bundle-giveaway',
       imageUrl: '/images/playstation.jpeg',
       theme: 'tech',
+    },
+    {
+      comp: { slug: '55-inch-tv-giveaway', entryFee: 0.25, totalTickets: 1400, ticketsSold: 0, endsAt: '2025-05-08T11:30:00Z' },
+      title: '55″ TV Giveaway',
+      prize: '55″ Smart TV',
+      fee: '0.25 π',
+      href: '/competitions/55-inch-tv-giveaway',
+      imageUrl: '/images/tv.jpg',
+      theme: 'tech',
+    },
+    {
+      comp: { slug: 'xbox-one-bundle', entryFee: 0.3, totalTickets: 2000, ticketsSold: 0, endsAt: '2025-05-09T17:45:00Z' },
+      title: 'Xbox One Bundle',
+      prize: 'Xbox One + Game Pass',
+      fee: '0.3 π',
+      href: '/competitions/xbox-one-bundle',
+      imageUrl: '/images/xbox.jpeg',
+      theme: 'tech',
+    },
+    {
+      comp: { slug: 'tesla-model-3-giveaway', entryFee: 40, totalTickets: 20000, ticketsSold: 5120, endsAt: '2025-05-20T23:59:00Z' },
+      title: 'Tesla Model 3 Giveaway',
+      prize: 'Tesla Model 3',
+      fee: '40 π',
+      href: '/competitions/tesla-model-3-giveaway',
+      imageUrl: '/images/tesla.jpeg',
+      theme: 'premium',
+    },
+    {
+      comp: { slug: 'dubai-luxury-holiday', entryFee: 20, totalTickets: 15000, ticketsSold: 7100, endsAt: '2025-05-18T22:00:00Z' },
+      title: 'Dubai Luxury Holiday',
+      prize: '7‑Day Dubai Trip',
+      fee: '20 π',
+      href: '/competitions/dubai-luxury-holiday',
+      imageUrl: '/images/dubai-luxury-holiday.jpg',
+      theme: 'premium',
+    },
+    {
+      comp: { slug: 'penthouse-hotel-stay', entryFee: 15, totalTickets: 5000, ticketsSold: 4875, endsAt: '2025-05-15T21:00:00Z' },
+      title: 'Penthouse Hotel Stay',
+      prize: 'Penthouse Hotel Stay of your choice',
+      fee: '15 π',
+      href: '/competitions/penthouse-hotel-stay',
+      imageUrl: '/images/hotel.jpeg',
+      theme: 'premium',
     },
   ]
 
@@ -72,61 +98,56 @@ export default function HomePage() {
       {/* Pi Login Section */}
       <div className="mb-8 text-center">
         {piUser ? (
-          <p className="text-green-600">
-            Welcome, {piUser.username || piUser.uid}!
-          </p>
+          <p className="text-green-600">Welcome, {piUser.username || piUser.uid}!</p>
         ) : (
           <button
             onClick={handlePiLogin}
             disabled={loadingLogin}
-            className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition"
+            className="neon button"
           >
             {loadingLogin ? 'Logging in…' : 'Log in with Pi'}
           </button>
         )}
       </div>
 
-      {/* Competition Section */}
-      <main className="px-4 pb-12">
-        <Section
-          title="Tech Giveaways"
-          items={techItems}
-          containerRef={techRef}
-          theme="tech"
-          viewMoreHref="/competitions/tech"
-        />
-      </main>
+      {/* Competitions Section */}
+     <main className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600">
+  <Section
+    title="Tech + Premium Giveaways"
+    items={techItems}
+    viewMoreHref="/competitions"
+  />
+</main>
+
     </>
   )
 }
 
-function Section({ title, items, containerRef, theme, viewMoreHref }) {
-  const headingStyles = {
-    tech: 'bg-orange-500 text-white',
-  }
-  const headingClass = headingStyles[theme] || ''
-
+function Section({ title, items, viewMoreHref }) {
   return (
-    <section ref={containerRef} className="mb-12">
-      <h2 className={`text-center px-4 py-2 rounded ${headingClass}`}>
+    <section className="mb-12">
+      <h2 className="text-center px-4 py-2 text-lg font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-600 rounded shadow mb-6 font-orbitron">
         {title}
       </h2>
+
       {/* Mobile carousel */}
       <div className="centered-carousel lg:hidden">
         {items.map(item => (
-          <CompetitionCard key={item.comp.slug} {...item} small theme={theme} />
+          <CompetitionCard key={item.comp.slug} {...item} small />
         ))}
       </div>
+
       {/* Desktop grid */}
-      <div className="hidden lg:grid lg:grid-cols-1 gap-6">
+      <div className="hidden lg:grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
         {items.map(item => (
-          <CompetitionCard key={item.comp.slug} {...item} theme={theme} />
+          <CompetitionCard key={item.comp.slug} {...item} />
         ))}
       </div>
-      <div className="text-center mt-4">
+
+      <div className="text-center mt-6">
         <Link
           href={viewMoreHref}
-          className="bg-blue-600 text-white py-2 px-6 rounded-full hover:bg-blue-700 transition"
+          className="neon-button"
         >
           View More
         </Link>

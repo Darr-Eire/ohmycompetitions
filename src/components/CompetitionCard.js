@@ -1,9 +1,9 @@
-// src/components/CompetitionCard.js
 'use client'
 
 import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import '@fontsource/orbitron'
 
 export default function CompetitionCard({
   comp,
@@ -17,92 +17,84 @@ export default function CompetitionCard({
   hideButton = false,
   children,
 }) {
-  // Countdown state
   const [timeLeft, setTimeLeft] = useState('')
+  const [status, setStatus] = useState('UPCOMING')
 
   useEffect(() => {
     function update() {
-      const diff = new Date(endsAt).getTime() - Date.now()
+      const now = new Date()
+      const end = new Date(endsAt)
+      const diff = end.getTime() - now.getTime()
+
       if (diff <= 0) {
         setTimeLeft('Ended')
+        setStatus('ENDED')
         return
       }
+
       const hours = Math.floor(diff / 36e5)
-      const mins  = Math.floor((diff % 36e5) / 6e4)
+      const mins = Math.floor((diff % 36e5) / 6e4)
       setTimeLeft(`${hours}h ${mins}m`)
+      setStatus('LIVE')
     }
+
     update()
     const id = setInterval(update, 60_000)
     return () => clearInterval(id)
   }, [endsAt])
 
-  // Banner styling by theme
-  const bannerClass = {
-    daily:   'bg-blue-600 text-white',
-    free:    'bg-green-500 text-white',
-    tech:    'bg-orange-500 text-white',
-    pi:      'bg-purple-600 text-white',
-    premium: 'bg-gray-800 text-white',
-  }[theme] || 'bg-blue-600 text-white'
-
   return (
-    <div className={`competition-card ${small ? 'competition-card--small' : ''}`}>
-      {/* Title banner */}
-      <div className={`competition-card__header ${bannerClass}`}>
-        {title}
+    <div className="flex flex-col w-full max-w-xs mx-auto h-full bg-[#0f172a] border border-cyan-600 rounded-xl shadow-lg text-white font-orbitron overflow-hidden transition-all duration-300 md:hover:scale-[1.03]">
+      
+      {/* Header with Status Badge and Title */}
+      <div className="card-header-gradient flex items-center justify-between px-4 py-2">
+        <span
+          className={`px-3 py-1 rounded-full text-xs sm:text-sm font-bold shadow ${
+            status === 'LIVE'
+              ? 'bg-green-400 text-black animate-pulse'
+              : 'bg-red-500 text-white'
+          }`}
+        >
+          {status}
+        </span>
+        <span className="truncate text-right max-w-[calc(100%-4.5rem)] text-sm sm:text-base font-semibold">
+          {title}
+        </span>
       </div>
 
-    {/* Image with fixed 5:3 aspect ratio */}
-<div className="competition-image w-full relative" style={{ paddingTop: '20%' }}>
-  <Image
-    src={imageUrl || '/pi.jpeg'}
-    alt={title}
-    fill
-    className="object-fit"
-  />
-</div>
-
-
-      {/* Details */}
-      <div className="competition-info flex-1 p-4 text-sm space-y-2">
-        <p>
-          <strong>Prize:</strong>{' '}
-          <span className="font-bold">{prize}</span>
-        </p>
-        <p>
-          <strong>Ends In:</strong>{' '}
-          <span className="font-bold">{timeLeft}</span>
-        </p>
-        <p>
-          <strong>Total Tickets:</strong>{' '}
-          <span className="font-bold">
-            {comp.totalTickets?.toLocaleString() ?? '—'}
-          </span>
-        </p>
-        <p>
-          <strong>Remaining:</strong>{' '}
-          <span className="font-bold">
-            {typeof comp.ticketsSold === 'number'
-              ? (comp.totalTickets - comp.ticketsSold).toLocaleString()
-              : '—'}
-          </span>
-        </p>
-        <p>
-          <strong>Entry Fee:</strong>{' '}
-          <span className="font-bold">{fee}</span>
-        </p>
+      {/* Image */}
+      <div className="relative w-full aspect-[16/9] bg-black overflow-hidden">
+        <Image
+          src={imageUrl || '/pi.jpeg'}
+          alt={title}
+          fill
+          sizes="(max-width: 768px) 100vw, 33vw"
+          className="object-cover"
+          priority
+        />
       </div>
 
-      {/* Any nested children (e.g. custom labels) */}
+      {/* Info */}
+      <div className="p-4 text-xs sm:text-sm space-y-1">
+        <p><span className="text-cyan-300">Prize:</span> {prize}</p>
+        <p><span className="text-cyan-300">Ends In:</span> {timeLeft}</p>
+        <p><span className="text-cyan-300">Total Tickets:</span> {comp.totalTickets?.toLocaleString() ?? '—'}</p>
+        <p><span className="text-cyan-300">Remaining:</span> {typeof comp.ticketsSold === 'number' ? (comp.totalTickets - comp.ticketsSold).toLocaleString() : '—'}</p>
+        <p><span className="text-cyan-300">Entry Fee:</span> {fee}</p>
+      </div>
+
+      {/* Custom Content Slot */}
       {children}
 
-      {/* Enter Now button */}
+      {/* CTA Button */}
       {!children && !hideButton && (
-        <Link href={`/ticket-purchase/${comp.slug}`}>
-          <button className="comp-button w-full mt-4 text-center">
-            Enter Now
-          </button>
-        </Link>
+        <div className="p-4 pt-0 mt-auto">
+          <Link href={`/ticket-purchase/${comp.slug}`} passHref>
+            <button className="comp-button w-full">
+              Enter Now
+            </button>
+          </Link>
+        </div>
       )}
     </div>
   )
