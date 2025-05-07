@@ -9,6 +9,7 @@
   .backdrop-blur {
     backdrop-filter: blur(10px);
   }
+
   .backdrop-blur-sm {
     backdrop-filter: blur(4px);
   }
@@ -16,55 +17,54 @@
   .text-neon-primary {
     color: var(--primary-color);
     text-shadow:
-      0 0 4px  var(--primary-color),
-      0 0 8px  var(--primary-color),
+      0 0 4px var(--primary-color),
+      0 0 8px var(--primary-color),
       0 0 12px var(--primary-glow),
       0 0 16px var(--primary-glow);
   }
-}
-/* Neon Gradient Button */
-.neon-button {
-  background: linear-gradient(135deg, #00ffd5, #0077ff);
-  font-weight: bold;
-  padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
-  transition: all 0.3s ease;
-}
 
+  .animate-fade-in {
+    animation: fadeIn 0.2s ease-in-out;
+  }
 
-.neon-button:hover {
-  box-shadow: 0 0 15px #00faff;
-  transform: scale(1.03);
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-5px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
-
 
 /* =============================================================================
    Theme Variables
    ============================================================================= */
 :root {
-  --primary-color:    linear-gradient(to bottom right, #1E3A8A, #60A5FA);
+  --primary-color: linear-gradient(to bottom right, #1E3A8A, #60A5FA);
   --primary-gradient: linear-gradient(to bottom right, #1E3A8A, #60A5FA);
-  --primary-hover:    #0052CC;
-  --primary-text:     #ffffff;
+  --primary-hover: #0052CC;
+  --primary-text: #ffffff;
 
-  --secondary-color:  #0052CC;
-  --secondary-hover:  #1834e6;
-  --secondary-text:   #2f019a;
+  --secondary-color: #0052CC;
+  --secondary-hover: #1834e6;
+  --secondary-text: #2f019a;
 
-  --accent-color:     #0f1f7d;
-  --accent-hover:     #1a0c54;
+  --accent-color: #0f1f7d;
+  --accent-hover: #1a0c54;
 
-  --button-radius:    4px;
-  --transition-dur:   0.2s;
+  --button-radius: 4px;
+  --transition-dur: 0.2s;
 }
 
 /* =============================================================================
-   Reset & Base
+   Base Reset
    ============================================================================= */
-html, body, #__next {
+html,
+body,
+#__next {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -72,10 +72,12 @@ html, body, #__next {
   background: #ffffff;
   color: #000;
 }
+
 a {
   color: inherit;
   text-decoration: none;
 }
+
 button {
   font-family: inherit;
   cursor: pointer;
@@ -85,40 +87,47 @@ button {
 }
 
 /* =============================================================================
-   Layout Helpers
+   Layout
    ============================================================================= */
 .layout {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
+
 .content {
   flex: 1;
 }
 
 /* =============================================================================
-   Components Layer (Unified Gradient Styles)
+   Components Layer
    ============================================================================= */
 @layer components {
-  .btn-gradient {
+  /* Neon Button */
+  .neon-button {
     background: linear-gradient(135deg, #00ffd5, #0077ff);
-    color: #0d0f1b;
     font-weight: bold;
-    padding: 0.5rem 1rem;
+    padding: 0.75rem 1rem;
     border-radius: 0.5rem;
     border: none;
     cursor: pointer;
+    color: #0d0f1b;
     box-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
     transition: all 0.3s ease;
-    text-align: center;
-    display: inline-block;
   }
 
-  .btn-gradient:hover {
+  .neon-button:hover {
     box-shadow: 0 0 15px #00faff;
     transform: scale(1.03);
   }
 
+  .btn-gradient {
+    @apply neon-button;
+    display: inline-block;
+    text-align: center;
+  }
+
+  /* Title Styling */
   .title-gradient {
     background: linear-gradient(135deg, #00ffd5, #0077ff);
     color: white;
@@ -131,12 +140,22 @@ button {
     box-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
   }
 
+  .gradient-text {
+    background: linear-gradient(135deg, #00ffd5, #0077ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: bold;
+  }
+
+  /* Competition Card Header */
   .card-header-gradient {
     @apply flex justify-between items-center px-3 py-2 text-sm text-white font-bold uppercase rounded-t;
     background: linear-gradient(135deg, #00ffd5, #0077ff);
     font-family: 'Orbitron', sans-serif;
   }
 
+  /* Footer */
   .footer {
     background: #0f172a;
     padding: 2rem 1rem;
@@ -179,7 +198,7 @@ button {
 }
 
 /* =============================================================================
-   Competition Card Styles
+   Competition Card
    ============================================================================= */
 .competition-card {
   position: relative;
@@ -191,9 +210,11 @@ button {
   box-shadow: 0 0 12px rgba(0, 255, 255, 0.1);
   transition: transform 0.3s ease;
 }
+
 .competition-card:hover {
   transform: translateY(-5px) scale(1.02);
 }
+
 .competition-info {
   padding: 1rem;
   color: #e0f7ff;
@@ -201,103 +222,103 @@ button {
 }
 
 .comp-button {
-  @apply btn-gradient;
-  width: 100%;
-}
-
-/* “View More” button */
-.view-more-card {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  margin-bottom: 2rem;
-}
-.view-more-button {
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  background: var(--primary-hover);
-  color: var(--secondary-text);
-  border-radius: var(--button-radius);
-  transition: background-color var(--transition-dur), transform 0.1s ease-in-out;
-}
-.view-more-button:hover {
-  background: var(--secondary-hover);
-  transform: translateY(-1px);
+  @apply btn-gradient w-full;
 }
 
 /* =============================================================================
-   Image Wrapper
+   Image Wrapper (Responsive Fix)
    ============================================================================= */
 .competition-image {
-  position: relative;
-  width: 70%;
-  margin: 0 auto;
-  height: 12rem;
-  overflow: hidden;
-}
-.competition-image img {
-  position: absolute !important;
-  top: 0;
-  left: 0;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center center;
+  padding: 1rem;
+  background: #0f172a;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  height: 180px;
+}
+
+.competition-image img {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.background-container {
+  height: 100vh; /* or any specific height */
 }
 
 /* =============================================================================
-   Mobile Carousel
+   Carousel
    ============================================================================= */
-@media (max-width: 1023px) {
-  .centered-carousel {
-    display: flex;
-    gap: 2rem;
-    padding: 1rem 0;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scroll-snap-type: x mandatory;
-    justify-content: center;
-  }
-
-  .centered-carousel > * {
-    flex: 0 0 80%;
-    max-width: 80%;
-    scroll-snap-align: center;
-    scroll-snap-stop: always;
-  }
-
-  .centered-carousel::-webkit-scrollbar {
-    display: none;
-  }
+.centered-carousel {
+  display: flex;
+  gap: 1.25rem;
+  padding: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scroll-padding: 1rem;
 }
 
-/* Tiny Carousel */
+.centered-carousel > * {
+  flex: 0 0 90%;
+  max-width: 90%;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+}
+
+.centered-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+/* Tiny carousel */
 .centered-carousel.tiny-carousel {
   padding: 0;
   gap: 0;
 }
+
 .centered-carousel.tiny-carousel > * {
   flex: 0 0 120px;
   max-width: 120px;
 }
 
-/* Small Screens */
+/* =============================================================================
+   Responsive Cards
+   ============================================================================= */
 @media (max-width: 640px) {
   .competition-card {
-    width: 90%;
-    max-width: none;
-    margin: 0.75rem auto;
+    width: 95%;
+    max-width: 100%;
+    margin: 1rem auto;
+    border-radius: 0.75rem;
+  }
+
+  .competition-image {
+    height: 160px;
+    padding: 0.5rem;
+  }
+
+  .competition-image img {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
   }
 }
 
 /* =============================================================================
-   Category Grid Pages
+   Grid Pages
    ============================================================================= */
 .category-grid {
   display: grid;
   gap: 1.5rem;
   justify-items: center;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
 }
+
 @media (max-width: 1023px) {
   .category-grid {
     display: flex;
@@ -307,32 +328,16 @@ button {
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
   }
+
   .category-grid > * {
     flex: 0 0 80%;
     scroll-snap-align: center;
   }
 }
-@media (min-width: 1024px) {
-  html, body {
-    overflow-x: hidden;
-  }
-}
-@layer utilities {
-  .animate-fade-in {
-    animation: fadeIn 0.2s ease-in-out;
-  }
 
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-5px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-}
-@layer components {
-  .gradient-text {
-    background: linear-gradient(135deg, #00ffd5, #0077ff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    font-weight: bold;
+@media (min-width: 1024px) {
+  html,
+  body {
+    overflow-x: hidden;
   }
 }

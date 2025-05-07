@@ -327,21 +327,12 @@ export default function AllCompetitionsPage() {
     { comp:{slug:'pi-miners-bonanza', entryFee:0, totalTickets:10000, ticketsSold:0, endsAt:'2025-05-06T20:00:00Z'}, title:'Pi Miners Bonanza', href:'/competitions/pi-miners-bonanza', prize:'Special Badge', fee:'Free', imageUrl:'/images/bonanza.png', theme:'green' },
     { comp:{slug:'pi-nugget-giveaway',   entryFee:0, totalTickets:10000, ticketsSold:0, endsAt:'2025-05-10T18:00:00Z'}, title:"Pi Nugget Giveaway",    href:'/competitions/pi-nugget-giveaway', prize:'9,999 / 5,555 / 1,111 π', fee:'Free', imageUrl:'/images/winner.png', theme:'green' },
     ]
-  return (
-    <main
-      className="pt-0 pb-12 px-2 min-h-screen"
-      style={{
-        backgroundImage: 'linear-gradient(to bottom right, #1E3A8A, #60A5FA)',
-      }}
-    >
-           <div
-   className="competition-top-banner text-white text-center px-4 py-2"
-   style={{ background: 'var(--primary-gradient)' }}
- >
-         All Competitions
-        </div>
-        <br/>
-
+    return (
+      <main className="pt-0 pb-12 px-2 min-h-screen bg-gradient-to-br from-blue-900 to-blue-400">
+      <div className="competition-top-banner text-white text-center px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600">
+        All Competitions
+      </div>
+      <br />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {allComps.map(item => (
           <CompetitionCard
@@ -357,5 +348,5 @@ export default function AllCompetitionsPage() {
         ))}
       </div>
     </main>
-  )
-}
+    );
+  }

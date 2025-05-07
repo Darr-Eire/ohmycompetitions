@@ -45,7 +45,7 @@ export default function Header() {
         aria-label="Toggle menu"
         className="neon-button text-white"
       >
-        Menu
+       ☰
       </button>
 
       {/* Brand Title */}
