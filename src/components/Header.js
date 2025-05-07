@@ -69,7 +69,7 @@ export default function Header() {
           disabled={loading}
           className="neon-button text-white text-sm px-4 py-2"
         >
-          {loading ? 'Logging in…' : 'Log In with Pi'}
+          {loading ? 'Logging in…' : 'Log In'}
         </button>
       )}
 

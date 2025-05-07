@@ -1,6 +1,6 @@
 // pages/index.jsx
 // @ts-nocheck
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import Link from 'next/link'
 import CompetitionCard from '@/components/CompetitionCard'
 
@@ -143,7 +143,7 @@ export default function HomePage() {
 
         {/* More Competitions */}
         <section className="mt-10">
-          <h2 className="text-center px-4 py-2 text-lg font-bold text-white bg-gradient-to-r from-[#00ffd5] to-[#0077ff] rounded shadow mb-6 font-orbitron">
+          <h2 className="text-center px-4 py-2 text-base font-bold text-white bg-gradient-to-r from-[#00ffd5] to-[#0077ff] rounded shadow mb-6 font-orbitron">
             More Competitions
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -158,7 +158,6 @@ export default function HomePage() {
 }
 
 // Section helper component
-// Section helper component
 function Section({
   title,
   items,
@@ -169,13 +168,13 @@ function Section({
   const gradientClasses =
     title === 'Featured'
       ? 'bg-gradient-to-r from-[#00ffd5] to-[#0077ff]'
-      : 'bg-gradient-to-r from-cyan-500 to-blue-600'
+      : 'bg-gradient-to-r from-[#00ffd5] to-[#0077ff]'
 
   return (
     <section className="mb-12">
       <h2
         className={`
-          text-center px-4 py-2 text-lg font-bold text-white
+          text-center px-4 py-2 text-base font-bold text-white
           ${gradientClasses}
           rounded shadow mb-6 font-orbitron
         `}

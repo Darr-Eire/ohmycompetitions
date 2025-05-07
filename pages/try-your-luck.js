@@ -44,11 +44,24 @@ export default function TryYourLuckPage() {
       {/* App-wide background and global white text */}
       <main className="app-background min-h-screen p-4 text-white">
         <div className="max-w-xl mx-auto">
-
-          {/* Banner */}
-          <div className="competition-top-banner text-center px-4 py-2 mb-6 bg-gradient-to-r from-primary to-secondary text-white">
-            Try Your Luck
-          </div>
+         {/* Banner */}
+ <div className="flex justify-center mb-6">
+   <div
+     className="
+       competition-top-banner
+       btn-gradient
+       w-full
+       max-w-md
+       text-center
+       px-4
+       py-3
+       rounded-3xl
+       text-white
+     "
+   >
+     Try Your Luck
+   </div>
+ </div>
 
           {/* Intro & Streak */}
           <div className="text-center mb-4 px-2">
