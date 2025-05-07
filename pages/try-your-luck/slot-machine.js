@@ -94,27 +94,32 @@ export default function PiSlotMachine() {
   }, [spinning])
 
   return (
-    <main className="app-background min-h-screen flex flex-col items-center justify-center p-4 text-white">
-      {result?.includes('Jackpot') && <Confetti width={width} height={height} />}
+    <main className="app-background min-h-screen flex items-center justify-center px-4 sm:px-6 py-8 text-white">
+      <div className="w-full max-w-md mx-auto">
+        {result?.includes('Jackpot') && <Confetti width={width} height={height} />}
 
-      <div className="competition-card relative w-full max-w-md bg-white bg-opacity-10 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500 to-blue-600 opacity-30 mix-blend-overlay animate-pulse-slow"></div>
-        <div className="relative z-10 p-6 space-y-6">
-          <h1 className="title-gradient text-3xl font-orbitron text-center">🎰 Pi Slot Machine</h1>
+        <div className="competition-card relative bg-white bg-opacity-10 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500 to-blue-600 opacity-30 mix-blend-overlay animate-pulse-slow"></div>
+          <div className="relative z-10 p-6 space-y-6">
+            <h1 className="title-gradient text-3xl font-orbitron text-center">🎰 Pi Slot Machine</h1>
 
-          <canvas ref={canvasRef} className="mx-auto w-72 h-48 rounded shadow-inner" />
+            <canvas
+              ref={canvasRef}
+              className="mx-auto w-full max-w-xs h-48 rounded shadow-inner"
+            />
 
-          <button
-            onClick={startSpin}
-            disabled={spinning||played}
-            className={`btn-gradient w-full py-3 text-xl ${spinning||played?'opacity-50 cursor-not-allowed':''}`}
-          >
-            {spinning? 'Spinning...' : played? 'Already Played Today' : 'SPIN!'}
-          </button>
+            <button
+              onClick={startSpin}
+              disabled={spinning||played}
+              className={`btn-gradient w-full py-3 text-xl ${spinning||played?'opacity-50 cursor-not-allowed':''}`}
+            >
+              {spinning? 'Spinning...' : played? 'Already Played Today' : 'SPIN!'}
+            </button>
 
-          {result && (
-            <p className="text-center text-lg font-bold mt-2">{result}</p>
-          )}
+            {result && (
+              <p className="text-center text-lg font-bold mt-2">{result}</p>
+            )}
+          </div>
         </div>
       </div>
     </main>
