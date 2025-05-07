@@ -11,55 +11,42 @@ import {
 
 export default function HelpSupport() {
   return (
-
-
-
-    
-    <main
-     className="pt-0 pb-12 px-2 min-h-screen"
-      style={{
-        backgroundImage: 'linear-gradient(to bottom right, #1E3A8A, #60A5FA)',
-      }}
-    >
-      <div className="competition-card max-w-3xl w-full bg-white">
-        
+    <main className="app-background min-h-screen flex justify-center items-start px-4 py-12 text-white">
+      <div className="competition-card max-w-3xl w-full bg-white bg-opacity-10 rounded-2xl shadow-lg">
         {/* Banner */}
-        <div
-   className="competition-top-banner text-white text-center px-4 py-2"
-   style={{ background: 'var(--primary-gradient)' }}
- >
-         Help & Support
+        <div className="competition-top-banner title-gradient">
+          Help & Support
         </div>
 
         {/* Body */}
-        <div className="p-6 space-y-6 text-black">
-          <p className="">
+        <div className="p-6 space-y-6">
+          <p>
             Welcome to our Help & Support Center. We’re here to assist you with any questions or issues!
           </p>
 
           {/* Contact Information */}
           <section>
-            <h2 className="font-bold text-white mt-6">Contact Information</h2>
-            <ul className="flex flex-wrap gap-6 list-inside">
+            <h2 className="text-lg font-bold gradient-text mt-6 mb-2">Contact Information</h2>
+            <ul className="flex flex-wrap gap-6 list-inside text-white">
               <li>
                 <strong>Email:</strong>{' '}
-                <span className="text-black">ohmycompetitions@gmail.com</span>
+                <span className="gradient-text">ohmycompetitions@gmail.com</span>
               </li>
               <li>
                 <strong>Phone:</strong>{' '}
-                <span className="text-black">+353 87 1365782</span>
+                <span className="gradient-text">+353 87 1365782</span>
               </li>
               <li>
                 <strong>Address:</strong>{' '}
-                <span className="text-black">Dublin, Ireland</span>
+                <span className="gradient-text">Dublin, Ireland</span>
               </li>
             </ul>
           </section>
 
           {/* FAQ */}
           <section>
-            <h2 className="font-bold text-white mt-6">Frequently Asked Questions</h2>
-            <ul className="list-disc list-inside space-y-4">
+            <h2 className="text-lg font-bold gradient-text mt-6 mb-4">Frequently Asked Questions</h2>
+            <ul className="list-disc list-inside space-y-4 text-white">
               <li>
                 <strong>How do I enter competitions?</strong><br />
                 Click “Enter Now” on any competition and follow the instructions!
@@ -81,10 +68,7 @@ export default function HelpSupport() {
 
           {/* Connect */}
           <section>
-            <h2 className="font-semibold text-center text-white mb-2">
-              Connect with Us
-            </h2>
-            <br/>
+            <h2 className="text-center text-lg font-semibold gradient-text mb-2">Connect with Us</h2>
             <div className="flex justify-center space-x-4 mb-4">
               {[FaTwitter, FaFacebookF, FaInstagram, FaDiscord].map((Icon, idx) => (
                 <a
@@ -92,7 +76,7 @@ export default function HelpSupport() {
                   href="#"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-500 hover:text-blue-800 transition"
+                  className="text-white hover:text-gray-300 transition"
                 >
                   <Icon size={24} />
                 </a>

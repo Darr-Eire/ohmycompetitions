@@ -328,25 +328,26 @@ export default function AllCompetitionsPage() {
     { comp:{slug:'pi-nugget-giveaway',   entryFee:0, totalTickets:10000, ticketsSold:0, endsAt:'2025-05-10T18:00:00Z'}, title:"Pi Nugget Giveaway",    href:'/competitions/pi-nugget-giveaway', prize:'9,999 / 5,555 / 1,111 π', fee:'Free', imageUrl:'/images/winner.png', theme:'green' },
     ]
     return (
-      <main className="pt-0 pb-12 px-2 min-h-screen bg-gradient-to-br from-blue-900 to-blue-400">
-      <div className="competition-top-banner text-white text-center px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600">
-        All Competitions
-      </div>
-      <br />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {allComps.map(item => (
-          <CompetitionCard
-            key={item.comp.slug}
-            comp={item.comp}
-            title={item.title}
-            prize={item.prize}
-            fee={item.fee}
-            theme={item.theme}
-            imageUrl={item.imageUrl}
-            endsAt={item.comp.endsAt}
-          />
-        ))}
-      </div>
-    </main>
-    );
+      <main className="app-background min-h-screen p-4 text-white">
+        <div className="competition-top-banner title-gradient mb-6">
+          All Competitions
+        </div>
+  
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {allComps.map(item => (
+            <CompetitionCard
+              key={item.comp.slug}
+              comp={item.comp}
+              title={item.title}
+              prize={item.prize}
+              fee={item.fee}
+              theme={item.theme}
+              imageUrl={item.imageUrl}
+              endsAt={item.comp.endsAt}
+            />
+          ))}
+        </div>
+      </main>
+    )
   }
+  

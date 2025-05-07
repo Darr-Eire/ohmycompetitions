@@ -47,19 +47,15 @@ export default function ForumsPage() {
         <title>Forums | OhMyCompetitions</title>
       </Head>
 
-      <main className="font semi-bold text-black mt-6">
+      <main className="app-background min-h-screen p-4 text-white">
         <div className="max-w-2xl mx-auto">
-          
           {/* Title Banner */}
-          <div
-   className="competition-top-banner text-white text-center px-4 py-2"
-   style={{ background: 'var(--primary-gradient)' }}
- >
-         Forums
-        </div>
+          <div className="competition-top-banner title-gradient mb-6">
+            Forums
+          </div>
 
           {/* Intro Text */}
-          <p className="font semi-bold text-white mt-6">
+          <p className="mt-6 mb-6 text-white">
             <strong>
               Welcome to the OhMyCompetitions Forums! Connect, share, vote, and discuss with fellow players around the world.
             </strong>
@@ -70,17 +66,17 @@ export default function ForumsPage() {
             {forumSections.map(section => (
               <div
                 key={section.slug}
-                className="competition-card p-6 flex flex-col items-center text-center mx-auto"
+                className="competition-card p-6 flex flex-col items-center text-center bg-white bg-opacity-10 rounded-2xl shadow-lg"
               >
-                <div className="text-2xl text-blue-600 mb-2">{section.icon}</div>
-                <h2 className="text-lg font-bold text-black mb-2">
+                <div className="text-2xl text-white mb-2">{section.icon}</div>
+                <h2 className="text-lg font-bold gradient-text mb-2">
                   {section.title}
                 </h2>
-                <p className="text-black text-sm mb-4 flex-1">
+                <p className="text-white text-sm mb-4 flex-1">
                   {section.description}
                 </p>
                 <Link href={section.href}>
-                  <button className="bg-blue-700 text-white py-2 px-4 rounded hover:bg-green-900 transition">
+                  <button className="btn-gradient">
                     {section.buttonText}
                   </button>
                 </Link>

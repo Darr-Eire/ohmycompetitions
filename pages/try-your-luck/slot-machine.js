@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import Confetti from 'react-confetti'
 import { useWindowSize } from '@uidotdev/usehooks'
 
-const symbols = ['🥧','⭐','🔥','🔒','🪙','🎁,🥧','⭐','🔥','🔒','🪙','🎁']
+const symbols = ['🥧','⭐','🔥','🔒','🪙','🎁']
 
 export default function PiSlotMachine() {
   const canvasRef = useRef(null)
@@ -14,34 +14,26 @@ export default function PiSlotMachine() {
   const [played, setPlayed] = useState(false)
   const { width, height } = useWindowSize()
 
-  // Reel state: current index, velocity, spinning flag
-  const reelsRef = useRef([
-    { index: 0, velocity: 0, spinning: false },
-    { index: 0, velocity: 0, spinning: false },
-    { index: 0, velocity: 0, spinning: false }
-  ])
-
-  // Block replay if already played today
+  // Prevent replay
   useEffect(() => {
     if (localStorage.getItem('slotMachinePlayed') === new Date().toDateString()) {
       setPlayed(true)
     }
   }, [])
 
-  // Start spin: initialize velocities and spinning flags
+  // Reel state
+  const reels = useRef([0,0,0])
+  const velocities = useRef([0,0,0])
+
   const startSpin = () => {
-    if (played || spinning) return
+    if (spinning || played) return
     setResult(null)
     setSpinning(true)
-    reelsRef.current = reelsRef.current.map((r, i) => ({
-      index: r.index,
-      // faster start for left reel, slower for right
-      velocity: 0.5 + i * 0.25,
-      spinning: true
-    }))
+    // initialize velocities
+    velocities.current = [0.5,0.4,0.3]
   }
 
-  // Canvas render loop
+  // Draw loop
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -50,109 +42,81 @@ export default function PiSlotMachine() {
     const H = canvas.height = 200
     let raf
 
-    function draw() {
-      ctx.clearRect(0, 0, W, H)
-
-      // Background gradient
-      const bg = ctx.createLinearGradient(0, 0, 0, H)
-      bg.addColorStop(0, '#1e3a8a')
-      bg.addColorStop(1, '#60a5fa')
+    const draw = () => {
+      ctx.clearRect(0,0,W,H)
+      // background
+      const bg = ctx.createLinearGradient(0,0,0,H)
+      bg.addColorStop(0,'#001f3f')
+      bg.addColorStop(1,'#001740')
       ctx.fillStyle = bg
-      ctx.fillRect(0, 0, W, H)
-
-      const slotW = W / 3
-      // Draw each reel
-      reelsRef.current.forEach((r, i) => {
-        const x = i * slotW
-
-        // -- Frosted-glass background --
+      ctx.fillRect(0,0,W,H)
+      // frosted slot area
+      const slotW = W/3
+      reels.current.forEach((pos,i) => {
+        const x = i*slotW
         ctx.save()
-        ctx.fillStyle = 'rgba(255,255,255,0.1)'
-        ctx.fillRect(x, 0, slotW, H)
-        ctx.fillStyle = 'rgba(255,255,255,0.15)'
-        ctx.fillRect(x + 4, 4, slotW - 8, H - 8)
-        ctx.lineWidth = 3
-        ctx.strokeStyle = 'rgba(255,255,255,0.6)'
-        ctx.strokeRect(x + 2, 2, slotW - 4, H - 4)
+        ctx.fillStyle='rgba(255,255,255,0.1)'
+        ctx.fillRect(x,0,slotW,H)
+        ctx.fillStyle='rgba(255,255,255,0.15)'
+        ctx.fillRect(x+4,4,slotW-8,H-8)
+        ctx.strokeStyle='rgba(255,255,255,0.6)'
+        ctx.lineWidth=3
+        ctx.strokeRect(x+2,2,slotW-4,H-4)
         ctx.restore()
-
-        // -- Spin logic & easing --
-        if (r.spinning) {
-          r.index += r.velocity
-          // decelerate
-          r.velocity = Math.max(0, r.velocity - 0.005 - i * 0.001)
-          if (r.velocity === 0) r.spinning = false
+        // update spin
+        if(spinning) {
+          velocities.current[i] = Math.max(0, velocities.current[i] - 0.005)
+          if(velocities.current[i] > 0) {
+            reels.current[i] = (pos + velocities.current[i]) % symbols.length
+          }
         }
-        r.index = ((r.index % symbols.length) + symbols.length) % symbols.length
-
-        // -- Draw symbol --
-        ctx.font = '52px monospace'
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'middle'
-        ctx.fillStyle = '#fff'
-        ctx.fillText(symbols[Math.floor(r.index)], x + slotW / 2, H / 2)
+        // draw symbol
+        ctx.font='48px monospace'
+        ctx.textAlign='center'
+        ctx.textBaseline='middle'
+        ctx.fillStyle='#fff'
+        const idx = Math.floor(reels.current[i])
+        ctx.fillText(symbols[idx], x+slotW/2, H/2)
       })
-
-      // When all reels stopped, finalize result
-      if (spinning && reelsRef.current.every(r => !r.spinning)) {
+      // stop condition
+      if(spinning && velocities.current.every(v=>v===0)) {
         setSpinning(false)
+        setPlayed(true)
         localStorage.setItem('slotMachinePlayed', new Date().toDateString())
-        const [a, b, c] = reelsRef.current.map(r => Math.floor(r.index))
-        if (a === b && b === c) {
-          setResult('🎉 Jackpot! You matched all 3!')
-        } else {
-          setResult('❌ No match. Try again tomorrow!')
-        }
+        const [a,b,c] = reels.current.map(r=>Math.floor(r))
+        if(a===b && b===c) setResult('🎉 Jackpot! You matched all 3!')
+        else setResult('❌ No match. Try again tomorrow!')
       }
-
       raf = requestAnimationFrame(draw)
     }
-
     draw()
     return () => cancelAnimationFrame(raf)
   }, [spinning])
 
   return (
-    <main
-      className="min-h-screen flex flex-col items-center p-4"
-      style={{ backgroundImage: 'linear-gradient(to bottom right, #1E3A8A, #60A5FA)' }}
-    >
-      {/* Top Banner */}
-      <div
-        className="competition-top-banner text-white text-center px-4 py-2 rounded mb-4"
-        style={{ background: 'var(--primary-gradient)' }}
-      >
-        🎰 Pi Slot Machine
-      </div>
-
-      {/* Canvas Slot */}
-      <canvas
-        ref={canvasRef}
-        style={{
-          width: 300,
-          height: 200,
-          borderRadius: '8px',
-          boxShadow: '0 0 20px rgba(0,0,0,0.3)',
-          marginBottom: '1rem'
-        }}
-      />
-
-      {/* Spin Button */}
-      <button
-        onClick={startSpin}
-        disabled={played || spinning}
-        className={`
-          comp-button bg-blue-600 text-white py-2 px-6 rounded-full
-          hover:bg-blue-700 transition
-          ${(played || spinning) ? 'opacity-50 cursor-not-allowed' : ''}
-        `}
-      >
-        {spinning ? 'Spinning...' : played ? 'Already Played Today' : 'SPIN!'}
-      </button>
-
-      {/* Result & Confetti */}
-      {result && <p className="mt-4 text-lg font-bold text-white">{result}</p>}
+    <main className="app-background min-h-screen flex flex-col items-center justify-center p-4 text-white">
       {result?.includes('Jackpot') && <Confetti width={width} height={height} />}
+
+      <div className="competition-card relative w-full max-w-md bg-white bg-opacity-10 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500 to-blue-600 opacity-30 mix-blend-overlay animate-pulse-slow"></div>
+        <div className="relative z-10 p-6 space-y-6">
+          <h1 className="title-gradient text-3xl font-orbitron text-center">🎰 Pi Slot Machine</h1>
+
+          <canvas ref={canvasRef} className="mx-auto w-72 h-48 rounded shadow-inner" />
+
+          <button
+            onClick={startSpin}
+            disabled={spinning||played}
+            className={`btn-gradient w-full py-3 text-xl ${spinning||played?'opacity-50 cursor-not-allowed':''}`}
+          >
+            {spinning? 'Spinning...' : played? 'Already Played Today' : 'SPIN!'}
+          </button>
+
+          {result && (
+            <p className="text-center text-lg font-bold mt-2">{result}</p>
+          )}
+        </div>
+      </div>
     </main>
   )
 }

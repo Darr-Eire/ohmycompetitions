@@ -1,3 +1,4 @@
+// pages/try-your-luck/hack-the-vault.js
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
@@ -11,8 +12,6 @@ export default function HackTheVaultPage() {
   const [digits, setDigits] = useState([0, 0, 0])
   const { width, height } = useWindowSize()
   const target = [4, 2, 9]
-  const boxW = 350, boxH = 120
-  const dialCount = digits.length
 
   const changeDigit = (i, delta) => {
     if (status !== 'hacking') return
@@ -37,6 +36,7 @@ export default function HackTheVaultPage() {
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
+    const boxW = 350, boxH = 120
     canvas.width = boxW
     canvas.height = boxH + 40
     canvas.style.width = '100%'
@@ -45,22 +45,19 @@ export default function HackTheVaultPage() {
     let raf, countdownId, shakeProg = 0
     const easeOut = t => t * (2 - t)
 
-    function draw() {
+    const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
-      // background
       const bg = ctx.createLinearGradient(0, 0, 0, canvas.height)
       bg.addColorStop(0, '#1E3A8A')
       bg.addColorStop(1, '#2563eb')
       ctx.fillStyle = bg
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-      // title
       ctx.fillStyle = '#fff'
       ctx.font = '20px monospace'
       ctx.textAlign = 'center'
       ctx.fillText('HACK THE VAULT', canvas.width / 2, 24)
 
-      // timer
       if (status === 'hacking') {
         const flash = countdown < 10 && Math.floor(performance.now() / 500) % 2
         ctx.fillStyle = flash ? '#fee' : '#fff'
@@ -68,7 +65,6 @@ export default function HackTheVaultPage() {
         ctx.fillText(`Time: ${countdown}s`, canvas.width / 2, 44)
       }
 
-      // box + shake
       const bx = (canvas.width - boxW) / 2, by = 50
       let ox = bx, oy = by
       if (status === 'shake' && shakeProg < 1) {
@@ -78,39 +74,36 @@ export default function HackTheVaultPage() {
         shakeProg += 0.1
       }
       ctx.save()
-      ctx.shadowColor = 'rgba(96,165,250,0.8)'
+      ctx.shadowColor = 'rgba(0,255,255,0.4)'
       ctx.shadowBlur = 15
-      ctx.strokeStyle = '#60a5fa'
+      ctx.strokeStyle = '#00ffd5'
       ctx.lineWidth = 4
       ctx.strokeRect(ox, oy, boxW, boxH)
       ctx.restore()
 
-      // dials
-      const dw = boxW / dialCount, cy = oy + boxH / 2
+      const dw = boxW / digits.length, cy = oy + boxH / 2
       digits.forEach((d, i) => {
         const cx = ox + i * dw + dw / 2
-        // face
         const grad = ctx.createRadialGradient(cx, cy, 8, cx, cy, dw * 0.4)
-        grad.addColorStop(0, '#93c5fd')
-        grad.addColorStop(1, '#1e3a8a')
+        grad.addColorStop(0, '#00ffd5')
+        grad.addColorStop(1, '#0077ff')
         ctx.fillStyle = grad
         ctx.beginPath()
         ctx.arc(cx, cy, dw * 0.4, 0, 2 * Math.PI)
         ctx.fill()
-        // ring
-        ctx.strokeStyle = '#60a5fa'
+
+        ctx.strokeStyle = '#39ff14'
         ctx.lineWidth = 2
         ctx.beginPath()
         ctx.arc(cx, cy, dw * 0.4, 0, 2 * Math.PI)
         ctx.stroke()
-        // digit
+
         ctx.fillStyle = '#fff'
         ctx.font = '24px monospace'
         ctx.textAlign = 'center'
         ctx.fillText(d, cx, cy + 8)
       })
 
-      // pointer
       ctx.fillStyle = '#fff'
       ctx.beginPath()
       ctx.moveTo(canvas.width / 2 - 10, oy - 5)
@@ -143,64 +136,68 @@ export default function HackTheVaultPage() {
   }, [digits, status, countdown])
 
   return (
-    <div className="p-4 text-center text-white">
-      {status === 'won' && <Confetti width={width} height={height} />}
-
-      {status === 'idle' && (
-        <button
-          className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded mb-4 w-2/3 max-w-xs mx-auto"
-          onClick={() => {
-            setStatus('hacking')
-            setCountdown(60)
-            setDigits([0, 0, 0])
-          }}
-        >
-          Start Hacking
-        </button>
-      )}
-
-      {(status === 'won' || status === 'lost') && (
-        <p className={`text-lg font-bold mb-4 ${status === 'won' ? 'text-green-400' : 'text-red-400'}`}>
-          {status === 'won'
-            ? '🎉 Vault Opened! You Win!'
-            : '💥 Time’s up. You Lost.'}
-        </p>
-      )}
-
-      <div className="w-full max-w-md mx-auto">
-        <canvas ref={canvasRef} className="rounded-lg shadow-md" />
-      </div>
-
-      {status === 'hacking' && (
-        <div className="flex flex-wrap justify-center gap-4 mt-4">
-          {digits.map((d, i) => (
-            <div key={i} className="flex flex-col items-center">
-              <button
-                onClick={() => changeDigit(i, +1)}
-                className="bg-blue-600 hover:bg-blue-700 text-white w-8 h-8 rounded"
-              >
-                ▲
-              </button>
-              <div className="text-xl my-1">{d}</div>
-              <button
-                onClick={() => changeDigit(i, -1)}
-                className="bg-blue-600 hover:bg-blue-700 text-white w-8 h-8 rounded"
-              >
-                ▼
-              </button>
-            </div>
-          ))}
+    <main className="app-background min-h-screen flex flex-col items-center px-4 py-12 text-white">
+      <div className="competition-card bg-white bg-opacity-10 rounded-2xl shadow-lg w-full max-w-md text-center p-6">
+        <div className="title-gradient mb-4">
+          🔐 Hack the Vault
         </div>
-      )}
 
-      {status === 'hacking' && (
-        <button
-          className="btn-primary mt-6 py-2 px-6 w-2/3 max-w-xs mx-auto block"
-          onClick={enterCode}
-        >
-          Enter Code
-        </button>
-      )}
-    </div>
+        {status === 'won' && <Confetti width={width} height={height} />}
+
+        {status === 'idle' && (
+          <button
+            className="btn-gradient w-full mb-4"
+            onClick={() => {
+              setStatus('hacking')
+              setCountdown(60)
+              setDigits([0, 0, 0])
+            }}
+          >
+            Start Hacking
+          </button>
+        )}
+
+        {(status === 'won' || status === 'lost') && (
+          <p className={`text-lg font-bold mb-4 ${status === 'won' ? 'text-green-400' : 'text-red-400'}`}>
+            {status === 'won'
+              ? '🎉 Vault Opened! You Win!'
+              : '💥 Time’s up. You Lost.'}
+          </p>
+        )}
+
+        <canvas ref={canvasRef} className="mx-auto w-full rounded-lg shadow-md mb-4" />
+
+        {status === 'hacking' && (
+          <div className="flex justify-center gap-4 mb-4">
+            {digits.map((d, i) => (
+              <div key={i} className="flex flex-col items-center">
+                <button
+                  onClick={() => changeDigit(i, +1)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white w-10 h-10 rounded"
+                >
+                  ▲
+                </button>
+                <div className="text-2xl my-1">{d}</div>
+                <button
+                  onClick={() => changeDigit(i, -1)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white w-10 h-10 rounded"
+                >
+                  ▼
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {status === 'hacking' && (
+          <button
+            className="btn-gradient w-full py-2"
+            onClick={enterCode}
+          >
+            Enter Code
+          </button>
+        )}
+      </div>
+    </main>
   )
 }

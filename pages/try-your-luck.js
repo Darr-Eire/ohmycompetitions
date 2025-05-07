@@ -30,7 +30,6 @@ export default function TryYourLuckPage() {
     setPlayedMap(map)
   }
 
-  // Test: clear entire localStorage
   const clearAllStorage = () => {
     console.log('All keys before clear:', Object.keys(localStorage))
     localStorage.clear()
@@ -42,17 +41,18 @@ export default function TryYourLuckPage() {
     <>
       <Head><title>Try Your Luck | OhMyCompetitions</title></Head>
 
-      <main className="min-h-screen p-4" style={{ backgroundImage: 'linear-gradient(to bottom right, #1E3A8A, #60A5FA)' }}>
+      {/* App-wide background and global white text */}
+      <main className="app-background min-h-screen p-4 text-white">
         <div className="max-w-xl mx-auto">
 
           {/* Banner */}
-          <div className="competition-top-banner text-white text-center px-4 py-2 mb-6" style={{ background: 'var(--primary-gradient)' }}>
+          <div className="competition-top-banner text-center px-4 py-2 mb-6 bg-gradient-to-r from-primary to-secondary text-white">
             Try Your Luck
           </div>
 
           {/* Intro & Streak */}
           <div className="text-center mb-4 px-2">
-            <p className="text-base sm:text-lg text-white mb-2">
+            <p className="text-base sm:text-lg mb-2">
               Win free tickets, unlock daily rewards, spin for mystery prizes,<br/>
               and rack up piles of <span className="font-bold">π</span> every day!
             </p>
@@ -79,11 +79,11 @@ export default function TryYourLuckPage() {
                     transition-opacity ${played ? 'opacity-50 pointer-events-none' : 'opacity-100'}
                   `}
                 >
-                  <h2 className="text-xl font-bold text-blue-700 flex items-center justify-center gap-2 mb-2">
+                  <h2 className="text-xl font-bold flex items-center justify-center gap-2 mb-2 text-white">
                     <span className="text-3xl">{game.icon}</span>
                     {game.title}
                   </h2>
-                  <p className="text-gray-600 mb-4">{game.desc}</p>
+                  <p className="mb-4 text-white">{game.desc}</p>
                   {!played ? (
                     <Link
                       href={game.href}
@@ -92,7 +92,7 @@ export default function TryYourLuckPage() {
                       Play Now
                     </Link>
                   ) : (
-                    <p className="text-gray-500 text-sm">Already played today</p>
+                    <p className="text-white text-sm">Already played today</p>
                   )}
                 </div>
               )
