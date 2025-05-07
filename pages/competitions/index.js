@@ -336,5 +336,5 @@ export default function AllCompetitionsPage() {
         ))}
       </div>
     </main>
-  )
+  );
 }
