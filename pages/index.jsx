@@ -231,3 +231,4 @@ function Section({ title, items, viewMoreHref }) {
     </section>
   )
 }
+}
