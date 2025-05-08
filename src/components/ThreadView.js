@@ -5,7 +5,8 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Picker } from 'emoji-mart'
 
-import 'emoji-mart/dist/browser.css'
+import 'emoji-mart/css/emoji-mart.css' // ✅ WORKS in v5+
+
 
 export default function ThreadView({ thread, isAdmin = false }) {
   const [upvotes, setUpvotes] = useState(thread.upvotes?.length || 0)
