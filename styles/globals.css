@@ -244,7 +244,7 @@ button {
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  height: 220px;
+  height: 260px;
 }
 
 .competition-image img {
@@ -290,8 +290,8 @@ button {
 }
 
 .centered-carousel.tiny-carousel > * {
-  flex: 0 0 120px;
-  max-width: 120px;
+  flex: 0 0 140px;
+  max-width: 140px;
 }
 /* in styles/globals.css, under @layer components */
 .competition-top-banner {
