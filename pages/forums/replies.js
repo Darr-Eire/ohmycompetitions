@@ -1,6 +1,6 @@
 // pages/forums/replies.js
 import axios from 'axios'
-import { serverSideTranslations } from 'next-translate/serverSideTranslations'
+import loadNamespaces from 'next-translate/loadNamespaces'
 import { useRouter } from 'next/router'
 
 export async function getServerSideProps(context) {
@@ -16,14 +16,14 @@ export async function getServerSideProps(context) {
     return {
       props: {
         replies: res.data,
-        ...(await serverSideTranslations(locale, ['common'])),
+        ...(await loadNamespaces({ locale, pathname: '/forums/replies' })),
       },
     }
   } catch (err) {
     return {
       props: {
         replies: [],
-        ...(await serverSideTranslations(locale, ['common'])),
+        ...(await loadNamespaces({ locale, pathname: '/forums/replies' })),
       },
     }
   }
