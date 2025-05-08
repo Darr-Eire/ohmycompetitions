@@ -31,6 +31,14 @@ export default function HeroBanner() {
       <h1 className="pulse-glow text-5xl sm:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 mb-2">
         €250,000
       </h1>
+
+      {/* CTA Button (moved here) */}
+      <Link href="/ticket-purchase/main-prize">
+        <button className="comp-button w-full sm:w-auto px-6 py-2 mb-4">
+          Enter Now
+        </button>
+      </Link>
+
       <p className="text-sm text-white italic mb-3">
         Main Grand Prize — Paid in Pi Equivalent
       </p>
@@ -42,7 +50,7 @@ export default function HeroBanner() {
         <p><strong>Mystery Prize:</strong> One lucky winner will unlock a surprise reward</p>
       </div>
 
-      {/* Large Themed Countdown Timer */}
+      {/* Countdown Timer */}
       <div className="flex justify-center gap-4 sm:gap-6 font-mono text-cyan-300 mb-6">
         {Object.entries(timeLeft).map(([label, value]) => (
           <div key={label} className="flex flex-col items-center">
@@ -53,13 +61,6 @@ export default function HeroBanner() {
           </div>
         ))}
       </div>
-
-      {/* CTA Button */}
-      <Link href="/ticket-purchase/main-prize">
-        <button className="comp-button w-full sm:w-auto px-6 py-2">
-          Enter Now
-        </button>
-      </Link>
     </div>
   )
 }

@@ -1,19 +1,17 @@
-// pages/try-your-luck/three-fourteen.js
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
 import Confetti from 'react-confetti'
 import { useWindowSize } from '@uidotdev/usehooks'
 import { updateDailyStreak, getStreak } from '@/lib/streak'
+import Link from 'next/link' // ← added for back button
 
-// initial mock leaderboard
 const initialBoard = [
-  { name: 'Alice',   result: '🏆 Perfect!', time: Date.now() - 2 * 60e3 },
-  { name: 'Bob',     result: '❌ 3.12s',    time: Date.now() - 5 * 60e3 },
-  { name: 'Charlie', result: '❌ 3.20s',    time: Date.now() - 20 * 60e3 },
+  { name: 'Alice', result: '🏆 Perfect!', time: Date.now() - 2 * 60e3 },
+  { name: 'Bob', result: '❌ 3.12s', time: Date.now() - 5 * 60e3 },
+  { name: 'Charlie', result: '❌ 3.20s', time: Date.now() - 20 * 60e3 },
 ]
 
-// helper to format “5m ago”, etc.
 const fmtRelative = ms => {
   const sec = Math.floor(ms / 1000)
   if (sec < 60) return `${sec}s ago`
@@ -31,14 +29,12 @@ export default function ThreeFourteenGame() {
   const intervalRef = useRef(null)
   const { width, height } = useWindowSize()
 
-  // block replay
   useEffect(() => {
     if (localStorage.getItem('threeFourteenPlayed') === new Date().toDateString()) {
       setResult('⏳ You already played today!')
     }
   }, [])
 
-  // ticker
   useEffect(() => {
     if (!running) return
     intervalRef.current = setInterval(() => {
@@ -47,7 +43,6 @@ export default function ThreeFourteenGame() {
     return () => clearInterval(intervalRef.current)
   }, [running])
 
-  // stop logic
   const stop = () => {
     clearInterval(intervalRef.current)
     setRunning(false)
@@ -64,7 +59,6 @@ export default function ThreeFourteenGame() {
     ].slice(0, 10))
   }
 
-  // canvas draw loop
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -77,32 +71,29 @@ export default function ThreeFourteenGame() {
     const draw = () => {
       ctx.clearRect(0, 0, size, size)
 
-      // background gradient
       const bg = ctx.createLinearGradient(0, 0, 0, size)
       bg.addColorStop(0, '#1E3A8A')
       bg.addColorStop(1, '#2563eb')
       ctx.fillStyle = bg
       ctx.fillRect(0, 0, size, size)
 
-      // tick marks
       ctx.save()
-      ctx.translate(size/2, size/2)
+      ctx.translate(size / 2, size / 2)
       ctx.strokeStyle = 'rgba(255,255,255,0.4)'
       ctx.lineWidth = 2
       for (let i = 0; i < 60; i++) {
         const len = i % 5 ? 6 : 12
         ctx.beginPath()
-        ctx.moveTo(0, -size/2 + 20)
-        ctx.lineTo(0, -size/2 + 20 + len)
+        ctx.moveTo(0, -size / 2 + 20)
+        ctx.lineTo(0, -size / 2 + 20 + len)
         ctx.stroke()
         ctx.rotate((2 * Math.PI) / 60)
       }
       ctx.restore()
 
-      // needle
       ctx.save()
-      ctx.translate(size/2, size/2)
-      const angle = (time % 10) / 10 * 2 * Math.PI - Math.PI/2
+      ctx.translate(size / 2, size / 2)
+      const angle = (time % 10) / 10 * 2 * Math.PI - Math.PI / 2
       ctx.rotate(angle)
       ctx.fillStyle = '#ffa726'
       ctx.beginPath()
@@ -114,20 +105,18 @@ export default function ThreeFourteenGame() {
       ctx.fill()
       ctx.restore()
 
-      // center dot
       ctx.save()
-      ctx.translate(size/2, size/2)
+      ctx.translate(size / 2, size / 2)
       ctx.fillStyle = '#fff'
       ctx.beginPath()
       ctx.arc(0, 0, 8, 0, 2 * Math.PI)
       ctx.fill()
       ctx.restore()
 
-      // time text
       ctx.fillStyle = '#fff'
       ctx.font = 'bold 32px Orbitron, monospace'
       ctx.textAlign = 'center'
-      ctx.fillText(`${time.toFixed(2)}s`, size/2, size * 0.9)
+      ctx.fillText(`${time.toFixed(2)}s`, size / 2, size * 0.9)
 
       raf = requestAnimationFrame(draw)
     }
@@ -136,19 +125,18 @@ export default function ThreeFourteenGame() {
     return () => cancelAnimationFrame(raf)
   }, [time])
 
-  // share URLs
-  const shareText = result.includes('❌') ? `I got ${result.slice(2)} on 3.14 Challenge!` : `I nailed 3.14s!`
+  const shareText = result.includes('❌')
+    ? `I got ${result.slice(2)} on 3.14 Challenge!`
+    : `I nailed 3.14s!`
   const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`
 
   return (
     <main className="app-background flex flex-col items-center px-4 sm:px-6 py-4 text-white">
-      {/* Banner */}
       <h1 className="btn-gradient text-white text-3xl font-semibold px-4 py-2 rounded-3xl shadow-lg mb-6">
-        ⏱️ 3.14 Stopwatch<br/> Challenge
+        ⏱️ 3.14 Stopwatch<br />Challenge
       </h1>
 
-      {/* Card & Controls */}
       <div className="w-full max-w-md mx-auto space-y-4">
         <div className="competition-card relative bg-white bg-opacity-10 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-cyan-500 to-blue-600 opacity-30 mix-blend-screen animate-pulse-slow" />
@@ -194,7 +182,6 @@ export default function ThreeFourteenGame() {
           </div>
         </div>
 
-        {/* Live Leaderboard */}
         <div className="btn-gradient w-full rounded-3xl shadow-2xl p-4">
           <h2 className="text-xl font-semibold mb-2 text-white">Live Leaderboard</h2>
           <ul className="space-y-1 text-sm text-white">
@@ -206,9 +193,15 @@ export default function ThreeFourteenGame() {
           </ul>
         </div>
 
+        <Link
+          href="/try-your-luck"
+          className="btn-gradient mt-6 w-full text-center py-2 rounded-xl text-white font-semibold"
+        >
+          ← Back to Mini Games
+        </Link>
+
         {result.includes('🏆') && <Confetti width={width} height={height} />}
       </div>
     </main>
   )
 }
-

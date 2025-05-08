@@ -1,24 +1,18 @@
-// pages/try-your-luck/slot-machine.js
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
 import Confetti from 'react-confetti'
 import { useWindowSize } from '@uidotdev/usehooks'
+import Link from 'next/link' // ✅ Needed for the back button
 
-// Extended symbols array with 5 more icons
-const symbols = [
-  '🥧', '⭐', '🔥', '🔒', '🪙', '🎁',
-  '💎', '🍀', '🎲', '🥇', '🎫'
-]
+const symbols = ['🥧', '⭐', '🔥', '🔒', '🪙', '🎁', '💎', '🍀', '🎲', '🥇', '🎫']
 
-// Mock initial leaderboard
 const initialBoard = [
-  { name: 'Alice',   prize: '🥧', time: Date.now() - 2 * 60e3 },
-  { name: 'Bob',     prize: '⭐', time: Date.now() - 5 * 60e3 },
+  { name: 'Alice', prize: '🥧', time: Date.now() - 2 * 60e3 },
+  { name: 'Bob', prize: '⭐', time: Date.now() - 5 * 60e3 },
   { name: 'Charlie', prize: '🔥', time: Date.now() - 20 * 60e3 },
 ]
 
-// Helper to format “5m ago”, etc.
 const fmtRelative = ms => {
   const sec = Math.floor(ms / 1000)
   if (sec < 60) return `${sec}s ago`
@@ -35,14 +29,12 @@ export default function PiSlotMachine() {
   const [board, setBoard] = useState(initialBoard)
   const { width, height } = useWindowSize()
 
-  // Prevent replay today
   useEffect(() => {
     if (localStorage.getItem('slotMachinePlayed') === new Date().toDateString()) {
       setPlayed(true)
     }
   }, [])
 
-  // Reel state
   const reels = useRef([0, 0, 0])
   const velocities = useRef([0.5, 0.4, 0.3])
 
@@ -53,7 +45,6 @@ export default function PiSlotMachine() {
     velocities.current = [0.5, 0.4, 0.3]
   }
 
-  // Push result into leaderboard when it changes
   useEffect(() => {
     if (!result) return
     const entry = {
@@ -64,14 +55,12 @@ export default function PiSlotMachine() {
     setBoard(prev => [entry, ...prev].slice(0, 10))
   }, [result])
 
-  // Social share URLs
   const shareText = result
     ? `I ${result.startsWith('🎉') ? 'hit the Jackpot' : 'tried the Pi Slot Machine'}!`
     : ''
   const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`
 
-  // Draw loop
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -82,7 +71,6 @@ export default function PiSlotMachine() {
 
     const draw = () => {
       ctx.clearRect(0, 0, W, H)
-      // background gradient
       const bg = ctx.createLinearGradient(0, 0, 0, H)
       bg.addColorStop(0, '#001f3f')
       bg.addColorStop(1, '#001740')
@@ -92,7 +80,6 @@ export default function PiSlotMachine() {
       const slotW = W / 3
       reels.current.forEach((pos, i) => {
         const x = i * slotW
-        // frosted window
         ctx.save()
         ctx.fillStyle = 'rgba(255,255,255,0.1)'
         ctx.fillRect(x, 0, slotW, H)
@@ -110,7 +97,6 @@ export default function PiSlotMachine() {
           }
         }
 
-        // draw symbol
         ctx.font = '48px monospace'
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
@@ -119,7 +105,6 @@ export default function PiSlotMachine() {
         ctx.fillText(symbols[idx], x + slotW / 2, H / 2)
       })
 
-      // stop condition
       if (spinning && velocities.current.every(v => v === 0)) {
         setSpinning(false)
         setPlayed(true)
@@ -142,7 +127,6 @@ export default function PiSlotMachine() {
       <div className="w-full max-w-md mx-auto space-y-4">
         {result?.includes('Jackpot') && <Confetti width={width} height={height} />}
 
-        {/* Slot Machine Card */}
         <div className="competition-card relative bg-white bg-opacity-10 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-cyan-500 to-blue-600 opacity-30 mix-blend-overlay animate-pulse-slow" />
           <div className="relative z-10 p-6 space-y-6">
@@ -167,29 +151,14 @@ export default function PiSlotMachine() {
               <div className="text-center space-y-2">
                 <p className="text-lg font-bold">{result}</p>
                 <div className="flex justify-center space-x-4">
-                  <a
-                    href={twitterUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline"
-                  >
-                    Share on Twitter
-                  </a>
-                  <a
-                    href={whatsappUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline"
-                  >
-                    Share on WhatsApp
-                  </a>
+                  <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="underline">Share on Twitter</a>
+                  <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="underline">Share on WhatsApp</a>
                 </div>
               </div>
             )}
           </div>
         </div>
 
-        {/* Live Leaderboard */}
         <div className="btn-gradient w-full rounded-3xl shadow-2xl p-4">
           <h2 className="text-xl font-semibold mb-2 text-white">Live Leaderboard</h2>
           <ul className="space-y-1 text-sm text-white">
@@ -200,6 +169,14 @@ export default function PiSlotMachine() {
             ))}
           </ul>
         </div>
+
+        {/* ← Back to Mini Games button */}
+        <Link
+          href="/try-your-luck"
+          className="btn-gradient mt-6 w-full text-center py-2 rounded-xl text-white font-semibold"
+        >
+          ← Back to Mini Games
+        </Link>
       </div>
     </main>
   )
