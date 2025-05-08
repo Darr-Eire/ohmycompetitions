@@ -222,16 +222,17 @@ function TopWinnersCarousel() {
        <HeroBanner />
        <main className="max-w-screen-lg mx-auto px-4 pt-1 space-y-8">
         <Section title="Featured Competitions" items={techItems} viewMoreHref="/competitions" viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg" />
-        <Section title="Coming Soon" items={premiumItems} viewMoreHref="/competitions?theme=soon" />
-        <Section title="Pi Giveaways" items={piItems} viewMoreHref="/competitions?theme=pi" />
-        <Section title="Daily Competitions" items={dailyItems} viewMoreHref="/competitions?theme=daily" />
-        <Section title="Free Competitions" items={freeItems} viewMoreHref="/competitions?theme=free" />
+        <Section title="Coming Soon" items={premiumItems} viewMoreHref="/competitions?" viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg" />
+        <Section title="Pi Giveaways" items={piItems} viewMoreHref="/competitions" viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg" />
+        <Section title="Daily Competitions" items={dailyItems} viewMoreHref="/competitions?" viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg" />
+        <Section title="Free Competitions" items={freeItems} viewMoreHref="/competitions" viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg" />
         <TopWinnersCarousel />
-        <div className="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-xl backdrop-blur-md text-black text-center text-sm sm:text-base mx-auto max-w-4xl bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow-lg">
+        <div className="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-xl text-black text-center text-sm sm:text-base mx-auto max-w-4xl btn-gradient shadow-lg">
+
           <div><div className="text-2xl sm:text-3xl font-bold">44,000+</div><p className="text-black mt-1">Winners</p></div>
           <div><div className="text-2xl sm:text-3xl font-bold">106,400 π</div><p className="text-black mt-1">Total Pi Won</p></div>
           <div><div className="text-2xl sm:text-3xl font-bold">15,000 π</div><p className="text-black mt-1">Donated to Charity</p></div>
-          <div><div className="text-2xl sm:text-3xl font-bold">5 ★</div><p className="text-black mt-1">User Rated</p></div>
+          <div><div className="text-2xl sm:text-3xl font-bold">5★</div><p className="text-black mt-1">User Rated</p></div>
         </div>
       </main>
     </>
@@ -241,10 +242,10 @@ function TopWinnersCarousel() {
 function Section({ title, items, viewMoreHref, viewMoreText = 'View More', viewMoreClassName }) {
   return (
     <section className="mb-12">
-      <div className="text-center mb-2">
-        <h2 className="inline-block text-sm font-medium text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-4 py-2 rounded-lg shadow font-orbitron">
-          {title}
-        </h2>
+      <div className="text-center mb-12">
+      <h2 className="w-full text-xl font-bold text-center text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-6 py-3 rounded-xl shadow font-orbitron">
+  {title}
+</h2>
       </div>
       <div className="centered-carousel lg:hidden">
         {items.map(item => (
