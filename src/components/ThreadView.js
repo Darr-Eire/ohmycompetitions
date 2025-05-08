@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Picker } from 'emoji-mart'
-import 'emoji-mart/css/emoji-mart.css'
+
+import 'emoji-mart/dist/browser.css'
 
 export default function ThreadView({ thread, isAdmin = false }) {
   const [upvotes, setUpvotes] = useState(thread.upvotes?.length || 0)
