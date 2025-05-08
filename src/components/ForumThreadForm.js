@@ -52,4 +52,25 @@ export default function ForumThreadForm({ onPosted }) {
       />
 
       <select
-        value={category
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+        className="w-full bg-white bg-opacity-20 px-3 py-2 rounded"
+      >
+        <option value="General">General</option>
+        <option value="Vote">Vote</option>
+        <option value="Ideas">Post an Idea</option>
+        <option value="Celebrate">Celebrate</option>
+      </select>
+
+      <button
+        onClick={handleSubmit}
+        disabled={loading}
+        className="btn-gradient px-6 py-2 rounded-full"
+      >
+        {loading ? 'Posting...' : 'Post Thread'}
+      </button>
+
+      {message && <p className="text-sm text-yellow-300">{message}</p>}
+    </div>
+  )
+}
