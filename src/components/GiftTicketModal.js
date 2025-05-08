@@ -5,53 +5,85 @@ import { useEffect, useState } from 'react'
 export default function GiftTicketModal({ user, onClose }) {
   const [competitions, setCompetitions] = useState([])
   const [selectedComp, setSelectedComp] = useState('')
+  const [recipientUsername, setRecipientUsername] = useState('')
   const [recipientUid, setRecipientUid] = useState('')
   const [quantity, setQuantity] = useState(1)
   const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState('')
 
   useEffect(() => {
-    // Fetch competitions user has entered
     fetch('/api/user/entries')
       .then(res => res.json())
       .then(data => {
-        // Extract unique competition names & IDs
+        const safeEntries = Array.isArray(data)
+          ? data
+          : Array.isArray(data.entries)
+            ? data.entries
+            : []
+
         const comps = Array.from(
-          new Map(data.map(entry => [entry.competitionId, {
-            id: entry.competitionId,
-            name: entry.competitionName,
-          }])).values()
+          new Map(
+            safeEntries.map(entry => [
+              entry.competitionId,
+              {
+                id: entry.competitionId,
+                name: entry.competitionName,
+              },
+            ])
+          ).values()
         )
         setCompetitions(comps)
+      })
+      .catch(() => {
+        setCompetitions([])
+        setMessage('⚠️ Failed to load competitions.')
       })
   }, [])
 
   const handleSubmit = async () => {
-    if (!selectedComp || !recipientUid || quantity < 1) {
+    if (!selectedComp || !recipientUsername || quantity < 1) {
       setMessage('Fill all fields properly.')
       return
     }
 
     setSubmitting(true)
-    const res = await fetch('/api/tickets/gift', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        fromUid: user.uid,
-        toUid: recipientUid,
-        competitionId: selectedComp,
-        quantity: parseInt(quantity),
-      }),
-    })
+    setMessage('Looking up recipient...')
 
-    const result = await res.json()
-    setSubmitting(false)
+    try {
+      // Lookup UID by username
+      const lookupRes = await fetch(`/api/user/lookup?username=${recipientUsername}`)
+      const lookupData = await lookupRes.json()
 
-    if (res.ok) {
-      setMessage('✅ Ticket(s) successfully gifted!')
-      setTimeout(onClose, 1500)
-    } else {
-      setMessage(`❌ ${result.error || 'Something went wrong'}`)
+      if (!lookupRes.ok || !lookupData.uid) {
+        setMessage('❌ User not found.')
+        setSubmitting(false)
+        return
+      }
+
+      const res = await fetch('/api/tickets/gift', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fromUid: user.uid,
+          toUid: lookupData.uid,
+          competitionId: selectedComp,
+          quantity: parseInt(quantity),
+        }),
+      })
+
+      const result = await res.json()
+      setSubmitting(false)
+
+      if (res.ok) {
+        setMessage('✅ Ticket(s) successfully gifted!')
+        setTimeout(onClose, 1500)
+      } else {
+        setMessage(`❌ ${result.error || 'Something went wrong'}`)
+      }
+    } catch (err) {
+      console.error(err)
+      setMessage('❌ Failed to send gift.')
+      setSubmitting(false)
     }
   }
 
@@ -76,15 +108,15 @@ export default function GiftTicketModal({ user, onClose }) {
             </select>
           </div>
 
-          {/* Recipient UID */}
+          {/* Recipient Username */}
           <div>
-            <label className="block mb-1 text-sm">Recipient Pi UID</label>
+            <label className="block mb-1 text-sm">Recipient Username</label>
             <input
               type="text"
-              value={recipientUid}
-              onChange={(e) => setRecipientUid(e.target.value)}
+              value={recipientUsername}
+              onChange={(e) => setRecipientUsername(e.target.value)}
               className="w-full bg-white bg-opacity-20 rounded px-3 py-2"
-              placeholder="e.g. pi_abcdef123"
+              placeholder="e.g. john_doe"
             />
           </div>
 

@@ -1,16 +1,42 @@
 'use client'
-import React from 'react'
+
+import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import CompetitionCard from '@/components/CompetitionCard'
 import HeroBanner from '@/components/HeroBanner'
-
+import Image from 'next/image'
 export default function HomePage() {
   const topWinners = [
-    { name: 'Jack jim', prize: 'Matchday Tickets', date: 'March 26th', image: '/images/winner2.png' },
-    { name: 'Shanahan', prize: 'Playstation 5', date: 'February 14th', image: '/images/winner2.png' },
-    { name: 'Emily Rose', prize: 'Luxury Car', date: 'January 30th', image: '/images/winner2.png' },
-    { name: 'John Doe', prize: '€10,000 Pi', date: 'December 15th', image: '/images/winner2.png' },
-  ]
+  { name: 'Jack Jim', prize: 'Matchday Tickets', date: 'March 26th', image: '/images/winner2.png' },
+  { name: 'Shanahan', prize: 'Playstation 5', date: 'February 14th', image: '/images/winner2.png' },
+  { name: 'Emily Rose', prize: 'Luxury Car', date: 'January 30th', image: '/images/winner2.png' },
+  { name: 'John Doe', prize: '€10,000 Pi', date: 'December 15th', image: '/images/winner2.png' },
+]
+
+function TopWinnersCarousel() {
+  const [index, setIndex] = useState(0)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % topWinners.length)
+    }, 30000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const current = topWinners[index]
+
+  return (
+    <div className="bg-white bg-opacity-10 backdrop-blur-lg rounded-xl shadow-lg p-6 text-white text-center max-w-md mx-auto">
+      <h2 className="text-2xl font-bold mb-4">🏆 Top Winners</h2>
+      <div className="flex flex-col items-center">
+        <Image src={current.image} alt={current.name} width={120} height={120} className="rounded-full border-4 border-blue-500 mb-4" />
+        <h3 className="text-xl font-semibold text-white">{current.name}</h3>
+        <p className="text-blue-300">{current.prize}</p>
+        <p className="text-sm text-white/70">{current.date}</p>
+      </div>
+    </div>
+  )
+}
 
   // Featured “tech” competitions
   const techItems = [
@@ -193,40 +219,24 @@ export default function HomePage() {
 
   return (
     <>
-      <HeroBanner />
-      <main className="max-w-screen-lg mx-auto px-4 pt-1 space-y-8"> {/* Reduced pt and space-y */}
-        <Section title="Featured Competitions" items={techItems} viewMoreHref="/competitions" viewMoreText="View All" viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg" />
+       <HeroBanner />
+       <main className="max-w-screen-lg mx-auto px-4 pt-1 space-y-8">
+        <Section title="Featured Competitions" items={techItems} viewMoreHref="/competitions" viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg" />
         <Section title="Coming Soon" items={premiumItems} viewMoreHref="/competitions?theme=soon" />
         <Section title="Pi Giveaways" items={piItems} viewMoreHref="/competitions?theme=pi" />
         <Section title="Daily Competitions" items={dailyItems} viewMoreHref="/competitions?theme=daily" />
         <Section title="Free Competitions" items={freeItems} viewMoreHref="/competitions?theme=free" />
-      </main>
-  
-      <div className="mt-12"> {/* was mt-16 */}
-        <h2 className="text-3xl font-bold text-center text-white mb-4">{/* was mb-6 */}Top Winners</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 mx-auto max-w-4xl">{/* was gap-6 p-6 */}
-          {topWinners.map((winner, index) => (
-            <div key={index} className="bg-gradient-to-r from-[#00ffd5] to-[#0077ff] rounded-lg shadow-lg overflow-hidden text-black p-4">
-              <img src={winner.image} alt={winner.name} className="w-full h-32 object-cover rounded-md" />
-              <div className="mt-3">
-                <h3 className="text-xl font-semibold text-black">{winner.name}</h3>
-                <p className="text-md text-black">{winner.prize}</p>
-                <p className="text-sm text-black mt-1">{winner.date}</p>
-              </div>
-            </div>
-          ))}
+        <TopWinnersCarousel />
+        <div className="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-xl backdrop-blur-md text-black text-center text-sm sm:text-base mx-auto max-w-4xl bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow-lg">
+          <div><div className="text-2xl sm:text-3xl font-bold">44,000+</div><p className="text-black mt-1">Winners</p></div>
+          <div><div className="text-2xl sm:text-3xl font-bold">106,400 π</div><p className="text-black mt-1">Total Pi Won</p></div>
+          <div><div className="text-2xl sm:text-3xl font-bold">15,000 π</div><p className="text-black mt-1">Donated to Charity</p></div>
+          <div><div className="text-2xl sm:text-3xl font-bold">5 ★</div><p className="text-black mt-1">User Rated</p></div>
         </div>
-      </div>
-  
-      <div className="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-xl backdrop-blur-md text-black text-center text-sm sm:text-base mx-auto max-w-4xl bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow-lg">
-        <div><div className="text-2xl sm:text-3xl font-bold">44,000+</div><p className="text-black mt-1">Winners</p></div>
-        <div><div className="text-2xl sm:text-3xl font-bold">106,400 π</div><p className="text-black mt-1">Total Pi Won</p></div>
-        <div><div className="text-2xl sm:text-3xl font-bold">15,000 π</div><p className="text-black mt-1">Donated to Charity</p></div>
-        <div><div className="text-2xl sm:text-3xl font-bold">5 ★</div><p className="text-black mt-1">User Rated</p></div>
-      </div>
+      </main>
     </>
   )
-}  
+}
 
 function Section({ title, items, viewMoreHref, viewMoreText = 'View More', viewMoreClassName }) {
   return (
