@@ -244,7 +244,7 @@ button {
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  height: 180px;
+  height: 220px;
 }
 
 .competition-image img {
@@ -271,8 +271,8 @@ button {
 }
 
 .centered-carousel > * {
-  flex: 0 0 90%;
-  max-width: 90%;
+  flex: 0 0 95%;
+  max-width: 95%;
   scroll-snap-align: center;
   scroll-snap-stop: always;
 }
