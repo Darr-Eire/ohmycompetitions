@@ -1,19 +1,65 @@
-import dbConnect from '@/lib/dbConnect'
-import Reply from '@/models/Reply'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+// pages/forums/reply.js
+import { useState } from 'react';
+import { useRouter } from 'next/router';
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).end()
-  await dbConnect()
+export default function ReplyPage() {
+  const [body, setBody] = useState('');
+  const [threadId, setThreadId] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const router = useRouter();
 
-  const session = await getServerSession(req, res, authOptions)
-  const uid = session?.user?.uid
-  if (!uid) return res.status(401).json({ error: 'Unauthorized' })
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
 
-  const { threadId, body } = req.body
-  if (!threadId || !body) return res.status(400).json({ error: 'Missing fields' })
+    const res = await fetch('/api/forums/reply', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ threadId, body }),
+    });
 
-  const reply = await Reply.create({ threadId, userUid: uid, body })
-  res.status(200).json({ success: true, reply })
+    const data = await res.json();
+    setLoading(false);
+
+    if (!res.ok) {
+      setError(data.error || 'Failed to post reply');
+    } else {
+      setBody('');
+      router.push(`/forums/thread/${threadId}`);
+    }
+  };
+
+  return (
+    <div className="max-w-xl mx-auto mt-10 p-4 border rounded">
+      <h1 className="text-2xl font-bold mb-4">Post a Reply</h1>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          placeholder="Thread ID"
+          value={threadId}
+          onChange={(e) => setThreadId(e.target.value)}
+          className="w-full p-2 border rounded mb-4"
+          required
+        />
+        <textarea
+          placeholder="Your reply..."
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          className="w-full p-2 border rounded mb-4 h-32"
+          required
+        />
+        {error && <p className="text-red-500 mb-2">{error}</p>}
+        <button
+          type="submit"
+          className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
+          disabled={loading}
+        >
+          {loading ? 'Posting...' : 'Submit Reply'}
+        </button>
+      </form>
+    </div>
+  );
 }
+
