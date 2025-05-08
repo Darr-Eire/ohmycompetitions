@@ -1,4 +1,3 @@
-// pages/forums.js
 'use client'
 
 import Head from 'next/head'
@@ -55,7 +54,7 @@ export default function ForumsPage() {
           </div>
 
           {/* Intro Text */}
-          <p className="mt-6 mb-6 text-white">
+          <p className="mt-6 mb-6 text-white text-center">
             <strong>
               Welcome to the OhMyCompetitions Forums! Connect, share, vote, and discuss with fellow players around the world.
             </strong>
@@ -63,7 +62,7 @@ export default function ForumsPage() {
 
           {/* Sections Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {forumSections.map(section => (
+            {forumSections.map((section) => (
               <div
                 key={section.slug}
                 className="competition-card p-6 flex flex-col items-center text-center bg-white bg-opacity-10 rounded-2xl shadow-lg"
@@ -72,13 +71,9 @@ export default function ForumsPage() {
                 <h2 className="text-lg font-bold gradient-text mb-2">
                   {section.title}
                 </h2>
-                <p className="text-white text-sm mb-4 flex-1">
-                  {section.description}
-                </p>
+                <p className="text-white text-sm mb-4 flex-1">{section.description}</p>
                 <Link href={section.href}>
-                  <button className="btn-gradient">
-                    {section.buttonText}
-                  </button>
+                  <button className="btn-gradient">{section.buttonText}</button>
                 </Link>
               </div>
             ))}

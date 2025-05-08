@@ -61,6 +61,17 @@ export default function FuturePage() {
             </ul>
           </section>
 
+          {/* Section: Monetization & Innovation */}
+          <section>
+            <h2 className="text-xl font-bold gradient-text mb-4">🚀 New Ways to Win & Earn</h2>
+            <ul className="list-disc list-inside space-y-2 text-white">
+              <li><strong>🧑‍💻 User-Generated Competitions:</strong> Let verified users create their own competitions and share the rewards.</li>
+              <li><strong>🤝 Sponsor Integration:</strong> Official sponsored competitions with real-world prizes and Pi-backed entry fees.</li>
+              <li><strong>❤️ Donation-Driven Competitions:</strong> Special competitions where entries help support real-world causes.</li>
+              <li><strong>⚡ Flash Entry Multipliers:</strong> Limited-time 2x entry windows to boost chances and increase excitement.</li>
+            </ul>
+          </section>
+
           {/* Call to Action */}
           <div className="text-center mt-8">
             <Link href="/forums/general">

@@ -30,6 +30,7 @@ export default function Header() {
 
   const navItems = [
     ['Home', '/'],
+    ['My Account', '/account'],
     ['All Competitions', '/competitions'],
     ['Try Your Luck', '/try-your-luck'],
     ['Forums', '/forums'],
@@ -38,6 +39,7 @@ export default function Header() {
     ['How We Got Started', '/how-we-got-started'],
     ['Partners & Sponsors', '/partners'],
   ]
+  
 
   return (
     <header className="
