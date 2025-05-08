@@ -1,12 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import dynamic from 'next/dynamic'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { Picker } from 'emoji-mart'
 
-import 'emoji-mart/css/emoji-mart.css' // ✅ WORKS in v5+
-
+// ✅ emoji-mart Picker (SSR-safe)
+const Picker = dynamic(() => import('emoji-mart').then(mod => mod.Picker), {
+  ssr: false,
+})
 
 export default function ThreadView({ thread, isAdmin = false }) {
   const [upvotes, setUpvotes] = useState(thread.upvotes?.length || 0)
@@ -18,7 +20,7 @@ export default function ThreadView({ thread, isAdmin = false }) {
 
   useEffect(() => {
     fetch(`/api/forums/replies?threadId=${thread._id}`)
-      .then((res) => res.json())
+      .then(res => res.json())
       .then(setReplies)
   }, [thread._id])
 
@@ -48,7 +50,7 @@ export default function ThreadView({ thread, isAdmin = false }) {
 
     if (res.ok) {
       const added = await res.json()
-      setReplies((prev) => [...prev, added.reply])
+      setReplies(prev => [...prev, added.reply])
       setNewReply('')
     }
 
@@ -56,14 +58,14 @@ export default function ThreadView({ thread, isAdmin = false }) {
   }
 
   const handleEmojiSelect = (emoji) => {
-    setNewReply((prev) => prev + emoji.native)
+    setNewReply(prev => prev + emoji.native)
     setShowEmojiPicker(false)
   }
 
   const deleteReply = async (id) => {
     if (!confirm('Delete this reply?')) return
     await fetch(`/api/forums/reply/${id}`, { method: 'DELETE' })
-    setReplies((prev) => prev.filter((r) => r._id !== id))
+    setReplies(prev => prev.filter(r => r._id !== id))
   }
 
   const deleteThread = async () => {
@@ -105,14 +107,15 @@ export default function ThreadView({ thread, isAdmin = false }) {
       {/* Replies */}
       <div className="mt-6">
         <h3 className="text-lg font-bold mb-2">💬 Replies</h3>
-
         <div className="space-y-3">
           {replies.map((reply) => (
             <div key={reply._id} className="bg-white bg-opacity-5 p-3 rounded relative">
               <div className="text-sm text-gray-400">
                 {new Date(reply.createdAt).toLocaleString()}
               </div>
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{reply.body}</ReactMarkdown>
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {reply.body}
+              </ReactMarkdown>
               {isAdmin && (
                 <button
                   onClick={() => deleteReply(reply._id)}
@@ -143,7 +146,7 @@ export default function ThreadView({ thread, isAdmin = false }) {
             {loading ? 'Posting...' : 'Reply'}
           </button>
           <button
-            onClick={() => setShowEmojiPicker((prev) => !prev)}
+            onClick={() => setShowEmojiPicker(prev => !prev)}
             className="text-white bg-white bg-opacity-10 px-3 py-1 rounded hover:bg-opacity-20"
           >
             😀 Emoji
@@ -152,7 +155,7 @@ export default function ThreadView({ thread, isAdmin = false }) {
 
         {showEmojiPicker && (
           <div className="mt-2">
-            <Picker onSelect={handleEmojiSelect} theme="dark" />
+            <Picker onEmojiSelect={handleEmojiSelect} theme="dark" />
           </div>
         )}
       </div>
