@@ -1,12 +1,49 @@
-// pages/api/forums/replies.js
-import dbConnect from '@/lib/dbConnect'
-import Reply from '@/models/Reply'
+// pages/forums/replies.js
+import axios from 'axios'
+import { serverSideTranslations } from 'next-translate/serverSideTranslations'
+import { useRouter } from 'next/router'
 
-export default async function handler(req, res) {
-  await dbConnect()
-  const { threadId } = req.query
-  if (!threadId) return res.status(400).json({ error: 'Missing threadId' })
+export async function getServerSideProps(context) {
+  const { locale, query } = context
+  const threadId = query.threadId || ''
 
-  const replies = await Reply.find({ threadId }).sort({ createdAt: 1 }).lean()
-  res.status(200).json(replies)
+  if (!threadId) {
+    return { notFound: true }
+  }
+
+  try {
+    const res = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/forums/replies?threadId=${threadId}`)
+    return {
+      props: {
+        replies: res.data,
+        ...(await serverSideTranslations(locale, ['common'])),
+      },
+    }
+  } catch (err) {
+    return {
+      props: {
+        replies: [],
+        ...(await serverSideTranslations(locale, ['common'])),
+      },
+    }
+  }
+}
+
+export default function RepliesPage({ replies }) {
+  const router = useRouter()
+
+  return (
+    <div>
+      <h1>Replies for Thread: {router.query.threadId}</h1>
+      {replies.length === 0 && <p>No replies yet</p>}
+      <ul>
+        {replies.map((reply) => (
+          <li key={reply._id}>
+            <p>{reply.content}</p>
+            <small>{new Date(reply.createdAt).toLocaleString()}</small>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
 }
