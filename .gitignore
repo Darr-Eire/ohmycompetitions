@@ -1,12 +1,19 @@
-cat >> .gitignore <<EOF
-# local env files
-.env.local
-.env.local.example
-# dependencies
+# Node modules
 node_modules/
-# build output
+
+# Build output
 .next/
-EOF
-"validation-key.txt" 
-"validation-key.txt" 
-"src/validation-key.txt" 
+
+# Environment variables
+.env.local
+
+# Logs
+*.log
+
+# IDE files
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db

@@ -26,6 +26,17 @@ const COMPETITIONS = {
     location: 'Anfield Stadium, Liverpool',
     endsAt: '2025-07-20T13:30:00Z',
   },
+  'main-prize': {
+  title: 'Main Prize €250,000',
+  prize: '€250,000 in Pi (One Winner)',
+  entryFee: 15,
+  imageUrl: '/images/250000.png',
+  date: 'May 28, 2025',
+  time: '10:00 PM UTC',
+  location: 'Global Online Draw',
+  endsAt: '2025-05-28T22:00:00Z',
+},
+
 };
 
 export default function TicketPurchasePage() {
