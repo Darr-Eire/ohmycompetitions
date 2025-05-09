@@ -2,7 +2,7 @@ import { serialize } from 'cookie'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' })
+    return res.status(405).end('Method Not Allowed')
   }
 
   const { accessToken } = req.body
@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing accessToken' })
   }
 
-  // Dummy user data for now — replace with real user lookup later if needed
+  // ✅ Replace this with real Pi user data if needed
   const user = {
     uid: 'temp-uid',
     username: 'temp-user',
@@ -30,6 +30,6 @@ export default async function handler(req, res) {
     }
   ))
 
-  return res.status(200).json({ success: true })
+  res.status(200).json({ success: true })
 }
 

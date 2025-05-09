@@ -9,11 +9,7 @@ export default function PiLoginButton() {
   async function handleLogin() {
     setLoading(true)
     try {
-      if (!window.Pi || typeof window.Pi.authenticate !== 'function') {
-        throw new Error('Pi SDK is not loaded in the browser')
-      }
-
-      const { accessToken } = await window.Pi.authenticate(scopes)
+      const { accessToken, user } = await window.Pi.authenticate(scopes)
 
       const loginRes = await fetch('/api/auth/pi-login', {
         method: 'POST',
@@ -21,17 +17,13 @@ export default function PiLoginButton() {
         body: JSON.stringify({ accessToken }),
       })
 
-      if (!loginRes.ok) {
-        const text = await loginRes.text()
-        throw new Error(`Login API failed: ${text}`)
-      }
+      if (!loginRes.ok) throw new Error('Pi login failed')
 
+      // ✅ Redirect after login
       window.location.href = '/account'
     } catch (err) {
-      let message = 'Unknown error'
-      if (err?.message) message = err.message
-      else if (typeof err === 'string') message = err
-      alert(`🚨 Login failed:\n${message}`)
+      console.error('🚨 Pi login failed:', err)
+      alert('Login error – check console')
     } finally {
       setLoading(false)
     }
