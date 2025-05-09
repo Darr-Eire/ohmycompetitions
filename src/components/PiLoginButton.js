@@ -31,11 +31,3 @@ export default function PiLoginButton() {
     </button>
   )
 }
-
-
-  return (
-    <button onClick={handleLogin} disabled={loading}>
-      {loading ? 'Logging in…' : 'Log in with Pi'}
-    </button>
-  )
-}

@@ -29,7 +29,7 @@ export default function HeroBanner() {
 
       {/* Glowing Grand Prize */}
       <h1 className="pulse-glow text-5xl sm:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 mb-2">
-        €250,000
+        250,000 Pi
       </h1>
 
       {/* CTA Button (moved here) */}
@@ -45,7 +45,7 @@ export default function HeroBanner() {
 
       {/* Prize Tiers */}
       <div className="text-white/90 text-sm mb-5 space-y-1">
-        <p><strong>2<sup>nd</sup> Prize:</strong> €25,000 (in Pi)</p>
+        <p><strong>2<sup>nd</sup> Prize:</strong> 25,000 (in Pi)</p>
         <p><strong>3<sup>rd</sup>–1000<sup>th</sup>:</strong> Smaller Pi & cash-equivalent rewards</p>
         <p><strong>Mystery Prize:</strong> One lucky winner will unlock a surprise reward</p>
       </div>
