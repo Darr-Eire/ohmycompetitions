@@ -8,27 +8,29 @@ export default function PiLoginButton() {
 
   async function handleLogin() {
     setLoading(true)
+
     try {
-      if (!window.Pi) throw new Error('Pi SDK not loaded')
+      if (!window.Pi || typeof window.Pi.authenticate !== 'function') {
+        throw new Error('Pi SDK is not available')
+      }
 
-      const { accessToken, user } = await window.Pi.authenticate(scopes)
+      const { accessToken } = await window.Pi.authenticate(scopes)
 
-      const loginRes = await fetch('/api/auth/pi-login', {
+      const res = await fetch('/api/auth/pi-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ accessToken }),
       })
 
-      if (!loginRes.ok) {
-        const errorText = await loginRes.text()
-        throw new Error(`Login API failed: ${errorText}`)
+      if (!res.ok) {
+        const text = await res.text()
+        throw new Error(`Login API failed: ${text}`)
       }
 
-      // Success: redirect to account or whatever page
       window.location.href = '/account'
     } catch (err) {
       console.error('🚨 Pi login failed:', err)
-      alert('Login failed – check console.')
+      alert('Pi login failed — check console for details')
     } finally {
       setLoading(false)
     }
