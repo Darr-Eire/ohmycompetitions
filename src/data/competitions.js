@@ -1,4 +1,4 @@
-import COMPETITIONS from '@/data/competitions'
+
 const COMPETITIONS = {
   'ps5-bundle-giveaway': {
     title: 'PS5 Bundle Giveaway',
