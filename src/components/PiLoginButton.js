@@ -1,42 +1,37 @@
-// components/PiLoginButton.js
 import { useState } from 'react'
 
 export default function PiLoginButton() {
   const [loading, setLoading] = useState(false)
   const scopes = ['username', 'payments']
 
-  function onIncompletePaymentFound(payment) {
-    console.warn('Resuming incomplete payment:', payment)
-  }
-
   async function handleLogin() {
     setLoading(true)
     try {
-      const { accessToken, user } = await window.Pi.authenticate(
-        scopes,
-        onIncompletePaymentFound
-      )
+      const { accessToken } = await window.Pi.authenticate(scopes)
 
-      // Send it to your Next.js API to verify
-      const res = await fetch('/api/pi/verify', {
+      const loginRes = await fetch('/api/auth/pi-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ accessToken }),
       })
 
-      if (!res.ok) throw new Error('Verification failed')
-      const { uid, username } = await res.json()
-
-      console.log('✅ Verified Pioneer:', uid, username)
-      // TODO: store this in your session or context,
-      //       or call next-auth’s signIn() with credentials...
+      if (!loginRes.ok) throw new Error('Pi login failed')
+      window.location.reload() // Reload to update session
     } catch (err) {
-      console.error('🚨 Pi login/verify error:', err)
-      alert('Login failed. Check console for details.')
+      console.error('🚨 Pi login failed:', err)
+      alert('Login error – check console')
     } finally {
       setLoading(false)
     }
   }
+
+  return (
+    <button onClick={handleLogin} disabled={loading} className="comp-button w-full">
+      {loading ? 'Logging in…' : 'Login with Pi'}
+    </button>
+  )
+}
+
 
   return (
     <button onClick={handleLogin} disabled={loading}>

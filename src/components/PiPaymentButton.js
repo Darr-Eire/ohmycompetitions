@@ -1,15 +1,22 @@
 'use client'
 
 import { useState } from 'react'
-import { usePiAuth } from '@/lib/usePiAuth'
+import { useSession } from 'next-auth/react'
 
 export default function PiPaymentButton({ amount, memo, metadata }) {
-  const { user, loading: authLoading, signIn } = usePiAuth()
+  const { data: session } = useSession()
   const [busy, setBusy] = useState(false)
 
+  const uid = session?.user?.uid
+
   const start = () => {
-    if (!user) return signIn()
+    if (!uid) {
+      alert('You must log in first.')
+      return
+    }
+
     setBusy(true)
+
     window.Pi.createPayment(
       { amount, memo, metadata },
       {
@@ -24,23 +31,23 @@ export default function PiPaymentButton({ amount, memo, metadata }) {
           await fetch('/api/payments/complete', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paymentId, txid }),
+            body: JSON.stringify({ paymentId, txid, uid }),
           })
           setBusy(false)
           alert('🎉 Payment complete!')
         },
         onCancel: () => setBusy(false),
-        onError: err => { alert('Payment failed: ' + err.message); setBusy(false) },
+        onError: err => {
+          alert('❌ Payment failed: ' + err.message)
+          setBusy(false)
+        },
       }
     )
   }
 
   return (
-    <button onClick={start} disabled={authLoading || busy} className="mt-2 comp-button w-full">
-      { !user
-        ? authLoading ? 'Connecting Pi…' : 'Sign in with Pi'
-        : busy ? 'Processing…' : `Pay ${amount} π`
-      }
+    <button onClick={start} disabled={busy} className="mt-2 comp-button w-full">
+      {busy ? 'Processing…' : `Pay ${amount} π`}
     </button>
   )
 }
