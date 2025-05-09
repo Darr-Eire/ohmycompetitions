@@ -68,12 +68,12 @@ function TopWinnersCarousel() {
       theme: 'tech',
     },
     {
-      comp: { slug: 'gamer-pc-bundle', entryFee: 0.25, totalTickets: 1400, ticketsSold: 0, endsAt: '2025-05-08T11:30:00Z' },
-      title: 'Gaming PC',
-      prize: 'Gamer Pc Bundle',
+      comp: { slug: 'rare-pokemon-card', entryFee: 0.25, totalTickets: 1400, ticketsSold: 0, endsAt: '2025-05-08T11:30:00Z' },
+      title: 'Rare Pokemon Card',
+      prize: 'Charizard Pokemon Card',
       fee: '0.25 π',
-      href: '/competitions/gamer-pc-bundle',
-      imageUrl: '/images/bundle.jpeg',
+      href: '/competitions/rare-pokemon-card',
+      imageUrl: '/images/pokemon.jpeg',
       theme: 'tech',
     },
     {
@@ -107,9 +107,9 @@ function TopWinnersCarousel() {
       theme: 'premium',
     },
     {
-      comp: { slug: 'penthouse-hotel-stay', entryFee: 15, totalTickets: 5000, ticketsSold: 4875, endsAt: '2025-05-15T21:00:00Z' },
-      title: 'Penthouse Hotel Stay',
-      href: '/competitions/penthouse-hotel-stay',
+      comp: { slug: 'penthouse-stay', entryFee: 15, totalTickets: 5000, ticketsSold: 4875, endsAt: '2025-05-15T21:00:00Z' },
+      title: 'Penthouse Stay',
+      href: '/competitions/penthouse-stay',
       prize: 'Penthouse Hotel Stay of your choice',
       fee: '15 π',
       imageUrl: '/images/hotel.jpeg',
@@ -130,8 +130,8 @@ function TopWinnersCarousel() {
   const piItems = [
     {
       comp: { slug: 'pi-giveaway-250k', entryFee: 15, totalTickets: 50000, ticketsSold: 0, endsAt: '2025-06-01T00:00:00Z' },
-      title: '250 000 π',
-      prize: '250 000 π',
+      title: '250,000 π',
+      prize: '250,000 π',
       fee: '15 π',
       href: '/competitions/pi-giveaway-250k',
       imageUrl: '/images/250000.png',
@@ -139,8 +139,8 @@ function TopWinnersCarousel() {
     },
     {
       comp: { slug: 'pi-giveaway-100k', entryFee: 10, totalTickets: 33000, ticketsSold: 0, endsAt: '2025-05-20T00:00:00Z' },
-      title: '100 000 π',
-      prize: '100 000 π',
+      title: '100,000 π',
+      prize: '100,000 π',
       fee: '10 π',
       href: '/competitions/pi-giveaway-100k',
       imageUrl: '/images/100000.png',
@@ -148,8 +148,8 @@ function TopWinnersCarousel() {
     },
     {
       comp: { slug: 'pi-giveaway-50k', entryFee: 5, totalTickets: 17000, ticketsSold: 0, endsAt: '2025-05-11T00:00:00Z' },
-      title: '50 000 π',
-      prize: '50 000 π',
+      title: '50,000 π',
+      prize: '50,000 π',
       fee: '5 π',
       href: '/competitions/pi-giveaway-50k',
       imageUrl: '/images/50000.png',
@@ -203,7 +203,7 @@ function TopWinnersCarousel() {
       prize: '9,999 / 5,555 / 1,111 π',
       fee: 'Free',
       href: '/competitions/everyones-a-winner',
-      imageUrl: '/images/everyone.png',
+      imageUrl: '/images/winner2.png',
       theme: 'free',
     },
     {
@@ -255,17 +255,37 @@ function TopWinnersCarousel() {
   viewMoreHref="/competitions/free"
   viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg"
 />
+<TopWinnersCarousel />
+
+<div className="flex justify-center mt-8">
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 w-full max-w-md px-6 py-6 bg-gradient-to-r from-cyan-300 to-blue-500 rounded-xl shadow-lg text-black text-center text-base">
+    
+    <div>
+      <div className="text-xl font-bold">44,000+</div>
+      <div>Winners</div>
+    </div>
+
+    <div>
+      <div className="text-xl font-bold">106,400 π</div>
+      <div>Total Pi Won</div>
+    </div>
+
+    <div>
+      <div className="text-xl font-bold">15,000 π</div>
+      <div>Donated to Charity</div>
+    </div>
+
+    <div>
+      <div className="text-xl font-bold">5★</div>
+      <div>User Rated</div>
+    </div>
+
+  </div>
+</div>
 
 
-        <TopWinnersCarousel />
-        <div className="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-xl text-black text-center text-sm sm:text-base mx-auto max-w-4xl btn-gradient shadow-lg">
+</main>
 
-          <div><div className="text-2xl sm:text-3xl font-bold">44,000+</div><p className="text-black mt-1">Winners</p></div>
-          <div><div className="text-2xl sm:text-3xl font-bold">106,400 π</div><p className="text-black mt-1">Total Pi Won</p></div>
-          <div><div className="text-2xl sm:text-3xl font-bold">15,000 π</div><p className="text-black mt-1">Donated to Charity</p></div>
-          <div><div className="text-2xl sm:text-3xl font-bold">5★</div><p className="text-black mt-1">User Rated</p></div>
-        </div>
-      </main>
     </>
   )
 }
