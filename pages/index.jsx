@@ -128,18 +128,9 @@ function TopWinnersCarousel() {
   ]
 
   const piItems = [
-    {
-      comp: { slug: 'pi-giveaway-250k', entryFee: 15, totalTickets: 50000, ticketsSold: 0, endsAt: '2025-06-01T00:00:00Z' },
-      title: '250,000 π',
-      prize: '250,000 π',
-      fee: '15 π',
-      href: '/competitions/pi-giveaway-250k',
-      imageUrl: '/images/250000.png',
-      theme: 'pi',
-    },
-    {
+   {
       comp: { slug: 'pi-giveaway-100k', entryFee: 10, totalTickets: 33000, ticketsSold: 0, endsAt: '2025-05-20T00:00:00Z' },
-      title: '100,000 π',
+      title: '100,000 Pi',
       prize: '100,000 π',
       fee: '10 π',
       href: '/competitions/pi-giveaway-100k',
@@ -148,11 +139,20 @@ function TopWinnersCarousel() {
     },
     {
       comp: { slug: 'pi-giveaway-50k', entryFee: 5, totalTickets: 17000, ticketsSold: 0, endsAt: '2025-05-11T00:00:00Z' },
-      title: '50,000 π',
+      title: '50,000 Pi',
       prize: '50,000 π',
       fee: '5 π',
       href: '/competitions/pi-giveaway-50k',
       imageUrl: '/images/50000.png',
+      theme: 'pi',
+    },
+    {
+      comp: { slug: 'pi-giveaway-25k', entryFee: 5, totalTickets: 17000, ticketsSold: 0, endsAt: '2025-05-11T00:00:00Z' },
+      title: '25,000 Pi',
+      prize: '25,000 π',
+      fee: '2 π',
+      href: '/competitions/pi-giveaway-25k',
+      imageUrl: '/images/25000.png',
       theme: 'pi',
     },
   ]
