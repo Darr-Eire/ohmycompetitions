@@ -1,50 +1,46 @@
 import NextAuth from 'next-auth'
-import { JWT } from 'next-auth/jwt'
-
-// Custom Pi OAuth provider
-function PiProvider(options) {
-  return {
-    id: 'pi',
-    name: 'Pi Network',
-    type: 'oauth',
-    version: '2.0',
-    authorization: {
-      url: process.env.PI_OAUTH_AUTHORIZE_URL,
-      params: { scope: 'pi_user_info pi_transactions' },
-    },
-    token: process.env.PI_OAUTH_TOKEN_URL,
-    userinfo: process.env.PI_OAUTH_USERINFO_URL,
-    clientId: process.env.PI_APP_ID,
-    clientSecret: process.env.PI_APP_SECRET,
-    checks: ['state'],
-    profile(profile) {
-      return {
-        id: profile.id,
-        name: profile.name || null,
-        email: profile.email || null,
-        image: profile.picture || null,
-      }
-    },
-    options,
-  }
-}
+import CredentialsProvider from 'next-auth/providers/credentials'
 
 export default NextAuth({
   providers: [
-    PiProvider({})
+    CredentialsProvider({
+      name: 'Pi',
+      credentials: {
+        uid: {},
+        username: {},
+        accessToken: {},
+        wallet: {},
+      },
+      async authorize(credentials) {
+        if (!credentials.uid || !credentials.username || !credentials.accessToken) return null
+        return {
+          id: credentials.uid,
+          uid: credentials.uid,
+          username: credentials.username,
+          wallet: credentials.wallet,
+          accessToken: credentials.accessToken,
+        }
+      },
+    }),
   ],
-  secret: process.env.NEXTAUTH_SECRET,
   session: { strategy: 'jwt' },
   callbacks: {
-    async jwt({ token, account }) {
-      if (account?.access_token) {
-        token.piAccessToken = account.access_token
+    async jwt({ token, user }) {
+      if (user) {
+        token.uid = user.uid
+        token.username = user.username
+        token.wallet = user.wallet
+        token.piAccessToken = user.accessToken
       }
       return token
     },
     async session({ session, token }) {
+      session.user.uid = token.uid
+      session.user.username = token.username
+      session.user.wallet = token.wallet
       session.piAccessToken = token.piAccessToken
       return session
     },
   },
+  secret: process.env.NEXTAUTH_SECRET,
 })
