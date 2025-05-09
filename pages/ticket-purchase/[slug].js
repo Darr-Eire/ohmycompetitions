@@ -196,7 +196,7 @@ const COMPETITIONS = {
   location: 'Online',
   endsAt: '2025-05-05T23:59:59Z',
 },
-'main-prize-250k-euro': {
+  'main-prize': {
   title: 'Main Prize €250,000',
   prize: '€250,000 in Pi (One Winner)',
   entryFee: 15,
