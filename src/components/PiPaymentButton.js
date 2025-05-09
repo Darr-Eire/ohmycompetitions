@@ -27,12 +27,11 @@ export default function PiPaymentButton({ amount, memo, metadata }) {
             body: JSON.stringify({ paymentId }),
           })
         },
-        onReadyForServerCompletion: async (paymentId, txid) => {
-          await fetch('/api/payments/complete', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paymentId, txid, uid }),
-          })
+      await fetch('/api/pi/approve', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ paymentId }),
+})
           setBusy(false)
           alert('🎉 Payment complete!')
         },
