@@ -7,12 +7,12 @@ export default function MainPrizePage() {
       
       {/* Grand Prize Badge */}
       <div className="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-black text-sm sm:text-base font-bold uppercase px-6 py-2 rounded-full shadow-lg inline-block mb-6 animate-pulse tracking-wide">
-        🔥 GRAND PRIZE — Win €250,000 in Pi
+        🔥 GRAND PRIZE — Win 250,000 in Pi
       </div>
 
       {/* Title */}
       <h1 className="text-5xl sm:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-100 drop-shadow-[0_0_20px_rgba(255,255,100,0.5)] text-center mb-6 pulse-glow">
-        €250,000 Pi Giveaway
+        250,000 Pi Giveaway
       </h1>
 
       {/* Card Container */}
@@ -25,7 +25,7 @@ export default function MainPrizePage() {
 
         {/* Prize Info */}
         <p className="text-white/90 text-lg font-semibold mb-4 text-center">
-          Prize: €250,000 in Pi (One Winner)
+          Prize: 250,000 in Pi (One Winner)
         </p>
 
         {/* Countdown */}
@@ -54,7 +54,7 @@ export default function MainPrizePage() {
 
         {/* Call To Action */}
         <button className="w-full bg-gradient-to-r from-yellow-300 to-yellow-500 text-black font-bold py-3 rounded-full shadow-lg hover:scale-105 transition-all duration-200 animate-bounce-slow">
-          🚀 Enter Now to Win €250,000
+           Enter Now to Win 250,000 Pi
         </button>
       </div>
     </div>
