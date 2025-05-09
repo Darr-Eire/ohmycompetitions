@@ -16,29 +16,29 @@ export default function HowWeGotStarted() {
 
           {/* Banner */}
           <div className="competition-top-banner title-gradient">
-            🚀 How We Got Started
+             How We Got Started
           </div>
 
           {/* Body */}
           <div className="p-6 space-y-6">
             <p className="font-semibold">
-              Welcome, Pioneers! Our journey with Pi Network started just like yours — with a simple invite from a friend... and a bit of curiosity. 🔥
+              Welcome, Pioneers! Our journey with Pi Network started just like yours — with a simple invite from a friend... and a bit of curiosity. 
             </p>
 
             <section>
               <h2 className="text-xl font-bold gradient-text mt-6">Finding Pi — And Believing in It Early</h2>
               <p className="text-white">
-                One day, a friend sent me a message: “Hey, check this out. It's called Pi Network!” Next thing you know — not just me, but my partner, my family, even my neighbor’s dog (okay maybe not the dog) were all mining Pi. 🐶📱
+                One day, a friend said to me “You should check this out. It's called Pi Network!” Next thing you know — not just me, but my partner, my family, even my neighbor’s dog (okay maybe not the dog) were all mining Pi.
               </p>
               <p className="text-white">
-                It felt like we had discovered treasure before the world knew about it. I became the “Pi Guru” of the family — everyone asking me questions I barely knew the answers to yet. 😅
+                It felt like we had discovered treasure before the world knew about it. I became the “Pi Guru” of the family — everyone asking me questions I barely knew the answers to yet.
               </p>
             </section>
 
             <section>
               <h2 className="text-xl font-bold gradient-text mt-6">The Great KYC Race</h2>
               <p className="text-white">
-                If you were around during KYC time — you know. The stress was real. We were racing the clock, helping everyone get verified before Mainnet launched. “Why is my KYC not showing?” “What is Pi Browser?” “Can you do it for me?” Somehow, I became tech support for half the family. 🤣
+                If you were around during KYC time — you know. The stress was real. We were racing the clock, helping everyone get verified before Mainnet launched. “Why is my KYC not showing?” “What is Pi Browser?” “Can you do it for me?” Somehow, I became tech support for half the family.
               </p>
             </section>
 
@@ -47,7 +47,7 @@ export default function HowWeGotStarted() {
               <p className="text-white">
                 The dream was simple:<br/>
                 <em>Build something awesome for Pioneers.</em><br/>
-                The problem? I had no idea how to build anything! Late nights, YouTube tutorials, StackOverflow rabbit holes... fixing bugs at 3 AM with bloodshot eyes. 💻☕
+                The problem? I had no idea how to build anything! Late nights, YouTube tutorials, StackOverflow rabbit holes... fixing bugs at 3 AM with bloodshot eyes.
               </p>
             </section>
 
@@ -59,23 +59,33 @@ export default function HowWeGotStarted() {
             </section>
 
             <section>
-              <h2 className="text-xl font-bold gradient-text mt-6">The First Wins</h2>
-              <p className="text-white">
-                The first time Pi Login worked... I almost cried. The first time the Scratch Card flipped? I was doing laps around the room. My family’s feedback? “Not bad for someone who couldn’t install a printer last year!” 😂
-              </p>
-            </section>
+  <h2 className="text-xl font-bold gradient-text mt-6">The First Wins</h2>
+  <p className="text-white">
+    The first time Pi Login worked... I almost cried. Not because of the button — but because everything clicked. The frontend talked to the backend. Pi's access token validated. A real session saved to the database. It wasn’t just a feature; it was proof that all the moving pieces could *finally* hold together.
+  </p>
+  <p className="text-white">
+    After weeks of wiring up APIs, rewriting broken logic — that one login confirmed we had liftoff. Pi wasn’t just theoretical anymore — it was powering our app. For the first time, we weren’t building for Pioneers. We were building *with* Pi.
+  </p>
+</section>
 
-            <section>
-              <h2 className="text-xl font-bold gradient-text mt-6">Where We’re Headed</h2>
-              <p className="text-white">
-                We’re just getting started. Bigger prizes, bigger events, real Pi-based tournaments, and maybe even a full Pioneer arcade someday. 🎯🎮 Our goal? <strong>Make OhMyCompetitions the heart of Pi fun.</strong>
-              </p>
-            </section>
+<section>
+  <h2 className="text-xl font-bold gradient-text mt-6">Where We’re Headed</h2>
+  <p className="text-white">
+    We’re just getting started. Bigger prizes, bigger events, real Pi-based tournaments, and maybe even a full Pioneer arcade someday. Our goal? <strong>Make OhMyCompetitions the heart of Pi fun.</strong>
+  </p>
+  <p className="text-white">
+    But we're not stopping there. We aim to become the <strong>official giveaway platform across the Pi ecosystem</strong> — the go-to name trusted by developers, creators, and Pioneers alike. A place where any Pi app can plug in, run fair competitions, and reward users safely and transparently.
+  </p>
+  <p className="text-white">
+    A trusted name. A trusted place. For all Pioneers.
+  </p>
+</section>
+
 
             <section>
               <h2 className="text-xl font-bold gradient-text mt-6">A Final Thank You</h2>
               <p className="text-white">
-                Thank you to everyone who plays, shares, enters, or just believes in the dream. We couldn't have made it without you. See you at the next draw! 🥧🚀
+                Thank you to everyone who plays, shares, enters, or just believes in the dream. We couldn't have made it without you. See you at the next draw!
               </p>
             </section>
 

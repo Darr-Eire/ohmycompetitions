@@ -91,20 +91,27 @@ export default function PartnersPage() {
             </h2>
           </div>
 
-          <ul className="list-disc list-inside space-y-2 text-white">
-            <li>
-              <strong className="gradient-text">Instant Trust &amp; Credibility:</strong> Align with a top‑ranked platform to build confidence in your DApp.
-            </li>
-            <li>
-              <strong className="gradient-text">Massive Visibility:</strong> Get in front of thousands of crypto‑curious users every day.
-            </li>
-            <li>
-              <strong className="gradient-text">Easy Integration:</strong> A single API call and you’re live.
-            </li>
-            <li>
-              <strong className="gradient-text">Shared Marketing:</strong> Cross‑promote in our socials and newsletter.
-            </li>
-          </ul>
+          <li>
+  <strong className="gradient-text">Developer Support:</strong> Direct access to technical assistance and integration guidance.
+</li>
+<li>
+  <strong className="gradient-text">Performance Insights:</strong> Get real-time analytics to track user engagement and optimize performance.
+</li>
+<li>
+  <strong className="gradient-text">Ecosystem Credibility:</strong> Be featured alongside other verified projects building on the Pi Network.
+</li>
+<li>
+  <strong className="gradient-text">Security & Compliance:</strong> Leverage our audited infrastructure for peace of mind.
+</li>
+<li>
+  <strong className="gradient-text">Partner Competition:</strong> Feature your competitions across our Pi App and community channels for maximum traction.
+</li>
+<li>
+  <strong className="gradient-text">We Pi Family:</strong> Join a trusted alliance of pioneers building real utility in the Pi ecosystem — together we grow.
+</li>
+
+
+
         </section>
 
       </div>

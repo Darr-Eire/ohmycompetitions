@@ -1,7 +1,10 @@
 import mongoose from 'mongoose'
 
 const MONGO_URI = process.env.MONGODB_URI
+console.log('Loaded MONGO_URI:', MONGO_URI) // Debug log
 if (!MONGO_URI) throw new Error('❌ MONGODB_URI not set in .env')
+
+
 
 let cached = global._mongoose
 if (!cached) {
