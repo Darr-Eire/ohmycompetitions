@@ -191,13 +191,13 @@ const COMPETITIONS = {
     endsAt: '2025-05-05T23:59:59Z',
   },
   'main-prize': {
-    title: 'Main Prize €250,000',
-    prize: '€250,000 in Pi (One Winner)',
+    title: 'Main Prize 250,000 Pi',
+    prize: '250,000 in Pi (One Winner)',
     entryFee: 15,
     imageUrl: '/images/main.png',
     date: 'May 28, 2025',
     time: '10:00 PM UTC',
-    location: 'Global Online Draw',
+    location: 'Online Draw',
     endsAt: '2025-05-28T22:00:00Z',
   },
 }

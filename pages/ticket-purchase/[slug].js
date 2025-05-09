@@ -6,14 +6,13 @@ import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import PiLoginButton from '@/components/PiLoginButton'
 import BuyTicketButton from '@/components/BuyTicketButton'
-
-import COMPETITIONS from '@/data/competitions' // consider moving COMPETITIONS to a separate file
+import COMPETITIONS from '@/data/competitions'
 
 export default function TicketPurchasePage() {
   const router = useRouter()
   const { slug } = router.query
-
   const { data: session, status } = useSession()
+
   const [quantity, setQuantity] = useState(1)
   const [discount, setDiscount] = useState(0)
   const [timeLeft, setTimeLeft] = useState('')
@@ -128,6 +127,7 @@ export default function TicketPurchasePage() {
               competitionSlug={slug}
               entryFee={currentPrice}
               quantity={quantity}
+              uid={session.user.uid}
             />
           )}
         </div>

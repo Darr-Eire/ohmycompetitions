@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState, useRef, useEffect } from 'react'
-import { signIn, signOut, useSession } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 
 export default function Header() {
   const { data: session, status } = useSession()
@@ -27,6 +27,25 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  async function handlePiLogin() {
+    try {
+      const { accessToken } = await window.Pi.authenticate(['username', 'payments'])
+
+      const res = await fetch('/api/auth/pi-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessToken }),
+      })
+
+      if (!res.ok) throw new Error('Login failed')
+
+      window.location.href = '/account'
+    } catch (err) {
+      console.error('Pi login error:', err)
+      alert('Login failed. See console.')
+    }
+  }
+
   const navItems = [
     ['Home', '/'],
     ['My Account', '/account'],
@@ -40,32 +59,19 @@ export default function Header() {
   ]
 
   return (
-    <header className="
-      fixed top-0 left-0 right-0 z-50
-      bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a]
-      border-b border-cyan-700
-      px-4 py-3 flex items-center
-      shadow-md backdrop-blur-md
-    ">
-      {/* Menu Button */}
-      <button
-        ref={buttonRef}
-        onClick={toggleMenu}
-        className="neon-button text-white text-sm px-4 py-2"
-      >
+    <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] border-b border-cyan-700 px-4 py-3 flex items-center shadow-md backdrop-blur-md">
+      <button ref={buttonRef} onClick={toggleMenu} className="neon-button text-white text-sm px-4 py-2">
         <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M4 8h16M4 16h16" />
         </svg>
       </button>
 
-      {/* Brand */}
       <div className="flex-1 text-center">
         <Link href="/" className="text-xl sm:text-2xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 text-transparent bg-clip-text drop-shadow">
           OhMyCompetitions
         </Link>
       </div>
 
-      {/* Top Right Auth Button */}
       {status === 'loading' ? (
         <p className="text-white text-sm">Checking session…</p>
       ) : session ? (
@@ -74,10 +80,11 @@ export default function Header() {
           <button onClick={() => signOut()} className="neon-button px-3 py-1">Log Out</button>
         </div>
       ) : (
-        <button onClick={() => signIn()} className="neon-button text-white text-sm px-4 py-2">Log In</button>
+        <button onClick={handlePiLogin} className="neon-button text-white text-sm px-4 py-2">
+          Login with Pi
+        </button>
       )}
 
-      {/* Dropdown Menu */}
       {menuOpen && (
         <nav ref={menuRef} className="absolute top-full left-2 mt-3 w-56 rounded-lg shadow-xl backdrop-blur-md bg-[#0f172acc] border border-cyan-700 animate-fade-in">
           <ul className="flex flex-col font-orbitron text-sm">
@@ -108,11 +115,11 @@ export default function Header() {
                 <button
                   onClick={() => {
                     setMenuOpen(false)
-                    signIn()
+                    handlePiLogin()
                   }}
                   className="w-full text-left px-4 py-2 text-white hover:bg-cyan-600 hover:text-black transition"
                 >
-                  Log In with Pi
+                  Login with Pi
                 </button>
               )}
             </li>
