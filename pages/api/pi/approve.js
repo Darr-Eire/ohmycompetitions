@@ -11,7 +11,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    const piRes = await fetch(`https://api.minepi.com/v2/payments/${paymentId}/approve`, {
+   const piRes = await fetch(`https://sandbox.minepi.com/v2/payments/${paymentId}/approve`, {
+
       method: 'POST',
       headers: {
         Authorization: `Key ${process.env.PI_API_KEY}`,
