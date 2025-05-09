@@ -2,21 +2,9 @@
 import CompetitionCard from '@/components/CompetitionCard'
 
 const premiumComps = [
-  {
-    comp: {
-      slug: 'tesla-model-3-giveaway',
-      entryFee: 40,
-      totalTickets: 20000,
-      ticketsSold: 5120,
-      endsAt: '2025-05-20T23:59:00Z',
-    },
-    title: 'Tesla Model 3 Giveaway',
-    href: '/competitions/tesla-model-3-giveaway',
-    prize: 'Tesla Model 3',
-    fee: '40 π',
-    imageUrl: '/images/tesla.jpeg',
-    theme: 'premium',
-  },
+  
+   
+  
   {
     comp: {
       slug: 'dubai-luxury-holiday',
@@ -99,11 +87,12 @@ export default function AllPremiumCompsPage() {
     <main className="pt-4 pb-10 px-4">
       {/* Title moved up (pt-4) and in white */}
       <h1
-        className="category-page-title text-center text-2xl font-bold mb-6 text-white"
-        style={{ marginTop: 0 }}
-      >
-        All Premium Giveaways
-      </h1>
+  className="category-page-title text-center text-2xl font-bold mb-6 bg-gradient-to-r from-[#00ffd5] to-[#0077ff] bg-clip-text text-transparent"
+  style={{ marginTop: 0 }}
+>
+  Coming Soon
+</h1>
+
 
       {/* Always 3 columns */}
       <div className="category-grid mx-auto max-w-5xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -10,7 +10,8 @@ export default function Footer() {
       {/* Back to Home Button */}
       <div className="max-w-screen-md mx-auto px-4 py-8">
         <Link href="/" legacyBehavior>
-          <a className="comp-button inline-block">Back to Home</a>
+     <a className="btn-gradient inline-block text-sm px-3 py-1 rounded-md">Back to Home</a>
+
         </Link>
       </div>
 

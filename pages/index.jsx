@@ -221,11 +221,42 @@ function TopWinnersCarousel() {
     <>
        <HeroBanner />
        <main className="max-w-screen-lg mx-auto px-4 pt-1 space-y-8">
-        <Section title="Featured Competitions" items={techItems} viewMoreHref="/competitions" viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg" />
-        <Section title="Coming Soon" items={premiumItems} viewMoreHref="/competitions?" viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg" />
-        <Section title="Pi Giveaways" items={piItems} viewMoreHref="/competitions" viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg" />
-        <Section title="Daily Competitions" items={dailyItems} viewMoreHref="/competitions?" viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg" />
-        <Section title="Free Competitions" items={freeItems} viewMoreHref="/competitions" viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg" />
+       <Section
+  title="Featured Competitions"
+  items={techItems}
+  viewMoreHref="/competitions/featured"
+  viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg"
+/>
+
+<Section
+  title="Coming Soon"
+  items={premiumItems}
+  viewMoreHref="/competitions/soon"
+  viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg"
+/>
+
+<Section
+  title="Pi Giveaways"
+  items={piItems}
+  viewMoreHref="/competitions/pi"
+  viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg"
+/>
+
+<Section
+  title="Daily Competitions"
+  items={dailyItems}
+  viewMoreHref="/competitions/daily"
+  viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg"
+/>
+
+<Section
+  title="Free Competitions"
+  items={freeItems}
+  viewMoreHref="/competitions/free"
+  viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg"
+/>
+
+
         <TopWinnersCarousel />
         <div className="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-xl text-black text-center text-sm sm:text-base mx-auto max-w-4xl btn-gradient shadow-lg">
 
