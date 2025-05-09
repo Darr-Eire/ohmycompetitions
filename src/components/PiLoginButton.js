@@ -1,3 +1,5 @@
+'use client'
+
 import { useState } from 'react'
 
 export default function PiLoginButton() {
@@ -7,7 +9,9 @@ export default function PiLoginButton() {
   async function handleLogin() {
     setLoading(true)
     try {
-      const { accessToken } = await window.Pi.authenticate(scopes)
+      if (!window.Pi) throw new Error('Pi SDK not loaded')
+
+      const { accessToken, user } = await window.Pi.authenticate(scopes)
 
       const loginRes = await fetch('/api/auth/pi-login', {
         method: 'POST',
@@ -15,20 +19,27 @@ export default function PiLoginButton() {
         body: JSON.stringify({ accessToken }),
       })
 
-      if (!loginRes.ok) throw new Error('Pi login failed')
+      if (!loginRes.ok) {
+        const errorText = await loginRes.text()
+        throw new Error(`Login API failed: ${errorText}`)
+      }
 
-      // Redirect to /account after login success
+      // Success: redirect to account or whatever page
       window.location.href = '/account'
     } catch (err) {
       console.error('🚨 Pi login failed:', err)
-      alert('Login error – check console')
+      alert('Login failed – check console.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <button onClick={handleLogin} disabled={loading} className="neon-button text-white text-sm px-4 py-2">
+    <button
+      onClick={handleLogin}
+      disabled={loading}
+      className="neon-button text-white text-sm px-4 py-2"
+    >
       {loading ? 'Logging in…' : 'Login with Pi'}
     </button>
   )
