@@ -1,86 +1,58 @@
 'use client'
 
+import { useSession } from 'next-auth/react'
 import { useState } from 'react'
 
-export default function BuyTicketButton({ entryFee, competitionSlug }) {
-  const [loading, setLoading] = useState(false)
+export default function BuyTicketButton({ competitionSlug, entryFee, quantity }) {
+  const { data: session } = useSession()
+  const [busy, setBusy] = useState(false)
 
-  const handleBuy = async () => {
-    alert('🛒 createPayment called')
+  const total = (entryFee * quantity).toFixed(3)
+  const uid = session?.user?.uid
 
-    // ✅ Debug Pi SDK availability
-    alert('Pi object: ' + typeof window.Pi)
-    alert('Pi.authenticate: ' + typeof window.Pi?.authenticate)
-
-    setLoading(true)
-
-    if (!window?.Pi?.createPayment) {
-      alert('Pi SDK not found. Use Pi Browser.')
-      setLoading(false)
+  const startPayment = () => {
+    if (!uid) {
+      alert('You must log in first.')
       return
+    }
+
+    setBusy(true)
+
+    const metadata = {
+      type: 'ticket',
+      slug: competitionSlug,
+      quantity,
     }
 
     window.Pi.createPayment(
       {
-        amount: entryFee.toString(),
-        memo: `Ticket for ${competitionSlug}`,
-        metadata: { competitionSlug },
+        amount: total,
+        memo: `Entry for ${competitionSlug}`,
+        metadata,
       },
       {
-        onReadyForServerApproval: async (paymentId, paymentData, signature) => {
-          console.log('📩 Approving payment:', paymentId)
-          alert('📩 Approving payment: ' + paymentId) // 👈 show real payment ID
-
-          try {
-            const res = await fetch('/api/pi/approve', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                paymentId,
-                paymentData,
-                signature,
-                uid: localStorage.getItem('pi_user_uid'),
-              }),
-            })
-            if (!res.ok) throw new Error('Approval failed')
-          } catch (err) {
-            console.error('❌ Approval error:', err)
-            alert('Approval failed: ' + err.message)
-            setLoading(false)
-          }
+        onReadyForServerApproval: async (paymentId) => {
+          await fetch('/api/pi/approve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId }),
+          })
         },
-
         onReadyForServerCompletion: async (paymentId, txid) => {
-          try {
-            console.log('✅ Completing payment:', paymentId, txid)
-            const res = await fetch('/api/pi/complete', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                paymentId,
-                txid,
-                uid: localStorage.getItem('pi_user_uid'),
-              }),
-            })
-            if (!res.ok) throw new Error('Completion failed')
-            alert('🎉 Ticket purchased!')
-          } catch (err) {
-            console.error('❌ Completion error:', err)
-            alert('Completion failed: ' + err.message)
-          } finally {
-            setLoading(false)
-          }
+          await fetch('/api/payments/complete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId, txid, uid, competitionSlug }),
+          })
+          setBusy(false)
+          alert('🎉 Payment complete!')
         },
-
         onCancel: () => {
-          alert('Payment cancelled.')
-          setLoading(false)
+          setBusy(false)
         },
-
         onError: (err) => {
-          console.error('Pi SDK error:', err)
-          alert('Payment error: ' + err.message)
-          setLoading(false)
+          alert('❌ Payment failed: ' + err.message)
+          setBusy(false)
         },
       }
     )
@@ -88,11 +60,11 @@ export default function BuyTicketButton({ entryFee, competitionSlug }) {
 
   return (
     <button
-      onClick={handleBuy}
-      disabled={loading}
-      className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
+      onClick={startPayment}
+      disabled={busy}
+      className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 px-4 rounded-xl shadow-lg"
     >
-      {loading ? 'Processing…' : `Buy Ticket (${entryFee} π)`}
+      {busy ? 'Processing…' : `Confirm & Pay ${total} π`}
     </button>
   )
 }

@@ -16,7 +16,9 @@ export default function PiLoginButton() {
       })
 
       if (!loginRes.ok) throw new Error('Pi login failed')
-      window.location.reload() // Reload to update session
+
+      // Redirect to /account after login success
+      window.location.href = '/account'
     } catch (err) {
       console.error('🚨 Pi login failed:', err)
       alert('Login error – check console')
@@ -26,7 +28,7 @@ export default function PiLoginButton() {
   }
 
   return (
-    <button onClick={handleLogin} disabled={loading} className="comp-button w-full">
+    <button onClick={handleLogin} disabled={loading} className="neon-button text-white text-sm px-4 py-2">
       {loading ? 'Logging in…' : 'Login with Pi'}
     </button>
   )
