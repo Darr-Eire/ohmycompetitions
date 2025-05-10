@@ -178,7 +178,7 @@ const COMPETITIONS = {
     time: '9:00 PM UTC',
     location: 'Online',
     endsAt: '2025-05-15T21:00:00Z',
-  },{
+  },
   'pi-giveaway-100k': {
     title: '100,000 Pi Giveaway',
     prize: '100,000 π',
@@ -210,7 +210,7 @@ const COMPETITIONS = {
     endsAt: '2025-05-11T00:00:00Z',
   },
 
- {
+ 
   'everyday-pioneer': {
     title: 'Everyday Pioneer',
     prize: '1,000 π',
@@ -272,8 +272,8 @@ const COMPETITIONS = {
     endsAt: '2025-05-04T12:00:00Z',
   },
   'main-prize': {
-    title: 'Main Prize €250,000',
-    prize: '€250,000 in Pi (One Winner)',
+    title: 'Main Prize 250,000 Pi',
+    prize: '250,000 Pi in Pi (One Winner)',
     entryFee: 15,
     imageUrl: '/images/250000.png',
     date: 'May 28, 2025',
