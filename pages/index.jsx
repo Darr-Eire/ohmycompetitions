@@ -230,7 +230,8 @@ export default function HomePage() {
    return (
     <>
       <HeroBanner />
-      <main className="max-w-screen-lg mx-auto px-4 pt-1 space-y-8">
+      <main className="max-w-screen-lg mx-auto px-0 pt-0 space-y-0">
+
         <Section title="Featured Competitions" items={techItems} viewMoreHref="/competitions/featured" viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg" />
         <Section title="Coming Soon" items={premiumItems} viewMoreHref="/competitions/soon" viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg" />
         <Section title="Pi Giveaways" items={piItems} viewMoreHref="/competitions/pi" viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg" />

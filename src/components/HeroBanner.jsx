@@ -22,39 +22,40 @@ export default function HeroBanner() {
   }, []);
 
   return (
-    <section className="pt-8 sm:pt-3 pb-12 text-center max-w-4xl mx-auto px-4">
-      {/* Tagline */}
-      <p className="text-lg uppercase tracking-widest text-white font-semibold mb-2">
-        Enter the Ultimate Pi Competition
-      </p>
+   <section className="pt-4 sm:pt- pb-0 text-center max-w-4xl mx-auto px-4">
+  {/* Tagline */}
+  <p className="text-lg uppercase tracking-widest text-white font-semibold mb-2">
+    Enter the Ultimate Pi Competition
+  </p>
 
-      {/* Main Prize Display */}
-      <h1 className="pulse-glow text-5xl sm:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 mb-4">
-        250,000 Pi
-      </h1>
+  {/* Main Prize Display */}
+  <h1 className="pulse-glow text-5xl sm:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 mb-4">
+    250,000 Pi
+  </h1>
 
-      {/* CTA */}
-      <div className="mb-6">
-        <Link href="/ticket-purchase/main-prize">
-          <button className="comp-button w-full sm:w-auto px-8 py-3 rounded-full font-semibold text-lg bg-gradient-to-r from-cyan-400 to-blue-500 text-black shadow-lg hover:scale-105 transition-transform duration-200">
-            Enter Now
-          </button>
-        </Link>
-      </div>
+  {/* CTA */}
 
-      {/* Prize Summary */}
-      <p className="text-white/80 text-sm italic mb-4">
-        Main Grand Prize — Paid in Pi Equivalent
-      </p>
 
-      {/* Prize Tiers */}
-      <div className="text-white/90 text-sm sm:text-base mb-6 space-y-1">
-        <p><strong>🥈 2<sup>nd</sup> Prize:</strong> 25,000 Pi</p>
-        <p><strong>🥉 3<sup>rd</sup> – 1000<sup>th</sup> Place:</strong> Smaller Pi & cash-equivalent rewards</p>
-        <p><strong>🎁 Mystery Draw:</strong> Surprise reward for 1 random participant</p>
-        <p><strong>🪙 Bonus Giveaways:</strong> Random flash rewards throughout the event</p>
-        <p><strong>👥 Invite Challenge:</strong> Top referrers win exclusive perks</p>
-      </div>
+  {/* Prize Summary */}
+  <p className="text-white/90 text-lg italic mb-4">
+    Main Grand Prize — Paid in Pi Equivalent
+  </p>
+
+  {/* Prize Tiers */}
+  <div className="text-white/90 text-lg sm:text-base mb-6 space-y-1">
+    <p><strong>🥇 1<sup>st</sup> Prize:</strong> 250,000 Pi</p>
+    <p><strong>🥈 2<sup>nd</sup> Prize:</strong> 25,000 Pi</p>
+    <p><strong>🥉 3<sup>rd</sup> – 1000<sup>th</sup> Place:</strong> Smaller Pi & cash-equivalent rewards</p>
+    <p><strong>🎁 Mystery Draw:</strong> Surprise reward for 1 random participant</p>
+  </div>
+
+  <div className="mb-6">
+    <Link href="/ticket-purchase/main-prize">
+      <button className="comp-button w-full sm:w-auto px-8 py-3 rounded-full font-semibold text-lg bg-gradient-to-r from-cyan-400 to-blue-500 text-black shadow-lg hover:scale-105 transition-transform duration-200">
+        Enter Now
+      </button>
+    </Link>
+  </div>
 
       {/* Countdown Timer */}
       <div className="flex justify-center gap-4 sm:gap-6 font-mono text-cyan-300">
