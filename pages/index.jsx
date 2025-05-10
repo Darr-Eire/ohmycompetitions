@@ -30,8 +30,13 @@ export default function HomePage() {
     }, [])
 
     const current = topWinners[index]
-    return (
-      <div className="bg-white bg-opacity-10 backdrop-blur-lg rounded-xl shadow-lg p-6 text-white text-center max-w-md mx-auto">
+  return (
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl mx-auto px-4">
+    {topWinners.map((current, index) => (
+      <div
+        key={index}
+        className="bg-white bg-opacity-10 backdrop-blur-lg rounded-xl shadow-lg p-6 text-white text-center"
+      >
         <h2 className="text-2xl font-bold mb-4">🏆 Top Winners</h2>
         <div className="flex flex-col items-center">
           <Image
@@ -42,12 +47,15 @@ export default function HomePage() {
             sizes="(max-width: 768px) 120px, 120px"
             className="rounded-full border-4 border-blue-500 mb-4"
           />
-          <h3 className="text-xl font-semibold text-white">{current.name}</h3>
+          <h3 className="text-xl font-semibold">{current.name}</h3>
           <p className="text-blue-300">{current.prize}</p>
           <p className="text-sm text-white/70">{current.date}</p>
         </div>
       </div>
-    )
+    ))}
+  </div>
+)
+
   }
 
   // Featured “tech” competitions
@@ -290,7 +298,14 @@ export default function HomePage() {
 
 
 
-        <Section title="Pi Giveaways" items={piItems} viewMoreHref="/competitions/pi" viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg" />
+       <Section
+  title="Pi Giveaways"
+  items={piItems}
+  viewMoreHref="/competitions/pi"
+  viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg"
+  extraClass="mt-12"
+/>
+
 
         {/* Crypto with selector */}
         <div className="flex justify-between items-center mb-4 px-6">
@@ -299,7 +314,14 @@ export default function HomePage() {
         </div>
         <Section title="Crypto Giveaways" items={cryptoGiveawaysItems} viewMoreHref="/competitions/crypto-giveaways" viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg" />
 
-        <Section title="Daily Competitions" items={dailyItems} viewMoreHref="/competitions/daily" viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg" />
+       <Section
+  title="Daily Competitions"
+  items={dailyItems}
+  viewMoreHref="/competitions/daily"
+  viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg"
+  extraClass="mt-12"
+/>
+
        <section className="w-full bg-white/5 backdrop-blur-lg px-6 sm:px-10 py-12 my-8 border border-cyan-400 rounded-3xl shadow-[0_0_60px_#00ffd577] neon-outline">
   <div className="max-w-7xl mx-auto">
     <h2 className="text-2xl sm:text-3xl font-bold text-center text-cyan-300 mb-10 font-orbitron">✨ Featured Free Competition ✨</h2>
@@ -333,15 +355,18 @@ export default function HomePage() {
   )
 }
 
-function Section({ title, items, viewMoreHref, viewMoreText = 'View More', viewMoreClassName }) {
+function Section({ title, items, viewMoreHref, viewMoreText = 'View More', viewMoreClassName, extraClass = '' }) {
+
+
   const isDaily = title.toLowerCase().includes('daily')
   const isFree = title.toLowerCase().includes('free')
   const isPi = title.toLowerCase().includes('pi')
   const isCryptoGiveaway = title.toLowerCase().includes('crypto giveaways')
 
-  return (
-    <section className="mb-12">
-      <div className="text-center mb-12">
+ return (
+    <section className={`mb-12 ${extraClass}`}>
+     <div className={`text-center mb-12 ${extraClass}`}>
+
         <h2 className="w-full text-xl font-bold text-center text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-6 py-3 rounded-xl shadow font-orbitron">
           {title}
         </h2>
@@ -373,11 +398,13 @@ function Section({ title, items, viewMoreHref, viewMoreText = 'View More', viewM
         })}
       </div>
 
-      <div className="text-center mt-6">
-        <Link href={viewMoreHref} className={viewMoreClassName}>
-          {viewMoreText}
-        </Link>
-      </div>
+ <div className="text-center mt-6">
+  <Link href={viewMoreHref} className={viewMoreClassName}>
+    {viewMoreText}
+  </Link>
+</div>
+
+
     </section>
   )
 }
