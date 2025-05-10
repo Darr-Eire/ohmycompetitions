@@ -12,6 +12,7 @@ export default function CompetitionCard({
   imageUrl,
   endsAt = comp?.endsAt || new Date().toISOString(),
   hideButton = false,
+  theme,
   children
 }) {
   const [timeLeft, setTimeLeft] = useState('')
@@ -65,10 +66,23 @@ export default function CompetitionCard({
         </span>
       </div>
 
-      {/* Image */}
-      <div className="relative w-full aspect-[16/9] bg-black overflow-hidden">
-        <Image src={imageUrl || '/pi.jpeg'} alt={title} fill className="object-cover" priority />
-      </div>
+      {/* Conditional visual block (image or styled title) */}
+      {theme === 'daily' ? (
+        <div className="flex items-center justify-center bg-black h-[150px] text-2xl font-extrabold text-cyan-300 tracking-wide uppercase">
+          {title}
+        </div>
+      ) : (
+        <div className="relative w-full aspect-[16/9] bg-black overflow-hidden">
+          <Image
+            src={imageUrl || '/pi.jpeg'}
+            alt={title}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-cover"
+            priority
+          />
+        </div>
+      )}
 
       {/* Timer */}
       <div className="flex justify-center items-center gap-3 px-4 pt-3">
@@ -102,7 +116,16 @@ export default function CompetitionCard({
       {children ? children : !hideButton && (
         <div className="p-4 pt-0 mt-auto">
           <Link href={`/ticket-purchase/${comp.slug}`}>
-            <button className="comp-button w-full">Enter Now</button>
+            <button
+              className={`comp-button w-full ${
+                status === 'ENDED'
+                  ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-cyan-400 to-blue-500 text-black hover:brightness-110'
+              }`}
+              disabled={status === 'ENDED'}
+            >
+              Enter Now
+            </button>
           </Link>
         </div>
       )}

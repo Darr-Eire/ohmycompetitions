@@ -51,6 +51,7 @@ export default function PartnersPage() {
                 alt={partner.name}
                 width={80}
                 height={80}
+                sizes="80px"
                 className="object-contain mb-4"
               />
               <h2 className="text-xl font-semibold gradient-text mb-4 text-black">
@@ -84,36 +85,33 @@ export default function PartnersPage() {
 
         {/* Why Partner section */}
         <section className="competition-card p-6 bg-white bg-opacity-10 rounded-2xl shadow-lg">
-          {/* Neon gradient bar with black text */}
           <div className="bg-gradient-to-r from-[#00ffd5] to-[#0077ff] rounded px-4 py-2 mb-4">
             <h2 className="text-1xl text-center text-black">
               Why Partner With OhMyCompetitions?
             </h2>
           </div>
 
-          <li>
-  <strong className="gradient-text">Developer Support:</strong> Direct access to technical assistance and integration guidance.
-</li>
-<li>
-  <strong className="gradient-text">Performance Insights:</strong> Get real-time analytics to track user engagement and optimize performance.
-</li>
-<li>
-  <strong className="gradient-text">Ecosystem Credibility:</strong> Be featured alongside other verified projects building on the Pi Network.
-</li>
-<li>
-  <strong className="gradient-text">Security & Compliance:</strong> Leverage our audited infrastructure for peace of mind.
-</li>
-<li>
-  <strong className="gradient-text">Partner Competition:</strong> Feature your competitions across our Pi App and community channels for maximum traction.
-</li>
-<li>
-  <strong className="gradient-text">We Pi Family:</strong> Join a trusted alliance of pioneers building real utility in the Pi ecosystem — together we grow.
-</li>
-
-
-
+          <ul className="space-y-3 text-white text-sm">
+            <li>
+              <strong className="gradient-text">Developer Support:</strong> Direct access to technical assistance and integration guidance.
+            </li>
+            <li>
+              <strong className="gradient-text">Performance Insights:</strong> Get real-time analytics to track user engagement and optimize performance.
+            </li>
+            <li>
+              <strong className="gradient-text">Ecosystem Credibility:</strong> Be featured alongside other verified projects building on the Pi Network.
+            </li>
+            <li>
+              <strong className="gradient-text">Security & Compliance:</strong> Leverage our audited infrastructure for peace of mind.
+            </li>
+            <li>
+              <strong className="gradient-text">Partner Competition:</strong> Feature your competitions across our Pi App and community channels for maximum traction.
+            </li>
+            <li>
+              <strong className="gradient-text">We Pi Family:</strong> Join a trusted alliance of pioneers building real utility in the Pi ecosystem — together we grow.
+            </li>
+          </ul>
         </section>
-
       </div>
     </main>
   )

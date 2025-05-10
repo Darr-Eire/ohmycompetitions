@@ -422,6 +422,3 @@ body {
   }
 }
 
-.pulse-glow {
-  animation: pulse-glow 2s infinite ease-in-out;
-}

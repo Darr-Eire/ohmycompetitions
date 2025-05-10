@@ -1,22 +1,8 @@
 // pages/competitions/free.js
-import CompetitionCard from '@/components/CompetitionCard'
+import FreeCompetitionCard from '@/components/FreeCompetitionCard'
+
 
 const freeComps = [
-  {
-    comp: {
-      slug: 'pi-day-freebie',
-      entryFee: 0,
-      totalTickets: 10000,
-      ticketsSold: 0,
-      endsAt: '2025-05-06T20:00:00Z',
-    },
-    title: 'Pi‑Day Freebie',
-    prize: 'Special Badge',
-    fee: 'Free',
-    href: '/competitions/pi-day-freebie',
-    imageUrl: '/images/piday.png',
-    theme: 'free',
-  },
   {
     comp: {
       slug: 'weekly-giveaway',
@@ -62,35 +48,30 @@ const freeComps = [
     imageUrl: '/images/nugget.png',
     theme: 'free',
   },
-]
-
-export default function AllFreeCompsPage() {
-  return (
-    <main className="pt-4 pb-10 px-4">
-      {/* Moved up and in white */}
-      <h1
-        className="category-page-title text-center text-2xl font-bold mb-6 text-white"
-        style={{ marginTop: 0 }}
-      >
-        All Free Competitions
-      </h1>
-
-      {/* 3‑column grid */}
-      <div className="category-grid mx-auto max-w-5xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {freeComps.map(item => (
-          <CompetitionCard
-            key={item.comp.slug}
-            comp={item.comp}
-            title={item.title}
-            prize={item.prize}
-            fee={item.fee}
-            href={item.href}
-            imageUrl={item.imageUrl}
-            theme={item.theme}
-            small
-          />
-        ))}
-      </div>
-    </main>
-  )
-}
+ ]
+ 
+ export default function FreeCompetitionsPage() {
+   return (
+     <main className="pt-4 pb-10 px-4">
+       <h1
+         className="category-page-title text-center text-2xl font-bold mb-6 text-white"
+         style={{ marginTop: 0 }}
+       >
+         All Free Competitions
+       </h1>
+ 
+       <div className="category-grid mx-auto max-w-5xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+         {freeComps.map(item => (
+           <FreeCompetitionCard
+             key={item.comp.slug}
+             comp={item.comp}
+             title={item.title}
+             prize={item.prize}
+             fee={item.fee}
+           />
+         ))}
+       </div>
+     </main>
+   )
+ }
+ 
