@@ -91,7 +91,8 @@ export default function PiCompetitionCard({ comp, title, prize, fee, userHandle 
 
       {/* CTA */}
       <div className="mt-6">
-        <Link href={`/ticket-purchase/${comp.slug}`}>
+        <Link href={`/ticket-purchase/pi/${comp.slug}`}>
+
           <button className="w-full py-3 rounded-lg font-bold bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black hover:brightness-110 transition-transform">
             🌎 Join the Global Draw — Win Big, With Pi
           </button>
