@@ -451,3 +451,11 @@ body {
 .animate-glow-float {
   animation: glowPulse 3s ease-in-out infinite;
 }
+@keyframes neonPulse {
+  0%, 100% { box-shadow: 0 0 15px #00ffd5; }
+  50% { box-shadow: 0 0 25px #0077ff; }
+}
+
+.neon-border {
+  animation: neonPulse 2s infinite ease-in-out;
+}

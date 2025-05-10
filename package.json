@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.2.5",
     "@fontsource/orbitron": "^5.2.5",
     "@pinetwork-js/api-typing": "^0.7.0",
     "@pinetwork-js/sdk": "^0.7.0",
@@ -15,9 +16,11 @@
     "@uidotdev/usehooks": "^2.4.1",
     "autoprefixer": "^10.4.14",
     "connect-mongodb-session": "^3.1.1",
+    "custom": "^0.0.0",
     "dotenv": "^16.5.0",
     "emoji-mart": "^5.6.0",
     "express-session": "^1.17.3",
+    "lightweight-charts": "^5.0.6",
     "mongodb": "^6.16.0",
     "mongoose": "^6.13.8",
     "next": "^13.5.6",
@@ -33,6 +36,7 @@
     "react-markdown": "^10.1.0",
     "recharts": "^2.15.3",
     "remark-gfm": "^4.0.1",
+    "swr": "^2.3.3",
     "tailwindcss": "^3.4.1"
   },
   "devDependencies": {
@@ -45,5 +49,3 @@
   },
   "packageManager": "yarn@4.9.1+sha512.f95ce356460e05be48d66401c1ae64ef84d163dd689964962c6888a9810865e39097a5e9de748876c2e0bf89b232d583c33982773e9903ae7a76257270986538"
 }
-
-

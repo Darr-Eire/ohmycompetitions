@@ -40,54 +40,63 @@ export default function FreeCompetitionCard({ comp, title, prize }) {
   }, [endsAt])
 
   return (
-    <div className="w-full max-w-sm mx-auto p-4 bg-[#0e1b2a] border border-cyan-500 rounded-xl text-white font-orbitron shadow-xl hover:shadow-cyan-500/50 transition-all duration-200">
+    <section className="w-full py-10 px-4 bg-gradient-to-r from-[#111827] to-[#0f172a] rounded-2xl border border-cyan-400 shadow-[0_0_40px_#00f2ff44] text-white font-orbitron max-w-2xl mx-auto text-center space-y-6">
 
       {/* Header */}
-      <div className="flex justify-between items-center text-sm mb-4">
-        <span className="px-4 py-1.5 rounded-full border border-blue-400 font-semibold bg-black bg-opacity-30 text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff]">
+      <div className="flex justify-center items-center gap-4 text-sm">
+        <span className="bg-white/10 px-3 py-1 rounded-full text-cyan-200 font-medium">
           📅 {formattedDate}
         </span>
-        <span className="bg-green-400 text-black px-4 py-1.5 rounded-full font-bold animate-pulse">
+        <span className="bg-green-300 text-black font-bold px-3 py-1 rounded-full animate-pulse">
           {status}
         </span>
       </div>
 
       {/* Title */}
-      <div className="text-center mb-5">
-        <h3 className="text-2xl sm:text-3xl font-black uppercase border border-blue-500 rounded-lg px-5 py-4 bg-black bg-opacity-30 shadow-[0_0_15px_#3b82f6] tracking-wide bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-transparent bg-clip-text">
-          ✦ {title} ✦
-        </h3>
+      <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-wide">
+        ✦ {title} ✦
+      </h2>
+ {/* Entry & Referral Info */}
+      <div className="border-t border-white/10 pt-4 text-sm space-y-3 text-gray-200 px-2">
+        <p>💡 <strong>How to Enter:</strong> Just click “Claim Free Entry” — you'll be entered instantly.</p>
+        <p>🤝 <strong>Refer a Friend:</strong> Share this competition and get <span className="text-white font-bold">1 bonus ticket</span> for every referral!</p>
+        <p>🎯 <strong>More Tickets = More Chances</strong> to win. Boost your odds by referring!</p>
+        <p className="text-xs text-gray-500 italic">
+          Winners chosen randomly. 100% fair — good luck!
+        </p>
+      </div>
+      {/* Core Info */}
+      <div className="text-sm space-y-1">
+        <p>🏆 Prize: {prize}</p>
+        <p>🪙 Entry Fee: <span className="font-bold">FREE</span></p>
+        <p>🎫 Tickets: {total.toLocaleString()}</p>
+        <p className="font-mono">⏳ {timeLeft}</p>
       </div>
 
-      {/* Details */}
-      <div className="space-y-3 text-center text-sm">
-        <p className="text-yellow-300 text-md font-semibold">🏆 Prize: {prize}</p>
-        <p className="text-green-300">🪙 Entry Fee: <span className="font-bold">FREE</span></p>
-        <p className="text-cyan-300">🎫 Tickets: {total.toLocaleString()}</p>
-        <p className="text-pink-400 font-mono">⏳ {timeLeft}</p>
-      </div>
+     
 
-      {/* Progress */}
-      <div className="mt-4">
+      {/* Progress Bar */}
+      <div className="w-full">
         <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-[#00ffd5] via-blue-400 to-[#0077ff]"
             style={{ width: `${percent}%` }}
           />
         </div>
-        <p className="text-center text-xs text-gray-400 mt-1">
+        <p className="text-xs text-gray-400 mt-1">
           Sold: <span className="text-white">{sold.toLocaleString()}</span> / {total.toLocaleString()} ({percent}%)
         </p>
       </div>
 
-      {/* CTA */}
-      <div className="mt-6">
+      {/* CTA Button */}
+      <div className="pt-2">
         <Link href={`/ticket-purchase/${comp.slug}`}>
-          <button className="w-full py-2 rounded-lg font-bold text-sm bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black hover:scale-105 transition-transform duration-200">
+          <button className="mt-6 w-full max-w-xs mx-auto py-3 px-6 rounded-lg font-bold text-sm bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black hover:scale-105 transition-transform duration-200 shadow-lg">
             🎟 Claim Free Entry
           </button>
         </Link>
       </div>
-    </div>
+
+    </section>
   )
 }

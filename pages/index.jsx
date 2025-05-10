@@ -1,14 +1,18 @@
 'use client'
-import DailyCompetitionCard from '@/components/DailyCompetitionCard'
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
-import CompetitionCard from '@/components/CompetitionCard'
-import HeroBanner from '@/components/HeroBanner'
 import Image from 'next/image'
+import HeroBanner from '@/components/HeroBanner'
+import DailyCompetitionCard from '@/components/DailyCompetitionCard'
 import FreeCompetitionCard from '@/components/FreeCompetitionCard'
 import PiCompetitionCard from '@/components/PiCompetitionCard'
+import CryptoGiveawayCard from '@/components/CryptoGiveawayCard'
+import CompetitionCard from '@/components/CompetitionCard'
+import TokenSelector from '@/components/TokenSelector' // ✅ Make sure this exists
 
 export default function HomePage() {
+  const [selectedToken, setSelectedToken] = useState('BTC') // ✅ Token state
+
   const topWinners = [
     { name: 'Jack Jim', prize: 'Matchday Tickets', date: 'March 26th', image: '/images/winner2.png' },
     { name: 'Shanahan', prize: 'Playstation 5', date: 'February 14th', image: '/images/winner2.png' },
@@ -18,7 +22,6 @@ export default function HomePage() {
 
   function TopWinnersCarousel() {
     const [index, setIndex] = useState(0)
-
     useEffect(() => {
       const interval = setInterval(() => {
         setIndex((prev) => (prev + 1) % topWinners.length)
@@ -27,7 +30,6 @@ export default function HomePage() {
     }, [])
 
     const current = topWinners[index]
-
     return (
       <div className="bg-white bg-opacity-10 backdrop-blur-lg rounded-xl shadow-lg p-6 text-white text-center max-w-md mx-auto">
         <h2 className="text-2xl font-bold mb-4">🏆 Top Winners</h2>
@@ -77,15 +79,7 @@ export default function HomePage() {
       imageUrl: '/images/xbox.jpeg',
       theme: 'tech',
     },
-    {
-      comp: { slug: 'rare-pokemon-card', entryFee: 0.25, totalTickets: 1400, ticketsSold: 0, endsAt: '2025-05-08T11:30:00Z' },
-      title: 'Rare Pokemon Card',
-      prize: 'Charizard Pokemon Card',
-      fee: '0.25 π',
-      href: '/competitions/rare-pokemon-card',
-      imageUrl: '/images/pokemon.jpeg',
-      theme: 'tech',
-    },
+ 
     {
       comp: { slug: 'electric-bike', entryFee: 0.25, totalTickets: 1400, ticketsSold: 0, endsAt: '2025-05-08T11:30:00Z' },
       title: 'Electric Bike',
@@ -167,6 +161,9 @@ export default function HomePage() {
     },
   ]
 
+
+
+
   const dailyItems = [
     {
       comp: { slug: 'daily-jackpot', entryFee: 0.375, totalTickets: 2225, ticketsSold: 0, endsAt: '2025-05-03T23:59:59Z' },
@@ -199,45 +196,130 @@ export default function HomePage() {
 
   const freeItems = [
    {
-      comp: { slug: 'everyone-wins', entryFee: 0, totalTickets: 10000, ticketsSold: 0, endsAt: '2025-05-10T18:00:00Z' },
-      title: 'Everyone Wins',
+      comp: { slug: 'pi-to-the-mon', entryFee: 0, totalTickets: 10000, ticketsSold: 0, endsAt: '2025-05-10T18:00:00Z' },
+      title: 'Pi To The Moon',
       prize: '10,000 π',
       fee: 'Free',
-      href: '/competitions/everyones-a-winner',
-      imageUrl: '/images/winner2.png',
-      theme: 'free',
-    },
-    {
-      comp: { slug: 'weekly-giveaway', entryFee: 0, totalTickets: 5000, ticketsSold: 0, endsAt: '2025-05-05T23:59:59Z' },
-      title: 'Weekly Giveaway',
-      prize: '1,000 π',
-      fee: 'Free',
-      href: '/competitions/weekly-pi-giveaway',
-      imageUrl: '/images/weekly.png',
-      theme: 'free',
-    },
-     {
-      comp: { slug: 'pi-nugget-giveaway', entryFee: 0, totalTickets: 5000, ticketsSold: 0, endsAt: '2025-05-05T23:59:59Z' },
-      title: 'Weekly Giveaway',
-      prize: '5000 π',
-      fee: 'Free',
-      href: '/competitions/pi-nugget-giveaway',
-      imageUrl: '/images/nugget.png',
+      href: '/competitions/Pi To The Moon',
       theme: 'free',
     },
   ]
 
-   return (
+
+ const cryptoGiveawaysItems = [
+  {
+    comp: { slug: 'crypto-btc' },
+    title: 'Win BTC',
+    prize: '0.01 BTC',
+    fee: 'Free',
+    href: '/competitions/crypto-btc',
+    token: 'BTC',
+    totalTickets: 5000,
+    endsAt: '2025-06-02T00:59:00Z',
+  },
+  {
+    comp: { slug: 'crypto-eth' },
+    title: 'Win ETH',
+    prize: '0.5 ETH',
+    fee: 'Free',
+    href: '/competitions/crypto-eth',
+    token: 'ETH',
+    totalTickets: 6000,
+    endsAt: '2025-06-03T23:59:00Z',
+  },
+   {
+    comp: { slug: 'crypto-xrp' },
+    title: 'Win XRP',
+    prize: '1000 XRP',
+    fee: 'Free',
+    href: '/competitions/crypto-xrp',
+    token: 'XRP',
+    totalTickets: 8000,
+    endsAt: '2025-06-09T23:59:00Z',
+  },
+  {
+    comp: { slug: 'crypto-sol' },
+    title: 'Win SOL',
+    prize: '10 SOL',
+    fee: 'Free',
+    href: '/competitions/crypto-sol',
+    token: 'SOL',
+    totalTickets: 7000,
+    endsAt: '2025-06-05T23:59:00Z',
+  },
+  {
+    comp: { slug: 'crypto-bnb' },
+    title: 'Win BNB',
+    prize: '2 BNB',
+    fee: 'Free',
+    href: '/competitions/crypto-bnb',
+    token: 'BNB',
+    totalTickets: 4000,
+    endsAt: '2025-06-07T23:59:00Z',
+  },
+ 
+  {
+    comp: { slug: 'crypto-doge' },
+    title: 'Win DOGE',
+    prize: '10,000 DOGE',
+    fee: 'Free',
+    href: '/competitions/crypto-doge',
+    token: 'DOGE',
+    totalTickets: 10000,
+    endsAt: '2025-06-11T23:59:00Z',
+  },
+
+
+  
+]
+
+
+
+  return (
     <>
       <HeroBanner />
-      <main className="max-w-screen-lg mx-auto px-0 pt-0 space-y-0">
 
+      <main className="max-w-screen-lg mx-auto px-0 pt-0 space-y-0">
         <Section title="Featured Competitions" items={techItems} viewMoreHref="/competitions/featured" viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg" />
-        <Section title="Coming Soon" items={premiumItems} viewMoreHref="/competitions/soon" viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg" />
+<Section
+  title="Travel & Lifestyle"
+  items={premiumItems}
+  viewMoreHref="/competitions/travel"
+  viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg"
+/>
+
+
+
         <Section title="Pi Giveaways" items={piItems} viewMoreHref="/competitions/pi" viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg" />
+
+        {/* Crypto with selector */}
+        <div className="flex justify-between items-center mb-4 px-6">
+          <h2 className="text-lg font-bold text-cyan-300">Select Crypto Token</h2>
+          <TokenSelector selected={selectedToken} onChange={setSelectedToken} />
+        </div>
+        <Section title="Crypto Giveaways" items={cryptoGiveawaysItems} viewMoreHref="/competitions/crypto-giveaways" viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg" />
+
         <Section title="Daily Competitions" items={dailyItems} viewMoreHref="/competitions/daily" viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg" />
-        <Section title="Free Competitions" items={freeItems} viewMoreHref="/competitions/free" viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg" />
+       <section className="w-full bg-white/5 backdrop-blur-lg px-6 sm:px-10 py-12 my-8 border border-cyan-400 rounded-3xl shadow-[0_0_60px_#00ffd577] neon-outline">
+  <div className="max-w-7xl mx-auto">
+    <h2 className="text-2xl sm:text-3xl font-bold text-center text-cyan-300 mb-10 font-orbitron">✨ Featured Free Competition ✨</h2>
+    
+    <FreeCompetitionCard
+      comp={{
+        endsAt: '2025-05-10T23:59:59Z',
+        ticketsSold: 0,
+        totalTickets: 10000,
+        slug: 'pi-to-the-moon'
+      }}
+      title="Pi To The Moon"
+      prize="20,000 π"
+    />
+  </div>
+</section>
+
+
         <TopWinnersCarousel />
+
         <div className="flex justify-center mt-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 w-full max-w-md px-6 py-6 bg-gradient-to-r from-cyan-300 to-blue-500 rounded-xl shadow-lg text-black text-center text-base">
             <div><div className="text-xl font-bold">44,000+</div><div>Winners</div></div>
@@ -255,6 +337,7 @@ function Section({ title, items, viewMoreHref, viewMoreText = 'View More', viewM
   const isDaily = title.toLowerCase().includes('daily')
   const isFree = title.toLowerCase().includes('free')
   const isPi = title.toLowerCase().includes('pi')
+  const isCryptoGiveaway = title.toLowerCase().includes('crypto giveaways')
 
   return (
     <section className="mb-12">
@@ -264,37 +347,32 @@ function Section({ title, items, viewMoreHref, viewMoreText = 'View More', viewM
         </h2>
       </div>
 
-      {/* Mobile carousel layout */}
       <div className="centered-carousel lg:hidden">
-        {items.map(item =>
-          isDaily ? (
-            <DailyCompetitionCard key={item.comp.slug} comp={item.comp} title={item.title} prize={item.prize} fee={item.fee} />
-          ) : isFree ? (
-            <FreeCompetitionCard key={item.comp.slug} comp={item.comp} title={item.title} prize={item.prize} fee={item.fee} />
-          ) : isPi ? (
-            <PiCompetitionCard key={item.comp.slug} comp={item.comp} title={item.title} prize={item.prize} fee={item.fee} />
-          ) : (
-            <CompetitionCard key={item.comp.slug} {...item} small />
-          )
-        )}
+        {items.map((item, index) => {
+          const key = item?.comp?.slug || item?.id || index
+          if (!item?.comp) return null
+
+          if (isDaily) return <DailyCompetitionCard key={key} {...item} />
+          if (isFree) return <FreeCompetitionCard key={key} {...item} />
+          if (isPi) return <PiCompetitionCard key={key} {...item} />
+          if (isCryptoGiveaway) return <CryptoGiveawayCard key={key} {...item} />
+          return <CompetitionCard key={key} {...item} small />
+        })}
       </div>
 
-      {/* Desktop grid layout */}
       <div className="hidden lg:grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-        {items.map(item =>
-          isDaily ? (
-            <DailyCompetitionCard key={item.comp.slug} comp={item.comp} title={item.title} prize={item.prize} fee={item.fee} />
-          ) : isFree ? (
-            <FreeCompetitionCard key={item.comp.slug} comp={item.comp} title={item.title} prize={item.prize} fee={item.fee} />
-          ) : isPi ? (
-            <PiCompetitionCard key={item.comp.slug} comp={item.comp} title={item.title} prize={item.prize} fee={item.fee} />
-          ) : (
-            <CompetitionCard key={item.comp.slug} {...item} />
-          )
-        )}
+        {items.map((item, index) => {
+          const key = item?.comp?.slug || item?.id || index
+          if (!item?.comp) return null
+
+          if (isDaily) return <DailyCompetitionCard key={key} {...item} />
+          if (isFree) return <FreeCompetitionCard key={key} {...item} />
+          if (isPi) return <PiCompetitionCard key={key} {...item} />
+          if (isCryptoGiveaway) return <CryptoGiveawayCard key={key} {...item} />
+          return <CompetitionCard key={key} {...item} />
+        })}
       </div>
 
-      {/* View More */}
       <div className="text-center mt-6">
         <Link href={viewMoreHref} className={viewMoreClassName}>
           {viewMoreText}
