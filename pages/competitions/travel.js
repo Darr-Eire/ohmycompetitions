@@ -36,7 +36,7 @@ const premiumItems = [
     prize: '€2,000 Travel Voucher',
     fee: '12 π',
     href: '/competitions/weekend-getaway',
-    imageUrl: '/images/weekend.jpg',
+    imageUrl: '/images/weekend.jpeg',
     theme: 'premium',
   },
   {
@@ -45,7 +45,7 @@ const premiumItems = [
     prize: '€1,000 Airbnb Credit',
     fee: '10 π',
     href: '/competitions/airbnb-voucher',
-    imageUrl: '/images/airbnb.jpg',
+    imageUrl: '/images/air.png',
     theme: 'premium',
   },
   {
@@ -54,7 +54,7 @@ const premiumItems = [
     prize: 'Luxury Spa Experience',
     fee: '8 π',
     href: '/competitions/spa-day-package',
-    imageUrl: '/images/spa.jpg',
+    imageUrl: '/images/spa.jpeg',
     theme: 'premium',
   }
 ]
