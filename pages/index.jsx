@@ -21,39 +21,36 @@ export default function HomePage() {
   ]
 
   function TopWinnersCarousel() {
-    const [index, setIndex] = useState(0)
-    useEffect(() => {
-      const interval = setInterval(() => {
-        setIndex((prev) => (prev + 1) % topWinners.length)
-      }, 30000)
-      return () => clearInterval(interval)
-    }, [])
+  const [index, setIndex] = useState(0)
 
-    const current = topWinners[index]
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % topWinners.length)
+    }, 5000) // Change every 5 seconds
+    return () => clearInterval(interval)
+  }, [])
+
+  const current = topWinners[index]
+
   return (
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl mx-auto px-4">
-    {topWinners.map((current, index) => (
-      <div
-        key={index}
-        className="bg-white bg-opacity-10 backdrop-blur-lg rounded-xl shadow-lg p-6 text-white text-center"
-      >
-        <h2 className="text-2xl font-bold mb-4">🏆 Top Winners</h2>
-        <div className="flex flex-col items-center">
-          <Image
-            src={current.image}
-            alt={current.name}
-            width={120}
-            height={120}
-            sizes="(max-width: 768px) 120px, 120px"
-            className="rounded-full border-4 border-blue-500 mb-4"
-          />
-          <h3 className="text-xl font-semibold">{current.name}</h3>
-          <p className="text-blue-300">{current.prize}</p>
-          <p className="text-sm text-white/70">{current.date}</p>
-        </div>
+    <div className="max-w-md mx-auto mt-12 bg-white bg-opacity-10 backdrop-blur-lg rounded-xl shadow-lg p-6 text-white text-center transition-all duration-500">
+      <h2 className="text-2xl font-bold mb-4">🏆 Top Winner</h2>
+      <div className="flex flex-col items-center">
+        <Image
+          src={current.image}
+          alt={current.name}
+          width={120}
+          height={120}
+          sizes="(max-width: 768px) 120px, 120px"
+          className="rounded-full border-4 border-blue-500 mb-4"
+        />
+        <h3 className="text-xl font-semibold">{current.name}</h3>
+        <p className="text-blue-300">{current.prize}</p>
+        <p className="text-sm text-white/70">{current.date}</p>
       </div>
-    ))}
-  </div>
+    </div>
+    
+  
 )
 
   }
@@ -214,72 +211,76 @@ export default function HomePage() {
   ]
 
 
- const cryptoGiveawaysItems = [
+
+
+const cryptoGiveawaysItems = [ 
+
   {
-    comp: { slug: 'crypto-btc' },
+    comp: { slug: 'crypto-btc', entryFee: 0.5, totalTickets: 5000, ticketsSold: 0, endsAt: '2025-06-02T00:59:00Z' },
     title: 'Win BTC',
     prize: '0.01 BTC',
-    fee: 'Free',
-    href: '/competitions/crypto-btc',
+    fee: '0.5 π',
+  href: '/crypto/crypto-btc',
+
     token: 'BTC',
-    totalTickets: 5000,
-    endsAt: '2025-06-02T00:59:00Z',
+    imageUrl: '/images/crypto-btc.png',
   },
   {
-    comp: { slug: 'crypto-eth' },
+    comp: { slug: 'crypto-eth', entryFee: 0.5, totalTickets: 6000, ticketsSold: 0, endsAt: '2025-06-03T23:59:00Z' },
     title: 'Win ETH',
     prize: '0.5 ETH',
-    fee: 'Free',
-    href: '/competitions/crypto-eth',
+    fee: '0.5 π',
+ 
+    href: '/crypto/crypto-eth',
     token: 'ETH',
-    totalTickets: 6000,
-    endsAt: '2025-06-03T23:59:00Z',
+    imageUrl: '/images/crypto-eth.png',
   },
-   {
-    comp: { slug: 'crypto-xrp' },
+  {
+    comp: { slug: 'crypto-xrp', entryFee: 0.4, totalTickets: 8000, ticketsSold: 0, endsAt: '2025-06-09T23:59:00Z' },
     title: 'Win XRP',
     prize: '1000 XRP',
-    fee: 'Free',
-    href: '/competitions/crypto-xrp',
+    fee: '0.4 π',
+
+    href: '/crypto/crypto-crp',
     token: 'XRP',
-    totalTickets: 8000,
-    endsAt: '2025-06-09T23:59:00Z',
+    imageUrl: '/images/crypto-xrp.png',
   },
   {
-    comp: { slug: 'crypto-sol' },
+    comp: { slug: 'crypto-sol', entryFee: 0.4, totalTickets: 7000, ticketsSold: 0, endsAt: '2025-06-05T23:59:00Z' },
     title: 'Win SOL',
     prize: '10 SOL',
-    fee: 'Free',
-    href: '/competitions/crypto-sol',
+    fee: '0.4 π',
+  
+    href: '/crypto/crypto-sol',
     token: 'SOL',
-    totalTickets: 7000,
-    endsAt: '2025-06-05T23:59:00Z',
+    imageUrl: '/images/crypto-sol.png',
   },
   {
-    comp: { slug: 'crypto-bnb' },
+    comp: { slug: 'crypto-bnb', entryFee: 0.4, totalTickets: 4000, ticketsSold: 0, endsAt: '2025-06-07T23:59:00Z' },
     title: 'Win BNB',
     prize: '2 BNB',
-    fee: 'Free',
-    href: '/competitions/crypto-bnb',
+    fee: '0.4 π',
+  
+    href: '/crypto/crypto-bnb',
     token: 'BNB',
-    totalTickets: 4000,
-    endsAt: '2025-06-07T23:59:00Z',
+    imageUrl: '/images/crypto-bnb.png',
   },
- 
   {
-    comp: { slug: 'crypto-doge' },
+    comp: { slug: 'crypto-doge', entryFee: 0.3, totalTickets: 10000, ticketsSold: 0, endsAt: '2025-06-11T23:59:00Z' },
     title: 'Win DOGE',
     prize: '10,000 DOGE',
-    fee: 'Free',
-    href: '/competitions/crypto-doge',
+    fee: '0.3 π',
+    href: '/crypto/crypto-doge',
     token: 'DOGE',
-    totalTickets: 10000,
-    endsAt: '2025-06-11T23:59:00Z',
+    imageUrl: '/images/crypto-doge.png',
   },
+];
+
+
 
 
   
-]
+
 
 
 
