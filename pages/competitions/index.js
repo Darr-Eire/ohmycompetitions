@@ -1,10 +1,11 @@
 // pages/competitions/index.js
 'use client'
-
 import CompetitionCard from '@/components/CompetitionCard'
-
+import PiCompetitionCard from '@/components/PiCompetitionCard'
+import DailyCompetitionCard from '@/components/DailyCompetitionCard'
+import FreeCompetitionCard from '@/components/FreeCompetitionCard'
 export default function AllCompetitionsPage() {
-  const allComps = [
+   const allComps = [
     {
 
       comp: {
@@ -314,6 +315,29 @@ export default function AllCompetitionsPage() {
     { comp:{slug:'pi-nugget-giveaway',   entryFee:0, totalTickets:10000, ticketsSold:0, endsAt:'2025-05-10T18:00:00Z'}, title:"Pi Nugget Giveaway",    href:'/competitions/pi-nugget-giveaway', prize:'9,999 / 5,555 / 1,111 π', fee:'Free', imageUrl:'/images/winner.png', theme:'green' },
     ]
 
+  const renderCompetitionCard = (item) => {
+    const props = {
+      key: item.comp.slug,
+      comp: item.comp,
+      title: item.title,
+      prize: item.prize,
+      fee: item.fee,
+      theme: item.theme,
+      imageUrl: item.imageUrl,
+      endsAt: item.comp.endsAt,
+    };
+
+    switch (item.theme) {
+      case 'purple':
+        return <PiCompetitionCard {...props} />;
+      case 'daily':
+        return <DailyCompetitionCard {...props} />;
+      case 'green':
+        return <FreeCompetitionCard {...props} />;
+      default:
+        return <CompetitionCard {...props} />;
+    }
+  };
 
   return (
     <main className="app-background min-h-screen p-4 text-white">
@@ -322,18 +346,29 @@ export default function AllCompetitionsPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {allComps.map(item => (
-          <CompetitionCard
-            key={item.comp.slug}
-            comp={item.comp}
-            title={item.title}
-            prize={item.prize}
-            fee={item.fee}
-            theme={item.theme}
-            imageUrl={item.imageUrl}
-            endsAt={item.comp.endsAt}
-          />
-        ))}
+        {allComps.map(item => {
+          const props = {
+            key: item.comp.slug,
+            comp: item.comp,
+            title: item.title,
+            prize: item.prize,
+            fee: item.fee,
+            theme: item.theme,
+            imageUrl: item.imageUrl,
+            endsAt: item.comp.endsAt,
+          };
+
+          switch (item.theme) {
+            case 'purple':
+              return <PiCompetitionCard {...props} />;
+            case 'daily':
+              return <DailyCompetitionCard {...props} />;
+            case 'green':
+              return <FreeCompetitionCard {...props} />;
+            default:
+              return <CompetitionCard {...props} />;
+          }
+        })}
       </div>
     </main>
   );
