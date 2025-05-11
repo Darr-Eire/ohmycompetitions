@@ -8,8 +8,12 @@
     "start": "next start"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
     "@fontsource/inter": "^5.2.5",
     "@fontsource/orbitron": "^5.2.5",
+    "@leenguyen/react-flip-clock-countdown": "^1.6.1",
+    "@mui/material": "^7.1.0",
     "@pinetwork-js/api-typing": "^0.7.0",
     "@pinetwork-js/sdk": "^0.7.0",
     "@tailwindcss/aspect-ratio": "^0.4.2",
