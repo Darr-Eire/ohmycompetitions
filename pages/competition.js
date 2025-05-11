@@ -148,8 +148,6 @@ const CompetitionCard = ({ jackpotAmount, nextDraw }) => {
       <p className="text-lg mb-6 text-center text-white">
         🚨 The next draw is just around the corner! Get ready to claim your chance at winning the biggest Pi Cash jackpot ever.
       </p>
-     
-
       <div className="mt-6 text-center text-white text-sm">
         <h4 className="text-xl mb-2 text-white">Prize Pool:</h4>
         <motion.p
@@ -163,7 +161,7 @@ const CompetitionCard = ({ jackpotAmount, nextDraw }) => {
           Doubles if not claimed within 31 minutes and rolls over to next week's draw!
         </p>
       </div>
-<motion.div
+      <motion.div
         className="text-6xl font-bold text-white mb-4"
         initial={{ scale: 0.8 }}
         animate={{ scale: 1 }}
@@ -174,7 +172,7 @@ const CompetitionCard = ({ jackpotAmount, nextDraw }) => {
       <div className="mt-6 text-left text-white text-lg">
         <h4 className="text-lg font-bold">How to Participate:</h4>
         <ul className="list-disc pl-5 mt-2">
-          <li><strong>Monday 3:14 PM</strong>: Pi Code drop</li>
+          <li><strong>Monday 3:14 PM</strong>: Pi Code drop,which must be remembered and kept safe, will be then removed from all s</li>
           <li><strong>Friday 3:14 PM</strong>: Winner chosen</li>
           <li><strong>31:04 minutes</strong> to claim or prize rolls over</li>
           <li>+ <strong>20%</strong> from unclaimed ticket pool</li>

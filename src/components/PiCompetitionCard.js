@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react'
 import '@fontsource/orbitron'
 
 const topCountries = [
-  { code: '🇮🇳', name: 'India', entries: 2400 },
-  { code: '🇳🇬', name: 'Nigeria', entries: 1870 },
-  { code: '🇵🇭', name: 'Philippines', entries: 1300 },
+  {  name: 'Ireland', entries: 2400 },
+  {  name: 'Nigeria', entries: 1870 },
+  {  name: 'Philippines', entries: 1300 },
 ]
 
 export default function PiCompetitionCard({ comp, title, prize, fee, userHandle = '@pioneer' }) {
@@ -45,30 +45,31 @@ export default function PiCompetitionCard({ comp, title, prize, fee, userHandle 
       {/* Header */}
       <div className="flex justify-between items-center text-sm mb-4 z-10 relative">
         <span className="px-4 py-1.5 rounded-full border border-cyan-400 bg-cyan-600/30 text-white font-semibold">
-          🌍 Global Draw
+          🌍Pi Global Draw
         </span>
         <span className="bg-green-400 text-black px-4 py-1.5 rounded-full font-bold animate-pulse">
-          LIVE
+          LIVE NOW
         </span>
       </div>
 
       {/* Title */}
       <h3 className="text-2xl sm:text-3xl font-black uppercase text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff] tracking-wide mb-4 text-center">
-        ✦ {title} ✦
+         {title} 
       </h3>
 
       {/* Prize Details */}
       <div className="text-center space-y-2 text-sm">
-        <p className="text-cyan-300 font-semibold text-lg">🏆 {prize}</p>
-        <p className="text-blue-300">🎫 Entry Fee: {fee}</p>
-        <p className="text-yellow-300">⏳ Ends in: {timeLeft}</p>
+         <p className="text-blue-300">Winner Takes All</p>  
+         <p className="text-blue-300">🎫 Entry Fee: {fee}</p> 
+           <div className="mt-4 space-y-2 text-sm">
+        <p className="text-center text-white">🔗 Total Entries: <strong>{entryCount.toLocaleString()}</strong></p>
+      </div>
+         <p className="text-yellow-300">⏳ Ends in: {timeLeft}</p>
+      
       </div>
 
       {/* Stats */}
-      <div className="mt-4 space-y-2 text-sm">
-        <p className="text-center text-white">🔗 Total Entries: <strong>{entryCount.toLocaleString()}</strong></p>
-        <div className="text-center text-xs text-white/60">Auto-refreshes with real-time Pi community data</div>
-      </div>
+   
 
       {/* Top Countries */}
       <div className="mt-4 bg-[#1a1c2e] p-3 rounded-lg border border-blue-500 text-sm">

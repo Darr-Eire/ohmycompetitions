@@ -56,7 +56,7 @@ export default function DailyCompetitionCard({ comp, title, prize, fee }) {
       {/* Title */}
       <div className="text-center mb-5">
       <h3 className="text-1xl sm:text-1xl font-black uppercase border border-blue-500 rounded-lg px-5 py-4 bg-black bg-opacity-30 shadow-[0_0_15px_#3b82f6] tracking-wide bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-transparent bg-clip-text">
-  ✦ {title} ✦
+   {title} 
 </h3>
 
       </div>
