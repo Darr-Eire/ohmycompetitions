@@ -1,9 +1,8 @@
-// pages/competition.js
-
 import React, { useState, useEffect } from 'react';
 import Confetti from 'react-confetti';
 import { motion } from 'framer-motion';
 
+// Custom hook to track window size for Confetti
 const useWindowSize = () => {
   const [size, setSize] = useState({ width: 0, height: 0 });
 
@@ -19,20 +18,22 @@ const useWindowSize = () => {
   return size;
 };
 
+// Get next Monday and Friday draw times
 const getNextDrawTimes = () => {
   const now = new Date();
   const mondayDraw = new Date(now);
   const fridayDraw = new Date(now);
 
-  mondayDraw.setDate(now.getDate() + ((8 - now.getDay()) % 7));
+  mondayDraw.setDate(now.getDate() + ((8 - now.getDay()) % 7));  // Next Monday
   mondayDraw.setHours(15, 14, 0, 0);
 
-  fridayDraw.setDate(now.getDate() + ((5 - now.getDay() + 7) % 7));
+  fridayDraw.setDate(now.getDate() + ((5 - now.getDay() + 7) % 7));  // Next Friday
   fridayDraw.setHours(15, 14, 0, 0);
 
   return { mondayDraw, fridayDraw };
 };
 
+// ClaimBox component
 const ClaimBox = ({ targetDate }) => {
   const [won, setWon] = useState(false);
   const [code, setCode] = useState('');
@@ -74,20 +75,20 @@ const ClaimBox = ({ targetDate }) => {
   };
 
   return (
-    <section className="text-center py-12 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 rounded-2xl shadow-2xl border-4 border-blue-200">
+    <section className="text-center py-12 bg-gradient-to-r from-[#1E3A8A] to-[#60A5FA] rounded-2xl shadow-2xl border-4 border-blue-200">
       {showConfetti && <Confetti width={width} height={height} />}
       {won ? (
         <>
-          <motion.h2 className="text-5xl mb-4 text-white font-extrabold">
+          <motion.h2 className="text-5xl mb-4 text-black font-extrabold">
             🎉 YOU’VE WON THE PI CASH CODE!
           </motion.h2>
-          <p className="text-lg text-gray-200">⏱️ {timeLeft} left to claim</p>
+          <p className="text-lg text-black">⏱️ {timeLeft} left to claim</p>
         </>
       ) : prizeClaimed ? (
-        <div className="text-gray-500 italic">❌ Time's up! The prize has rolled over to next week!</div>
+        <div className="text-black italic">❌ Time's up! The prize has rolled over to next week!</div>
       ) : (
         <>
-          <h3 className="text-3xl font-bold text-white mb-4">🎯 Claim the Prize Now</h3>
+          <h3 className="text-3xl font-bold text-black mb-4"> Claim the Prize Now</h3>
           <input
             type="text"
             placeholder="Enter your Pi Code"
@@ -95,19 +96,21 @@ const ClaimBox = ({ targetDate }) => {
             onChange={(e) => setCode(e.target.value)}
             className="bg-black text-white border border-gray-500 px-4 py-2 rounded-md"
           />
-          <p className="mt-2 text-gray-300">⏱️ {timeLeft} left</p>
-          <button
-            onClick={handleClaimPrize}
-            className="mt-6 px-10 py-4 bg-gradient-to-r from-yellow-300 via-orange-500 to-red-600 text-black font-extrabold rounded-2xl shadow-xl hover:scale-110 hover:shadow-yellow-500 transition-all duration-300 tracking-wide uppercase border-2 border-white"
-          >
-            🔐 Unlock Pi Vault
-          </button>
+          <p className="mt-2 text-black">⏱️ {timeLeft} left</p>
+         <button
+  onClick={handleClaimPrize}
+  className="mt-6 px-10 py-4 bg-gradient-to-r from-[#1E3A8A] via-[#60A5FA] to-[#1E3A8A] text-black font-extrabold rounded-2xl shadow-xl hover:scale-110 hover:shadow-blue-500 transition-all duration-300 tracking-wide uppercase border-2 border-white"
+>
+  🔐 Unlock Pi Code
+</button>
+
         </>
       )}
     </section>
   );
 };
 
+// CompetitionCard component
 const CompetitionCard = ({ jackpotAmount, nextDraw }) => {
   const [timeLeft, setTimeLeft] = useState('');
   const [ticketCount, setTicketCount] = useState(1);
@@ -141,38 +144,38 @@ const CompetitionCard = ({ jackpotAmount, nextDraw }) => {
   };
 
   return (
-    <div className="relative bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md p-8 rounded-xl shadow-xl border border-gray-700 max-w-lg mx-auto">
-      <h2 className="text-6xl font-extrabold mb-4 bg-gradient-to-r from-yellow-300 via-red-500 to-pink-600 text-white bg-clip-text drop-shadow-[0_0_20px_rgba(255,255,255,0.7)] animate-pulse">
-        Pi Cash Code
-      </h2>
-      <p className="text-lg mb-6 text-center text-white">
+    <div className="relative bg-gradient-to-r from-[#0F1F7D] via-[#3A4C9B] to-[#0F1F7D] backdrop-blur-md p-8 rounded-xl shadow-xl border border-gray-700 max-w-lg mx-auto">
+  <h2 className="text-6xl font-extrabold mb-4 bg-gradient-to-r from-[#0F1F7D] via-[#3A4C9B] to-[#0F1F7D] text-white bg-clip-text drop-shadow-[0_0_20px_rgba(255,255,255,0.7)] animate-pulse">
+    Pi Cash Code
+  </h2>
+      <p className="text-lg mb-6 text-center text-black">
         🚨 The next draw is just around the corner! Get ready to claim your chance at winning the biggest Pi Cash jackpot ever.
       </p>
-      <div className="mt-6 text-center text-white text-sm">
-        <h4 className="text-xl mb-2 text-white">Prize Pool:</h4>
+      <div className="mt-6 text-center text-black text-sm">
+        <h4 className="text-xl mb-2 text-black">Prize Pool:</h4>
         <motion.p
-          className="text-6xl bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white bg-clip-text font-extrabold drop-shadow-lg"
+          className="text-6xl bg-gradient-to-r from-[#1E3A8A] via-[#60A5FA] to-[#1E3A8A] text-black bg-clip-text font-extrabold drop-shadow-lg"
           animate={{ scale: [1, 1.05, 1] }}
           transition={{ repeat: Infinity, duration: 2 }}
         >
           {`${jackpotAmount} π`}
         </motion.p>
-        <p className="text-sm text-white mt-2 font-semibold">
+        <p className="text-sm text-black mt-2 font-semibold">
           Doubles if not claimed within 31 minutes and rolls over to next week's draw!
         </p>
       </div>
       <motion.div
-        className="text-6xl font-bold text-white mb-4"
+        className="text-6xl font-bold text-black mb-4"
         initial={{ scale: 0.8 }}
         animate={{ scale: 1 }}
         transition={{ duration: 1 }}
       >
         {timeLeft}
       </motion.div>
-      <div className="mt-6 text-left text-white text-lg">
+      <div className="mt-6 text-left text-black text-lg">
         <h4 className="text-lg font-bold">How to Participate:</h4>
         <ul className="list-disc pl-5 mt-2">
-          <li><strong>Monday 3:14 PM</strong>: Pi Code drop,which must be remembered and kept safe, will be then removed from all s</li>
+          <li><strong>Monday 3:14 PM</strong>: Pi Code drop, which must be remembered and kept safe.</li>
           <li><strong>Friday 3:14 PM</strong>: Winner chosen</li>
           <li><strong>31:04 minutes</strong> to claim or prize rolls over</li>
           <li>+ <strong>20%</strong> from unclaimed ticket pool</li>
@@ -184,14 +187,14 @@ const CompetitionCard = ({ jackpotAmount, nextDraw }) => {
         </ul>
 
         <div className="mt-6">
-          <h4 className="text-lg font-bold text-yellow-400 mb-2">🎟️ Buy Tickets</h4>
+          <h4 className="text-lg font-bold text-black mb-2">Buy Tickets</h4>
           <div className="flex items-center gap-4">
             <input
               type="number"
               min="1"
               value={ticketCount}
               onChange={(e) => setTicketCount(Number(e.target.value))}
-              className="w-24 bg-black text-white border border-gray-600 rounded px-3 py-2"
+              className="w-24 bg-black text-black border border-gray-600 rounded px-3 py-2"
             />
             <button
               onClick={handleBuyTickets}
@@ -202,34 +205,19 @@ const CompetitionCard = ({ jackpotAmount, nextDraw }) => {
           </div>
         </div>
       </div>
-
-      <div className="mt-4 text-gray-400 text-xs italic">
-        *Disclaimer: Participation is open to all users, but some restrictions may apply based on local laws.
-      </div>
     </div>
   );
 };
 
+// Main page component
 const CompetitionPage = () => {
   const { mondayDraw, fridayDraw } = getNextDrawTimes();
-  const [jackpotAmount, setJackpotAmount] = useState(50000);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (new Date() > fridayDraw) {
-        setJackpotAmount((prev) => prev + 1000);
-      }
-    }, 60000);
-
-    return () => clearInterval(interval);
-  }, [fridayDraw]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-800 text-white font-sans flex flex-col items-center justify-center px-4 py-10">
-      <div className="max-w-4xl w-full space-y-10 text-center">
-        <CompetitionCard jackpotAmount={jackpotAmount} nextDraw={mondayDraw} />
-        <ClaimBox targetDate={fridayDraw} />
-      </div>
+    <div className="py-12 px-6 bg-gradient-to-b from-[#1E3A8A] to-[#60A5FA]">
+      <h1 className="text-4xl font-extrabold text-black text-center mb-8">Join the Pi Cash Code Giveaway</h1>
+      <CompetitionCard jackpotAmount="5000" nextDraw={fridayDraw} />
+      <ClaimBox targetDate={fridayDraw} />
     </div>
   );
 };
