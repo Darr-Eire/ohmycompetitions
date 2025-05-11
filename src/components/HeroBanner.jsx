@@ -47,28 +47,30 @@ export default function HeroBanner() {
     <p><strong> 2<sup>nd</sup> Prize:</strong> 25,000 Pi</p>
     <p><strong> 3<sup>rd</sup> – 999<sup>th</sup> Place:</strong> Smaller Pi & Prizes to be WON</p>
     <p><strong> Mystery Draw:</strong> Surprise reward for 5 random pioneers</p>
-     <p><strong> Enter Now: </strong> Only 3.14 Pi</p>
+     <p><strong>Tickets only 3.14 Pi </strong></p>
   </div>
-
-  <div className="mb-6">
-    <Link href="/ticket-purchase/main-prize">
-      <button className="comp-button w-full sm:w-auto px-8 py-3 rounded-full font-semibold text-lg bg-gradient-to-r from-cyan-400 to-blue-500 text-black shadow-lg hover:scale-105 transition-transform duration-200">
-        Enter Now
-      </button>
-    </Link>
-  </div>
-
       {/* Countdown Timer */}
-      <div className="flex justify-center gap-4 sm:gap-6 font-mono text-cyan-300">
+      <div className="flex justify-center gap-2 sm:gap-4 font-mono text-cyan-300">
         {Object.entries(timeLeft).map(([label, value]) => (
           <div key={label} className="flex flex-col items-center">
-            <span className="text-2xl sm:text-4xl font-extrabold leading-tight drop-shadow-[0_0_6px_rgba(0,255,255,0.5)]">
+            <span className="text-1xl sm:text-4xl font-extrabold leading-tight drop-shadow-[0_0_6px_rgba(0,255,255,0.5)]">
               {value.toString().padStart(2, '0')}
             </span>
             <span className="uppercase text-xs sm:text-sm tracking-widest text-white/70">{label}</span>
           </div>
         ))}
       </div>
+      <br/>
+  <div className="mb-2">
+   <Link href="/ticket-purchase/main-prize">
+  <button className="comp-button w-full sm:w-auto px-8 py-3 rounded-full font-semibold text-base bg-gradient-to-r from-cyan-400 to-blue-500 text-black shadow-lg hover:scale-105 transition-transform duration-200">
+    Enter Now
+  </button>
+</Link>
+
+  </div>
+
+
     </section>
   );
 }

@@ -368,9 +368,10 @@ function Section({ title, items, viewMoreHref, viewMoreText = 'View More', viewM
     <section className={`mb-12 ${extraClass}`}>
      <div className={`text-center mb-12 ${extraClass}`}>
 
-        <h2 className="w-full text-xl font-bold text-center text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-6 py-3 rounded-xl shadow font-orbitron">
-          {title}
-        </h2>
+       <h2 className="w-full text-base font-bold text-center text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-4 py-2 rounded-xl shadow font-orbitron">
+  {title}
+</h2>
+
       </div>
 
       <div className="centered-carousel lg:hidden">
@@ -398,12 +399,16 @@ function Section({ title, items, viewMoreHref, viewMoreText = 'View More', viewM
           return <CompetitionCard key={key} {...item} />
         })}
       </div>
+<div className="text-center mt-4">
+ <Link
+  href={viewMoreHref}
+  className="inline-block text-base font-bold px-3 py-1.5 rounded-md font-medium text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow hover:opacity-90 transition"
+>
+  {viewMoreText}
+</Link>
 
- <div className="text-center mt-6">
-  <Link href={viewMoreHref} className={viewMoreClassName}>
-    {viewMoreText}
-  </Link>
 </div>
+
 
 
     </section>
