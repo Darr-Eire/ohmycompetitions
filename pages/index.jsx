@@ -1,61 +1,54 @@
-'use client'
-import React, { useEffect, useState } from 'react'
-import Link from 'next/link'
-import Image from 'next/image'
-import HeroBanner from '@/components/HeroBanner'
-import DailyCompetitionCard from '@/components/DailyCompetitionCard'
-import FreeCompetitionCard from '@/components/FreeCompetitionCard'
-import PiCompetitionCard from '@/components/PiCompetitionCard'
-import CryptoGiveawayCard from '@/components/CryptoGiveawayCard'
-import CompetitionCard from '@/components/CompetitionCard'
-import TokenSelector from '@/components/TokenSelector' // ✅ Make sure this exists
+'use client';
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+
+import DailyCompetitionCard from '@/components/DailyCompetitionCard';
+import FreeCompetitionCard from '@/components/FreeCompetitionCard';
+import PiCompetitionCard from '@/components/PiCompetitionCard';
+import CryptoGiveawayCard from '@/components/CryptoGiveawayCard';
+import CompetitionCard from '@/components/CompetitionCard';
+import TokenSelector from '@/components/TokenSelector';
+import PiCashHeroBanner from '@/components/PiCashHeroBanner'; // ✅ New Import
 
 export default function HomePage() {
-  const [selectedToken, setSelectedToken] = useState('BTC') // ✅ Token state
+  const [selectedToken, setSelectedToken] = useState('BTC');
 
   const topWinners = [
     { name: 'Jack Jim', prize: 'Matchday Tickets', date: 'March 26th', image: '/images/winner2.png' },
     { name: 'Shanahan', prize: 'Playstation 5', date: 'February 14th', image: '/images/winner2.png' },
     { name: 'Emily Rose', prize: 'Luxury Car', date: 'January 30th', image: '/images/winner2.png' },
     { name: 'John Doe', prize: '€10,000 Pi', date: 'December 15th', image: '/images/winner2.png' },
-  ]
+  ];
 
-  function TopWinnersCarousel() {
-  const [index, setIndex] = useState(0)
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % topWinners.length)
-    }, 5000) // Change every 5 seconds
-    return () => clearInterval(interval)
-  }, [])
-
-  const current = topWinners[index]
-
-  return (
-    <div className="max-w-md mx-auto mt-12 bg-white bg-opacity-10 backdrop-blur-lg rounded-xl shadow-lg p-6 text-white text-center transition-all duration-500">
-      <h2 className="text-2xl font-bold mb-4">🏆 Top Winner</h2>
-      <div className="flex flex-col items-center">
-        <Image
-          src={current.image}
-          alt={current.name}
-          width={120}
-          height={120}
-          sizes="(max-width: 768px) 120px, 120px"
-          className="rounded-full border-4 border-blue-500 mb-4"
-        />
-        <h3 className="text-xl font-semibold">{current.name}</h3>
-        <p className="text-blue-300">{current.prize}</p>
-        <p className="text-sm text-white/70">{current.date}</p>
+  const TopWinnersCarousel = () => {
+    const [index, setIndex] = useState(0);
+    useEffect(() => {
+      const interval = setInterval(() => {
+        setIndex((prev) => (prev + 1) % topWinners.length);
+      }, 5000);
+      return () => clearInterval(interval);
+    }, []);
+    const current = topWinners[index];
+    return (
+      <div className="max-w-md mx-auto mt-12 bg-white bg-opacity-10 backdrop-blur-lg rounded-xl shadow-lg p-6 text-white text-center">
+        <h2 className="text-2xl font-bold mb-4">🏆 Top Winner</h2>
+        <div className="flex flex-col items-center">
+          <Image
+            src={current.image}
+            alt={current.name}
+            width={120}
+            height={120}
+            className="rounded-full border-4 border-blue-500 mb-4"
+          />
+          <h3 className="text-xl font-semibold">{current.name}</h3>
+          <p className="text-blue-300">{current.prize}</p>
+          <p className="text-sm text-white/70">{current.date}</p>
+        </div>
       </div>
-    </div>
-    
-  
-)
+    );
+  };
 
-  }
-
-  // Featured “tech” competitions
   const techItems = [
     {
       comp: { slug: 'ps5-bundle-giveaway', entryFee: 0.8, totalTickets: 2000, ticketsSold: 0, endsAt: '2025-05-07T14:00:00Z' },
@@ -275,71 +268,42 @@ const cryptoGiveawaysItems = [
     imageUrl: '/images/crypto-doge.png',
   },
 ];
-
-
-
-
-  
-
-
-
-
   return (
     <>
-      <HeroBanner />
-
-      <main className="max-w-screen-lg mx-auto px-0 pt-0 space-y-0">
-        <Section title="Featured Competitions" items={techItems} viewMoreHref="/competitions/featured" viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg" />
-<Section
-  title="Travel & Lifestyle"
-  items={premiumItems}
-  viewMoreHref="/competitions/travel"
-  viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg"
+     <PiCashHeroBanner
+  code="9P1-C4SH"
+  prizePool={10000}
+  weekStart="2025-05-12T15:14:00"
+  expiresAt="2025-05-13T22:18:00"
+  drawAt="2025-05-16T15:14:00"
+  claimExpiresAt="2025-05-16T15:45:04"
 />
 
+      <main className="space-y-16">
+        <Section title="Featured Competitions" items={techItems} viewMoreHref="/competitions/featured" />
+        <Section title="Travel & Lifestyle" items={premiumItems} viewMoreHref="/competitions/travel" />
+        <Section title="Pi Giveaways" items={piItems} viewMoreHref="/competitions/pi" extraClass="mt-12" />
 
-
-       <Section
-  title="Pi Giveaways"
-  items={piItems}
-  viewMoreHref="/competitions/pi"
-  viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg"
-  extraClass="mt-12"
-/>
-
-
-        {/* Crypto with selector */}
         <div className="flex justify-between items-center mb-4 px-6">
           <h2 className="text-lg font-bold text-cyan-300">Select Crypto Token</h2>
           <TokenSelector selected={selectedToken} onChange={setSelectedToken} />
         </div>
-        <Section title="Crypto Giveaways" items={cryptoGiveawaysItems} viewMoreHref="/competitions/crypto-giveaways" viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg" />
 
-       <Section
-  title="Daily Competitions"
-  items={dailyItems}
-  viewMoreHref="/competitions/daily"
-  viewMoreClassName="btn-gradient text-white inline-block px-4 py-2 rounded-lg"
-  extraClass="mt-12"
-/>
+        <Section title="Crypto Giveaways" items={cryptoGiveawaysItems} viewMoreHref="/competitions/crypto-giveaways" />
+        <Section title="Daily Competitions" items={dailyItems} viewMoreHref="/competitions/daily" extraClass="mt-12" />
 
-       <section className="w-full bg-white/5 backdrop-blur-lg px-6 sm:px-10 py-12 my-8 border border-cyan-400 rounded-3xl shadow-[0_0_60px_#00ffd577] neon-outline">
-  <div className="max-w-7xl mx-auto">
-    <h2 className="text-2xl sm:text-3xl font-bold text-center text-cyan-300 mb-10 font-orbitron">✨ Featured Free Competition ✨</h2>
-    
-    <FreeCompetitionCard
-      comp={{
-        endsAt: '2025-05-10T23:59:59Z',
-        ticketsSold: 0,
-        totalTickets: 10000,
-        slug: 'pi-to-the-moon'
-      }}
-      title="Pi To The Moon"
-      prize="20,000 π"
-    />
-  </div>
-</section>
-
+        <section className="w-full bg-white/5 backdrop-blur-lg px-6 sm:px-10 py-12 my-8 border border-cyan-400 rounded-3xl shadow-[0_0_60px_#00ffd577] neon-outline">
+          <div className="max-w-7xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-bold text-center text-cyan-300 mb-10 font-orbitron">
+              ✨ Featured Free Competition ✨
+            </h2>
+            <FreeCompetitionCard
+              comp={{ endsAt: '2025-05-10T23:59:59Z', ticketsSold: 0, totalTickets: 10000, slug: 'pi-to-the-moon' }}
+              title="Pi To The Moon"
+              prize="20,000 π"
+            />
+          </div>
+        </section>
 
         <TopWinnersCarousel />
 
@@ -353,64 +317,57 @@ const cryptoGiveawaysItems = [
         </div>
       </main>
     </>
-  )
+  );
 }
 
-function Section({ title, items, viewMoreHref, viewMoreText = 'View More', viewMoreClassName, extraClass = '' }) {
+function Section({ title, items, viewMoreHref, viewMoreText = 'View More', extraClass = '' }) {
+  const isDaily = title.toLowerCase().includes('daily');
+  const isFree = title.toLowerCase().includes('free');
+  const isPi = title.toLowerCase().includes('pi');
+  const isCryptoGiveaway = title.toLowerCase().includes('crypto giveaways');
 
-
-  const isDaily = title.toLowerCase().includes('daily')
-  const isFree = title.toLowerCase().includes('free')
-  const isPi = title.toLowerCase().includes('pi')
-  const isCryptoGiveaway = title.toLowerCase().includes('crypto giveaways')
-
- return (
+  return (
     <section className={`mb-12 ${extraClass}`}>
-     <div className={`text-center mb-12 ${extraClass}`}>
-
-       <h2 className="w-full text-base font-bold text-center text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-4 py-2 rounded-xl shadow font-orbitron">
-  {title}
-</h2>
-
+      <div className={`text-center mb-12 ${extraClass}`}>
+        <h2 className="w-full text-base font-bold text-center text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-4 py-2 rounded-xl shadow font-orbitron">
+          {title}
+        </h2>
       </div>
 
       <div className="centered-carousel lg:hidden">
         {items.map((item, index) => {
-          const key = item?.comp?.slug || item?.id || index
-          if (!item?.comp) return null
+          const key = item?.comp?.slug || item?.id || index;
+          if (!item?.comp) return null;
 
-          if (isDaily) return <DailyCompetitionCard key={key} {...item} />
-          if (isFree) return <FreeCompetitionCard key={key} {...item} />
-          if (isPi) return <PiCompetitionCard key={key} {...item} />
-          if (isCryptoGiveaway) return <CryptoGiveawayCard key={key} {...item} />
-          return <CompetitionCard key={key} {...item} small />
+          if (isDaily) return <DailyCompetitionCard key={key} {...item} />;
+          if (isFree) return <FreeCompetitionCard key={key} {...item} />;
+          if (isPi) return <PiCompetitionCard key={key} {...item} />;
+          if (isCryptoGiveaway) return <CryptoGiveawayCard key={key} {...item} />;
+          return <CompetitionCard key={key} {...item} small />;
         })}
       </div>
 
       <div className="hidden lg:grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
         {items.map((item, index) => {
-          const key = item?.comp?.slug || item?.id || index
-          if (!item?.comp) return null
+          const key = item?.comp?.slug || item?.id || index;
+          if (!item?.comp) return null;
 
-          if (isDaily) return <DailyCompetitionCard key={key} {...item} />
-          if (isFree) return <FreeCompetitionCard key={key} {...item} />
-          if (isPi) return <PiCompetitionCard key={key} {...item} />
-          if (isCryptoGiveaway) return <CryptoGiveawayCard key={key} {...item} />
-          return <CompetitionCard key={key} {...item} />
+          if (isDaily) return <DailyCompetitionCard key={key} {...item} />;
+          if (isFree) return <FreeCompetitionCard key={key} {...item} />;
+          if (isPi) return <PiCompetitionCard key={key} {...item} />;
+          if (isCryptoGiveaway) return <CryptoGiveawayCard key={key} {...item} />;
+          return <CompetitionCard key={key} {...item} />;
         })}
       </div>
-<div className="text-center mt-4">
- <Link
-  href={viewMoreHref}
-  className="inline-block text-base font-bold px-3 py-1.5 rounded-md font-medium text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow hover:opacity-90 transition"
->
-  {viewMoreText}
-</Link>
 
-</div>
-
-
-
+      <div className="text-center mt-4">
+        <Link
+          href={viewMoreHref}
+          className="inline-block text-base font-bold px-3 py-1.5 rounded-md font-medium text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow hover:opacity-90 transition"
+        >
+          {viewMoreText}
+        </Link>
+      </div>
     </section>
-  )
+  );
 }

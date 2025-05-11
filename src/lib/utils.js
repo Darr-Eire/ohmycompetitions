@@ -1,12 +1,37 @@
-export function getWeekString(offset = 0) {
-  const now = new Date();
-  now.setDate(now.getDate() + offset * 7);
-  const oneJan = new Date(now.getFullYear(), 0, 1);
-  const week = Math.ceil(((now - oneJan) / 86400000 + oneJan.getDay() + 1) / 7);
-  return `${now.getFullYear()}-W${week}`;
+// src/lib/utils.js
+
+function generateRandomCode() {
+  return (
+    Math.random().toString(36).substring(2, 6).toUpperCase() +
+    '-' +
+    Math.random().toString(36).substring(2, 6).toUpperCase()
+  )
 }
 
-export function generatePiCode() {
-  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  return `PI-${Array(4).fill(0).map(() => letters[Math.floor(Math.random() * letters.length)]).join("")}`;
+function getPiCashTimes() {
+  const monday = new Date()
+  monday.setUTCDate(monday.getUTCDate() + ((1 + 7 - monday.getUTCDay()) % 7))
+  monday.setUTCHours(15, 14, 0, 0)
+
+  const codeExpiresAt = new Date(monday.getTime() + (31 * 60 + 4) * 60 * 1000) // 31h 4m later
+  const drawAt = new Date(monday.getTime() + 4 * 24 * 60 * 60 * 1000) // Friday
+  drawAt.setUTCHours(15, 14, 0, 0)
+
+  const claimExpiresAt = new Date(drawAt.getTime() + (31 * 60 + 4) * 1000) // 31m 4s later
+
+  return {
+    code: generateRandomCode(),
+    weekStart: monday,
+    expiresAt: codeExpiresAt,
+    drawAt,
+    claimExpiresAt,
+    prizePool: 10000,
+    claimed: false,
+    winner: null,
+    rolloverFrom: null
+  }
+}
+
+module.exports = {
+  getPiCashTimes
 }
