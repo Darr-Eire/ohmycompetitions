@@ -1,32 +1,48 @@
-import React, { useState, useEffect } from 'react';
-import Countdown from 'react-countdown';
+// pages/competition.js
 
-// Helper function to calculate the next Monday and Friday draw times
+import React, { useState, useEffect } from 'react';
+import Confetti from 'react-confetti';
+import { motion } from 'framer-motion';
+
+const useWindowSize = () => {
+  const [size, setSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const updateSize = () => {
+      setSize({ width: window.innerWidth, height: window.innerHeight });
+    };
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
+
+  return size;
+};
+
 const getNextDrawTimes = () => {
   const now = new Date();
   const mondayDraw = new Date(now);
   const fridayDraw = new Date(now);
 
-  // Set the next Monday at 3:14 PM
-  mondayDraw.setDate(now.getDate() + ((7 - now.getDay()) % 7)); // Next Monday
-  mondayDraw.setHours(15, 14, 0, 0); // 3:14 PM
+  mondayDraw.setDate(now.getDate() + ((8 - now.getDay()) % 7));
+  mondayDraw.setHours(15, 14, 0, 0);
 
-  // Set the next Friday at 3:14 PM
-  fridayDraw.setDate(now.getDate() + ((5 - now.getDay()) + 7) % 7); // Next Friday
-  fridayDraw.setHours(15, 14, 0, 0); // 3:14 PM
+  fridayDraw.setDate(now.getDate() + ((5 - now.getDay() + 7) % 7));
+  fridayDraw.setHours(15, 14, 0, 0);
 
   return { mondayDraw, fridayDraw };
 };
 
-// ClaimBox Component
 const ClaimBox = ({ targetDate }) => {
   const [won, setWon] = useState(false);
   const [code, setCode] = useState('');
   const [timeLeft, setTimeLeft] = useState('');
   const [prizeClaimed, setPrizeClaimed] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const { width, height } = useWindowSize();
 
   useEffect(() => {
-    const countdownInterval = setInterval(() => {
+    const interval = setInterval(() => {
       const now = new Date();
       const diff = new Date(targetDate) - now;
 
@@ -34,128 +50,188 @@ const ClaimBox = ({ targetDate }) => {
         const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
         const minutes = Math.floor((diff / 1000 / 60) % 60);
         const seconds = Math.floor((diff / 1000) % 60);
-        setTimeLeft(`${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`);
+        setTimeLeft(
+          `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+        );
       } else {
-        clearInterval(countdownInterval);
+        clearInterval(interval);
         setTimeLeft('00:00:00');
         setPrizeClaimed(true);
       }
     }, 1000);
 
-    return () => clearInterval(countdownInterval);
+    return () => clearInterval(interval);
   }, [targetDate]);
 
   const handleClaimPrize = () => {
     if (code === 'correct-code') {
       setWon(true);
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 5000);
     } else {
       alert('Incorrect code! Please try again.');
     }
   };
 
   return (
-    <section className="text-center py-12 border-b border-gray-700">
+    <section className="text-center py-12 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 rounded-2xl shadow-2xl border-4 border-blue-200">
+      {showConfetti && <Confetti width={width} height={height} />}
       {won ? (
         <>
-          <h2 className="text-4xl mb-4 text-green-400 animate__animated animate__fadeIn">🎉 YOU’VE WON THE PI CASH CODE!</h2>
-          <input
-            type="text"
-            placeholder="Enter your code"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            className="bg-black text-white border border-gray-500 px-4 py-2 text-lg rounded-md"
-          />
-          <p className="mt-2 text-lg text-gray-400 animate__animated animate__fadeIn">⏱️ {timeLeft} left to claim your prize</p>
-          <button
-            onClick={handleClaimPrize}
-            className="mt-4 px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg transform transition-all hover:scale-105"
-          >
-            ✅ Unlock Pi Vault
-          </button>
+          <motion.h2 className="text-5xl mb-4 text-white font-extrabold">
+            🎉 YOU’VE WON THE PI CASH CODE!
+          </motion.h2>
+          <p className="text-lg text-gray-200">⏱️ {timeLeft} left to claim</p>
         </>
       ) : prizeClaimed ? (
-        <div className="text-gray-500 italic animate__animated animate__fadeIn">❌ Time's up! The prize has rolled over to next week!</div>
+        <div className="text-gray-500 italic">❌ Time's up! The prize has rolled over to next week!</div>
       ) : (
-        <div className="text-gray-500 italic animate__animated animate__fadeIn">WAITING FOR NEXT DROP…</div>
+        <>
+          <h3 className="text-3xl font-bold text-white mb-4">🎯 Claim the Prize Now</h3>
+          <input
+            type="text"
+            placeholder="Enter your Pi Code"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            className="bg-black text-white border border-gray-500 px-4 py-2 rounded-md"
+          />
+          <p className="mt-2 text-gray-300">⏱️ {timeLeft} left</p>
+          <button
+            onClick={handleClaimPrize}
+            className="mt-6 px-10 py-4 bg-gradient-to-r from-yellow-300 via-orange-500 to-red-600 text-black font-extrabold rounded-2xl shadow-xl hover:scale-110 hover:shadow-yellow-500 transition-all duration-300 tracking-wide uppercase border-2 border-white"
+          >
+            🔐 Unlock Pi Vault
+          </button>
+        </>
       )}
     </section>
   );
 };
 
-// JackpotSection Component
-const JackpotSection = ({ jackpotAmount }) => (
-  <section className="text-center py-12 border-b border-gray-700 bg-gradient-to-r from-yellow-400 to-red-600 text-white shadow-lg">
-    <h3 className="text-4xl font-bold mb-4"> CURRENT JACKPOT</h3>
-    <div className="text-5xl font-bold text-yellow-100">{`$${jackpotAmount}`}</div>
-    <div className="mt-2 text-xl text-gray-100">💰 + 🔁 20% Rollover ticket Pool</div>
-  </section>
-);
+const CompetitionCard = ({ jackpotAmount, nextDraw }) => {
+  const [timeLeft, setTimeLeft] = useState('');
+  const [ticketCount, setTicketCount] = useState(1);
 
-// CompetitionCard Component
-const CompetitionCard = ({ jackpotAmount, nextDraw }) => (
-  <div className="bg-gradient-to-r from-gray-800 via-black to-gray-700 text-white p-8 rounded-xl shadow-xl border border-gray-700 animate__animated animate__fadeInUp max-w-lg mx-auto">
-    <h2 className="text-4xl font-extrabold mb-4 text-center text-yellow-400">
-      Pi Cash Code Competition – The Biggest Weekly Pi Drop!
-    </h2>
-    <p className="text-lg mb-4 text-center text-gray-300">
-      Every week, a lucky winner has the chance to claim a cash prize by unlocking the Pi Code. Make sure to tune in every Monday and Friday for your chance to win big!
-    </p>
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      const diff = new Date(nextDraw) - now;
 
-    <div className="mb-6">
-      <h3 className="text-2xl text-yellow-400">Time Left Until Next Code</h3>
-      <Countdown
-        date={nextDraw}
-        renderer={({ hours, minutes, seconds }) => (
-          <div className="text-6xl font-bold text-white">
-            {String(hours).padStart(2, '0')}:{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+      if (diff > 0) {
+        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((diff / 1000 / 60) % 60);
+        const seconds = Math.floor((diff / 1000) % 60);
+        setTimeLeft(
+          `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+        );
+      } else {
+        clearInterval(interval);
+        setTimeLeft('00:00:00');
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [nextDraw]);
+
+  const handleBuyTickets = () => {
+    if (ticketCount < 1) return alert('You must buy at least one ticket.');
+    const total = ticketCount * 10;
+    alert(`You are purchasing ${ticketCount} ticket${ticketCount > 1 ? 's' : ''} for ${total} π`);
+    // TODO: Integrate Pi Network payment logic here
+  };
+
+  return (
+    <div className="relative bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 backdrop-blur-md p-8 rounded-xl shadow-xl border border-gray-700 max-w-lg mx-auto">
+      <h2 className="text-6xl font-extrabold mb-4 bg-gradient-to-r from-yellow-300 via-red-500 to-pink-600 text-white bg-clip-text drop-shadow-[0_0_20px_rgba(255,255,255,0.7)] animate-pulse">
+        Pi Cash Code
+      </h2>
+      <p className="text-lg mb-6 text-center text-white">
+        🚨 The next draw is just around the corner! Get ready to claim your chance at winning the biggest Pi Cash jackpot ever.
+      </p>
+     
+
+      <div className="mt-6 text-center text-white text-sm">
+        <h4 className="text-xl mb-2 text-white">Prize Pool:</h4>
+        <motion.p
+          className="text-6xl bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white bg-clip-text font-extrabold drop-shadow-lg"
+          animate={{ scale: [1, 1.05, 1] }}
+          transition={{ repeat: Infinity, duration: 2 }}
+        >
+          {`${jackpotAmount} π`}
+        </motion.p>
+        <p className="text-sm text-white mt-2 font-semibold">
+          Doubles if not claimed within 31 minutes and rolls over to next week's draw!
+        </p>
+      </div>
+<motion.div
+        className="text-6xl font-bold text-white mb-4"
+        initial={{ scale: 0.8 }}
+        animate={{ scale: 1 }}
+        transition={{ duration: 1 }}
+      >
+        {timeLeft}
+      </motion.div>
+      <div className="mt-6 text-left text-white text-lg">
+        <h4 className="text-lg font-bold">How to Participate:</h4>
+        <ul className="list-disc pl-5 mt-2">
+          <li><strong>Monday 3:14 PM</strong>: Pi Code drop</li>
+          <li><strong>Friday 3:14 PM</strong>: Winner chosen</li>
+          <li><strong>31:04 minutes</strong> to claim or prize rolls over</li>
+          <li>+ <strong>20%</strong> from unclaimed ticket pool</li>
+          <li><strong>More Tickets, Bigger Jackpot!</strong></li>
+          <li><strong>Pi Code Entry:</strong> Enter it after the drop to qualify</li>
+          <li><strong>Claim Window:</strong> 31:04 minutes once winner is chosen</li>
+          <li><strong>Weekly Growth:</strong> Pool grows from rollovers and ticket sales</li>
+          <li><strong>Ticket Cost:</strong> <strong>10 π</strong> each</li>
+        </ul>
+
+        <div className="mt-6">
+          <h4 className="text-lg font-bold text-yellow-400 mb-2">🎟️ Buy Tickets</h4>
+          <div className="flex items-center gap-4">
+            <input
+              type="number"
+              min="1"
+              value={ticketCount}
+              onChange={(e) => setTicketCount(Number(e.target.value))}
+              className="w-24 bg-black text-white border border-gray-600 rounded px-3 py-2"
+            />
+            <button
+              onClick={handleBuyTickets}
+              className="px-6 py-2 bg-gradient-to-r from-green-400 to-blue-500 rounded text-black font-bold hover:scale-105 transition-transform border border-white"
+            >
+              Buy {ticketCount} Ticket{ticketCount > 1 ? 's' : ''} for {ticketCount * 10} π
+            </button>
           </div>
-        )}
-      />
-    </div>
+        </div>
+      </div>
 
-    <div className="bg-gray-800 p-6 rounded-lg border border-gray-600 shadow-md">
-      <h4 className="text-xl mb-2 text-yellow-300"> Prize Pool:</h4>
-      <p className="text-4xl text-yellow-400">{`$${jackpotAmount}`}</p>
-      <p className="text-sm text-gray-400 mt-2"><strong>Prize will double if not claimed within 31 minutes and 4 seconds and will roll over to next week's draw!!</strong></p>
+      <div className="mt-4 text-gray-400 text-xs italic">
+        *Disclaimer: Participation is open to all users, but some restrictions may apply based on local laws.
+      </div>
     </div>
+  );
+};
 
-    <div className="mt-8 text-gray-300 text-sm">
-      <h4 className="font-bold text-lg"> How to Participate:</h4>
-      <ul className="list-disc pl-5 mt-2">
-        <li><strong> Every Monday at 3:14 PM, a new Pi Code will be revealed!</strong></li>
-        <li><strong> Every Friday at 3:14 PM, a lucky winner is drawn to enter the Pi Code!</strong></li>
-        <li><strong> The winner has exactly 31 minutes and 4 seconds to claim their prize!</strong></li>
-        <li><strong> If the winner doesn't claim the prize, the jackpot rolls over to next week!</strong></li>
-        <li><strong> 20% of all losing ticket values will be added to next week's jackpot!</strong></li>
-      </ul>
-    </div>
-  </div>
-);
-
-// CompetitionPage Component
 const CompetitionPage = () => {
-  const { mondayDraw, fridayDraw } = getNextDrawTimes(); // Get the next Monday and Friday draw times
-  const [jackpotAmount, setJackpotAmount] = useState(5000); // Set initial jackpot amount
+  const { mondayDraw, fridayDraw } = getNextDrawTimes();
+  const [jackpotAmount, setJackpotAmount] = useState(50000);
 
   useEffect(() => {
     const interval = setInterval(() => {
       if (new Date() > fridayDraw) {
-        // If the current time is after Friday's 3:14 PM, rollover prize logic
-        setJackpotAmount(jackpotAmount + 1000); // Example of adding 1000 (could be 20% of pool)
+        setJackpotAmount((prev) => prev + 1000);
       }
-    }, 60000); // Check every minute
+    }, 60000);
 
     return () => clearInterval(interval);
-  }, [fridayDraw, jackpotAmount]);
+  }, [fridayDraw]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-800 text-white font-mono flex flex-col items-center justify-center">
-      <div className="max-w-4xl w-full">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-black to-gray-800 text-white font-sans flex flex-col items-center justify-center px-4 py-10">
+      <div className="max-w-4xl w-full space-y-10 text-center">
         <CompetitionCard jackpotAmount={jackpotAmount} nextDraw={mondayDraw} />
+        <ClaimBox targetDate={fridayDraw} />
       </div>
-
-      <ClaimBox targetDate={fridayDraw} />
-      <JackpotSection jackpotAmount={jackpotAmount} />
     </div>
   );
 };
