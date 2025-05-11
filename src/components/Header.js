@@ -49,6 +49,7 @@ export default function Header() {
   const navItems = [
     ['Home', '/'],
     ['My Account', '/account'],
+    ['The Pi Code', '/competition'],
     ['All Competitions', '/competitions'],
     ['Try Your Luck', '/try-your-luck'],
     ['Forums', '/forums'],
@@ -57,6 +58,16 @@ export default function Header() {
     ['How We Got Started', '/how-we-got-started'],
     ['Partners & Sponsors', '/partners'],
   ]
+
+  // Conditionally add 'Pi Code' to the menu if the session exists
+  if (session) {
+    console.log("Session found, adding Pi Code to the menu");
+    navItems.push(['Pi Code', '/competition']); // Link to competition page
+  }
+
+  useEffect(() => {
+    console.log("Session changed:", session); // Debug session change
+  }, [session]);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] border-b border-cyan-700 px-4 py-3 flex items-center shadow-md backdrop-blur-md">
@@ -67,7 +78,10 @@ export default function Header() {
       </button>
 
       <div className="flex-1 text-center">
-        <Link href="/" className="text-xl sm:text-2xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 text-transparent bg-clip-text drop-shadow">
+        <Link
+          href="/"
+          className="text-xl sm:text-2xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 text-transparent bg-clip-text drop-shadow"
+        >
           OhMyCompetitions
         </Link>
       </div>
@@ -77,7 +91,9 @@ export default function Header() {
       ) : session ? (
         <div className="text-white text-sm flex items-center gap-2">
           <span>👋 {session.user.username}</span>
-          <button onClick={() => signOut()} className="neon-button px-3 py-1">Log Out</button>
+          <button onClick={() => signOut()} className="neon-button px-3 py-1">
+            Log Out
+          </button>
         </div>
       ) : (
         <button onClick={handlePiLogin} className="neon-button text-white text-sm px-4 py-2">
