@@ -43,7 +43,7 @@ export default function HeroBanner() {
 
   {/* Prize Tiers */}
   <div className="text-white/90 text-lg sm:text-base mb-6 space-y-1">
-    <p><strong> 1<sup>st</sup> Prize:</strong> 250,000 Pi</p>
+    <p><strong> 1<sup>st</sup> Prize:</strong> 100,000 Pi</p>
     <p><strong> 2<sup>nd</sup> Prize:</strong> 25,000 Pi</p>
     <p><strong> 3<sup>rd</sup> – 999<sup>th</sup> Place:</strong> Smaller Pi & Prizes to be WON</p>
     <p><strong> Mystery Draw:</strong> Surprise reward for 5 random pioneers</p>
