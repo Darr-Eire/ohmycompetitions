@@ -59,7 +59,6 @@ export default function Header() {
     ['Partners & Sponsors', '/partners'],
   ]
 
-  // Conditionally add 'Pi Code' to the menu if the session exists
   if (session) {
     console.log("Session found, adding Pi Code to the menu");
     navItems.push(['Pi Code', '/competition']); // Link to competition page
@@ -70,8 +69,8 @@ export default function Header() {
   }, [session]);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] border-b border-cyan-700 px-4 py-3 flex items-center shadow-md backdrop-blur-md">
-      <button ref={buttonRef} onClick={toggleMenu} className="neon-button text-white text-sm px-4 py-2">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] border-b border-cyan-700 px-3 py-2 flex items-center shadow-md backdrop-blur-md">
+      <button ref={buttonRef} onClick={toggleMenu} className="neon-button text-white text-xs px-3 py-1">
         <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M4 8h16M4 16h16" />
         </svg>
@@ -80,30 +79,30 @@ export default function Header() {
       <div className="flex-1 text-center">
         <Link
           href="/"
-          className="text-xl sm:text-2xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 text-transparent bg-clip-text drop-shadow"
+          className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 text-transparent bg-clip-text drop-shadow"
         >
           OhMyCompetitions
         </Link>
       </div>
 
       {status === 'loading' ? (
-        <p className="text-white text-sm">Checking session…</p>
+        <p className="text-white text-xs">Checking session…</p>
       ) : session ? (
-        <div className="text-white text-sm flex items-center gap-2">
+        <div className="text-white text-xs flex items-center gap-2">
           <span>👋 {session.user.username}</span>
-          <button onClick={() => signOut()} className="neon-button px-3 py-1">
+          <button onClick={() => signOut()} className="neon-button px-2 py-1">
             Log Out
           </button>
         </div>
       ) : (
-        <button onClick={handlePiLogin} className="neon-button text-white text-sm px-4 py-2">
+        <button onClick={handlePiLogin} className="neon-button text-white text-xs px-3 py-1">
           Login with Pi
         </button>
       )}
 
       {menuOpen && (
-        <nav ref={menuRef} className="absolute top-full left-2 mt-3 w-56 rounded-lg shadow-xl backdrop-blur-md bg-[#0f172acc] border border-cyan-700 animate-fade-in">
-          <ul className="flex flex-col font-orbitron text-sm">
+        <nav ref={menuRef} className="absolute top-full left-2 mt-2 w-48 rounded-lg shadow-xl backdrop-blur-md bg-[#0f172acc] border border-cyan-700 animate-fade-in">
+          <ul className="flex flex-col font-orbitron text-xs">
             {navItems.map(([label, href]) => (
               <li key={href}>
                 <Link
