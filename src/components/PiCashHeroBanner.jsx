@@ -1,40 +1,40 @@
-'use client'
+'use client';
 
-import React, { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import FlipClock from '@/components/FlipClock'
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import FlipClock from '@/components/FlipClock';
 
 export default function PiCashCodePage() {
-  const router = useRouter()
-  const [ticketCount, setTicketCount] = useState(1)
-  const [loading, setLoading] = useState(true)
-  const [codeData, setCodeData] = useState(null)
+  const router = useRouter();
+  const [ticketCount, setTicketCount] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [codeData, setCodeData] = useState(null);
 
-  const ticketPrice = 1.25
+  const ticketPrice = 1.25;
 
   useEffect(() => {
     const fetchCode = async () => {
       try {
-        const res = await fetch('/api/pi-cash-code')
-        const data = await res.json()
-        setCodeData(data)
+        const res = await fetch('/api/pi-cash-code');
+        const data = await res.json();
+        setCodeData(data);
       } catch (err) {
-        console.error('Failed to load code:', err)
+        console.error('Failed to load code:', err);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-    fetchCode()
-  }, [])
+    };
+    fetchCode();
+  }, []);
 
-  const increment = () => setTicketCount((prev) => Math.min(prev + 1, 50))
-  const decrement = () => setTicketCount((prev) => Math.max(prev - 1, 1))
+  const increment = () => setTicketCount((prev) => Math.min(prev + 1, 50));
+  const decrement = () => setTicketCount((prev) => Math.max(prev - 1, 1));
 
   if (loading) {
-    return <div className="text-center text-white py-20">Loading current Pi Cash Code...</div>
+    return <div className="text-center text-white py-20">Loading current Pi Cash Code...</div>;
   }
 
-  const totalPrice = (ticketCount * ticketPrice).toFixed(2)
+  const totalPrice = (ticketCount * ticketPrice).toFixed(2);
 
   return (
     <div className="relative max-w-xl mx-auto mt-4 px-4 py-6 border border-cyan-500 rounded-2xl text-white text-center font-orbitron overflow-hidden shadow-[0_0_60px_#00fff055] bg-[#0b1120]/30">
@@ -83,5 +83,5 @@ export default function PiCashCodePage() {
         </ul>
       </div>
     </div>
-  )
+  );
 }
