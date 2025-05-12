@@ -295,57 +295,79 @@ export default function TicketPurchasePage() {
   const [discount, setDiscount] = useState(0);
   const [timeLeft, setTimeLeft] = useState('');
 
+  // ✅ Pi SDK loader + init
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://sdk.minepi.com/pi-sdk.js';
+    script.async = true;
+    script.onload = () => {
+      if (window?.Pi) {
+        window.Pi.init({ version: '2.0' });
+        console.log('✅ Pi SDK loaded and initialized');
+      }
+    };
+    document.body.appendChild(script);
+  }, []);
+
+  // ✅ Attempt auto-login with session
   useEffect(() => {
     if (!router.isReady) return;
     if (!window.Pi?.getCurrentPioneer) {
+      console.warn('Pi.getCurrentPioneer not available. Not in Pi Browser?');
       setLoadingUser(false);
       return;
     }
     window.Pi.getCurrentPioneer()
-      .then(user => {
+      .then((user) => {
         if (user) setPiUser(user);
       })
       .catch(console.error)
       .finally(() => setLoadingUser(false));
   }, [router.isReady]);
 
+  // ✅ Countdown
   useEffect(() => {
     if (!COMPETITIONS[slug]?.endsAt) return;
-
     const interval = setInterval(() => {
       const end = new Date(COMPETITIONS[slug].endsAt).getTime();
       const now = Date.now();
       const diff = end - now;
-
       if (diff <= 0) {
         setTimeLeft('Ended');
         clearInterval(interval);
         return;
       }
-
       const hrs = Math.floor(diff / (1000 * 60 * 60));
       const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const secs = Math.floor((diff % (1000 * 60)) / 1000);
-
       setTimeLeft(`${hrs}h ${mins}m ${secs}s`);
     }, 1000);
-
     return () => clearInterval(interval);
   }, [slug]);
 
+  // ✅ Manual login
   const handlePiLogin = async () => {
     setLoadingLogin(true);
+    if (!window.Pi) {
+      alert('⚠️ Pi SDK not loaded. Open this app inside the Pi Browser.');
+      console.warn('window.Pi is undefined');
+      setLoadingLogin(false);
+      return;
+    }
     try {
       const { user } = await window.Pi.authenticate(['username', 'payments']);
       setPiUser(user);
+      console.log('✅ Pi user:', user);
     } catch (err) {
       alert(`Login failed: ${err.message || err}`);
+      console.error('❌ Login error:', err);
     } finally {
       setLoadingLogin(false);
     }
   };
 
   if (!router.isReady) return null;
+
   const comp = COMPETITIONS[slug];
   if (!comp) {
     return (
@@ -381,26 +403,22 @@ export default function TicketPurchasePage() {
             />
           )}
 
-          {/* Prize Info */}
-          <p className="text-gray-300"><strong>Prize:</strong> {comp.prize}</p>
+          <p className="text-gray-300">
+            <strong>Prize:</strong> {comp.prize}
+          </p>
 
-          {/* Countdown */}
           {timeLeft && (
             <div className="bg-gradient-to-r from-cyan-400 to-blue-500 px-4 py-2 rounded-lg inline-block mx-auto">
-              <p className="text-sm text-black font-mono font-bold">
-                ⏳ Ends In: <span>{timeLeft}</span>
-              </p>
+              <p className="text-sm text-black font-mono font-bold">⏳ Ends In: <span>{timeLeft}</span></p>
             </div>
           )}
 
-          {/* Event Info */}
           <div className="space-y-1 text-sm">
             <p><strong>Date:</strong> {comp.date}</p>
             <p><strong>Time:</strong> {comp.time}</p>
             <p><strong>Location:</strong> {comp.location}</p>
           </div>
 
-          {/* Ticket Info */}
           <div className="space-y-1 text-sm">
             <p>Entry Fee: <strong>{comp.entryFee} π</strong></p>
             {discount > 0 && (
@@ -421,17 +439,14 @@ export default function TicketPurchasePage() {
             </div>
           </div>
 
-          {/* Total */}
           <div>
             <p className="text-lg font-bold">Total: {totalPrice.toFixed(2)} π</p>
           </div>
 
-          {/* Description */}
           <p className="text-gray-300 text-sm">
             Secure your entry to win <strong>{comp.prize}</strong> — don’t miss out!
           </p>
 
-          {/* Action Button */}
           {loadingUser ? (
             <p className="text-center text-gray-400">Checking session…</p>
           ) : !piUser ? (
