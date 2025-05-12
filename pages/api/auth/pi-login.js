@@ -1,35 +1,50 @@
-import { serialize } from 'cookie'
+// pages/api/auth/pi-login.js
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-dev-secret';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).end('Method Not Allowed')
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { accessToken } = req.body
+  const { accessToken } = req.body;
 
   if (!accessToken) {
-    return res.status(400).json({ error: 'Missing accessToken' })
+    return res.status(400).json({ error: 'Access token is required' });
   }
 
-  // ✅ Replace this with real Pi user data if needed
-  const user = {
-    uid: 'temp-uid',
-    username: 'temp-user',
-    accessToken,
-  }
+  try {
+    // Validate accessToken with Pi Network
+    const result = await fetch('https://api.minepi.com/v2/me', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
 
-  res.setHeader('Set-Cookie', serialize(
-    'session',
-    JSON.stringify(user),
-    {
-      httpOnly: true,
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+    if (!result.ok) {
+      return res.status(401).json({ error: 'Invalid Pi token' });
     }
-  ))
 
-  res.status(200).json({ success: true })
+    const user = await result.json();
+
+    // Generate a JWT or handle session
+    const token = jwt.sign(
+      { uid: user.uid, username: user.username },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.setHeader(
+      'Set-Cookie',
+      `pi_token=${token}; Path=/; HttpOnly; SameSite=Strict; Secure`
+    );
+
+    return res.status(200).json({ user });
+  } catch (error) {
+    console.error('❌ Pi login error:', error);
+    return res.status(500).json({ error: 'Server error' });
+  }
 }
-
