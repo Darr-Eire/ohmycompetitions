@@ -22,6 +22,8 @@ import {
 
 export default function HomePage() {
   const [selectedToken, setSelectedToken] = useState('BTC');
+  const [piUser, setPiUser] = useState(null);
+  const [piSdkReady, setPiSdkReady] = useState(false);
 
   const mockPiCashProps = {
     code: '7H3X-PL4Y',
@@ -30,6 +32,52 @@ export default function HomePage() {
     expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
     drawAt: new Date(Date.now() + 1000 * 60 * 60 * 5).toISOString(),
     claimExpiresAt: new Date(Date.now() + 1000 * 60 * 60 * 10).toISOString()
+  };
+
+  // Load Pi SDK
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://sdk.minepi.com/pi-sdk.js';
+    script.async = true;
+    script.onload = () => {
+      if (window.Pi) {
+        window.Pi.init({ version: '2.0' });
+        setPiSdkReady(true);
+        console.log('✅ Pi SDK initialized');
+      }
+    };
+    document.body.appendChild(script);
+  }, []);
+
+  // Check session on load
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then(res => res.ok ? res.json() : null)
+      .then(data => data?.user && setPiUser(data.user));
+  }, []);
+
+  const handlePiLogin = async () => {
+    if (!piSdkReady || !window.Pi) {
+      alert('Pi SDK not ready yet.');
+      return;
+    }
+
+    try {
+      const user = await window.Pi.authenticate(['username', 'payments']);
+      const res = await fetch('/api/auth/pi-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessToken: user.accessToken }),
+      });
+
+      if (!res.ok) throw new Error('Login failed');
+      const data = await res.json();
+      setPiUser(data.user);
+      alert(`Welcome ${data.user.username}`);
+    } catch (err) {
+      console.error('Login error:', err);
+      alert('Login failed. See console.');
+    }
   };
 
   const topWinners = [
@@ -65,6 +113,19 @@ export default function HomePage() {
     <>
       <div className="mt-0 mb-2 flex justify-center">
         <PiCashHeroBanner {...mockPiCashProps} />
+      </div>
+
+      <div className="flex justify-center mb-6">
+        {piUser ? (
+          <p className="text-white text-lg">👋 Welcome, {piUser.username}</p>
+        ) : (
+          <button
+            onClick={handlePiLogin}
+            className="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-lg text-white font-semibold shadow transition"
+          >
+            Login with Pi
+          </button>
+        )}
       </div>
 
       <main className="space-y-16">
@@ -108,7 +169,6 @@ export default function HomePage() {
   );
 }
 
-// Reusable Section component
 function Section({ title, items, viewMoreHref, viewMoreText = 'View More', extraClass = '' }) {
   const isDaily = title.toLowerCase().includes('daily');
   const isFree = title.toLowerCase().includes('free');
