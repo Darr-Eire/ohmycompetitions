@@ -1,15 +1,15 @@
-'use client'
-import Link from 'next/link'
-import { useState, useRef, useEffect } from 'react'
-import { usePiAuth } from '@/context/PiAuthContext'
+'use client';
+import Link from 'next/link';
+import { useState, useRef, useEffect } from 'react';
+import { usePiAuth } from '@/context/PiAuthContext';
 
 export default function Header() {
-  const { user, loginWithPi, logout } = usePiAuth()
-  const [menuOpen, setMenuOpen] = useState(false)
-  const menuRef = useRef(null)
-  const buttonRef = useRef(null)
+  const { user, loginWithPi, logout } = usePiAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+  const buttonRef = useRef(null);
 
-  const toggleMenu = () => setMenuOpen(open => !open)
+  const toggleMenu = () => setMenuOpen((prev) => !prev);
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -19,12 +19,13 @@ export default function Header() {
         buttonRef.current &&
         !buttonRef.current.contains(e.target)
       ) {
-        setMenuOpen(false)
+        setMenuOpen(false);
       }
     }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const navItems = [
     ['Home', '/'],
@@ -36,9 +37,11 @@ export default function Header() {
     ['Help & Support', '/help-support'],
     ['How We Got Started', '/how-we-got-started'],
     ['Partners & Sponsors', '/partners'],
-  ]
+  ];
 
-  if (user) navItems.push(['Pi Code', '/competition'])
+  if (user) {
+    navItems.push(['Pi Code', '/competition']);
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] border-b border-cyan-700 px-3 py-1.5 flex items-center shadow-md backdrop-blur-md">
@@ -49,7 +52,10 @@ export default function Header() {
       </button>
 
       <div className="flex-1 text-center">
-        <Link href="/" className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 text-transparent bg-clip-text drop-shadow">
+        <Link
+          href="/"
+          className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 text-transparent bg-clip-text drop-shadow"
+        >
           OhMyCompetitions
         </Link>
       </div>
@@ -57,14 +63,21 @@ export default function Header() {
       {user ? (
         <div className="text-white text-xs flex items-center gap-2">
           <span>👋 {user.username}</span>
-          <button onClick={logout} className="neon-button text-xs px-2 py-1">Log Out</button>
+          <button onClick={logout} className="neon-button text-xs px-2 py-1">
+            Log Out
+          </button>
         </div>
       ) : (
-        <button onClick={loginWithPi} className="neon-button text-white text-xs px-2 py-1">Login with Pi</button>
+        <button onClick={loginWithPi} className="neon-button text-white text-xs px-2 py-1">
+          Login with Pi
+        </button>
       )}
 
       {menuOpen && (
-        <nav ref={menuRef} className="absolute top-full left-2 mt-2 w-48 rounded-lg shadow-xl backdrop-blur-md bg-[#0f172acc] border border-cyan-700 animate-fade-in">
+        <nav
+          ref={menuRef}
+          className="absolute top-full left-2 mt-2 w-48 rounded-lg shadow-xl backdrop-blur-md bg-[#0f172acc] border border-cyan-700 animate-fade-in"
+        >
           <ul className="flex flex-col font-orbitron text-xs">
             {navItems.map(([label, href]) => (
               <li key={href}>
@@ -82,8 +95,8 @@ export default function Header() {
               {user ? (
                 <button
                   onClick={() => {
-                    logout()
-                    setMenuOpen(false)
+                    logout();
+                    setMenuOpen(false);
                   }}
                   className="w-full text-left text-xs px-4 py-2 text-white hover:bg-cyan-600 hover:text-black transition"
                 >
@@ -92,8 +105,8 @@ export default function Header() {
               ) : (
                 <button
                   onClick={() => {
-                    loginWithPi()
-                    setMenuOpen(false)
+                    loginWithPi();
+                    setMenuOpen(false);
                   }}
                   className="w-full text-left text-xs px-4 py-2 text-white hover:bg-cyan-600 hover:text-black transition"
                 >
@@ -105,5 +118,5 @@ export default function Header() {
         </nav>
       )}
     </header>
-  )
+  );
 }

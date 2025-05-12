@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 
 const PiAuthContext = createContext();
 
@@ -7,21 +7,25 @@ export function PiAuthProvider({ children }) {
 
   const loginWithPi = async () => {
     try {
-      const { accessToken } = await window.Pi.authenticate(['username', 'payments']);
+      if (!window?.Pi) {
+        alert('Pi SDK not loaded. Please use the Pi Browser.');
+        return;
+      }
+
+      const userData = await window.Pi.authenticate(['username', 'payments']);
       const res = await fetch('/api/auth/pi-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken }),
+        body: JSON.stringify({ accessToken: userData.accessToken }),
       });
 
       const data = await res.json();
-      if (res.ok) {
-        setUser(data.user);
-      } else {
-        throw new Error(data.error || 'Unknown login error');
-      }
+      if (!res.ok) throw new Error(data.error);
+
+      setUser(data.user);
     } catch (err) {
-      console.error('Pi login failed:', err);
+      console.error('❌ Pi login failed:', err);
+      alert('Login failed. Please try again.');
     }
   };
 
