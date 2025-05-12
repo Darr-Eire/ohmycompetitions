@@ -11,22 +11,20 @@ let client;
 let clientPromise;
 
 if (process.env.NODE_ENV === 'development') {
-  // Reuse the client during hot reloads in dev
   if (!global._mongoClientPromise) {
     client = new MongoClient(uri, options);
     global._mongoClientPromise = client.connect();
   }
   clientPromise = global._mongoClientPromise;
 } else {
-  // Use a new client in production
   client = new MongoClient(uri, options);
   clientPromise = client.connect();
 }
 
-// ✅ Optional helper to get the DB (default or custom name)
-export async function getDb(dbName = undefined) {
+// 🔧 Optional: Access a specific database
+export async function getDb(dbName) {
   const client = await clientPromise;
-  return client.db(dbName); // e.g., db("your-db-name") if needed
+  return dbName ? client.db(dbName) : client.db();
 }
 
 export default clientPromise;

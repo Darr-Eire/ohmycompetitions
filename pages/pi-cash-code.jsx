@@ -4,17 +4,15 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import GhostWinnerLog from '@/components/GhostWinnerLog';
 import ClaimedWinnersLog from '@/components/ClaimedWinnersLog';
-import FlipClockCountdown from '@leenguyen/react-flip-clock-countdown';
-import '@leenguyen/react-flip-clock-countdown/dist/index.css';
 
 export default function PiCashCodePage() {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(true);
   const [codeData, setCodeData] = useState(null);
   const [quantity, setQuantity] = useState(1);
-  const [isMobile, setIsMobile] = useState(false);
   const ticketPrice = 1.25;
   const totalPrice = (ticketPrice * quantity).toFixed(2);
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
     const fetchCode = async () => {
@@ -27,11 +25,25 @@ export default function PiCashCodePage() {
   }, []);
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 640);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+    if (!codeData?.expiresAt) return;
+
+    const getRemainingTime = (end) => {
+      const total = Date.parse(end) - Date.now();
+      const seconds = Math.floor((total / 1000) % 60);
+      const minutes = Math.floor((total / 1000 / 60) % 60);
+      const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
+      const days = Math.floor(total / (1000 * 60 * 60 * 24));
+      return { total, days, hours, minutes, seconds };
+    };
+
+    const timer = setInterval(() => {
+      const updated = getRemainingTime(codeData.expiresAt);
+      setTimeLeft(updated);
+      if (updated.total <= 0) clearInterval(timer);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [codeData?.expiresAt]);
 
   const handleConfirmTicket = async () => {
     if (!session?.user) {
@@ -46,8 +58,8 @@ export default function PiCashCodePage() {
         metadata: {
           type: 'pi-cash-ticket',
           week: codeData?.weekStart?.split('T')[0],
-          quantity
-        }
+          quantity,
+        },
       });
 
       if (payment?.transaction?.txid) {
@@ -58,7 +70,7 @@ export default function PiCashCodePage() {
             txid: payment.transaction.txid,
             userId: session.user.id,
             week: codeData?.weekStart?.split('T')[0],
-            quantity
+            quantity,
           }),
         });
 
@@ -80,39 +92,35 @@ export default function PiCashCodePage() {
     <main className="flex justify-center items-start min-h-screen bg-transparent font-orbitron pt-6">
       <div className="backdrop-blur-lg border border-cyan-400 neon-outline text-white p-6 sm:p-8 rounded-2xl text-center space-y-6 shadow-[0_0_40px_#00ffd5aa] max-w-3xl w-full mx-auto mt-6 relative overflow-hidden">
 
-        <h1 className="text-3xl sm:text-4xl font-bold text-cyan-300 animate-glow-float"> Pi Cash Code</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold text-cyan-300 animate-glow-float">Pi Cash Code</h1>
 
+        {/* Code Display */}
         <div className="flex flex-col items-center space-y-3">
           <div className="bg-[#101426] border-2 border-cyan-400 rounded-xl px-6 py-3 text-2xl font-mono text-cyan-300 tracking-widest shadow-[0_0_20px_#00ffd5aa]">
             {codeData?.code}
           </div>
-          <div className="bg-[#0f0c29] text-white text-lg font-semibold px-4 py-2 border border-cyan-400 rounded-lg shadow-[0_0_10px_#00ffd5aa]">
-             Prize Pool: <span className="text-cyan-300">{codeData?.prizePool} Pi</span>
+          <div className="bg-black border border-cyan-400 text-cyan-300 text-lg font-bold px-4 py-2 rounded-lg shadow-[0_0_15px_#00f0ff88]">
+            Current Prize Pool: {codeData?.prizePool.toLocaleString()} π
           </div>
         </div>
 
-        {/* Flip Clock */}
-        <div className="mt-6 flex justify-center scale-95 sm:scale-100">
-  <FlipClockCountdown
-  to={new Date(codeData.expiresAt)}
-  labels={isMobile ? ['HRS', 'MIN', 'SEC'] : ['DAYS', 'HRS', 'MIN', 'SEC']}
-  labelStyle={{
-    fontSize: isMobile ? 10 : 14,
-    fontWeight: 500,
-    textTransform: 'uppercase',
-    color: '#00ffd5',
-  }}
-  digitBlockStyle={{
-    width: isMobile ? 32 : 50,
-    height: isMobile ? 40 : 60,
-    fontSize: isMobile ? 22 : 40,
-    backgroundColor: '#0f0c29',
-    color: '#fff',
-  }}
-  dividerStyle={{ color: '#00ffd5' }}
-  separatorStyle={{ color: '#00ffd5' }}
-/>
-
+        {/* Timer Display */}
+        <div className="mt-6 flex flex-col items-center">
+          <div className="flex gap-2 sm:gap-4">
+            {[
+              { label: 'DAYS', value: timeLeft.days },
+              { label: 'HRS', value: timeLeft.hours },
+              { label: 'MIN', value: timeLeft.minutes },
+              { label: 'SEC', value: timeLeft.seconds },
+            ].map(({ label, value }, i) => (
+              <div key={i} className="flex flex-col items-center">
+                <div className="bg-black text-white text-xl sm:text-2xl font-bold px-4 py-2 rounded-md shadow-[0_0_10px_#00f0ff99] w-16 text-center">
+                  {String(value).padStart(2, '0')}
+                </div>
+                <div className="mt-1 text-xs text-cyan-400 font-semibold tracking-wide">{label}</div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Ticket Quantity Selector */}
@@ -133,11 +141,12 @@ export default function PiCashCodePage() {
         </div>
         <p className="text-cyan-300 mt-2 font-semibold text-sm">Total: {totalPrice} π</p>
 
+        {/* Confirm Button */}
         <button
           onClick={handleConfirmTicket}
           className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold text-lg px-6 py-3 rounded-lg shadow-[0_0_20px_#00ffd5aa] hover:brightness-110 transition"
         >
-           Confirm Ticket Purchase
+          Enter Now
         </button>
 
         {/* How It Works */}
@@ -148,35 +157,22 @@ export default function PiCashCodePage() {
               <li>The code drops every Monday at <strong>3:14 PM UTC</strong>.</li>
               <li>It remains active for <strong>31 hours and 4 minutes</strong>.</li>
               <li>Friday draw at <strong>3:14 PM UTC</strong>.</li>
-              <li>Winner has <strong>31 minutes and 4 seconds</strong> to submit the code.</li>
-              <li>If missed, prize <strong>rolls over +25%</strong>.</li>
-              <li><strong>20%</strong> of tickets roll into next week.</li>
+              <li>The winner must return the code within <strong>31 minutes and 4 seconds</strong>.</li>
             </ul>
           </div>
         </section>
 
-        {/* Upcoming Draw */}
-        <section className="mt-8">
-          <h2 className="text-2xl font-bold text-yellow-300">📅 Upcoming Draw</h2>
-          <p className="mt-2">
-            ⏱️ Friday @ 3:14 PM UTC →{' '}
-            <span className="font-bold">{new Date(codeData?.drawAt).toUTCString()}</span>
-          </p>
-          <p>
-            💰 Prize: <span className="text-yellow-300 font-bold">{codeData?.prizePool} Pi</span>
-          </p>
-        </section>
+        {/* Logs */}
+        <section className="mt-10 space-y-6">
+          <div className="bg-[#0b1120] bg-opacity-50 backdrop-blur-md border border-cyan-400 rounded-xl p-4 shadow-[0_0_20px_#00ffd5aa]">
+            <h2 className="text-xl font-bold text-cyan-300 mb-2">👻 Ghost Winner Log</h2>
+            <GhostWinnerLog />
+          </div>
 
-        {/* Ghost Winners */}
-        <section className="mt-8 text-left">
-          <h2 className="text-xl font-bold text-gray-200 mb-2">👻 Ghost Winner Log</h2>
-          <GhostWinnerLog />
-        </section>
-
-        {/* Claimed Winners */}
-        <section className="mt-8 text-left">
-          <h2 className="text-xl font-bold text-green-400 mb-2">🏅 Claimed Winners</h2>
-          <ClaimedWinnersLog />
+          <div className="bg-[#0b1120] bg-opacity-50 backdrop-blur-md border border-green-400 rounded-xl p-4 shadow-[0_0_20px_#00ffbf88]">
+            <h2 className="text-xl font-bold text-green-300 mb-2">🏅 Claimed Winners</h2>
+            <ClaimedWinnersLog />
+          </div>
         </section>
       </div>
     </main>

@@ -1,19 +1,40 @@
 'use client'
-import React, { useState } from 'react'
+
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import FlipClock from '@/components/FlipClock'
 
 export default function PiCashCodePage() {
   const router = useRouter()
   const [ticketCount, setTicketCount] = useState(1)
+  const [loading, setLoading] = useState(true)
+  const [codeData, setCodeData] = useState(null)
 
   const ticketPrice = 1.25
-  const prizePool = 15000
-  const code = 'SEED-CODE'
-  const endTime = new Date(Date.now() + 1000 * 60 * 60 * 31 + 1000 * 60 * 4) // 31h 4m from now
+
+  useEffect(() => {
+    const fetchCode = async () => {
+      try {
+        const res = await fetch('/api/pi-cash-code')
+        const data = await res.json()
+        setCodeData(data)
+      } catch (err) {
+        console.error('Failed to load code:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchCode()
+  }, [])
 
   const increment = () => setTicketCount((prev) => Math.min(prev + 1, 50))
   const decrement = () => setTicketCount((prev) => Math.max(prev - 1, 1))
+
+  if (loading) {
+    return <div className="text-center text-white py-20">Loading current Pi Cash Code...</div>
+  }
+
+  const totalPrice = (ticketCount * ticketPrice).toFixed(2)
 
   return (
     <div className="relative max-w-xl mx-auto mt-4 px-4 py-6 border border-cyan-500 rounded-2xl text-white text-center font-orbitron overflow-hidden shadow-[0_0_60px_#00fff055] bg-[#0b1120]/30">
@@ -22,25 +43,25 @@ export default function PiCashCodePage() {
 
       {/* Title */}
       <h1 className="text-2xl sm:text-3xl font-bold text-cyan-300 mb-3 flex items-center justify-center gap-2 animate-glow-float">
-        <span></span> Pi Cash Code
+        Pi Cash Code
       </h1>
 
       {/* Code Display */}
       <div className="inline-block bg-[#0a0f1d] border border-cyan-400 text-cyan-300 px-6 py-2 rounded-md text-lg font-mono tracking-widest shadow-[0_0_12px_#00f0ff66] mb-4">
-        {code}
+        {codeData.code || '????-????'}
       </div>
 
       {/* Prize Pool */}
       <div className="text-center mb-1">
         <div className="inline-flex items-center gap-2 px-5 py-2 rounded-xl border border-cyan-400 bg-black/30 shadow-[0_0_15px_#00f0ff88] animate-glow-float">
-          <span className="text-base sm:text-lg font-bold text-cyan-300 tracking-wide"> Prize Pool:</span>
-          <span className="text-cyan-400 font-extrabold text-lg sm:text-xl drop-shadow-md">{prizePool.toLocaleString()} π</span>
+          <span className="text-base sm:text-lg font-bold text-cyan-300 tracking-wide">Current Prize Pool:</span>
+          <span className="text-cyan-400 font-extrabold text-lg sm:text-xl drop-shadow-md">{codeData.prizePool.toLocaleString()} π</span>
         </div>
       </div>
 
       {/* Flip Clock */}
       <div className="mt-4 mb-6">
-        <FlipClock targetTime={endTime.getTime()} />
+        <FlipClock targetTime={new Date(codeData.expiresAt).getTime()} />
       </div>
 
       {/* Enter Now Button */}
