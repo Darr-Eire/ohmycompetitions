@@ -93,25 +93,26 @@ export default function PiCashCodePage() {
 
         {/* Flip Clock */}
         <div className="mt-6 flex justify-center scale-95 sm:scale-100">
-          <FlipClockCountdown
-            to={new Date(codeData.expiresAt)}
-            labels={isMobile ? ['HRS', 'MIN', 'SEC'] : ['DAYS', 'HRS', 'MIN', 'SEC']}
-            labelStyle={{
-              fontSize: 14,
-              fontWeight: 500,
-              textTransform: 'uppercase',
-              color: '#00ffd5',
-            }}
-            digitBlockStyle={{
-              width: isMobile ? 40 : 50,
-              height: isMobile ? 50 : 60,
-              fontSize: isMobile ? 28 : 40,
-              backgroundColor: '#0f0c29',
-              color: '#fff',
-            }}
-            dividerStyle={{ color: '#00ffd5' }}
-            separatorStyle={{ color: '#00ffd5' }}
-          />
+  <FlipClockCountdown
+  to={new Date(codeData.expiresAt)}
+  labels={isMobile ? ['HRS', 'MIN', 'SEC'] : ['DAYS', 'HRS', 'MIN', 'SEC']}
+  labelStyle={{
+    fontSize: isMobile ? 10 : 14,
+    fontWeight: 500,
+    textTransform: 'uppercase',
+    color: '#00ffd5',
+  }}
+  digitBlockStyle={{
+    width: isMobile ? 32 : 50,
+    height: isMobile ? 40 : 60,
+    fontSize: isMobile ? 22 : 40,
+    backgroundColor: '#0f0c29',
+    color: '#fff',
+  }}
+  dividerStyle={{ color: '#00ffd5' }}
+  separatorStyle={{ color: '#00ffd5' }}
+/>
+
         </div>
 
         {/* Ticket Quantity Selector */}
