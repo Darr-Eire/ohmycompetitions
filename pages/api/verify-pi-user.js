@@ -1,48 +1,28 @@
+// pages/api/verify-pi-user.js
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
-  }
-
   const { accessToken } = req.body;
-  if (!accessToken) {
-    return res.status(400).json({ error: 'Missing access token' });
+
+  const result = await fetch('https://api.minepi.com/v2/me', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!result.ok) {
+    return res.status(401).json({ error: 'Invalid token' });
   }
 
-  try {
-    // Correct: Pi's /me endpoint expects GET
-    const response = await fetch('https://api.minepi.com/me', {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-    });
+  const user = await result.json();
+  const token = jwt.sign({ uid: user.uid, username: user.username }, JWT_SECRET, {
+    expiresIn: '7d',
+  });
 
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`Pi API error: ${errText}`);
-    }
-
-    const userData = await response.json(); // { uid, username }
-
-    // ✅ Generate a JWT
-    const token = jwt.sign(
-      { uid: userData.uid, username: userData.username },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-
-    // ✅ Set token in secure cookie
-    res.setHeader('Set-Cookie', `token=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=604800`);
-
-    return res.status(200).json({ user: userData });
-
-  } catch (error) {
-    console.error('🔒 Verification failed:', error);
-    return res.status(401).json({ error: 'Invalid Pi login token' });
-  }
+  res.setHeader('Set-Cookie', `token=${token}; Path=/; HttpOnly; SameSite=Strict`);
+  res.status(200).json({ user });
 }
