@@ -10,15 +10,21 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
   const metadata = { slug: competitionSlug, quantity };
 
   const handlePurchase = async () => {
-    if (!window?.Pi) {
+    if (!window?.Pi?.createPayment) {
       alert('Pi SDK not loaded. Please use the Pi Browser.');
       return;
     }
 
     setLoading(true);
 
+    // ✅ REQUIRED CALLBACKS
+    const onIncompletePaymentFound = (payment) => {
+      console.log('🔁 Resuming incomplete payment:', payment);
+      // You could optionally re-call createPayment or show a resume flow
+    };
+
     const onReadyForServerApproval = async (paymentId) => {
-      console.log('🟡 onReadyForServerApproval', paymentId);
+      console.log('🟡 onReadyForServerApproval:', paymentId);
       await fetch('/api/approve-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -27,7 +33,7 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
     };
 
     const onReadyForServerCompletion = async (paymentId, txid) => {
-      console.log('🟢 onReadyForServerCompletion', paymentId, txid);
+      console.log('🟢 onReadyForServerCompletion:', paymentId, txid);
       await fetch('/api/complete-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -36,12 +42,12 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
     };
 
     const onCancel = (paymentId) => {
-      console.warn('❌ Payment cancelled', paymentId);
+      console.warn('❌ Payment cancelled:', paymentId);
       alert('Payment was cancelled.');
     };
 
     const onError = (error, payment) => {
-      console.error('❌ Payment error', error, payment);
+      console.error('❌ Payment error:', error, payment);
       alert('Payment failed: ' + error.message);
     };
 
@@ -51,6 +57,7 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
         memo,
         metadata,
         callbacks: {
+          onIncompletePaymentFound,
           onReadyForServerApproval,
           onReadyForServerCompletion,
           onCancel,

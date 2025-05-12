@@ -13,8 +13,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await fetch('https://api.minepi.com/v2/me', {
-      method: 'POST',
+    // Correct: Pi's /me endpoint expects GET
+    const response = await fetch('https://api.minepi.com/me', {
+      method: 'GET',
       headers: {
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
@@ -28,14 +29,14 @@ export default async function handler(req, res) {
 
     const userData = await response.json(); // { uid, username }
 
-    // ✅ Generate a JWT with user info
+    // ✅ Generate a JWT
     const token = jwt.sign(
       { uid: userData.uid, username: userData.username },
       JWT_SECRET,
       { expiresIn: '7d' }
     );
 
-    // ✅ Set token in httpOnly cookie
+    // ✅ Set token in secure cookie
     res.setHeader('Set-Cookie', `token=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=604800`);
 
     return res.status(200).json({ user: userData });

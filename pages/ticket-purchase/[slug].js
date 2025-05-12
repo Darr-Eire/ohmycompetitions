@@ -5,6 +5,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import BuyTicketButton from '@/components/BuyTicketButton';
 
+
 const COMPETITIONS = {
   
   'ps5-bundle-giveaway': {
@@ -295,7 +296,7 @@ export default function TicketPurchasePage() {
   const [discount, setDiscount] = useState(0);
   const [timeLeft, setTimeLeft] = useState('');
 
-  // ✅ Pi SDK loader + init
+  // ✅ Load Pi SDK
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://sdk.minepi.com/pi-sdk.js';
@@ -303,33 +304,36 @@ export default function TicketPurchasePage() {
     script.onload = () => {
       if (window?.Pi) {
         window.Pi.init({ version: '2.0' });
-        console.log('✅ Pi SDK loaded and initialized');
+        console.log('✅ Pi SDK initialized');
       }
     };
     document.body.appendChild(script);
   }, []);
 
-  // ✅ Attempt auto-login with session
+  // ✅ Get current user if available
   useEffect(() => {
-    if (!router.isReady) return;
-    if (!window.Pi?.getCurrentPioneer) {
-      console.warn('Pi.getCurrentPioneer not available. Not in Pi Browser?');
+    if (!router.isReady || !window?.Pi?.getCurrentPioneer) {
       setLoadingUser(false);
       return;
     }
     window.Pi.getCurrentPioneer()
       .then((user) => {
-        if (user) setPiUser(user);
+        if (user) {
+          setPiUser(user);
+          console.log('🔐 Pioneer already logged in:', user);
+        }
       })
       .catch(console.error)
       .finally(() => setLoadingUser(false));
   }, [router.isReady]);
 
-  // ✅ Countdown
+  // ✅ Countdown timer
   useEffect(() => {
-    if (!COMPETITIONS[slug]?.endsAt) return;
+    const comp = COMPETITIONS[slug];
+    if (!comp?.endsAt) return;
+
     const interval = setInterval(() => {
-      const end = new Date(COMPETITIONS[slug].endsAt).getTime();
+      const end = new Date(comp.endsAt).getTime();
       const now = Date.now();
       const diff = end - now;
       if (diff <= 0) {
@@ -342,41 +346,40 @@ export default function TicketPurchasePage() {
       const secs = Math.floor((diff % (1000 * 60)) / 1000);
       setTimeLeft(`${hrs}h ${mins}m ${secs}s`);
     }, 1000);
+
     return () => clearInterval(interval);
   }, [slug]);
 
-  // ✅ Manual login
   const handlePiLogin = async () => {
     setLoadingLogin(true);
-    if (!window.Pi) {
-      alert('⚠️ Pi SDK not loaded. Open this app inside the Pi Browser.');
-      console.warn('window.Pi is undefined');
+    if (!window?.Pi) {
+      alert('⚠️ Pi SDK not available. Use the Pi Browser.');
       setLoadingLogin(false);
       return;
     }
+
     try {
-      const { user } = await window.Pi.authenticate(['username', 'payments']);
+      const user = await window.Pi.authenticate(['username', 'payments'], (incompletePayment) => {
+        console.warn('⚠️ Incomplete payment detected:', incompletePayment);
+      });
       setPiUser(user);
-      console.log('✅ Pi user:', user);
+      console.log('✅ Logged in:', user);
     } catch (err) {
-      alert(`Login failed: ${err.message || err}`);
-      console.error('❌ Login error:', err);
+      alert(`Login failed: ${err.message}`);
+      console.error('❌ Authentication error:', err);
     } finally {
       setLoadingLogin(false);
     }
   };
 
   if (!router.isReady) return null;
-
   const comp = COMPETITIONS[slug];
   if (!comp) {
     return (
       <div className="p-6 text-center text-white bg-[#0b1120] min-h-screen">
         <h1 className="text-2xl font-bold text-red-500">Competition Not Found</h1>
         <p className="mt-4">We couldn’t find “{slug}”.</p>
-        <Link href="/" className="mt-6 inline-block text-blue-400 underline font-semibold">
-          ← Back to Home
-        </Link>
+        <Link href="/" className="mt-6 inline-block text-blue-400 underline font-semibold">← Back to Home</Link>
       </div>
     );
   }
@@ -387,25 +390,16 @@ export default function TicketPurchasePage() {
   return (
     <div className="bg-[#0b1120] min-h-screen text-white py-6 px-4">
       <div className="max-w-xl mx-auto border border-blue-500 rounded-xl shadow-xl overflow-hidden bg-[#0b1120]">
-        {/* Header */}
         <div className="bg-gradient-to-r from-cyan-400 to-blue-500 px-4 py-3 text-center">
           <h1 className="text-xl sm:text-2xl font-bold text-black uppercase">{comp.title}</h1>
         </div>
 
-        {/* Body */}
         <div className="p-4 space-y-4 text-center">
-          {/* Image */}
           {comp.imageUrl && (
-            <img
-              src={comp.imageUrl}
-              alt={comp.title}
-              className="w-full max-h-64 object-cover rounded-lg border border-blue-500 mx-auto"
-            />
+            <img src={comp.imageUrl} alt={comp.title} className="w-full max-h-64 object-cover rounded-lg border border-blue-500 mx-auto" />
           )}
 
-          <p className="text-gray-300">
-            <strong>Prize:</strong> {comp.prize}
-          </p>
+          <p className="text-gray-300"><strong>Prize:</strong> {comp.prize}</p>
 
           {timeLeft && (
             <div className="bg-gradient-to-r from-cyan-400 to-blue-500 px-4 py-2 rounded-lg inline-block mx-auto">
@@ -413,7 +407,7 @@ export default function TicketPurchasePage() {
             </div>
           )}
 
-          <div className="space-y-1 text-sm">
+          <div className="text-sm space-y-1">
             <p><strong>Date:</strong> {comp.date}</p>
             <p><strong>Time:</strong> {comp.time}</p>
             <p><strong>Location:</strong> {comp.location}</p>
@@ -425,27 +419,16 @@ export default function TicketPurchasePage() {
               <p className="text-green-400">Discount: <strong>-{discount} π</strong></p>
             )}
             <p className="font-semibold">Price per ticket: {currentPrice.toFixed(2)} π</p>
-            <div className="flex items-center justify-center gap-3 mt-2">
-              <button
-                onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                className="bg-blue-500 text-white px-4 py-1 rounded-full font-bold disabled:opacity-50"
-                disabled={quantity <= 1}
-              >−</button>
-              <span className="text-lg font-semibold">{quantity}</span>
-              <button
-                onClick={() => setQuantity(q => q + 1)}
-                className="bg-blue-500 text-white px-4 py-1 rounded-full font-bold"
-              >+</button>
+            <div className="flex justify-center gap-4 mt-2">
+              <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="bg-blue-500 px-4 py-1 rounded-full" disabled={quantity <= 1}>−</button>
+              <span className="text-lg">{quantity}</span>
+              <button onClick={() => setQuantity(q => q + 1)} className="bg-blue-500 px-4 py-1 rounded-full">+</button>
             </div>
           </div>
 
-          <div>
-            <p className="text-lg font-bold">Total: {totalPrice.toFixed(2)} π</p>
-          </div>
+          <p className="text-lg font-bold">Total: {totalPrice.toFixed(2)} π</p>
 
-          <p className="text-gray-300 text-sm">
-            Secure your entry to win <strong>{comp.prize}</strong> — don’t miss out!
-          </p>
+          <p className="text-gray-300 text-sm">Secure your entry to win <strong>{comp.prize}</strong>.</p>
 
           {loadingUser ? (
             <p className="text-center text-gray-400">Checking session…</p>
@@ -453,7 +436,7 @@ export default function TicketPurchasePage() {
             <button
               onClick={handlePiLogin}
               disabled={loadingLogin}
-              className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-black font-bold py-3 px-4 rounded-xl shadow-lg"
+              className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 px-4 rounded-xl"
             >
               {loadingLogin ? 'Logging in…' : 'Log in with Pi to continue'}
             </button>
