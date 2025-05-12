@@ -1,72 +1,69 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 export default function BuyTicketButton({ competitionSlug, entryFee, quantity }) {
-  const [piSdkReady, setPiSdkReady] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://sdk.minepi.com/pi-sdk.js';
-    script.async = true;
-    script.onload = () => {
-      if (window?.Pi) {
-        window.Pi.init({ version: '2.0' });
-        setPiSdkReady(true);
-        console.log('✅ Pi SDK ready');
-      }
-    };
-    document.body.appendChild(script);
-  }, []);
+  const total = Number(entryFee * quantity).toFixed(6); // max 6 decimal places
+  const paymentMemo = `Entry for ${competitionSlug}`;
+  const paymentMetadata = { slug: competitionSlug, quantity };
 
-  const handlePayment = async () => {
-    const Pi = window?.Pi;
-    if (!Pi || !piSdkReady) {
-      alert('Pi SDK not loaded yet.');
+  const handlePurchase = async () => {
+    if (!window?.Pi) {
+      alert('Pi SDK not loaded. Are you inside the Pi Browser?');
       return;
     }
 
-    const totalAmount = parseFloat((entryFee * quantity).toFixed(6));
+    setLoading(true);
+    try {
+      const payment = await window.Pi.createPayment({
+        amount: total,
+        memo: paymentMemo,
+        metadata: paymentMetadata,
+        callbacks: {
+          onReadyForServerApproval: async (paymentId) => {
+            console.log('🟡 onReadyForServerApproval', paymentId);
+            await fetch('/api/approve-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ paymentId }),
+            });
+          },
+          onReadyForServerCompletion: async (paymentId, txid) => {
+            console.log('🟢 onReadyForServerCompletion', paymentId, txid);
+            await fetch('/api/complete-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ paymentId, txid }),
+            });
+          },
+          onCancel: (paymentId) => {
+            console.warn('❌ Payment canceled', paymentId);
+          },
+          onError: (error, payment) => {
+            console.error('❌ Payment error', error, payment);
+            alert('Payment failed: ' + error.message);
+          },
+        },
+      });
 
-    await Pi.createPayment(
-      {
-        amount: totalAmount,
-        memo: `Entry for ${competitionSlug} x${quantity}`,
-        metadata: { competitionSlug, quantity },
-      },
-      {
-        onReadyForServerApproval: async (paymentId) => {
-          await fetch('/api/approve-payment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paymentId }),
-          });
-        },
-        onReadyForServerCompletion: async (paymentId, txid) => {
-          await fetch('/api/complete-payment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paymentId, txid }),
-          });
-          alert('✅ Payment completed. You are now entered!');
-        },
-        onCancel: (paymentId) => {
-          console.log('❌ Payment cancelled:', paymentId);
-        },
-        onError: (error, payment) => {
-          console.error('💥 Payment error:', error, payment);
-          alert('An error occurred during payment.');
-        },
-      }
-    );
+      console.log('✅ Payment created:', payment);
+    } catch (err) {
+      console.error('❌ createPayment failed:', err);
+      alert('Could not create payment: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <button
-      onClick={handlePayment}
-      className="w-full bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-3 px-4 rounded-xl shadow-lg transition"
+      onClick={handlePurchase}
+      disabled={loading}
+      className="w-full bg-gradient-to-r from-purple-500 to-blue-600 hover:opacity-90 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition"
     >
-      Confirm Entry with Pi ({entryFee.toFixed(2)} π × {quantity} = {(entryFee * quantity).toFixed(2)} π)
+      {loading ? 'Processing…' : `Confirm Entry with Pi (${total} π)`}
     </button>
   );
 }
