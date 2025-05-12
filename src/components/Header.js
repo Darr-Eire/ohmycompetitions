@@ -1,11 +1,10 @@
 'use client'
-
 import Link from 'next/link'
 import { useState, useRef, useEffect } from 'react'
-import { useSession, signOut } from 'next-auth/react'
+import { usePiAuth } from '@/context/PiAuthContext'
 
 export default function Header() {
-  const { data: session, status } = useSession()
+  const { user, loginWithPi, logout } = usePiAuth()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef(null)
   const buttonRef = useRef(null)
@@ -27,25 +26,6 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  async function handlePiLogin() {
-    try {
-      const { accessToken } = await window.Pi.authenticate(['username', 'payments'])
-
-      const res = await fetch('/api/auth/pi-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken }),
-      })
-
-      if (!res.ok) throw new Error('Login failed')
-
-      window.location.href = '/account'
-    } catch (err) {
-      console.error('Pi login error:', err)
-      alert('Login failed. See console.')
-    }
-  }
-
   const navItems = [
     ['Home', '/'],
     ['My Account', '/account'],
@@ -58,9 +38,7 @@ export default function Header() {
     ['Partners & Sponsors', '/partners'],
   ]
 
-  if (session) {
-    navItems.push(['Pi Code', '/competition'])
-  }
+  if (user) navItems.push(['Pi Code', '/competition'])
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] border-b border-cyan-700 px-3 py-1.5 flex items-center shadow-md backdrop-blur-md">
@@ -71,27 +49,18 @@ export default function Header() {
       </button>
 
       <div className="flex-1 text-center">
-        <Link
-          href="/"
-          className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 text-transparent bg-clip-text drop-shadow"
-        >
+        <Link href="/" className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 text-transparent bg-clip-text drop-shadow">
           OhMyCompetitions
         </Link>
       </div>
 
-      {status === 'loading' ? (
-        <p className="text-white text-xs">Checking session…</p>
-      ) : session ? (
+      {user ? (
         <div className="text-white text-xs flex items-center gap-2">
-          <span>👋 {session.user.username}</span>
-          <button onClick={() => signOut()} className="neon-button text-xs px-2 py-1">
-            Log Out
-          </button>
+          <span>👋 {user.username}</span>
+          <button onClick={logout} className="neon-button text-xs px-2 py-1">Log Out</button>
         </div>
       ) : (
-        <button onClick={handlePiLogin} className="neon-button text-white text-xs px-2 py-1">
-          Login with Pi
-        </button>
+        <button onClick={loginWithPi} className="neon-button text-white text-xs px-2 py-1">Login with Pi</button>
       )}
 
       {menuOpen && (
@@ -110,11 +79,11 @@ export default function Header() {
             ))}
             <li><hr className="border-cyan-700 my-1" /></li>
             <li>
-              {session ? (
+              {user ? (
                 <button
                   onClick={() => {
+                    logout()
                     setMenuOpen(false)
-                    signOut()
                   }}
                   className="w-full text-left text-xs px-4 py-2 text-white hover:bg-cyan-600 hover:text-black transition"
                 >
@@ -123,8 +92,8 @@ export default function Header() {
               ) : (
                 <button
                   onClick={() => {
+                    loginWithPi()
                     setMenuOpen(false)
-                    handlePiLogin()
                   }}
                   className="w-full text-left text-xs px-4 py-2 text-white hover:bg-cyan-600 hover:text-black transition"
                 >
