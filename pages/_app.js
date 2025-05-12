@@ -2,8 +2,8 @@ import React from 'react';
 import { SessionProvider } from 'next-auth/react';
 import Layout from '@/components/layout';
 import { PiAuthProvider } from '@/context/PiAuthContext';
-import '@fontsource/orbitron';               // Font
-import 'styles/globals.css';               // ✅ Corrected path with "@/" alias
+import '@fontsource/orbitron'; // Font
+import 'styles/globals.css'; // ✅ Correct path using "@/" alias
 
 export default function App({ Component, pageProps: { session, ...pageProps } }) {
   return (
@@ -16,4 +16,3 @@ export default function App({ Component, pageProps: { session, ...pageProps } })
     </SessionProvider>
   );
 }
-

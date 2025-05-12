@@ -1,13 +1,33 @@
-// src/context/PiAuthContext.js
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 
 const PiAuthContext = createContext();
 
 export function PiAuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [error, setError] = useState(null); // for UI debug
+  const [sdkReady, setSdkReady] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const script = document.createElement('script');
+      script.src = 'https://sdk.minepi.com/pi-sdk.js';
+      script.async = true;
+      script.onload = () => {
+        if (window?.Pi?.init) {
+          window.Pi.init({ version: '2.0' });
+          setSdkReady(true);
+          console.log('✅ Pi SDK initialized');
+        }
+      };
+      document.body.appendChild(script);
+    }
+  }, []);
 
   const loginWithPi = async () => {
+    if (!sdkReady || !window.Pi?.authenticate) {
+      alert('Pi SDK not ready yet.');
+      return;
+    }
+
     try {
       const { accessToken } = await window.Pi.authenticate(['username', 'payments']);
 
@@ -18,26 +38,18 @@ export function PiAuthProvider({ children }) {
       });
 
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Pi login failed on server');
-      }
-
-      setUser(data.user);
-      setError(null);
+      if (res.ok) setUser(data.user);
+      else throw new Error(data.error);
     } catch (err) {
       console.error('Pi login failed:', err);
-      setError(err.message || 'Pi login failed');
+      alert('Login failed');
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    setError(null);
-  };
+  const logout = () => setUser(null);
 
   return (
-    <PiAuthContext.Provider value={{ user, loginWithPi, logout, error }}>
+    <PiAuthContext.Provider value={{ user, loginWithPi, logout }}>
       {children}
     </PiAuthContext.Provider>
   );
