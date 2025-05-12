@@ -11,17 +11,11 @@ import CompetitionCard from '@/components/CompetitionCard';
 import TokenSelector from '@/components/TokenSelector';
 import PiCashHeroBanner from '@/components/PiCashHeroBanner';
 
-export const mockPiCashProps = {
-  code: '7H3X-PL4Y',
-  prizePool: 14250,
-  weekStart: '2025-05-12T11:53:31.597Z',
-  expiresAt: '2025-05-12T15:53:31.597Z',
-  drawAt: '2025-05-12T18:53:31.597Z',
-  claimExpiresAt: '2025-05-12T23:53:31.597Z',
-};
+// ✅ Your mock data
+const mockPiCashProps = { code: '7H3X-PL4Y', prizePool: 14250, weekStart: '2025-05-12T11:53:31.597Z', expiresAt: '2025-05-12T15:53:31.597Z', drawAt: '2025-05-12T18:53:31.597Z', claimExpiresAt: '2025-05-12T23:53:31.597Z' };
 
-export const techItems = [
-  {
+const techItems = [
+{
     comp: {
       slug: 'ps5-bundle-giveaway',
       entryFee: 0.8,
@@ -74,7 +68,7 @@ export const techItems = [
   },
 ];
 
-export const premiumItems = [
+ const premiumItems = [
   {
     comp: { slug: 'dubai-luxury-holiday', entryFee: 20, totalTickets: 4000, ticketsSold: 7100, endsAt: '2025-05-18T22:00:00Z' },
     title: 'Dubai Luxury Holiday',
@@ -104,7 +98,7 @@ export const premiumItems = [
   },
 ];
 
-export const piItems = [
+const piItems = [
   {
     comp: { slug: 'pi-giveaway-10k', entryFee: 10, totalTickets: 5000, ticketsSold: 0, endsAt: '2025-05-20T00:00:00Z' },
     title: '10,000 Pi',
@@ -134,7 +128,7 @@ export const piItems = [
   },
 ];
 
-export const dailyItems = [
+ const dailyItems = [
   {
     comp: { slug: 'daily-jackpot', entryFee: 0.375, totalTickets: 2400, ticketsSold: 0, endsAt: '2025-05-03T23:59:59Z' },
     title: 'Daily Jackpot',
@@ -164,7 +158,7 @@ export const dailyItems = [
   },
 ];
 
-export const freeItems = [
+const freeItems = [
   {
     comp: { slug: 'pi-to-the-mon', entryFee: 0, totalTickets: 20000, ticketsSold: 0, endsAt: '2025-05-10T18:00:00Z' },
     title: 'Pi To The Moon',
@@ -175,7 +169,7 @@ export const freeItems = [
   },
 ];
 
-export const cryptoGiveawaysItems = [
+ const cryptoGiveawaysItems = [
   {
     comp: { slug: 'crypto-btc', entryFee: 0.5, totalTickets: 5000, ticketsSold: 0, endsAt: '2025-06-02T00:59:00Z' },
     title: 'Win BTC',
@@ -232,11 +226,9 @@ export const cryptoGiveawaysItems = [
   },
 ];
 
-
-
 export default function HomePage() {
+  const [selectedToken, setSelectedToken] = useState('BTC');
   const [piSdkReady, setPiSdkReady] = useState(false);
-  const [piUser, setPiUser] = useState(null);
 
   useEffect(() => {
     const script = document.createElement('script');
@@ -246,54 +238,72 @@ export default function HomePage() {
       if (window?.Pi) {
         window.Pi.init({ version: '2.0' });
         setPiSdkReady(true);
-        console.log('✅ Pi SDK initialized');
       }
     };
     document.body.appendChild(script);
   }, []);
 
   const handlePiLogin = async () => {
-    if (!piSdkReady || !window.Pi) {
-      alert('Pi SDK not ready yet.');
-      return;
-    }
-
+    if (!piSdkReady || !window.Pi) return;
     try {
-      const result = await window.Pi.authenticate(['username', 'payments'], (incompletePayment) => {
-        console.log('🟡 Incomplete payment found:', incompletePayment);
-      });
-
-      console.log('🔐 Pi authentication result:', result);
-
-      // ✅ Corrected: only set the inner user object
-      setPiUser(result.user);
-
-      const res = await fetch('/api/verify-pi-user', {
+      const user = await window.Pi.authenticate(['username', 'payments']);
+      await fetch('/api/verify-pi-user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken: result.accessToken }),
+        body: JSON.stringify({ accessToken: user.accessToken }),
       });
-
-      const data = await res.json();
-      console.log('✅ Verified user info:', data);
-    } catch (error) {
-      console.error('❌ Pi login failed:', error);
-      alert('Login failed: ' + (error.message || 'Unknown error'));
+    } catch (e) {
+      console.error('Login failed:', e);
     }
   };
 
   return (
     <div className="text-white bg-[#0b1120] min-h-screen py-10 px-6">
-      <h1 className="text-3xl font-bold text-center mb-6">🏁 Pi Login Test</h1>
-
-      <div className="flex justify-center">
-        <button
-          onClick={handlePiLogin}
-          className="bg-gradient-to-r from-purple-600 to-blue-500 hover:opacity-90 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition"
-        >
-          {piUser ? `Welcome, ${piUser.username}` : 'Log in with Pi'}
-        </button>
+      <div className="mt-0 mb-2 flex justify-center">
+        <PiCashHeroBanner {...mockPiCashProps} />
       </div>
+      <main className="space-y-16">
+        <div className="flex justify-center">
+          <button onClick={handlePiLogin} className="mt-4 px-6 py-2 rounded-lg bg-purple-600 text-white font-bold shadow hover:bg-purple-700 transition">
+            Login with Pi
+          </button>
+        </div>
+        <Section title="Featured Competitions" items={techItems} viewMoreHref="/competitions/featured" />
+      </main>
     </div>
+  );
+}
+
+function Section({ title, items, viewMoreHref, viewMoreText = 'View More', extraClass = '' }) {
+  const isDaily = title.toLowerCase().includes('daily');
+  const isFree = title.toLowerCase().includes('free');
+  const isPi = title.toLowerCase().includes('pi');
+  const isCryptoGiveaway = title.toLowerCase().includes('crypto');
+
+  return (
+    <section className={`mb-12 ${extraClass}`}>
+      <div className="text-center mb-12">
+        <h2 className="text-base font-bold bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black px-4 py-2 rounded-xl shadow inline-block">
+          {title}
+        </h2>
+      </div>
+      <div className="grid gap-6 lg:grid-cols-3 sm:grid-cols-2 grid-cols-1">
+        {items.map((item, index) => {
+          const key = item?.comp?.slug || index;
+          if (!item?.comp) return null;
+
+          if (isDaily) return <DailyCompetitionCard key={key} {...item} />;
+          if (isFree) return <FreeCompetitionCard key={key} {...item} />;
+          if (isPi) return <PiCompetitionCard key={key} {...item} />;
+          if (isCryptoGiveaway) return <CryptoGiveawayCard key={key} {...item} />;
+          return <CompetitionCard key={key} {...item} />;
+        })}
+      </div>
+      <div className="text-center mt-4">
+        <Link href={viewMoreHref} className="inline-block text-base font-bold px-3 py-1.5 rounded-md text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow hover:opacity-90 transition">
+          {viewMoreText}
+        </Link>
+      </div>
+    </section>
   );
 }
