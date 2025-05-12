@@ -235,7 +235,6 @@ export const cryptoGiveawaysItems = [
 
 
 export default function HomePage() {
-  const [selectedToken, setSelectedToken] = useState('BTC');
   const [piSdkReady, setPiSdkReady] = useState(false);
   const [piUser, setPiUser] = useState(null);
 
@@ -260,24 +259,26 @@ export default function HomePage() {
     }
 
     try {
-      const user = await window.Pi.authenticate(['username', 'payments'], (incompletePayment) => {
+      const result = await window.Pi.authenticate(['username', 'payments'], (incompletePayment) => {
         console.log('🟡 Incomplete payment found:', incompletePayment);
       });
 
-      console.log('🔐 Logged in Pi user:', user);
-      setPiUser(user);
+      console.log('🔐 Pi authentication result:', result);
+
+      // ✅ Corrected: only set the inner user object
+      setPiUser(result.user);
 
       const res = await fetch('/api/verify-pi-user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken: user.accessToken }),
+        body: JSON.stringify({ accessToken: result.accessToken }),
       });
 
       const data = await res.json();
       console.log('✅ Verified user info:', data);
     } catch (error) {
       console.error('❌ Pi login failed:', error);
-      alert('Login failed: ' + (error.message || 'unknown error'));
+      alert('Login failed: ' + (error.message || 'Unknown error'));
     }
   };
 
@@ -285,7 +286,7 @@ export default function HomePage() {
     <div className="text-white bg-[#0b1120] min-h-screen py-10 px-6">
       <h1 className="text-3xl font-bold text-center mb-6">🏁 Pi Login Test</h1>
 
-      <div className="flex justify-center mb-6">
+      <div className="flex justify-center">
         <button
           onClick={handlePiLogin}
           className="bg-gradient-to-r from-purple-600 to-blue-500 hover:opacity-90 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition"
@@ -293,37 +294,6 @@ export default function HomePage() {
           {piUser ? `Welcome, ${piUser.username}` : 'Log in with Pi'}
         </button>
       </div>
-
-      <Section title="Featured Competitions" items={techItems} viewMoreHref="/competitions/featured" />
     </div>
-  );
-}
-
-function Section({ title, items, viewMoreHref, viewMoreText = 'View More', extraClass = '' }) {
-  return (
-    <section className={`mb-12 ${extraClass}`}>
-      <div className="text-center mb-12">
-        <h2 className="w-full text-base font-bold text-center text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-4 py-2 rounded-xl shadow font-orbitron">
-          {title}
-        </h2>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-        {items.map((item, index) => {
-          const key = item?.comp?.slug || item?.id || index;
-          if (!item?.comp) return null;
-          return <CompetitionCard key={key} {...item} />;
-        })}
-      </div>
-
-      <div className="text-center mt-4">
-        <Link
-          href={viewMoreHref}
-          className="inline-block text-base font-bold px-3 py-1.5 rounded-md font-medium text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow hover:opacity-90 transition"
-        >
-          {viewMoreText}
-        </Link>
-      </div>
-    </section>
   );
 }
