@@ -5,53 +5,60 @@ import React, { useState } from 'react';
 export default function BuyTicketButton({ competitionSlug, entryFee, quantity }) {
   const [loading, setLoading] = useState(false);
 
-  const total = Number(entryFee * quantity).toFixed(6); // Ensure precision
-  const paymentMemo = `Entry for ${competitionSlug}`;
-  const paymentMetadata = { slug: competitionSlug, quantity };
+  const total = Number(entryFee * quantity).toFixed(6); // max 6 decimals
+  const memo = `Entry for ${competitionSlug}`;
+  const metadata = { slug: competitionSlug, quantity };
 
   const handlePurchase = async () => {
     if (!window?.Pi) {
-      alert('Pi SDK not loaded. Make sure you are in the Pi Browser.');
+      alert('Pi SDK not loaded. Please use the Pi Browser.');
       return;
     }
 
     setLoading(true);
+
+    const onReadyForServerApproval = async (paymentId) => {
+      console.log('🟡 onReadyForServerApproval', paymentId);
+      await fetch('/api/approve-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentId }),
+      });
+    };
+
+    const onReadyForServerCompletion = async (paymentId, txid) => {
+      console.log('🟢 onReadyForServerCompletion', paymentId, txid);
+      await fetch('/api/complete-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentId, txid }),
+      });
+    };
+
+    const onCancel = (paymentId) => {
+      console.warn('❌ Payment cancelled', paymentId);
+      alert('Payment was cancelled.');
+    };
+
+    const onError = (error, payment) => {
+      console.error('❌ Payment error', error, payment);
+      alert('Payment failed: ' + error.message);
+    };
+
     try {
-      const payment = await window.Pi.createPayment({
+      await window.Pi.createPayment({
         amount: total,
-        memo: paymentMemo,
-        metadata: paymentMetadata,
+        memo,
+        metadata,
         callbacks: {
-          onReadyForServerApproval: async (paymentId) => {
-            console.log('🟡 Payment ready for approval:', paymentId);
-            await fetch('/api/approve-payment', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ paymentId }),
-            });
-          },
-          onReadyForServerCompletion: async (paymentId, txid) => {
-            console.log('🟢 Payment ready for completion:', paymentId, txid);
-            await fetch('/api/complete-payment', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ paymentId, txid }),
-            });
-          },
-          onCancel: (paymentId) => {
-            console.warn('❌ Payment was canceled:', paymentId);
-            alert('Payment was canceled.');
-          },
-          onError: (error, payment) => {
-            console.error('❌ Payment error:', error, payment);
-            alert('Payment failed: ' + error.message);
-          },
+          onReadyForServerApproval,
+          onReadyForServerCompletion,
+          onCancel,
+          onError,
         },
       });
-
-      console.log('✅ Payment created successfully:', payment);
     } catch (err) {
-      console.error('❌ createPayment failed:', err);
+      console.error('❌ createPayment error:', err);
       alert('Could not create a payment: ' + (err.message || err));
     } finally {
       setLoading(false);
