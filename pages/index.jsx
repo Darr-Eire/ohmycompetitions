@@ -34,7 +34,7 @@ export default function HomePage() {
     claimExpiresAt: new Date(Date.now() + 1000 * 60 * 60 * 10).toISOString()
   };
 
-  // Load Pi SDK
+  // Load Pi SDK on mount
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://sdk.minepi.com/pi-sdk.js';
@@ -43,68 +43,68 @@ export default function HomePage() {
       if (window.Pi) {
         window.Pi.init({ version: '2.0' });
         setPiSdkReady(true);
-        console.log('✅ Pi SDK initialized');
+        console.log('✅ Pi SDK loaded');
       }
     };
     document.body.appendChild(script);
   }, []);
 
-  // Check session on load
+  // Check if user is already logged in
   useEffect(() => {
     fetch('/api/auth/me')
-      .then(res => res.ok ? res.json() : null)
-      .then(data => data?.user && setPiUser(data.user));
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => {
+        if (data?.user) {
+          setPiUser(data.user);
+        }
+      });
   }, []);
 
   const handlePiLogin = async () => {
-    if (!piSdkReady || !window.Pi) {
-      alert('Pi SDK not ready yet.');
-      return;
+    if (!piSdkReady) {
+      return alert('Pi SDK not ready');
     }
 
     try {
-      const user = await window.Pi.authenticate(['username', 'payments']);
+      const result = await window.Pi.authenticate(['username']);
       const res = await fetch('/api/auth/pi-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken: user.accessToken }),
+        body: JSON.stringify({ accessToken: result.accessToken }),
       });
 
       if (!res.ok) throw new Error('Login failed');
       const data = await res.json();
       setPiUser(data.user);
-      alert(`Welcome ${data.user.username}`);
+      alert(`✅ Logged in as ${data.user.username}`);
     } catch (err) {
-      console.error('Login error:', err);
+      console.error('❌ Pi Login Error:', err);
       alert('Login failed. See console.');
     }
   };
 
-  const topWinners = [
-    { name: 'Jack Jim', prize: 'Matchday Tickets', date: 'March 26th', image: '/images/winner2.png' },
-    { name: 'Shanahan', prize: 'Playstation 5', date: 'February 14th', image: '/images/winner2.png' },
-    { name: 'Emily Rose', prize: 'Luxury Car', date: 'January 30th', image: '/images/winner2.png' },
-    { name: 'John Doe', prize: '€10,000 Pi', date: 'December 15th', image: '/images/winner2.png' },
-  ];
-
   const TopWinnersCarousel = () => {
+    const winners = [
+      { name: 'Jack Jim', prize: 'Matchday Tickets', date: 'March 26th', image: '/images/winner2.png' },
+      { name: 'Shanahan', prize: 'Playstation 5', date: 'February 14th', image: '/images/winner2.png' },
+      { name: 'Emily Rose', prize: 'Luxury Car', date: 'January 30th', image: '/images/winner2.png' },
+      { name: 'John Doe', prize: '€10,000 Pi', date: 'December 15th', image: '/images/winner2.png' },
+    ];
     const [index, setIndex] = useState(0);
+
     useEffect(() => {
-      const interval = setInterval(() => {
-        setIndex((prev) => (prev + 1) % topWinners.length);
-      }, 5000);
+      const interval = setInterval(() => setIndex((prev) => (prev + 1) % winners.length), 5000);
       return () => clearInterval(interval);
     }, []);
-    const current = topWinners[index];
+
+    const current = winners[index];
     return (
       <div className="max-w-md mx-auto mt-12 bg-white bg-opacity-10 backdrop-blur-lg rounded-xl shadow-lg p-6 text-white text-center">
         <h2 className="text-2xl font-bold mb-4">🏆 Top Winner</h2>
-        <div className="flex flex-col items-center">
-          <Image src={current.image} alt={current.name} width={120} height={120} className="rounded-full border-4 border-blue-500 mb-4" />
-          <h3 className="text-xl font-semibold">{current.name}</h3>
-          <p className="text-blue-300">{current.prize}</p>
-          <p className="text-sm text-white/70">{current.date}</p>
-        </div>
+        <Image src={current.image} alt={current.name} width={120} height={120} className="rounded-full border-4 border-blue-500 mb-4" />
+        <h3 className="text-xl font-semibold">{current.name}</h3>
+        <p className="text-blue-300">{current.prize}</p>
+        <p className="text-sm text-white/70">{current.date}</p>
       </div>
     );
   };
@@ -132,12 +132,10 @@ export default function HomePage() {
         <Section title="Featured Competitions" items={techItems} viewMoreHref="/competitions/featured" />
         <Section title="Travel & Lifestyle" items={premiumItems} viewMoreHref="/competitions/travel" />
         <Section title="Pi Giveaways" items={piItems} viewMoreHref="/competitions/pi" extraClass="mt-12" />
-
         <div className="flex justify-between items-center mb-4 px-6">
           <h2 className="text-lg font-bold text-cyan-300">Select Crypto Token</h2>
           <TokenSelector selected={selectedToken} onChange={setSelectedToken} />
         </div>
-
         <Section title="Crypto Giveaways" items={cryptoGiveawaysItems} viewMoreHref="/competitions/crypto-giveaways" />
         <Section title="Daily Competitions" items={dailyItems} viewMoreHref="/competitions/daily" extraClass="mt-12" />
 
@@ -169,11 +167,12 @@ export default function HomePage() {
   );
 }
 
+// Reusable Section
 function Section({ title, items, viewMoreHref, viewMoreText = 'View More', extraClass = '' }) {
   const isDaily = title.toLowerCase().includes('daily');
   const isFree = title.toLowerCase().includes('free');
   const isPi = title.toLowerCase().includes('pi');
-  const isCryptoGiveaway = title.toLowerCase().includes('crypto');
+  const isCrypto = title.toLowerCase().includes('crypto');
 
   return (
     <section className={`mb-12 ${extraClass}`}>
@@ -184,27 +183,27 @@ function Section({ title, items, viewMoreHref, viewMoreText = 'View More', extra
       </div>
 
       <div className="centered-carousel lg:hidden">
-        {items.map((item, index) => {
-          const key = item?.comp?.slug || item?.id || index;
+        {items.map((item, i) => {
+          const key = item?.comp?.slug || i;
           if (!item?.comp) return null;
 
           if (isDaily) return <DailyCompetitionCard key={key} {...item} />;
           if (isFree) return <FreeCompetitionCard key={key} {...item} />;
           if (isPi) return <PiCompetitionCard key={key} {...item} />;
-          if (isCryptoGiveaway) return <CryptoGiveawayCard key={key} {...item} />;
+          if (isCrypto) return <CryptoGiveawayCard key={key} {...item} />;
           return <CompetitionCard key={key} {...item} />;
         })}
       </div>
 
       <div className="hidden lg:grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-        {items.map((item, index) => {
-          const key = item?.comp?.slug || item?.id || index;
+        {items.map((item, i) => {
+          const key = item?.comp?.slug || i;
           if (!item?.comp) return null;
 
           if (isDaily) return <DailyCompetitionCard key={key} {...item} />;
           if (isFree) return <FreeCompetitionCard key={key} {...item} />;
           if (isPi) return <PiCompetitionCard key={key} {...item} />;
-          if (isCryptoGiveaway) return <CryptoGiveawayCard key={key} {...item} />;
+          if (isCrypto) return <CryptoGiveawayCard key={key} {...item} />;
           return <CompetitionCard key={key} {...item} />;
         })}
       </div>
