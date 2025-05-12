@@ -60,18 +60,13 @@ export default function Header() {
   ]
 
   if (session) {
-    console.log("Session found, adding Pi Code to the menu");
-    navItems.push(['Pi Code', '/competition']); // Link to competition page
+    navItems.push(['Pi Code', '/competition'])
   }
 
-  useEffect(() => {
-    console.log("Session changed:", session); // Debug session change
-  }, [session]);
-
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] border-b border-cyan-700 px-3 py-2 flex items-center shadow-md backdrop-blur-md">
-      <button ref={buttonRef} onClick={toggleMenu} className="neon-button text-white text-xs px-3 py-1">
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] border-b border-cyan-700 px-3 py-1.5 flex items-center shadow-md backdrop-blur-md">
+      <button ref={buttonRef} onClick={toggleMenu} className="neon-button text-white text-xs px-2 py-1">
+        <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M4 8h16M4 16h16" />
         </svg>
       </button>
@@ -90,12 +85,12 @@ export default function Header() {
       ) : session ? (
         <div className="text-white text-xs flex items-center gap-2">
           <span>👋 {session.user.username}</span>
-          <button onClick={() => signOut()} className="neon-button px-2 py-1">
+          <button onClick={() => signOut()} className="neon-button text-xs px-2 py-1">
             Log Out
           </button>
         </div>
       ) : (
-        <button onClick={handlePiLogin} className="neon-button text-white text-xs px-3 py-1">
+        <button onClick={handlePiLogin} className="neon-button text-white text-xs px-2 py-1">
           Login with Pi
         </button>
       )}
@@ -122,7 +117,7 @@ export default function Header() {
                     setMenuOpen(false)
                     signOut()
                   }}
-                  className="w-full text-left px-4 py-2 text-white hover:bg-cyan-600 hover:text-black transition"
+                  className="w-full text-left text-xs px-4 py-2 text-white hover:bg-cyan-600 hover:text-black transition"
                 >
                   Log Out
                 </button>
@@ -132,7 +127,7 @@ export default function Header() {
                     setMenuOpen(false)
                     handlePiLogin()
                   }}
-                  className="w-full text-left px-4 py-2 text-white hover:bg-cyan-600 hover:text-black transition"
+                  className="w-full text-left text-xs px-4 py-2 text-white hover:bg-cyan-600 hover:text-black transition"
                 >
                   Login with Pi
                 </button>

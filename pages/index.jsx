@@ -9,10 +9,19 @@ import PiCompetitionCard from '@/components/PiCompetitionCard';
 import CryptoGiveawayCard from '@/components/CryptoGiveawayCard';
 import CompetitionCard from '@/components/CompetitionCard';
 import TokenSelector from '@/components/TokenSelector';
-import PiCashHeroBanner from '@/components/PiCashHeroBanner'; // ✅ New Import
+import PiCashHeroBanner from '@/components/PiCashHeroBanner';
 
 export default function HomePage() {
   const [selectedToken, setSelectedToken] = useState('BTC');
+
+  const mockPiCashProps = {
+    code: '7H3X-PL4Y',
+    prizePool: 14250,
+    weekStart: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
+    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
+    drawAt: new Date(Date.now() + 1000 * 60 * 60 * 5).toISOString(),
+    claimExpiresAt: new Date(Date.now() + 1000 * 60 * 60 * 10).toISOString()
+  };
 
   const topWinners = [
     { name: 'Jack Jim', prize: 'Matchday Tickets', date: 'March 26th', image: '/images/winner2.png' },
@@ -268,56 +277,54 @@ const cryptoGiveawaysItems = [
     imageUrl: '/images/crypto-doge.png',
   },
 ];
+
   return (
-    <>
-     <PiCashHeroBanner
-  code="9P1-C4SH"
-  prizePool={10000}
-  weekStart="2025-05-12T15:14:00"
-  expiresAt="2025-05-13T22:18:00"
-  drawAt="2025-05-16T15:14:00"
-  claimExpiresAt="2025-05-16T15:45:04"
-/>
+  <>
+   <div className="mt-0 mb-2 flex justify-center">
+  <PiCashHeroBanner {...mockPiCashProps} />
+</div>
 
-      <main className="space-y-16">
-        <Section title="Featured Competitions" items={techItems} viewMoreHref="/competitions/featured" />
-        <Section title="Travel & Lifestyle" items={premiumItems} viewMoreHref="/competitions/travel" />
-        <Section title="Pi Giveaways" items={piItems} viewMoreHref="/competitions/pi" extraClass="mt-12" />
 
-        <div className="flex justify-between items-center mb-4 px-6">
-          <h2 className="text-lg font-bold text-cyan-300">Select Crypto Token</h2>
-          <TokenSelector selected={selectedToken} onChange={setSelectedToken} />
+
+    <main className="space-y-16">
+      <Section title="Featured Competitions" items={techItems} viewMoreHref="/competitions/featured" />
+      <Section title="Travel & Lifestyle" items={premiumItems} viewMoreHref="/competitions/travel" />
+      <Section title="Pi Giveaways" items={piItems} viewMoreHref="/competitions/pi" extraClass="mt-12" />
+
+      <div className="flex justify-between items-center mb-4 px-6">
+        <h2 className="text-lg font-bold text-cyan-300">Select Crypto Token</h2>
+        <TokenSelector selected={selectedToken} onChange={setSelectedToken} />
+      </div>
+
+      <Section title="Crypto Giveaways" items={cryptoGiveawaysItems} viewMoreHref="/competitions/crypto-giveaways" />
+      <Section title="Daily Competitions" items={dailyItems} viewMoreHref="/competitions/daily" extraClass="mt-12" />
+
+      <section className="w-full bg-white/5 backdrop-blur-lg px-6 sm:px-10 py-12 my-8 border border-cyan-400 rounded-3xl shadow-[0_0_60px_#00ffd577] neon-outline">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl font-bold text-center text-cyan-300 mb-10 font-orbitron">
+            ✨ Featured Free Competition ✨
+          </h2>
+          <FreeCompetitionCard
+            comp={{ endsAt: '2025-05-10T23:59:59Z', ticketsSold: 0, totalTickets: 10000, slug: 'pi-to-the-moon' }}
+            title="Pi To The Moon"
+            prize="20,000 π"
+          />
         </div>
+      </section>
 
-        <Section title="Crypto Giveaways" items={cryptoGiveawaysItems} viewMoreHref="/competitions/crypto-giveaways" />
-        <Section title="Daily Competitions" items={dailyItems} viewMoreHref="/competitions/daily" extraClass="mt-12" />
+      <TopWinnersCarousel />
 
-        <section className="w-full bg-white/5 backdrop-blur-lg px-6 sm:px-10 py-12 my-8 border border-cyan-400 rounded-3xl shadow-[0_0_60px_#00ffd577] neon-outline">
-          <div className="max-w-7xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-bold text-center text-cyan-300 mb-10 font-orbitron">
-              ✨ Featured Free Competition ✨
-            </h2>
-            <FreeCompetitionCard
-              comp={{ endsAt: '2025-05-10T23:59:59Z', ticketsSold: 0, totalTickets: 10000, slug: 'pi-to-the-moon' }}
-              title="Pi To The Moon"
-              prize="20,000 π"
-            />
-          </div>
-        </section>
-
-        <TopWinnersCarousel />
-
-        <div className="flex justify-center mt-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 w-full max-w-md px-6 py-6 bg-gradient-to-r from-cyan-300 to-blue-500 rounded-xl shadow-lg text-black text-center text-base">
-            <div><div className="text-xl font-bold">44,000+</div><div>Winners</div></div>
-            <div><div className="text-xl font-bold">106,400 π</div><div>Total Pi Won</div></div>
-            <div><div className="text-xl font-bold">15,000 π</div><div>Donated to Charity</div></div>
-            <div><div className="text-xl font-bold">5★</div><div>User Rated</div></div>
-          </div>
+      <div className="flex justify-center mt-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 w-full max-w-md px-6 py-6 bg-gradient-to-r from-cyan-300 to-blue-500 rounded-xl shadow-lg text-black text-center text-base">
+          <div><div className="text-xl font-bold">44,000+</div><div>Winners</div></div>
+          <div><div className="text-xl font-bold">106,400 π</div><div>Total Pi Won</div></div>
+          <div><div className="text-xl font-bold">15,000 π</div><div>Donated to Charity</div></div>
+          <div><div className="text-xl font-bold">5★</div><div>User Rated</div></div>
         </div>
-      </main>
-    </>
-  );
+      </div>
+    </main>
+  </>
+)
 }
 
 function Section({ title, items, viewMoreHref, viewMoreText = 'View More', extraClass = '' }) {

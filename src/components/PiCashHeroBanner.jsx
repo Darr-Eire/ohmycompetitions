@@ -54,18 +54,9 @@ export default function PiCashHeroBanner({ code, prizePool, weekStart, expiresAt
     }
   }, [weekStart, expiresAt, drawAt, claimExpiresAt])
 
-  if (!weekStart || !expiresAt || !drawAt || !claimExpiresAt) {
-    return (
-      <div className="bg-white/5 backdrop-blur-md border border-cyan-500 neon-outline text-white p-6 rounded-2xl text-center space-y-6 shadow-lg max-w-4xl mx-auto mt-10 font-orbitron">
-        <h2 className="text-3xl sm:text-4xl font-bold text-cyan-300 animate-pulse">💸 Pi Cash Code</h2>
-        <p className="text-lg text-white/80">Loading details...</p>
-      </div>
-    )
-  }
-
   const phaseText = {
     'pre-drop': '🔒 Next Code Coming Soon...',
-    'code-active': '⏳ Code Live — Enter now!',
+    'code-active': '⏳ Code Live',
     'waiting-draw': '🎯 Waiting for Draw...',
     'claim-window': '🔥 Winner must submit code!',
     'rollover': '💤 Prize Rolling Over...',
@@ -73,21 +64,23 @@ export default function PiCashHeroBanner({ code, prizePool, weekStart, expiresAt
   }
 
   return (
-    <div className="bg-white/5 backdrop-blur-md border border-cyan-500 neon-outline text-white p-6 rounded-2xl text-center space-y-6 shadow-lg max-w-4xl mx-auto mt-10 font-orbitron">
-      <h2 className="text-3xl sm:text-4xl font-bold text-cyan-300 animate-pulse">💸 Pi Cash Code</h2>
-      <p className="text-lg sm:text-xl text-white/80">{phaseText[phase]}</p>
+    <div className="bg-white/5 backdrop-blur-lg border border-cyan-400 neon-outline text-white p-4 sm:p-6 rounded-2xl text-center space-y-4 shadow-[0_0_40px_#00ffd5aa] max-w-4xl mx-auto mt-4 font-orbitron relative overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_var(--tw-gradient-stops))] from-cyan-400/10 via-transparent to-transparent -z-10 animate-pulse-slow" />
 
-      <div className="flex flex-col sm:flex-row justify-center items-center gap-6 mt-4">
+      <h2 className="text-2xl sm:text-3xl font-bold text-cyan-300 animate-pulse">💸 Pi Cash Code</h2>
+      <p className="text-base sm:text-lg text-white/80">{phaseText[phase]}</p>
+
+      <div className="flex flex-col sm:flex-row justify-center items-center gap-6 mt-2">
         {endTime && duration > 0 && (
-          <CountdownRing endTime={endTime} duration={duration} color="#22d3ee" size={120} />
+          <CountdownRing endTime={endTime} duration={duration} color="#22d3ee" size={100} />
         )}
 
         <div className="space-y-2">
-          <div className="text-2xl font-mono bg-gradient-to-r from-cyan-400 to-blue-500 text-black px-6 py-3 rounded-md tracking-widest shadow-lg border border-cyan-300 inline-block">
+          <div className="relative bg-black border-4 border-cyan-300 rounded-xl px-4 py-3 text-cyan-200 text-xl font-mono tracking-widest shadow-[0_0_14px_#22d3ee] animate-glitch select-none">
             {code || '????-????'}
           </div>
           <div className="text-sm text-white/60">{timerLabel}</div>
-          <div className="text-lg">
+          <div className="text-base">
             🏆 Prize Pool: <span className="text-yellow-300 font-bold">{prizePool ?? 0} π</span>
           </div>
         </div>
@@ -100,11 +93,11 @@ export default function PiCashHeroBanner({ code, prizePool, weekStart, expiresAt
       )}
 
       {phase === 'code-active' && (
-        <Link href="/pi-cash-code">
-          <button className="mt-6 px-6 py-3 bg-gradient-to-r from-yellow-300 to-cyan-400 rounded-lg text-black font-bold shadow-xl hover:scale-105 transition">
-            🎟️ Enter Now
-          </button>
-        </Link>
+  <Link href="/pi-cash-code">
+    <button className="mt-4 px-5 py-2.5 bg-gradient-to-r from-yellow-300 to-cyan-400 rounded-lg text-black font-bold shadow-xl hover:scale-105 hover:shadow-cyan-300/60 transition duration-300">
+      🎟️ Enter Now
+    </button>
+  </Link>
       )}
     </div>
   )
