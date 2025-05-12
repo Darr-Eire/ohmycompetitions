@@ -6,21 +6,23 @@ export function PiAuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [sdkReady, setSdkReady] = useState(false);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const script = document.createElement('script');
-      script.src = 'https://sdk.minepi.com/pi-sdk.js';
-      script.async = true;
-      script.onload = () => {
-        if (window?.Pi?.init) {
-          window.Pi.init({ version: '2.0' });
-          setSdkReady(true);
-          console.log('✅ Pi SDK initialized');
-        }
-      };
-      document.body.appendChild(script);
-    }
-  }, []);
+ useEffect(() => {
+  if (typeof window !== 'undefined') {
+    const script = document.createElement('script');
+    script.src = 'https://sdk.minepi.com/pi-sdk.js';
+    script.async = true;
+    script.onload = () => {
+      if (window.Pi) {
+        window.Pi.init({ version: '2.0' });
+        console.log('✅ Pi SDK initialized');
+      } else {
+        console.warn('❌ Pi SDK not available');
+      }
+    };
+    document.body.appendChild(script);
+  }
+}, []);
+
 
   const loginWithPi = async () => {
     if (!sdkReady || !window.Pi?.authenticate) {

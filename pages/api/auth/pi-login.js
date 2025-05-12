@@ -1,66 +1,40 @@
-'use client';
+import jwt from 'jsonwebtoken';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+const JWT_SECRET = process.env.JWT_SECRET || 'your-dev-secret-key';
 
-const PiAuthContext = createContext();
+export default async function handler(req, res) {
+  if (req.method !== 'POST') return res.status(405).end();
 
-export function PiAuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [piSdkReady, setPiSdkReady] = useState(false);
+  const { accessToken } = req.body;
+  if (!accessToken) return res.status(400).json({ error: 'Missing accessToken' });
 
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://sdk.minepi.com/pi-sdk.js';
-    script.async = true;
-    script.onload = () => {
-      if (window.Pi) {
-        window.Pi.init({ version: '2.0' });
-        setPiSdkReady(true);
-        console.log('✅ Pi SDK initialized');
-      } else {
-        alert('❌ Pi SDK failed to initialize');
-      }
-    };
-    document.body.appendChild(script);
-  }, []);
+  try {
+    const piRes = await fetch('https://api.minepi.com/v2/me', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
 
-  const loginWithPi = async () => {
-    if (!piSdkReady || !window.Pi) {
-      alert('Pi SDK not ready');
-      return;
-    }
+    if (!piRes.ok) return res.status(401).json({ error: 'Invalid Pi token' });
 
-    try {
-      const user = await window.Pi.authenticate(['username', 'payments']);
-      const res = await fetch('/api/auth/pi-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken: user.accessToken }),
-      });
+    const user = await piRes.json();
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Login failed');
+    const token = jwt.sign(
+      { uid: user.uid, username: user.username },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
 
-      setUser(data.user);
-      alert(`✅ Logged in as ${data.user.username}`);
-    } catch (err) {
-      console.error('❌ Login error:', err);
-      alert('Login failed: ' + err.message);
-    }
-  };
+    res.setHeader(
+      'Set-Cookie',
+      `pi_token=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=604800`
+    );
 
-  const logout = () => {
-    setUser(null);
-    alert('Logged out');
-  };
-
-  return (
-    <PiAuthContext.Provider value={{ user, loginWithPi, logout }}>
-      {children}
-    </PiAuthContext.Provider>
-  );
-}
-
-export function usePiAuth() {
-  return useContext(PiAuthContext);
+    res.status(200).json({ user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 }
