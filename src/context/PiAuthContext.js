@@ -1,38 +1,43 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+// src/context/PiAuthContext.js
+import { createContext, useContext, useState } from 'react';
 
 const PiAuthContext = createContext();
 
 export function PiAuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [error, setError] = useState(null); // for UI debug
 
   const loginWithPi = async () => {
     try {
-      if (!window?.Pi) {
-        alert('Pi SDK not loaded. Please use the Pi Browser.');
-        return;
-      }
+      const { accessToken } = await window.Pi.authenticate(['username', 'payments']);
 
-      const userData = await window.Pi.authenticate(['username', 'payments']);
       const res = await fetch('/api/auth/pi-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken: userData.accessToken }),
+        body: JSON.stringify({ accessToken }),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Pi login failed on server');
+      }
 
       setUser(data.user);
+      setError(null);
     } catch (err) {
-      console.error('❌ Pi login failed:', err);
-      alert('Login failed. Please try again.');
+      console.error('Pi login failed:', err);
+      setError(err.message || 'Pi login failed');
     }
   };
 
-  const logout = () => setUser(null);
+  const logout = () => {
+    setUser(null);
+    setError(null);
+  };
 
   return (
-    <PiAuthContext.Provider value={{ user, loginWithPi, logout }}>
+    <PiAuthContext.Provider value={{ user, loginWithPi, logout, error }}>
       {children}
     </PiAuthContext.Provider>
   );
