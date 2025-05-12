@@ -1,104 +1,66 @@
 'use client'
-import React, { useState, useEffect } from 'react'
-import Link from 'next/link'
-import CountdownRing from './CountdownRing'
-import PhaseStepper from './PhaseStepper'
-import PhaseProgressBar from './PhaseProgressBar'
+import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import FlipClock from '@/components/FlipClock'
 
-export default function PiCashHeroBanner({ code, prizePool, weekStart, expiresAt, drawAt, claimExpiresAt }) {
-  const [phase, setPhase] = useState('loading')
-  const [startTime, setStartTime] = useState(null)
-  const [endTime, setEndTime] = useState(null)
-  const [duration, setDuration] = useState(0)
-  const [timerLabel, setTimerLabel] = useState('')
+export default function PiCashCodePage() {
+  const router = useRouter()
+  const [ticketCount, setTicketCount] = useState(1)
 
-  useEffect(() => {
-    if (!weekStart || !expiresAt || !drawAt || !claimExpiresAt) return
+  const ticketPrice = 1.25
+  const prizePool = 15000
+  const code = 'SEED-CODE'
+  const endTime = new Date(Date.now() + 1000 * 60 * 60 * 31 + 1000 * 60 * 4) // 31h 4m from now
 
-    const now = new Date()
-    const start = new Date(weekStart)
-    const expire = new Date(expiresAt)
-    const draw = new Date(drawAt)
-    const claimEnd = new Date(claimExpiresAt)
-
-    if (now < start) {
-      setPhase('pre-drop')
-      setStartTime(now)
-      setEndTime(start)
-      setDuration((start - now) / 1000)
-      setTimerLabel('⏳ Time Until Next Code Drop')
-    } else if (now >= start && now < expire) {
-      setPhase('code-active')
-      setStartTime(start)
-      setEndTime(expire)
-      setDuration((expire - start) / 1000)
-      setTimerLabel('🔐 Time Until Code Disappears')
-    } else if (now >= expire && now < draw) {
-      setPhase('waiting-draw')
-      setStartTime(expire)
-      setEndTime(draw)
-      setDuration((draw - expire) / 1000)
-      setTimerLabel('🎯 Time Until Winner Draw')
-    } else if (now >= draw && now < claimEnd) {
-      setPhase('claim-window')
-      setStartTime(draw)
-      setEndTime(claimEnd)
-      setDuration((claimEnd - draw) / 1000)
-      setTimerLabel('🔥 Time Left to Claim Prize')
-    } else {
-      setPhase('rollover')
-      setStartTime(claimEnd)
-      setEndTime(claimEnd)
-      setDuration(1)
-      setTimerLabel('💤 Prize Rolling Over...')
-    }
-  }, [weekStart, expiresAt, drawAt, claimExpiresAt])
-
-  const phaseText = {
-    'pre-drop': '🔒 Next Code Coming Soon...',
-    'code-active': '⏳ Code Live',
-    'waiting-draw': '🎯 Waiting for Draw...',
-    'claim-window': '🔥 Winner must submit code!',
-    'rollover': '💤 Prize Rolling Over...',
-    'loading': 'Loading...'
-  }
+  const increment = () => setTicketCount((prev) => Math.min(prev + 1, 50))
+  const decrement = () => setTicketCount((prev) => Math.max(prev - 1, 1))
 
   return (
-    <div className="bg-white/5 backdrop-blur-lg border border-cyan-400 neon-outline text-white p-4 sm:p-6 rounded-2xl text-center space-y-4 shadow-[0_0_40px_#00ffd5aa] max-w-4xl mx-auto mt-4 font-orbitron relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_var(--tw-gradient-stops))] from-cyan-400/10 via-transparent to-transparent -z-10 animate-pulse-slow" />
+    <div className="relative max-w-xl mx-auto mt-4 px-4 py-6 border border-cyan-500 rounded-2xl text-white text-center font-orbitron overflow-hidden shadow-[0_0_60px_#00fff055] bg-[#0b1120]/30">
+      {/* Pulsing Background */}
+      <div className="absolute inset-0 -z-10 animate-pulse bg-[radial-gradient(circle_at_center,_#00fff033,_transparent)]" />
 
-      <h2 className="text-2xl sm:text-3xl font-bold text-cyan-300 animate-pulse">💸 Pi Cash Code</h2>
-      <p className="text-base sm:text-lg text-white/80">{phaseText[phase]}</p>
+      {/* Title */}
+      <h1 className="text-2xl sm:text-3xl font-bold text-cyan-300 mb-3 flex items-center justify-center gap-2 animate-glow-float">
+        <span></span> Pi Cash Code
+      </h1>
 
-      <div className="flex flex-col sm:flex-row justify-center items-center gap-6 mt-2">
-        {endTime && duration > 0 && (
-          <CountdownRing endTime={endTime} duration={duration} color="#22d3ee" size={100} />
-        )}
+      {/* Code Display */}
+      <div className="inline-block bg-[#0a0f1d] border border-cyan-400 text-cyan-300 px-6 py-2 rounded-md text-lg font-mono tracking-widest shadow-[0_0_12px_#00f0ff66] mb-4">
+        {code}
+      </div>
 
-        <div className="space-y-2">
-          <div className="relative bg-black border-4 border-cyan-300 rounded-xl px-4 py-3 text-cyan-200 text-xl font-mono tracking-widest shadow-[0_0_14px_#22d3ee] animate-glitch select-none">
-            {code || '????-????'}
-          </div>
-          <div className="text-sm text-white/60">{timerLabel}</div>
-          <div className="text-base">
-            🏆 Prize Pool: <span className="text-yellow-300 font-bold">{prizePool ?? 0} π</span>
-          </div>
+      {/* Prize Pool */}
+      <div className="text-center mb-1">
+        <div className="inline-flex items-center gap-2 px-5 py-2 rounded-xl border border-cyan-400 bg-black/30 shadow-[0_0_15px_#00f0ff88] animate-glow-float">
+          <span className="text-base sm:text-lg font-bold text-cyan-300 tracking-wide"> Prize Pool:</span>
+          <span className="text-cyan-400 font-extrabold text-lg sm:text-xl drop-shadow-md">{prizePool.toLocaleString()} π</span>
         </div>
       </div>
 
-      <PhaseStepper currentPhase={phase} />
+      {/* Flip Clock */}
+      <div className="mt-4 mb-6">
+        <FlipClock targetTime={endTime.getTime()} />
+      </div>
 
-      {startTime && endTime && (
-        <PhaseProgressBar startTime={startTime} endTime={endTime} />
-      )}
+      {/* Enter Now Button */}
+      <button
+        onClick={() => router.push('/pi-cash-code')}
+        className="w-full py-2 text-sm bg-gradient-to-r from-[#00F0FF] to-[#00C2FF] rounded-md text-black font-bold shadow hover:scale-[1.02] transition"
+      >
+        Enter Now
+      </button>
 
-      {phase === 'code-active' && (
-  <Link href="/pi-cash-code">
-    <button className="mt-4 px-5 py-2.5 bg-gradient-to-r from-yellow-300 to-cyan-400 rounded-lg text-black font-bold shadow-xl hover:scale-105 hover:shadow-cyan-300/60 transition duration-300">
-      🎟️ Enter Now
-    </button>
-  </Link>
-      )}
+      {/* How It Works */}
+      <div className="mt-4 text-center text-sm">
+        <h3 className="text-lg font-bold text-cyan-300 mb-2"> How It Works</h3>
+        <ul className="list-disc list-inside space-y-1 text-white/80">
+          <li>The code drops every Monday at <span className="font-bold text-white">3:14 PM UTC</span>.</li>
+          <li>It remains active for <span className="font-bold text-white">31 hours and 4 minutes</span>.</li>
+          <li>Friday draw at <span className="font-bold text-white">3:14 PM UTC</span>.</li>
+          <li>The winner must return the code within <span className="font-bold text-white">31 minutes and 4 seconds</span>.</li>
+        </ul>
+      </div>
     </div>
   )
 }
