@@ -12,6 +12,7 @@ export default function PiCashCodePage() {
   const [loading, setLoading] = useState(true);
   const [codeData, setCodeData] = useState(null);
   const [quantity, setQuantity] = useState(1);
+  const [isMobile, setIsMobile] = useState(false);
   const ticketPrice = 1.25;
   const totalPrice = (ticketPrice * quantity).toFixed(2);
 
@@ -23,6 +24,13 @@ export default function PiCashCodePage() {
       setLoading(false);
     };
     fetchCode();
+  }, []);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   const handleConfirmTicket = async () => {
@@ -83,10 +91,11 @@ export default function PiCashCodePage() {
           </div>
         </div>
 
-        <div className="mt-6 flex justify-center">
+        {/* Flip Clock */}
+        <div className="mt-6 flex justify-center scale-95 sm:scale-100">
           <FlipClockCountdown
             to={new Date(codeData.expiresAt)}
-            labels={['DAYS', 'HOURS', 'MINUTES', 'SECONDS']}
+            labels={isMobile ? ['HRS', 'MIN', 'SEC'] : ['DAYS', 'HRS', 'MIN', 'SEC']}
             labelStyle={{
               fontSize: 14,
               fontWeight: 500,
@@ -94,9 +103,9 @@ export default function PiCashCodePage() {
               color: '#00ffd5',
             }}
             digitBlockStyle={{
-              width: 50,
-              height: 60,
-              fontSize: 40,
+              width: isMobile ? 40 : 50,
+              height: isMobile ? 50 : 60,
+              fontSize: isMobile ? 28 : 40,
               backgroundColor: '#0f0c29',
               color: '#fff',
             }}
@@ -130,21 +139,22 @@ export default function PiCashCodePage() {
            Confirm Ticket Purchase
         </button>
 
-      <section className="mt-8">
-  <div className="max-w-xl mx-auto text-center">
-    <h2 className="text-2xl font-bold text-cyan-300 mb-2"> How It Works</h2>
-    <ul className="list-disc list-inside text-white/90 space-y-2 text-left inline-block text-sm sm:text-base">
-      <li>The code drops every Monday at <strong>3:14 PM UTC</strong>.</li>
-      <li>It remains active for <strong>31 hours and 4 minutes</strong>.</li>
-      <li>Friday draw at <strong>3:14 PM UTC</strong>.</li>
-      <li>Winner has <strong>31 minutes and 4 seconds</strong> to submit the code.</li>
-      <li>If missed, prize <strong>rolls over +25%</strong>.</li>
-      <li><strong>20%</strong> of tickets roll into next week.</li>
-    </ul>
-  </div>
-</section>
+        {/* How It Works */}
+        <section className="mt-8">
+          <div className="max-w-xl mx-auto text-center">
+            <h2 className="text-2xl font-bold text-cyan-300 mb-2">How It Works</h2>
+            <ul className="list-disc list-inside text-white/90 space-y-2 text-left inline-block text-sm sm:text-base">
+              <li>The code drops every Monday at <strong>3:14 PM UTC</strong>.</li>
+              <li>It remains active for <strong>31 hours and 4 minutes</strong>.</li>
+              <li>Friday draw at <strong>3:14 PM UTC</strong>.</li>
+              <li>Winner has <strong>31 minutes and 4 seconds</strong> to submit the code.</li>
+              <li>If missed, prize <strong>rolls over +25%</strong>.</li>
+              <li><strong>20%</strong> of tickets roll into next week.</li>
+            </ul>
+          </div>
+        </section>
 
-
+        {/* Upcoming Draw */}
         <section className="mt-8">
           <h2 className="text-2xl font-bold text-yellow-300">📅 Upcoming Draw</h2>
           <p className="mt-2">
@@ -152,15 +162,17 @@ export default function PiCashCodePage() {
             <span className="font-bold">{new Date(codeData?.drawAt).toUTCString()}</span>
           </p>
           <p>
-            💰 Prize: <span className="text-yellow-300 font-bold">{codeData?.prizePool} π</span>
+            💰 Prize: <span className="text-yellow-300 font-bold">{codeData?.prizePool} Pi</span>
           </p>
         </section>
 
+        {/* Ghost Winners */}
         <section className="mt-8 text-left">
           <h2 className="text-xl font-bold text-gray-200 mb-2">👻 Ghost Winner Log</h2>
           <GhostWinnerLog />
         </section>
 
+        {/* Claimed Winners */}
         <section className="mt-8 text-left">
           <h2 className="text-xl font-bold text-green-400 mb-2">🏅 Claimed Winners</h2>
           <ClaimedWinnersLog />
