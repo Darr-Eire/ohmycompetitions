@@ -215,7 +215,7 @@ export const cryptoGiveawaysItems = [
   {
     comp: { slug: 'crypto-bnb', entryFee: 0.4, totalTickets: 4000, ticketsSold: 0, endsAt: '2025-06-07T23:59:00Z' },
     title: 'Win BNB',
-    prize: '2 BNB',
+    prize: '5 BNB',
     fee: '0.5 π',
     href: '/crypto/crypto-bnb',
     token: 'BNB',
