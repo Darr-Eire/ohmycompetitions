@@ -49,7 +49,6 @@ export default function Header() {
   const navItems = [
     ['Home', '/'],
     ['My Account', '/account'],
-    ['The Pi Cash Code', '/competition'],
     ['All Competitions', '/competitions'],
     ['Try Your Luck', '/try-your-luck'],
     ['Forums', '/forums'],

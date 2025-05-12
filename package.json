@@ -2,15 +2,14 @@
   "name": "ohmycompetitions-starter",
   "version": "1.0.0",
   "private": true,
- "scripts": {
-  "dev": "next dev",
-  "build": "next build",
-  "start": "next start",
-  "create-pi-code": "node scripts/createPiCashCode.js",
-  "draw-winner": "node scripts/drawWinner.js",
-  "rollover-prize": "node scripts/rolloverUnclaimed.js"
-},
-
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "create-pi-code": "node scripts/createPiCashCode.js",
+    "draw-winner": "node scripts/drawWinner.js",
+    "rollover-prize": "node scripts/rolloverUnclaimed.js"
+  },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
@@ -29,6 +28,8 @@
     "emoji-mart": "^5.6.0",
     "express-session": "^1.17.3",
     "framer-motion": "^12.10.5",
+    "jose": "^6.0.11",
+    "jsonwebtoken": "^9.0.2",
     "lightweight-charts": "^5.0.6",
     "mongodb": "^6.16.0",
     "mongoose": "^6.13.8",

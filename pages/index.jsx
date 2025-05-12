@@ -13,49 +13,61 @@ import PiCashHeroBanner from '@/components/PiCashHeroBanner';
 
 export default function HomePage() {
   const [selectedToken, setSelectedToken] = useState('BTC');
+  const [piSdkReady, setPiSdkReady] = useState(false);
 
+  // ✅ Load and init Pi SDK
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://sdk.minepi.com/pi-sdk.js';
+    script.async = true;
+    script.onload = () => {
+      if (window?.Pi) {
+        window.Pi.init({ version: '2.0' });
+        setPiSdkReady(true);
+        console.log('✅ Pi SDK loaded and initialized');
+      }
+    };
+    document.body.appendChild(script);
+  }, []);
+
+  // ✅ Trigger login
+const handlePiLogin = async () => {
+  if (!piSdkReady || !window.Pi) {
+    alert('Pi SDK not ready yet.');
+    return;
+  }
+
+  try {
+    const user = await window.Pi.authenticate(['username', 'payments'], (incompletePayment) => {
+      console.log('Incomplete payment found:', incompletePayment);
+    });
+
+    console.log('🔐 Logged in Pi user:', user);
+
+    // ✅ Send to your backend for verification
+    const res = await fetch('/api/verify-pi-user', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accessToken: user.accessToken }),
+    });
+
+    const data = await res.json();
+    console.log('✅ Verified user info:', data);
+
+  } catch (error) {
+    console.error('❌ Pi login failed:', error);
+  }
+};
+
+
+  // ✅ mockPiCashProps (fixed)
   const mockPiCashProps = {
     code: '7H3X-PL4Y',
     prizePool: 14250,
-    weekStart: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
-    drawAt: new Date(Date.now() + 1000 * 60 * 60 * 5).toISOString(),
-    claimExpiresAt: new Date(Date.now() + 1000 * 60 * 60 * 10).toISOString()
-  };
-
-  const topWinners = [
-    { name: 'Jack Jim', prize: 'Matchday Tickets', date: 'March 26th', image: '/images/winner2.png' },
-    { name: 'Shanahan', prize: 'Playstation 5', date: 'February 14th', image: '/images/winner2.png' },
-    { name: 'Emily Rose', prize: 'Luxury Car', date: 'January 30th', image: '/images/winner2.png' },
-    { name: 'John Doe', prize: '€10,000 Pi', date: 'December 15th', image: '/images/winner2.png' },
-  ];
-
-  const TopWinnersCarousel = () => {
-    const [index, setIndex] = useState(0);
-    useEffect(() => {
-      const interval = setInterval(() => {
-        setIndex((prev) => (prev + 1) % topWinners.length);
-      }, 5000);
-      return () => clearInterval(interval);
-    }, []);
-    const current = topWinners[index];
-    return (
-      <div className="max-w-md mx-auto mt-12 bg-white bg-opacity-10 backdrop-blur-lg rounded-xl shadow-lg p-6 text-white text-center">
-        <h2 className="text-2xl font-bold mb-4">🏆 Top Winner</h2>
-        <div className="flex flex-col items-center">
-          <Image
-            src={current.image}
-            alt={current.name}
-            width={120}
-            height={120}
-            className="rounded-full border-4 border-blue-500 mb-4"
-          />
-          <h3 className="text-xl font-semibold">{current.name}</h3>
-          <p className="text-blue-300">{current.prize}</p>
-          <p className="text-sm text-white/70">{current.date}</p>
-        </div>
-      </div>
-    );
+    weekStart: '2025-05-12T11:53:31.597Z',
+    expiresAt: '2025-05-12T15:53:31.597Z',
+    drawAt: '2025-05-12T18:53:31.597Z',
+    claimExpiresAt: '2025-05-12T23:53:31.597Z',
   };
 
   const techItems = [
@@ -277,65 +289,101 @@ const cryptoGiveawaysItems = [
     imageUrl: '/images/crypto-doge.png',
   },
 ];
+const topWinners = [
+    { name: 'Jack Jim', prize: 'Matchday Tickets', date: 'March 26th', image: '/images/winner2.png' },
+    { name: 'Shanahan', prize: 'Playstation 5', date: 'February 14th', image: '/images/winner2.png' },
+    { name: 'Emily Rose', prize: 'Luxury Car', date: 'January 30th', image: '/images/winner2.png' },
+    { name: 'John Doe', prize: '€10,000 Pi', date: 'December 15th', image: '/images/winner2.png' },
+  ];
+
+  const TopWinnersCarousel = () => {
+    const [index, setIndex] = useState(0);
+    useEffect(() => {
+      const interval = setInterval(() => {
+        setIndex((prev) => (prev + 1) % topWinners.length);
+      }, 5000);
+      return () => clearInterval(interval);
+    }, []);
+    const current = topWinners[index];
+    return (
+      <div className="max-w-md mx-auto mt-12 bg-white bg-opacity-10 backdrop-blur-lg rounded-xl shadow-lg p-6 text-white text-center">
+        <h2 className="text-2xl font-bold mb-4">🏆 Top Winner</h2>
+        <div className="flex flex-col items-center">
+          <Image src={current.image} alt={current.name} width={120} height={120} className="rounded-full border-4 border-blue-500 mb-4" />
+          <h3 className="text-xl font-semibold">{current.name}</h3>
+          <p className="text-blue-300">{current.prize}</p>
+          <p className="text-sm text-white/70">{current.date}</p>
+        </div>
+      </div>
+    );
+  };
 
   return (
-  <>
-   <div className="mt-0 mb-2 flex justify-center">
-  <PiCashHeroBanner {...mockPiCashProps} />
-</div>
-
-
-
-    <main className="space-y-16">
-      <Section title="Featured Competitions" items={techItems} viewMoreHref="/competitions/featured" />
-      <Section title="Travel & Lifestyle" items={premiumItems} viewMoreHref="/competitions/travel" />
-      <Section title="Pi Giveaways" items={piItems} viewMoreHref="/competitions/pi" extraClass="mt-12" />
-
-      <div className="flex justify-between items-center mb-4 px-6">
-        <h2 className="text-lg font-bold text-cyan-300">Select Crypto Token</h2>
-        <TokenSelector selected={selectedToken} onChange={setSelectedToken} />
+    <>
+      <div className="mt-0 mb-2 flex justify-center">
+        <PiCashHeroBanner {...mockPiCashProps} />
       </div>
 
-      <Section title="Crypto Giveaways" items={cryptoGiveawaysItems} viewMoreHref="/competitions/crypto-giveaways" />
-      <Section title="Daily Competitions" items={dailyItems} viewMoreHref="/competitions/daily" extraClass="mt-12" />
-
-      <section className="w-full bg-white/5 backdrop-blur-lg px-6 sm:px-10 py-12 my-8 border border-cyan-400 rounded-3xl shadow-[0_0_60px_#00ffd577] neon-outline">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center text-cyan-300 mb-10 font-orbitron">
-            ✨ Featured Free Competition ✨
-          </h2>
-          <FreeCompetitionCard
-            comp={{ endsAt: '2025-05-10T23:59:59Z', ticketsSold: 0, totalTickets: 10000, slug: 'pi-to-the-moon' }}
-            title="Pi To The Moon"
-            prize="20,000 π"
-          />
+      <main className="space-y-16">
+        <div className="flex justify-center">
+          <button
+            onClick={handlePiLogin}
+            className="mt-4 px-6 py-2 rounded-lg bg-purple-600 text-white font-bold shadow hover:bg-purple-700 transition"
+          >
+            Login with Pi
+          </button>
         </div>
-      </section>
 
-      <TopWinnersCarousel />
+        <Section title="Featured Competitions" items={techItems} viewMoreHref="/competitions/featured" />
+        <Section title="Travel & Lifestyle" items={premiumItems} viewMoreHref="/competitions/travel" />
+        <Section title="Pi Giveaways" items={piItems} viewMoreHref="/competitions/pi" extraClass="mt-12" />
 
-      <div className="flex justify-center mt-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 w-full max-w-md px-6 py-6 bg-gradient-to-r from-cyan-300 to-blue-500 rounded-xl shadow-lg text-black text-center text-base">
-          <div><div className="text-xl font-bold">44,000+</div><div>Winners</div></div>
-          <div><div className="text-xl font-bold">106,400 π</div><div>Total Pi Won</div></div>
-          <div><div className="text-xl font-bold">15,000 π</div><div>Donated to Charity</div></div>
-          <div><div className="text-xl font-bold">5★</div><div>User Rated</div></div>
+        <div className="flex justify-between items-center mb-4 px-6">
+          <h2 className="text-lg font-bold text-cyan-300">Select Crypto Token</h2>
+          <TokenSelector selected={selectedToken} onChange={setSelectedToken} />
         </div>
-      </div>
-    </main>
-  </>
-)
+
+        <Section title="Crypto Giveaways" items={cryptoGiveawaysItems} viewMoreHref="/competitions/crypto-giveaways" />
+        <Section title="Daily Competitions" items={dailyItems} viewMoreHref="/competitions/daily" extraClass="mt-12" />
+
+        <section className="w-full bg-white/5 backdrop-blur-lg px-6 sm:px-10 py-12 my-8 border border-cyan-400 rounded-3xl shadow-[0_0_60px_#00ffd577] neon-outline">
+          <div className="max-w-7xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-bold text-center text-cyan-300 mb-10 font-orbitron">
+              ✨ Featured Free Competition ✨
+            </h2>
+            <FreeCompetitionCard
+              comp={{ endsAt: '2025-05-10T23:59:59Z', ticketsSold: 0, totalTickets: 10000, slug: 'pi-to-the-moon' }}
+              title="Pi To The Moon"
+              prize="20,000 π"
+            />
+          </div>
+        </section>
+
+        <TopWinnersCarousel />
+
+        <div className="flex justify-center mt-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 w-full max-w-md px-6 py-6 bg-gradient-to-r from-cyan-300 to-blue-500 rounded-xl shadow-lg text-black text-center text-base">
+            <div><div className="text-xl font-bold">44,000+</div><div>Winners</div></div>
+            <div><div className="text-xl font-bold">106,400 π</div><div>Total Pi Won</div></div>
+            <div><div className="text-xl font-bold">15,000 π</div><div>Donated to Charity</div></div>
+            <div><div className="text-xl font-bold">5★</div><div>User Rated</div></div>
+          </div>
+        </div>
+      </main>
+    </>
+  );
 }
 
+// Reusable Section component (you likely already have this)
 function Section({ title, items, viewMoreHref, viewMoreText = 'View More', extraClass = '' }) {
   const isDaily = title.toLowerCase().includes('daily');
   const isFree = title.toLowerCase().includes('free');
   const isPi = title.toLowerCase().includes('pi');
-  const isCryptoGiveaway = title.toLowerCase().includes('crypto giveaways');
+  const isCryptoGiveaway = title.toLowerCase().includes('crypto');
 
   return (
     <section className={`mb-12 ${extraClass}`}>
-      <div className={`text-center mb-12 ${extraClass}`}>
+      <div className={`text-center mb-12`}>
         <h2 className="w-full text-base font-bold text-center text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-4 py-2 rounded-xl shadow font-orbitron">
           {title}
         </h2>
@@ -350,7 +398,7 @@ function Section({ title, items, viewMoreHref, viewMoreText = 'View More', extra
           if (isFree) return <FreeCompetitionCard key={key} {...item} />;
           if (isPi) return <PiCompetitionCard key={key} {...item} />;
           if (isCryptoGiveaway) return <CryptoGiveawayCard key={key} {...item} />;
-          return <CompetitionCard key={key} {...item} small />;
+          return <CompetitionCard key={key} {...item} />;
         })}
       </div>
 

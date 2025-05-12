@@ -1,70 +1,72 @@
-'use client'
+'use client';
 
-import { useSession } from 'next-auth/react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react';
 
 export default function BuyTicketButton({ competitionSlug, entryFee, quantity }) {
-  const { data: session } = useSession()
-  const [busy, setBusy] = useState(false)
+  const [piSdkReady, setPiSdkReady] = useState(false);
 
-  const total = (entryFee * quantity).toFixed(3)
-  const uid = session?.user?.uid
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://sdk.minepi.com/pi-sdk.js';
+    script.async = true;
+    script.onload = () => {
+      if (window?.Pi) {
+        window.Pi.init({ version: '2.0' });
+        setPiSdkReady(true);
+        console.log('✅ Pi SDK ready');
+      }
+    };
+    document.body.appendChild(script);
+  }, []);
 
-  const startPayment = () => {
-    if (!uid) {
-      alert('You must log in first.')
-      return
+  const handlePayment = async () => {
+    const Pi = window?.Pi;
+    if (!Pi || !piSdkReady) {
+      alert('Pi SDK not loaded yet.');
+      return;
     }
 
-    setBusy(true)
+    const totalAmount = parseFloat((entryFee * quantity).toFixed(6));
 
-    const metadata = {
-      type: 'ticket',
-      slug: competitionSlug,
-      quantity,
-    }
-
-    window.Pi.createPayment(
+    await Pi.createPayment(
       {
-        amount: total,
-        memo: `Entry for ${competitionSlug}`,
-        metadata,
+        amount: totalAmount,
+        memo: `Entry for ${competitionSlug} x${quantity}`,
+        metadata: { competitionSlug, quantity },
       },
       {
         onReadyForServerApproval: async (paymentId) => {
-          await fetch('/api/pi/approve', {
+          await fetch('/api/approve-payment', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ paymentId }),
-          })
+          });
         },
         onReadyForServerCompletion: async (paymentId, txid) => {
-          await fetch('/api/payments/complete', {
+          await fetch('/api/complete-payment', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paymentId, txid, uid, competitionSlug }),
-          })
-          setBusy(false)
-          alert('🎉 Payment complete!')
+            body: JSON.stringify({ paymentId, txid }),
+          });
+          alert('✅ Payment completed. You are now entered!');
         },
-        onCancel: () => {
-          setBusy(false)
+        onCancel: (paymentId) => {
+          console.log('❌ Payment cancelled:', paymentId);
         },
-        onError: (err) => {
-          alert('❌ Payment failed: ' + err.message)
-          setBusy(false)
+        onError: (error, payment) => {
+          console.error('💥 Payment error:', error, payment);
+          alert('An error occurred during payment.');
         },
       }
-    )
-  }
+    );
+  };
 
   return (
     <button
-      onClick={startPayment}
-      disabled={busy}
-      className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 px-4 rounded-xl shadow-lg"
+      onClick={handlePayment}
+      className="w-full bg-yellow-400 hover:bg-yellow-300 text-black font-bold py-3 px-4 rounded-xl shadow-lg transition"
     >
-      {busy ? 'Processing…' : `Confirm & Pay ${total} π`}
+      Confirm Entry with Pi ({entryFee.toFixed(2)} π × {quantity} = {(entryFee * quantity).toFixed(2)} π)
     </button>
-  )
+  );
 }
