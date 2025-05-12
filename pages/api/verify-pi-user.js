@@ -9,9 +9,6 @@ export default async function handler(req, res) {
   }
 
   const { accessToken } = req.body;
-  if (!accessToken) {
-    return res.status(400).json({ error: 'Missing access token' });
-  }
 
   try {
     const result = await fetch('https://api.minepi.com/v2/me', {
@@ -23,23 +20,18 @@ export default async function handler(req, res) {
     });
 
     if (!result.ok) {
-      const errorText = await result.text();
-      console.error('🔒 Pi API Error:', errorText);
-      return res.status(401).json({ error: 'Invalid Pi token' });
+      return res.status(401).json({ error: 'Invalid token' });
     }
 
     const user = await result.json();
-
     const token = jwt.sign({ uid: user.uid, username: user.username }, JWT_SECRET, {
       expiresIn: '7d',
     });
 
-    res.setHeader('Set-Cookie', `token=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=604800`);
-    return res.status(200).json({ user });
-
+    res.setHeader('Set-Cookie', `token=${token}; Path=/; HttpOnly; SameSite=Strict`);
+    res.status(200).json({ user });
   } catch (error) {
-    console.error('🔒 Token verification failed:', error);
-    return res.status(500).json({ error: 'Server error verifying token' });
+    console.error('Verification error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 }
-
