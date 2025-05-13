@@ -1,4 +1,4 @@
-'use client';
+''use client';
 
 import React, { useState, useEffect } from 'react';
 import { loadPiSdk } from '@/lib/pi';
@@ -41,12 +41,15 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
       {
         onReadyForServerApproval: async (paymentId) => {
           console.log('[APP] Approving payment:', paymentId);
+          alert(`🆔 Payment ID: ${paymentId}`); // ✅ You can remove this after testing
+
           await fetch('/api/payments/approve', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ paymentId }),
           });
         },
+
         onReadyForServerCompletion: async (paymentId, txid) => {
           console.log('[APP] Completing payment:', paymentId);
           await fetch('/api/payments/complete', {
@@ -55,11 +58,14 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
             body: JSON.stringify({ paymentId }),
           });
         },
+
         onCancel: (paymentId) => {
           console.warn('[APP] Payment cancelled:', paymentId);
         },
+
         onError: (error, payment) => {
           console.error('[APP] Payment error:', error, payment);
+          alert(`❌ Payment error: ${error.message || 'See console'}`);
         },
       }
     );
