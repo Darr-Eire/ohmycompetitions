@@ -13,12 +13,14 @@ export default async function handler(req, res) {
   const { paymentId, txid } = req.body;
 
   if (!paymentId || !txid) {
-    console.warn('[⚠️] Missing paymentId or txid:', { paymentId, txid });
+    console.warn('[❗] Missing paymentId or txid:', { paymentId, txid });
     return res.status(400).json({ error: 'Missing paymentId or txid' });
   }
 
   try {
-    console.log('[🔁] Sending completion request to Pi Network API...');
+    console.log('[🔁] Sending completion request to Pi API...');
+    console.log('[📦] Payload:', { paymentId, txid });
+
     const piRes = await fetch(`https://api.minepi.com/v2/payments/${paymentId}/complete`, {
       method: 'POST',
       headers: {
@@ -29,24 +31,17 @@ export default async function handler(req, res) {
     });
 
     const responseText = await piRes.text();
-    console.log('[🔍 DEBUG] Raw Pi response:', responseText);
+    console.log('[📨] Raw response from Pi API:', responseText);
 
     if (!piRes.ok) {
-      console.error('[❌] Failed to complete payment at Pi Network API.');
-      return res.status(500).json({
-        error: 'Failed to complete payment',
-        details: responseText,
-      });
+      console.error('[❌] Pi server responded with error status');
+      return res.status(500).json({ error: 'Failed to complete payment', details: responseText });
     }
 
     const piData = JSON.parse(responseText);
-    const { user_uid, metadata, amount } = piData.payment || {};
+    const { user_uid, metadata, amount } = piData.payment;
 
-    if (!user_uid || !metadata) {
-      console.error('[❌] Missing user_uid or metadata in Pi response:', piData);
-      return res.status(500).json({ error: 'Invalid payment data from Pi' });
-    }
-
+    console.log('[✅] Payment validated. Storing ticket in MongoDB...');
     await client.connect();
     const db = client.db('ohmycompetitions');
 
@@ -66,11 +61,10 @@ export default async function handler(req, res) {
       createdAt: new Date(),
     });
 
-    console.log('[✅] Payment recorded and ticket issued:', ticketId);
+    console.log('[🎟️] Ticket saved:', ticketId);
     return res.status(200).json({ success: true, ticketId });
-
   } catch (err) {
-    console.error('[🔥] Internal server error:', err);
-    return res.status(500).json({ error: 'Internal server error', details: err.message });
+    console.error('[🔥] Internal server error during payment completion:', err);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 }
