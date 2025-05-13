@@ -52,7 +52,7 @@ export default function HomePage() {
   // Check if user is already logged in
   useEffect(() => {
     fetch('/api/auth/me')
-      .then((res) => res.ok ? res.json() : null)
+      .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data?.user) {
           setPiUser(data.user);
@@ -61,9 +61,7 @@ export default function HomePage() {
   }, []);
 
   const handlePiLogin = async () => {
-    if (!piSdkReady) {
-      return alert('Pi SDK not ready');
-    }
+    if (!piSdkReady) return alert('Pi SDK not ready');
 
     try {
       const result = await window.Pi.authenticate(['username']);
@@ -80,6 +78,47 @@ export default function HomePage() {
     } catch (err) {
       console.error('❌ Pi Login Error:', err);
       alert('Login failed. See console.');
+    }
+  };
+
+  const handlePiPayment = async () => {
+    if (!piSdkReady) return alert('Pi SDK not ready');
+
+    try {
+      window.Pi.createPayment(
+        {
+          amount: 0.01,
+          memo: 'OhMyCompetitions entry',
+          metadata: { entryId: 'test-entry-123' },
+        },
+        {
+          onReadyForServerApproval: async (paymentId) => {
+            console.log('[APP] Approving payment ID:', paymentId);
+            await fetch('http://localhost:5000/payments/approve', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ paymentId }),
+            });
+          },
+          onReadyForServerCompletion: async (paymentId, txid) => {
+            console.log('[APP] Completing payment ID:', paymentId);
+            await fetch('http://localhost:5000/payments/complete', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ paymentId }),
+            });
+          },
+          onCancel: (paymentId) => {
+            console.warn('[APP] Payment cancelled:', paymentId);
+          },
+          onError: (error, payment) => {
+            console.error('[APP] Payment error:', error, payment);
+          },
+        }
+      );
+    } catch (error) {
+      console.error('❌ Pi Payment Error:', error);
+      alert('Payment failed. See console.');
     }
   };
 
@@ -115,16 +154,24 @@ export default function HomePage() {
         <PiCashHeroBanner {...mockPiCashProps} />
       </div>
 
-      <div className="flex justify-center mb-6">
+      <div className="flex justify-center mb-6 space-x-4">
         {piUser ? (
           <p className="text-white text-lg">👋 Welcome, {piUser.username}</p>
         ) : (
-          <button
-            onClick={handlePiLogin}
-            className="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-lg text-white font-semibold shadow transition"
-          >
-            Login with Pi
-          </button>
+          <>
+            <button
+              onClick={handlePiLogin}
+              className="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-lg text-white font-semibold shadow transition"
+            >
+              Login with Pi
+            </button>
+            <button
+              onClick={handlePiPayment}
+              className="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-lg text-white font-semibold shadow transition"
+            >
+              Make Pi Payment
+            </button>
+          </>
         )}
       </div>
 
@@ -167,7 +214,7 @@ export default function HomePage() {
   );
 }
 
-// Reusable Section
+// Reusable Section Component
 function Section({ title, items, viewMoreHref, viewMoreText = 'View More', extraClass = '' }) {
   const isDaily = title.toLowerCase().includes('daily');
   const isFree = title.toLowerCase().includes('free');
