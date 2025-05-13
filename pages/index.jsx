@@ -81,46 +81,63 @@ export default function HomePage() {
     }
   };
 
-  const handlePiPayment = async () => {
-    if (!piSdkReady) return alert('Pi SDK not ready');
+ const handlePiPayment = async () => {
+  if (!piSdkReady) return alert('Pi SDK not ready');
 
-    try {
-      window.Pi.createPayment(
-        {
-          amount: 0.01,
-          memo: 'OhMyCompetitions entry',
-          metadata: { entryId: 'test-entry-123' },
+  try {
+    window.Pi.createPayment(
+      {
+        amount: 0.01,
+        memo: 'OhMyCompetitions entry',
+        metadata: { entryId: 'test-entry-123' },
+      },
+      {
+        onReadyForServerApproval: async (paymentId) => {
+          console.log('[✅] onReadyForServerApproval:', paymentId);
+          try {
+            const res = await fetch('/api/payments/approve', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ paymentId }),
+            });
+
+            if (!res.ok) throw new Error(await res.text());
+          } catch (err) {
+            console.error('❌ Error in approval callback:', err);
+          }
         },
-        {
-          onReadyForServerApproval: async (paymentId) => {
-            console.log('[APP] Approving payment ID:', paymentId);
-            await fetch('http://localhost:5000/payments/approve', {
+
+        onReadyForServerCompletion: async (paymentId, txid) => {
+          console.log('[✅] onReadyForServerCompletion:', paymentId);
+          try {
+            const res = await fetch('/api/payments/complete', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ paymentId }),
             });
-          },
-          onReadyForServerCompletion: async (paymentId, txid) => {
-            console.log('[APP] Completing payment ID:', paymentId);
-            await fetch('http://localhost:5000/payments/complete', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ paymentId }),
-            });
-          },
-          onCancel: (paymentId) => {
-            console.warn('[APP] Payment cancelled:', paymentId);
-          },
-          onError: (error, payment) => {
-            console.error('[APP] Payment error:', error, payment);
-          },
-        }
-      );
-    } catch (error) {
-      console.error('❌ Pi Payment Error:', error);
-      alert('Payment failed. See console.');
-    }
-  };
+
+            if (!res.ok) throw new Error(await res.text());
+          } catch (err) {
+            console.error('❌ Error in completion callback:', err);
+          }
+        },
+
+        onCancel: (paymentId) => {
+          console.warn('[⚠️] Payment cancelled:', paymentId);
+        },
+
+        onError: (error, payment) => {
+          console.error('❌ Pi SDK error:', error, payment);
+        },
+      }
+    );
+  } catch (err) {
+    console.error('❌ Pi Payment Error:', err);
+    alert('Pi payment failed. See console.');
+  }
+};
+
+  
 
   const TopWinnersCarousel = () => {
     const winners = [
