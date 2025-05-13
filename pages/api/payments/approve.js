@@ -1,27 +1,37 @@
+// pages/api/payments/approve.js
+
 export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
   const { paymentId } = req.body;
-  const API_KEY = process.env.PI_API_KEY;
+
+  if (!paymentId) {
+    return res.status(400).json({ error: 'Missing paymentId' });
+  }
 
   try {
-    const piRes = await fetch(`https://api.minepi.com/v2/payments/${paymentId}/approve`, {
+    // This URL confirms the payment with Pi's server
+    const verifyRes = await fetch(`https://api.minepi.com/v2/payments/${paymentId}/approve`, {
       method: 'POST',
       headers: {
-        Authorization: `Key ${API_KEY}`,
+        Authorization: `Key ${process.env.PI_API_SECRET}`, // Set this in Vercel
         'Content-Type': 'application/json',
       },
     });
 
-    if (!piRes.ok) {
-      const error = await piRes.text();
-      console.error('[❌] Pi approval failed:', error);
-      return res.status(400).send(error);
+    if (!verifyRes.ok) {
+      const errorText = await verifyRes.text();
+      console.error('[❌] Approve failed:', errorText);
+      return res.status(500).json({ error: 'Failed to approve payment' });
     }
 
-    const result = await piRes.json();
-    console.log('[✅] Payment approved:', result);
-    res.status(200).json(result);
-  } catch (error) {
-    console.error('[🔥] Approval error:', error);
-    res.status(500).json({ error: 'Approval error' });
+    const approvedPayment = await verifyRes.json();
+    console.log('[✅] Payment approved:', approvedPayment);
+    return res.status(200).json({ status: 'approved', payment: approvedPayment });
+  } catch (err) {
+    console.error('[🔥] Server error:', err);
+    return res.status(500).json({ error: 'Server error' });
   }
 }
