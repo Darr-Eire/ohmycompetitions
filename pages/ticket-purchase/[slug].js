@@ -338,27 +338,48 @@ export default function TicketPurchasePage() {
     return () => clearInterval(interval);
   }, [slug]);
 
-  const handlePiLogin = async () => {
-    setLoadingLogin(true);
-    if (!window?.Pi) {
-      alert('⚠️ Pi SDK not available. Use the Pi Browser.');
-      setLoadingLogin(false);
-      return;
-    }
+ const handlePiLogin = async () => {
+  setLoadingLogin(true);
 
-    try {
-      const user = await window.Pi.authenticate(['username', 'payments'], (incompletePayment) => {
-        console.warn('⚠️ Incomplete payment detected:', incompletePayment);
-      });
-      setPiUser(user);
-      console.log('✅ Logged in:', user);
-    } catch (err) {
-      alert(`Login failed: ${err.message}`);
-      console.error('❌ Authentication error:', err);
-    } finally {
-      setLoadingLogin(false);
-    }
-  };
+  if (!window?.Pi) {
+    alert('⚠️ Pi SDK not available. Use the Pi Browser.');
+    setLoadingLogin(false);
+    return;
+  }
+
+  try {
+    const user = await window.Pi.authenticate(['username', 'payments'], async (incompletePayment) => {
+      if (incompletePayment?.identifier) {
+        alert(`⚠️ Found incomplete payment: ${incompletePayment.identifier}`);
+
+        try {
+          const res = await fetch('/api/payments/complete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              paymentId: incompletePayment.identifier,
+              txid: incompletePayment.transaction?.txid || 'missing-txid'
+            }),
+          });
+
+          const result = await res.json();
+          console.log('[✅] Tried to complete pending payment:', result);
+        } catch (err) {
+          console.warn('[❌] Failed to complete pending payment:', err);
+        }
+      }
+    });
+
+    setPiUser(user);
+    console.log('✅ Logged in:', user);
+  } catch (err) {
+    alert(`Login failed: ${err.message}`);
+    console.error('❌ Authentication error:', err);
+  } finally {
+    setLoadingLogin(false);
+  }
+};
+
 
   if (!router.isReady) return null;
   const comp = COMPETITIONS[slug];
