@@ -32,64 +32,63 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
 
     const total = (entryFee * quantity).toFixed(2);
 
-    window.Pi.createPayment(
-      {
-        amount: parseFloat(total),
-        memo: `Entry for ${competitionSlug}`,
-        metadata: { competitionSlug, quantity },
-      },
-      {
-        onReadyForServerApproval: async (paymentId) => {
-          console.log('[APP] Approving payment:', paymentId);
-          alert(`🆔 Approving payment: ${paymentId}`);
+   window.Pi.createPayment(
+  {
+    amount: parseFloat(total),
+    memo: `Entry for ${competitionSlug}`,
+    metadata: { competitionSlug, quantity },
+  },
+  {
+    onReadyForServerApproval: async (paymentId) => {
+      try {
+        const res = await fetch('/api/payments/approve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ paymentId }),
+        });
 
-          try {
-            const res = await fetch('/api/payments/approve', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ paymentId }),
-            });
+        if (!res.ok) {
+          throw new Error(await res.text());
+        }
 
-           if (!res.ok) {
-  throw new Error(await res.text());
-          } catch (err) {
-            console.error('[ERROR] Approving payment:', err);
-            alert('❌ Server approval failed. See console.');
-          }
-        },
-
-      onReadyForServerCompletion: async (paymentId, txid) => {
-  console.log('🧾 Completing with txid:', txid);
-  await fetch('/api/payments/complete', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ paymentId, txid }), // ✅ both values passed
-  });
-}
-
-
-   if (!res.ok) {throw new Error(await res.text());
-    const data = await res.json();
-    console.log('[🎟️] Ticket issued:', data);
-    alert(`✅ Ticket purchased successfully!\n🎟️ ID: ${data.ticketId}`);
-  } catch (err) {
-    console.error('[❌] Server completion failed:', err);
-    alert('Server completion failed. See console.');
-  }
-},
-
-        onCancel: (paymentId) => {
-          console.warn('[APP] Payment cancelled:', paymentId);
-          alert(`⚠️ Payment cancelled: ${paymentId}`);
-        },
-
-        onError: (error, payment) => {
-          console.error('[APP] Payment error:', error, payment);
-          alert(`❌ Payment error: ${error.message || 'See console'}`);
-        },
+        console.log('[✅] Payment approved on server');
+      } catch (err) {
+        console.error('[ERROR] Approving payment:', err);
+        alert('❌ Server approval failed. See console.');
       }
-    );
-  };
+    },
+
+    onReadyForServerCompletion: async (paymentId, txid) => {
+      try {
+        console.log('🧾 Completing with txid:', txid);
+        const res = await fetch('/api/payments/complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ paymentId, txid }),
+        });
+
+        if (!res.ok) {
+          throw new Error(await res.text());
+        }
+
+        const data = await res.json();
+        console.log('[🎟️] Ticket issued:', data);
+        alert(`✅ Ticket purchased successfully!\n🎟️ ID: ${data.ticketId}`);
+      } catch (err) {
+        console.error('[ERROR] Completing payment:', err);
+        alert('❌ Server completion failed. See console.');
+      }
+    },
+
+    onCancel: (paymentId) => {
+      console.warn('[APP] Payment cancelled:', paymentId);
+    },
+
+    onError: (error, payment) => {
+      console.error('[APP] Payment error:', error, payment);
+    },
+  }
+);
 
   return (
     <button
