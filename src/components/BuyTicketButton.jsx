@@ -6,18 +6,18 @@ import { loadPiSdk } from '@/lib/pi';
 export default function BuyTicketButton({ competitionSlug, entryFee, quantity }) {
   const [sdkReady, setSdkReady] = useState(false);
 
-  // ✅ Load Pi SDK on mount
+  // Load Pi SDK on mount
   useEffect(() => {
     loadPiSdk(setSdkReady);
   }, []);
 
-  // ✅ Debug log
+  // Debug logs
   useEffect(() => {
     console.log('[DEBUG] sdkReady:', sdkReady);
     console.log('[DEBUG] window.Pi:', typeof window !== 'undefined' && window.Pi);
   }, [sdkReady]);
 
-  // ✅ Trigger payment
+  // Handle payment
   const handlePayment = async () => {
     if (
       typeof window === 'undefined' ||
@@ -41,26 +41,43 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
       {
         onReadyForServerApproval: async (paymentId) => {
           console.log('[APP] Approving payment:', paymentId);
-          alert(`🆔 Payment ID: ${paymentId}`); // ✅ You can remove this after testing
+          alert(`🆔 Approving payment: ${paymentId}`);
 
-          await fetch('/api/payments/approve', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paymentId }),
-          });
+          try {
+            const res = await fetch('/api/payments/approve', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ paymentId }),
+            });
+
+            if (!res.ok) throw new Error(await res.text());
+          } catch (err) {
+            console.error('[ERROR] Approving payment:', err);
+            alert('❌ Server approval failed. See console.');
+          }
         },
 
         onReadyForServerCompletion: async (paymentId, txid) => {
-          console.log('[APP] Completing payment:', paymentId);
-          await fetch('/api/payments/complete', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paymentId }),
-          });
+          console.log('[APP] Completing payment:', paymentId, txid);
+          alert(`✅ Completing payment\n🆔 ${paymentId}\n🔁 ${txid}`);
+
+          try {
+            const res = await fetch('/api/payments/complete', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ paymentId, txid }),
+            });
+
+            if (!res.ok) throw new Error(await res.text());
+          } catch (err) {
+            console.error('[ERROR] Completing payment:', err);
+            alert('❌ Server completion failed. See console.');
+          }
         },
 
         onCancel: (paymentId) => {
           console.warn('[APP] Payment cancelled:', paymentId);
+          alert(`⚠️ Payment cancelled: ${paymentId}`);
         },
 
         onError: (error, payment) => {
