@@ -17,6 +17,7 @@ export default async function handler(req, res) {
   }
 
   try {
+    console.log('[🔁] Sending completion request to Pi Network API...');
     const piRes = await fetch(`https://api.minepi.com/v2/payments/${paymentId}/complete`, {
       method: 'POST',
       headers: {
@@ -27,6 +28,7 @@ export default async function handler(req, res) {
     });
 
     const piData = await piRes.json();
+    console.log('[📦] Pi API response:', piData);
 
     if (!piRes.ok) {
       console.error('[❌] Failed to complete payment:', piData);
