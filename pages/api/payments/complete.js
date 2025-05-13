@@ -13,6 +13,7 @@ export default async function handler(req, res) {
   const { paymentId, txid } = req.body;
 
   if (!paymentId || !txid) {
+    console.warn('[⚠️] Missing paymentId or txid:', { paymentId, txid });
     return res.status(400).json({ error: 'Missing paymentId or txid' });
   }
 
@@ -27,17 +28,24 @@ export default async function handler(req, res) {
       body: JSON.stringify({ txid }),
     });
 
-   const responseText = await piRes.text();
-console.log('[DEBUG] Raw Pi response:', responseText);
+    const responseText = await piRes.text();
+    console.log('[🔍 DEBUG] Raw Pi response:', responseText);
 
-if (!piRes.ok) {
-  return res.status(500).json({ error: 'Failed to complete payment', details: responseText });
-}
+    if (!piRes.ok) {
+      console.error('[❌] Failed to complete payment at Pi Network API.');
+      return res.status(500).json({
+        error: 'Failed to complete payment',
+        details: responseText,
+      });
+    }
 
-const piData = JSON.parse(responseText);
+    const piData = JSON.parse(responseText);
+    const { user_uid, metadata, amount } = piData.payment || {};
 
-
-    const { user_uid, metadata, amount } = piData.payment;
+    if (!user_uid || !metadata) {
+      console.error('[❌] Missing user_uid or metadata in Pi response:', piData);
+      return res.status(500).json({ error: 'Invalid payment data from Pi' });
+    }
 
     await client.connect();
     const db = client.db('ohmycompetitions');
@@ -60,8 +68,9 @@ const piData = JSON.parse(responseText);
 
     console.log('[✅] Payment recorded and ticket issued:', ticketId);
     return res.status(200).json({ success: true, ticketId });
+
   } catch (err) {
     console.error('[🔥] Internal server error:', err);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error', details: err.message });
   }
 }

@@ -57,16 +57,15 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
           }
         },
 
-       onReadyForServerCompletion: async (paymentId, txid) => {
-  console.log('[✅] onReadyForServerCompletion:', { paymentId, txid });
-  alert(`🧾 Completing Payment\n🆔 ${paymentId}\n🔗 txid: ${txid}`);
+      onReadyForServerCompletion: async (paymentId, txid) => {
+  console.log('🧾 Completing with txid:', txid);
+  await fetch('/api/payments/complete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ paymentId, txid }), // ✅ both values passed
+  });
+}
 
-  try {
-    const res = await fetch('/api/payments/complete', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ paymentId, txid }),
-    });
 
     if (!res.ok) throw new Error(await res.text());
     const data = await res.json();
