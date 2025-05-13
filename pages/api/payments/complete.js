@@ -27,13 +27,15 @@ export default async function handler(req, res) {
       body: JSON.stringify({ txid }),
     });
 
-    const piData = await piRes.json();
-    console.log('[📦] Pi API response:', piData);
+   const responseText = await piRes.text();
+console.log('[DEBUG] Raw Pi response:', responseText);
 
-    if (!piRes.ok) {
-      console.error('[❌] Failed to complete payment:', piData);
-      return res.status(500).json({ error: 'Failed to complete payment', details: piData });
-    }
+if (!piRes.ok) {
+  return res.status(500).json({ error: 'Failed to complete payment', details: responseText });
+}
+
+const piData = JSON.parse(responseText);
+
 
     const { user_uid, metadata, amount } = piData.payment;
 
