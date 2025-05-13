@@ -1,37 +1,33 @@
 // pages/api/payments/approve.js
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { paymentId } = req.body;
 
-  if (!paymentId) {
-    return res.status(400).json({ error: 'Missing paymentId' });
-  }
+  if (!paymentId) return res.status(400).json({ error: 'Missing paymentId' });
 
   try {
-    // This URL confirms the payment with Pi's server
-    const verifyRes = await fetch(`https://api.minepi.com/v2/payments/${paymentId}/approve`, {
+    const response = await fetch(`https://api.minepi.com/v2/payments/${paymentId}/approve`, {
       method: 'POST',
       headers: {
-        Authorization: `Key ${process.env.PI_API_SECRET}`, // Set this in Vercel
+        Authorization: `Key ${process.env.PI_API_KEY}`, // Set this in your Vercel env vars
         'Content-Type': 'application/json',
       },
     });
 
-    if (!verifyRes.ok) {
-      const errorText = await verifyRes.text();
-      console.error('[❌] Approve failed:', errorText);
-      return res.status(500).json({ error: 'Failed to approve payment' });
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error('[❌] Approve failed:', data);
+      return res.status(500).json({ error: 'Failed to approve payment', details: data });
     }
 
-    const approvedPayment = await verifyRes.json();
-    console.log('[✅] Payment approved:', approvedPayment);
-    return res.status(200).json({ status: 'approved', payment: approvedPayment });
+    console.log('[✅] Payment approved:', data);
+    return res.status(200).json({ success: true, data });
   } catch (err) {
-    console.error('[🔥] Server error:', err);
-    return res.status(500).json({ error: 'Server error' });
+    console.error('[🔥] Server error during approval:', err);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 }
+
