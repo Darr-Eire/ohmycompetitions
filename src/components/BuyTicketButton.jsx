@@ -6,15 +6,29 @@ import { loadPiSdk } from '@/lib/pi';
 export default function BuyTicketButton({ competitionSlug, entryFee, quantity }) {
   const [sdkReady, setSdkReady] = useState(false);
 
+  // ✅ Load Pi SDK on mount
   useEffect(() => {
     loadPiSdk(setSdkReady);
   }, []);
 
+  // ✅ Debug log
+  useEffect(() => {
+    console.log('[DEBUG] sdkReady:', sdkReady);
+    console.log('[DEBUG] window.Pi:', typeof window !== 'undefined' && window.Pi);
+  }, [sdkReady]);
+
+  // ✅ Trigger payment
   const handlePayment = async () => {
-    if (!sdkReady || !window.Pi || typeof window.Pi.createPayment !== 'function') {
-      alert('⚠️ Pi SDK not ready. Try again in Pi Browser.');
+    if (
+      typeof window === 'undefined' ||
+      !window.Pi ||
+      typeof window.Pi.createPayment !== 'function'
+    ) {
+      alert('⚠️ Pi SDK not ready. Make sure you are in the Pi Browser.');
       return;
     }
+
+    console.log('🚀 Starting Pi.createPayment...');
 
     const total = (entryFee * quantity).toFixed(2);
 
@@ -26,34 +40,26 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
       },
       {
         onReadyForServerApproval: async (paymentId) => {
-          try {
-            const res = await fetch('/api/payments/approve', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ paymentId }),
-            });
-            if (!res.ok) throw new Error(await res.text());
-          } catch (err) {
-            console.error('❌ Approval error:', err);
-          }
+          console.log('[APP] Approving payment:', paymentId);
+          await fetch('/api/payments/approve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId }),
+          });
         },
         onReadyForServerCompletion: async (paymentId, txid) => {
-          try {
-            const res = await fetch('/api/payments/complete', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ paymentId }),
-            });
-            if (!res.ok) throw new Error(await res.text());
-          } catch (err) {
-            console.error('❌ Completion error:', err);
-          }
+          console.log('[APP] Completing payment:', paymentId);
+          await fetch('/api/payments/complete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId }),
+          });
         },
         onCancel: (paymentId) => {
-          console.warn('⚠️ Payment cancelled:', paymentId);
+          console.warn('[APP] Payment cancelled:', paymentId);
         },
         onError: (error, payment) => {
-          console.error('❌ Pi SDK error:', error, payment);
+          console.error('[APP] Payment error:', error, payment);
         },
       }
     );

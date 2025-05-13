@@ -1,17 +1,22 @@
 // lib/pi.js
-export async function loadPiSdk(setReadyCallback) {
-  if (typeof window === 'undefined' || window.Pi) return;
+export function loadPiSdk(setReady) {
+  if (typeof window === 'undefined') return;
+
+  if (window.Pi && typeof window.Pi.createPayment === 'function') {
+    setReady(true);
+    return;
+  }
 
   const script = document.createElement('script');
   script.src = 'https://sdk.minepi.com/pi-sdk.js';
   script.async = true;
   script.onload = () => {
-    const waitForPi = setInterval(() => {
-      if (window.Pi) {
-        clearInterval(waitForPi);
+    const wait = setInterval(() => {
+      if (window.Pi && typeof window.Pi.createPayment === 'function') {
+        clearInterval(wait);
         window.Pi.init({ version: '2.0' });
-        setReadyCallback(true);
-        console.log('✅ Pi SDK loaded');
+        setReady(true);
+        console.log('✅ Pi SDK fully loaded');
       }
     }, 100);
   };
