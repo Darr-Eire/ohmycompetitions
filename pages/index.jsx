@@ -35,54 +35,13 @@ export default function HomePage() {
   };
 
   // Load Pi SDK on mount
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://sdk.minepi.com/pi-sdk.js';
-    script.async = true;
-    script.onload = () => {
-      if (window.Pi) {
-        window.Pi.init({ version: '2.0' });
-        setPiSdkReady(true);
-        console.log('✅ Pi SDK loaded');
-      }
-    };
-    document.body.appendChild(script);
-  }, []);
+const handlePiPayment = async () => {
+  if (!piSdkReady || !window.Pi || typeof window.Pi.createPayment !== 'function') {
+    alert('⚠️ Pi SDK not fully loaded. Please try again in a few seconds.');
+    return;
+  }
 
-  // Check if user is already logged in
-  useEffect(() => {
-    fetch('/api/auth/me')
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data?.user) {
-          setPiUser(data.user);
-        }
-      });
-  }, []);
-
-  const handlePiLogin = async () => {
-    if (!piSdkReady) return alert('Pi SDK not ready');
-
-    try {
-      const result = await window.Pi.authenticate(['username']);
-      const res = await fetch('/api/auth/pi-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken: result.accessToken }),
-      });
-
-      if (!res.ok) throw new Error('Login failed');
-      const data = await res.json();
-      setPiUser(data.user);
-      alert(`✅ Logged in as ${data.user.username}`);
-    } catch (err) {
-      console.error('❌ Pi Login Error:', err);
-      alert('Login failed. See console.');
-    }
-  };
-
- const handlePiPayment = async () => {
-  if (!piSdkReady) return alert('Pi SDK not ready');
+  console.log('🚀 Calling Pi.createPayment...');
 
   try {
     window.Pi.createPayment(
@@ -100,13 +59,11 @@ export default function HomePage() {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ paymentId }),
             });
-
             if (!res.ok) throw new Error(await res.text());
           } catch (err) {
             console.error('❌ Error in approval callback:', err);
           }
         },
-
         onReadyForServerCompletion: async (paymentId, txid) => {
           console.log('[✅] onReadyForServerCompletion:', paymentId);
           try {
@@ -115,27 +72,25 @@ export default function HomePage() {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ paymentId }),
             });
-
             if (!res.ok) throw new Error(await res.text());
           } catch (err) {
             console.error('❌ Error in completion callback:', err);
           }
         },
-
         onCancel: (paymentId) => {
           console.warn('[⚠️] Payment cancelled:', paymentId);
         },
-
         onError: (error, payment) => {
           console.error('❌ Pi SDK error:', error, payment);
         },
       }
     );
   } catch (err) {
-    console.error('❌ Pi Payment Error:', err);
-    alert('Pi payment failed. See console.');
+    console.error('❌ Failed to create Pi payment:', err);
+    alert('Could not create Pi payment. See console for details.');
   }
 };
+
 
   
 
