@@ -20,8 +20,9 @@ export default async function handler(req, res) {
   console.log('AccessToken:', accessToken);
 
   try {
-    const piRes = await fetch('https://api.minepi.com/v2/me', {
-      method: 'POST',
+  const piRes = await fetch('https://api.minepi.com/v2/me', {
+  method: 'GET',
+
       headers: {
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
