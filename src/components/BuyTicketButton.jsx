@@ -76,7 +76,7 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
     console.error('[❌] Server completion failed:', err);
     alert('Server completion failed. See console.');
   }
-}
+},
 
         onCancel: (paymentId) => {
           console.warn('[APP] Payment cancelled:', paymentId);
