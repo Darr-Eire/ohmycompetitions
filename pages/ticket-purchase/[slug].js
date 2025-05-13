@@ -296,19 +296,7 @@ export default function TicketPurchasePage() {
   const [discount, setDiscount] = useState(0);
   const [timeLeft, setTimeLeft] = useState('');
 
-  // ✅ Load Pi SDK
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://sdk.minepi.com/pi-sdk.js';
-    script.async = true;
-    script.onload = () => {
-      if (window?.Pi) {
-        window.Pi.init({ version: '2.0' });
-        console.log('✅ Pi SDK initialized');
-      }
-    };
-    document.body.appendChild(script);
-  }, []);
+
 
   // ✅ Get current user if available
   useEffect(() => {
