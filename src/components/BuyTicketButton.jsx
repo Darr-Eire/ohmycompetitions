@@ -50,10 +50,8 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
               body: JSON.stringify({ paymentId }),
             });
 
-          if (!res.ok) {
+           if (!res.ok) {
   throw new Error(await res.text());
-}
-
           } catch (err) {
             console.error('[ERROR] Approving payment:', err);
             alert('❌ Server approval failed. See console.');
@@ -70,10 +68,7 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
 }
 
 
-   if (!res.ok) {
-  throw new Error(await res.text());
-}
-
+   if (!res.ok) {throw new Error(await res.text());
     const data = await res.json();
     console.log('[🎟️] Ticket issued:', data);
     alert(`✅ Ticket purchased successfully!\n🎟️ ID: ${data.ticketId}`);
