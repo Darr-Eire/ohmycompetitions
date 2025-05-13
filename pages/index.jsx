@@ -63,27 +63,41 @@ export default function HomePage() {
   }, []);
 
   const handlePiLogin = async () => {
-    if (!piSdkReady || typeof window === 'undefined' || !window.Pi) {
-      return alert('Pi SDK not ready');
-    }
+  try {
+    const user = await window.Pi.authenticate(['username', 'payments'], async (incompletePayment) => {
+      if (incompletePayment) {
+        console.warn('⚠️ Found incomplete payment:', incompletePayment);
 
-    try {
-      const result = await window.Pi.authenticate(['username']);
-      const res = await fetch('/api/auth/pi-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken: result.accessToken }),
-      });
+        // Manually resume payment by re-running approval
+        try {
+          await fetch('/api/payments/approve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId: incompletePayment.identifier }),
+          });
 
-      if (!res.ok) throw new Error('Login failed');
-      const data = await res.json();
-      setPiUser(data.user);
-      alert(`✅ Logged in as ${data.user.username}`);
-    } catch (err) {
-      console.error('❌ Pi Login Error:', err);
-      alert('Login failed. See console.');
-    }
-  };
+          // Then call complete
+          await fetch('/api/payments/complete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId: incompletePayment.identifier }),
+          });
+
+          console.log('✅ Incomplete payment handled');
+        } catch (err) {
+          console.error('❌ Failed to resume payment:', err);
+        }
+      }
+    });
+
+    setPiUser(user);
+    console.log('✅ Logged in:', user);
+  } catch (err) {
+    alert(`Login failed: ${err.message}`);
+    console.error('❌ Authentication error:', err);
+  }
+};
+
 
   const handlePiPayment = async () => {
     if (!piSdkReady || typeof window === 'undefined' || !window.Pi || typeof window.Pi.createPayment !== 'function') {
