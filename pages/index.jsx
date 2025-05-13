@@ -24,6 +24,7 @@ export default function HomePage() {
   const [selectedToken, setSelectedToken] = useState('BTC');
   const [piUser, setPiUser] = useState(null);
   const [piSdkReady, setPiSdkReady] = useState(false);
+  const [hasWindow, setHasWindow] = useState(false);
 
   const mockPiCashProps = {
     code: '7H3X-PL4Y',
@@ -34,65 +35,109 @@ export default function HomePage() {
     claimExpiresAt: new Date(Date.now() + 1000 * 60 * 60 * 10).toISOString()
   };
 
-  // Load Pi SDK on mount
-const handlePiPayment = async () => {
-  if (!piSdkReady || !window.Pi || typeof window.Pi.createPayment !== 'function') {
-    alert('⚠️ Pi SDK not fully loaded. Please try again in a few seconds.');
-    return;
-  }
+  useEffect(() => {
+    setHasWindow(typeof window !== 'undefined');
 
-  console.log('🚀 Calling Pi.createPayment...');
+    const script = document.createElement('script');
+    script.src = 'https://sdk.minepi.com/pi-sdk.js';
+    script.async = true;
+    script.onload = () => {
+      const waitForPi = setInterval(() => {
+        if (window.Pi) {
+          clearInterval(waitForPi);
+          window.Pi.init({ version: '2.0' });
+          setPiSdkReady(true);
+          console.log('✅ Pi SDK loaded and initialized');
+        }
+      }, 100);
+    };
+    document.body.appendChild(script);
+  }, []);
 
-  try {
-    window.Pi.createPayment(
-      {
-        amount: 0.01,
-        memo: 'OhMyCompetitions entry',
-        metadata: { entryId: 'test-entry-123' },
-      },
-      {
-        onReadyForServerApproval: async (paymentId) => {
-          console.log('[✅] onReadyForServerApproval:', paymentId);
-          try {
-            const res = await fetch('/api/payments/approve', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ paymentId }),
-            });
-            if (!res.ok) throw new Error(await res.text());
-          } catch (err) {
-            console.error('❌ Error in approval callback:', err);
-          }
-        },
-        onReadyForServerCompletion: async (paymentId, txid) => {
-          console.log('[✅] onReadyForServerCompletion:', paymentId);
-          try {
-            const res = await fetch('/api/payments/complete', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ paymentId }),
-            });
-            if (!res.ok) throw new Error(await res.text());
-          } catch (err) {
-            console.error('❌ Error in completion callback:', err);
-          }
-        },
-        onCancel: (paymentId) => {
-          console.warn('[⚠️] Payment cancelled:', paymentId);
-        },
-        onError: (error, payment) => {
-          console.error('❌ Pi SDK error:', error, payment);
-        },
-      }
-    );
-  } catch (err) {
-    console.error('❌ Failed to create Pi payment:', err);
-    alert('Could not create Pi payment. See console for details.');
-  }
-};
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.user) setPiUser(data.user);
+      });
+  }, []);
 
+  const handlePiLogin = async () => {
+    if (!piSdkReady || typeof window === 'undefined' || !window.Pi) {
+      return alert('Pi SDK not ready');
+    }
 
-  
+    try {
+      const result = await window.Pi.authenticate(['username']);
+      const res = await fetch('/api/auth/pi-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessToken: result.accessToken }),
+      });
+
+      if (!res.ok) throw new Error('Login failed');
+      const data = await res.json();
+      setPiUser(data.user);
+      alert(`✅ Logged in as ${data.user.username}`);
+    } catch (err) {
+      console.error('❌ Pi Login Error:', err);
+      alert('Login failed. See console.');
+    }
+  };
+
+  const handlePiPayment = async () => {
+    if (!piSdkReady || typeof window === 'undefined' || !window.Pi || typeof window.Pi.createPayment !== 'function') {
+      alert('⚠️ Pi SDK not fully loaded. Please try again.');
+      return;
+    }
+
+    try {
+      window.Pi.createPayment(
+        {
+          amount: 0.01,
+          memo: 'OhMyCompetitions entry',
+          metadata: { entryId: 'test-entry-123' },
+        },
+        {
+          onReadyForServerApproval: async (paymentId) => {
+            console.log('[✅] onReadyForServerApproval:', paymentId);
+            try {
+              const res = await fetch('/api/payments/approve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ paymentId }),
+              });
+              if (!res.ok) throw new Error(await res.text());
+            } catch (err) {
+              console.error('❌ Error in approval callback:', err);
+            }
+          },
+          onReadyForServerCompletion: async (paymentId, txid) => {
+            console.log('[✅] onReadyForServerCompletion:', paymentId);
+            try {
+              const res = await fetch('/api/payments/complete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ paymentId }),
+              });
+              if (!res.ok) throw new Error(await res.text());
+            } catch (err) {
+              console.error('❌ Error in completion callback:', err);
+            }
+          },
+          onCancel: (paymentId) => {
+            console.warn('[⚠️] Payment cancelled:', paymentId);
+          },
+          onError: (error, payment) => {
+            console.error('❌ Pi SDK error:', error, payment);
+          },
+        }
+      );
+    } catch (err) {
+      console.error('❌ Pi Payment Error:', err);
+      alert('Pi payment failed. See console.');
+    }
+  };
 
   const TopWinnersCarousel = () => {
     const winners = [
@@ -130,20 +175,22 @@ const handlePiPayment = async () => {
         {piUser ? (
           <p className="text-white text-lg">👋 Welcome, {piUser.username}</p>
         ) : (
-          <>
-            <button
-              onClick={handlePiLogin}
-              className="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-lg text-white font-semibold shadow transition"
-            >
-              Login with Pi
-            </button>
-            <button
-              onClick={handlePiPayment}
-              className="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-lg text-white font-semibold shadow transition"
-            >
-              Make Pi Payment
-            </button>
-          </>
+          hasWindow && (
+            <>
+              <button
+                onClick={handlePiLogin}
+                className="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-lg text-white font-semibold shadow transition"
+              >
+                Login with Pi
+              </button>
+              <button
+                onClick={handlePiPayment}
+                className="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-lg text-white font-semibold shadow transition"
+              >
+                Make Pi Payment
+              </button>
+            </>
+          )
         )}
       </div>
 
@@ -186,7 +233,7 @@ const handlePiPayment = async () => {
   );
 }
 
-// Reusable Section Component
+// Reusable Section
 function Section({ title, items, viewMoreHref, viewMoreText = 'View More', extraClass = '' }) {
   const isDaily = title.toLowerCase().includes('daily');
   const isFree = title.toLowerCase().includes('free');
