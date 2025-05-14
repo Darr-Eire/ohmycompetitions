@@ -1,23 +1,20 @@
+import { connectToDatabase } from '@/lib/mongodb';
 import mongoose from 'mongoose';
-const { connectToDatabase } = require('../../lib/mongodb');
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).end('Method Not Allowed');
+  if (req.method !== 'POST') return res.status(405).end();
 
   const { txid, userId, week } = req.body;
 
-  // Validate input
   if (!txid || !userId || !week) {
-    return res.status(400).json({ error: 'Missing required fields: txid, userId, or week' });
+    return res.status(400).json({ error: 'Missing required fields' });
   }
 
   try {
     await connectToDatabase();
     const db = mongoose.connection.db;
 
-    // Ensure the date is normalized to match what was seeded
     const weekStartDate = new Date(`${week}T00:00:00Z`);
-    
     const codeDoc = await db.collection('pi_cash_codes').findOne({
       weekStart: weekStartDate,
     });
