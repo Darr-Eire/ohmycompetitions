@@ -1,7 +1,7 @@
 // pages/api/claim-code.js
-import { connectToDatabase } from '@/lib/mongodb';
-import mongoose from 'mongoose';
 
+import mongoose from 'mongoose';
+const { connectToDatabase } = require('../lib/mongodb');
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 

@@ -1,18 +1,25 @@
-// pages/api/pi-cash-entry.js
-import { connectToDatabase } from '@/lib/mongodb';
 import mongoose from 'mongoose';
+const { connectToDatabase } = require('../../lib/mongodb');
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).end();
+  if (req.method !== 'POST') return res.status(405).end('Method Not Allowed');
 
   const { txid, userId, week } = req.body;
+
+  // Validate input
+  if (!txid || !userId || !week) {
+    return res.status(400).json({ error: 'Missing required fields: txid, userId, or week' });
+  }
 
   try {
     await connectToDatabase();
     const db = mongoose.connection.db;
 
+    // Ensure the date is normalized to match what was seeded
+    const weekStartDate = new Date(`${week}T00:00:00Z`);
+    
     const codeDoc = await db.collection('pi_cash_codes').findOne({
-      weekStart: new Date(week + 'T15:14:00Z'),
+      weekStart: weekStartDate,
     });
 
     if (!codeDoc) {
