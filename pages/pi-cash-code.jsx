@@ -121,15 +121,25 @@ export default function PiCashCodePage() {
           Enter Now
         </button>
 
-        <section className="mt-8 text-center">
-          <h2 className="text-2xl font-bold text-cyan-300 mb-2">How It Works</h2>
-          <ul className="list-disc list-inside text-white/90 space-y-2 text-left inline-block text-sm sm:text-base">
-            <li>The code drops every Monday at <strong>3:14 PM UTC</strong>.</li>
-            <li>It remains active for <strong>31 hours and 4 minutes</strong>.</li>
-            <li>Friday draw at <strong>3:14 PM UTC</strong>.</li>
-            <li>The winner must return the code within <strong>31 minutes and 4 seconds</strong>.</li>
-          </ul>
-        </section>
+       <section className="mt-8 text-center">
+  <h2 className="text-1xl font-semi-bold text-black mb-2">How It Works</h2>
+
+  <div className="inline-block text-left">
+    <ul className="list-disc list-inside text-white/90 space-y-2 text-sm sm:text-base">
+      <li>The code drops every Monday at <strong>3:14 PM UTC</strong>.</li>
+      <li>It remains active for <strong>31 hours and 4 minutes</strong>.</li>
+      <li>Friday draw at <strong>3:14 PM UTC</strong>.</li>
+      <li>The winner must return the code within <strong>31 minutes and 4 seconds</strong>.</li>
+    </ul>
+
+    <div className="text-center mt-3">
+      <a href="/terms" className="text-xs text-cyan-400 underline hover:text-cyan-300 transition">
+        View full Terms & Conditions
+      </a>
+    </div>
+  </div>
+</section>
+
 
         <section className="mt-10 space-y-6">
           <div className="bg-[#0b1120] bg-opacity-50 backdrop-blur-md border border-cyan-400 rounded-xl p-4 shadow-[0_0_20px_#00ffd5aa]">

@@ -5,43 +5,40 @@ import { FaTrophy } from 'react-icons/fa'
 
 export default function WinnersPage() {
   return (
-    <main className="page">
-      <div className="competition-card max-w-2xl w-full">
+    <main className="min-h-screen px-4 py-10 bg-[#0b1120] text-white font-orbitron">
+      <div className="max-w-3xl mx-auto border border-cyan-400 rounded-2xl p-6 sm:p-8 backdrop-blur-md shadow-[0_0_30px_#00fff055]">
 
-        {/* Title */}
-        <div className="competition-top-banner flex items-center justify-center gap-2">
-          <FaTrophy className="text-white text-2xl" />
-          Winner Celebrations
-        </div>
-
-        <div className="h-1 w-24 bg-blue-300 mx-auto rounded mb-6" />
-
-        {/* Body */}
-        <div className="p-6 space-y-6 text-center">
-
-          <p className="text-gray-700">
-            🎉 Celebrate with winners!  
-            Share your win story or congratulate others!
-          </p>
-
-          {/* Celebrate Button */}
-          <Link href="/forums/winners/celebrate">
-            <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded mt-4">
-              🎉 Celebrate Now
-            </button>
-          </Link>
-
-          {/* Back */}
-          <div className="mt-10">
-            <Link href="/forums">
-              <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded">
-                ← Back to Forums
-              </button>
-            </Link>
+        {/* Header */}
+        <div className="bg-gradient-to-r from-cyan-400 to-blue-500 text-black text-center text-lg sm:text-xl font-bold px-4 py-2 rounded-xl mb-8">
+          <div className="flex justify-center items-center gap-2">
+            <FaTrophy className="text-black text-2xl" />
+            Winner Celebrations
           </div>
-
         </div>
 
+        {/* Intro */}
+        <p className="text-white text-sm sm:text-base text-center mb-8">
+          🎉 Celebrate with fellow winners!<br />
+          Share your win story or give a shoutout to someone else's big moment.
+        </p>
+
+        {/* Celebrate Button */}
+        <div className="text-center mt-6">
+          <Link href="/forums/winners/celebrate">
+            <span className="inline-block bg-gradient-to-r from-green-300 to-green-500 text-black font-semibold px-6 py-2 rounded-md shadow hover:brightness-110 transition">
+              🎉 Celebrate Now
+            </span>
+          </Link>
+        </div>
+
+        {/* Back Button */}
+        <div className="text-center mt-6">
+          <Link href="/forums">
+            <span className="inline-block bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-semibold px-6 py-2 rounded-md shadow hover:brightness-110 transition">
+              ← Back to Forums
+            </span>
+          </Link>
+        </div>
       </div>
     </main>
   )

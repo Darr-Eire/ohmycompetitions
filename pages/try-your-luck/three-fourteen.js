@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Confetti from 'react-confetti'
 import { useWindowSize } from '@uidotdev/usehooks'
 import { updateDailyStreak, getStreak } from '@/lib/streak'
-import Link from 'next/link' // ← added for back button
+import Link from 'next/link'
 
 const initialBoard = [
   { name: 'Alice', result: '🏆 Perfect!', time: Date.now() - 2 * 60e3 },
@@ -26,6 +26,7 @@ export default function ThreeFourteenGame() {
   const [time, setTime] = useState(0)
   const [result, setResult] = useState('')
   const [board, setBoard] = useState(initialBoard)
+  const [retryAvailable, setRetryAvailable] = useState(false)
   const intervalRef = useRef(null)
   const { width, height } = useWindowSize()
 
@@ -51,6 +52,7 @@ export default function ThreeFourteenGame() {
     const diff = Math.abs(3.14 - time)
     const outcome = diff <= 0.05 ? '🏆 Perfect!' : `❌ ${time.toFixed(2)}s`
     if (diff <= 0.05) updateDailyStreak()
+    setRetryAvailable(diff > 0.05 && diff <= 0.15)
 
     setResult(outcome)
     setBoard(prev => [
@@ -143,7 +145,7 @@ export default function ThreeFourteenGame() {
           <div className="relative z-10 p-4 space-y-4">
             <canvas ref={canvasRef} className="mx-auto w-64 h-64 rounded-full shadow-inner" />
 
-            <div className="flex justify-center gap-4">
+            <div className="flex flex-wrap justify-center gap-4">
               {!running && !result && (
                 <button
                   onClick={() => { setTime(0); setResult(''); setRunning(true) }}
@@ -160,6 +162,20 @@ export default function ThreeFourteenGame() {
               {!running && result && (
                 <button onClick={() => window.location.reload()} className="btn-gradient py-2 px-4 text-lg">
                   Reset
+                </button>
+              )}
+              {!running && result.startsWith('❌') && retryAvailable && (
+                <button
+                  onClick={() => {
+                    // Simulated retry payment
+                    alert('1 π deducted. Retry granted.')
+                    setTime(0)
+                    setResult('')
+                    setRunning(true)
+                  }}
+                  className="bg-yellow-400 text-black font-bold py-2 px-4 rounded shadow hover:brightness-110 transition"
+                >
+                  Retry for 1 π
                 </button>
               )}
             </div>

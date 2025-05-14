@@ -1,49 +1,31 @@
-
-import PiCashCode from '@/models/PiCashCode';
 import { connectToDatabase } from '@/lib/mongodb';
-
-function generateCode() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let raw = '';
-  for (let i = 0; i < 8; i++) {
-    raw += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return raw.match(/.{1,4}/g).join('-');
-}
+import PiCashCode from '@/models/PiCashCode';
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
   try {
     await connectToDatabase();
 
     const now = new Date();
-    const weekStart = new Date();
-    weekStart.setUTCHours(15, 14, 0, 0);
-    weekStart.setUTCDate(weekStart.getUTCDate() - weekStart.getUTCDay() + 1);
+    const weekStart = new Date(now);
+    weekStart.setUTCHours(0, 0, 0, 0);
+    weekStart.setUTCDate(now.getUTCDate() - now.getUTCDay()); // last Sunday = start of week
 
-    const exists = await PiCashCode.findOne({ weekStart });
-    if (exists) {
-      return res.status(409).json({ message: 'Code for this week already exists', code: exists.code });
-    }
+    const expiresAt = new Date(now.getTime() + 1000 * 60 * 60 * 24); // 24 hours from now
 
-    const newCode = generateCode();
-    const expiresAt = new Date(weekStart.getTime() + (31 * 60 + 4) * 60 * 1000);
-
-    const created = await PiCashCode.create({
-      code: newCode,
+    const result = await PiCashCode.create({
+      code: 'PI314CODE',
+      prizePool: 31400,
       weekStart,
-      expiresAt,
-      claimed: false,
-      prizePool: 0,
-      createdAt: new Date()
+      expiresAt
     });
 
-    res.status(201).json({ message: 'New code created', code: created.code });
+    res.status(200).json({
+      success: true,
+      insertedId: result._id,
+      message: 'Test Pi Cash Code inserted'
+    });
   } catch (err) {
-    console.error('Error seeding Pi Cash Code:', err);
-    res.status(500).json({ error: 'Failed to create code' });
+    console.error('[SEED ERROR]', err);
+    res.status(500).json({ error: 'Failed to insert test code' });
   }
 }

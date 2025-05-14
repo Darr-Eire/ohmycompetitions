@@ -1,28 +1,30 @@
-import { useRouter } from 'next/router';
-import { useState, useEffect } from 'react';
+'use client'
+
+import { useRouter } from 'next/router'
+import { useState, useEffect } from 'react'
 
 const piCompetitions = {
-  'pi-giveaway-100k': {
-    title: '100,000 Pi Giveaway',
-    prize: '100,000 π',
+  'pi-giveaway-10k': {
+    title: '10,000 Pi Giveaway',
+    prize: '10,000 π',
     entryFee: 10,
     date: 'May 20, 2025',
     time: '12:00 AM UTC',
     endsAt: '2025-05-20T00:00:00Z',
     location: 'Online',
   },
-  'pi-giveaway-50k': {
-    title: '50,000 Pi Giveaway',
-    prize: '50,000 π',
+  'pi-giveaway-5k': {
+    title: '5,000 Pi Giveaway',
+    prize: '5,000 π',
     entryFee: 5,
     date: 'May 11, 2025',
     time: '12:00 AM UTC',
     endsAt: '2025-05-11T00:00:00Z',
     location: 'Online',
   },
-  'pi-giveaway-25k': {
-    title: '25,000 Pi Giveaway',
-    prize: '25,000 π',
+  'pi-giveaway-2,500k': {
+    title: '2,500 Pi Giveaway',
+    prize: '2,500 π',
     entryFee: 2,
     date: 'May 11, 2025',
     time: '12:00 AM UTC',
@@ -32,27 +34,72 @@ const piCompetitions = {
 };
 
 export default function PiTicketPage() {
-  const { query } = useRouter();
-  const competition = piCompetitions[query.slug];
-  const [quantity, setQuantity] = useState(1);
-  const [timeLeft, setTimeLeft] = useState('');
+  const router = useRouter()
+  const { slug } = router.query
+  const competition = piCompetitions[slug]
+  const [quantity, setQuantity] = useState(1)
+  const [timeLeft, setTimeLeft] = useState('')
+  const [processing, setProcessing] = useState(false)
 
   useEffect(() => {
-    if (!competition) return;
+    if (!competition) return
     const interval = setInterval(() => {
-      const diff = new Date(competition.endsAt) - new Date();
+      const diff = new Date(competition.endsAt) - new Date()
       if (diff <= 0) {
-        setTimeLeft('Ended');
+        setTimeLeft('Ended')
       } else {
-        const hours = Math.floor(diff / (1000 * 60 * 60));
-        const minutes = Math.floor((diff / (1000 * 60)) % 60);
-        setTimeLeft(`${hours}h ${minutes}m`);
+        const hours = Math.floor(diff / (1000 * 60 * 60))
+        const minutes = Math.floor((diff / (1000 * 60)) % 60)
+        setTimeLeft(`${hours}h ${minutes}m`)
       }
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [competition]);
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [competition])
 
-  if (!competition) return <p style={{ color: '#fff' }}>Competition not found.</p>;
+  const handlePayment = async () => {
+    if (timeLeft === 'Ended') return alert('This competition has ended.')
+    setProcessing(true)
+
+    try {
+      const total = competition.entryFee * quantity
+
+      const payment = await window.Pi.createPayment({
+        amount: total,
+        memo: `Entry to ${competition.title}`,
+        metadata: {
+          type: 'pi-entry',
+          competitionSlug: slug,
+          quantity,
+        },
+      })
+
+      if (payment?.transaction?.txid) {
+        alert('✅ Entry confirmed! Good luck!')
+
+        // Optional: POST to your backend
+        // await fetch('/api/entries', {
+        //   method: 'POST',
+        //   headers: { 'Content-Type': 'application/json' },
+        //   body: JSON.stringify({
+        //     txid: payment.transaction.txid,
+        //     competitionSlug: slug,
+        //     quantity,
+        //   }),
+        // })
+
+      } else {
+        alert('❌ Payment cancelled or failed.')
+      }
+    } catch (err) {
+      console.error(err)
+      alert('❌ Something went wrong during payment.')
+    }
+
+    setProcessing(false)
+  }
+
+  if (!slug) return null
+  if (!competition) return <p style={{ color: '#fff' }}>Competition not found.</p>
 
   const qtyBtnStyle = {
     background: '#00bfff',
@@ -64,9 +111,9 @@ export default function PiTicketPage() {
     height: '32px',
     fontSize: '1.2rem',
     cursor: 'pointer',
-  };
+  }
 
-  const loginBtnStyle = {
+  const payBtnStyle = {
     background: 'linear-gradient(to right, #00bfff, #1aefff)',
     color: '#000',
     fontWeight: 'bold',
@@ -77,16 +124,17 @@ export default function PiTicketPage() {
     border: 'none',
     cursor: 'pointer',
     width: '100%',
-  };
+    opacity: processing ? 0.7 : 1,
+  }
 
   return (
-    <div style={{
-      background: '#0a0e1a',
-      minHeight: '100vh',
-      padding: '2rem 1rem',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
+<div style={{
+  background: '#0a0e1a',
+  minHeight: '100vh',
+  padding: '0rem 1rem 4rem',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
     }}>
       <div style={{
         width: '100%',
@@ -108,7 +156,6 @@ export default function PiTicketPage() {
 
         <p style={{ marginBottom: '1rem', fontSize: '1.1rem' }}><strong>Prize:</strong> {competition.prize}</p>
 
-        {/* Ends In */}
         <div style={{
           background: '#001f33',
           borderRadius: '8px',
@@ -126,7 +173,6 @@ export default function PiTicketPage() {
         <p><strong>Entry Fee:</strong> {competition.entryFee} π</p>
         <p><strong>Price per ticket:</strong> {competition.entryFee} π</p>
 
-        {/* Quantity Selector */}
         <div style={{
           display: 'flex',
           justifyContent: 'center',
@@ -134,11 +180,9 @@ export default function PiTicketPage() {
           gap: '1rem',
           marginTop: '1rem',
         }}>
-          <button onClick={() => setQuantity(q => Math.max(1, q - 1))}
-            style={qtyBtnStyle}>–</button>
+          <button onClick={() => setQuantity(q => Math.max(1, q - 1))} style={qtyBtnStyle}>–</button>
           <span style={{ fontSize: '1.2rem' }}>{quantity}</span>
-          <button onClick={() => setQuantity(q => q + 1)}
-            style={qtyBtnStyle}>+</button>
+          <button onClick={() => setQuantity(q => q + 1)} style={qtyBtnStyle}>+</button>
         </div>
 
         <p style={{ marginTop: '1rem' }}>
@@ -153,11 +197,14 @@ export default function PiTicketPage() {
           Secure your entry to win <strong>{competition.prize}</strong> — don’t miss out!
         </p>
 
-        {/* Login Button */}
-        <button style={loginBtnStyle}>
-          Log in with Pi to continue
+        <button
+          style={payBtnStyle}
+          onClick={handlePayment}
+          disabled={processing}
+        >
+          {processing ? 'Processing...' : 'Pay with Pi to Enter'}
         </button>
       </div>
     </div>
-  );
+  )
 }

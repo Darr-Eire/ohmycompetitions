@@ -6,13 +6,15 @@ import { useRouter } from 'next/navigation';
 export default function PiCashHeroBanner() {
   const router = useRouter();
   const [codeData, setCodeData] = useState(null);
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [timeLeft, setTimeLeft] = useState(null);
 
+  // Fetch Pi Cash Code data on mount
   useEffect(() => {
     const fetchCode = async () => {
       try {
         const res = await fetch('/api/pi-cash-code');
         const data = await res.json();
+        console.log('Code data:', data);
         setCodeData(data);
       } catch (err) {
         console.error('Failed to load code:', err);
@@ -21,6 +23,7 @@ export default function PiCashHeroBanner() {
     fetchCode();
   }, []);
 
+  // Live countdown timer
   useEffect(() => {
     if (!codeData?.expiresAt) return;
 
@@ -33,11 +36,18 @@ export default function PiCashHeroBanner() {
       return { total, days, hours, minutes, seconds };
     };
 
-    const timer = setInterval(() => {
+    const updateTime = () => {
       const updated = getRemainingTime(codeData.expiresAt);
-      setTimeLeft(updated);
-      if (updated.total <= 0) clearInterval(timer);
-    }, 1000);
+      if (updated.total <= 0) {
+        clearInterval(timer);
+        setTimeLeft(null);
+      } else {
+        setTimeLeft(updated);
+      }
+    };
+
+    updateTime(); // Initial call
+    const timer = setInterval(updateTime, 1000);
 
     return () => clearInterval(timer);
   }, [codeData?.expiresAt]);
@@ -50,9 +60,11 @@ export default function PiCashHeroBanner() {
         Pi Cash Code
       </h1>
 
-      <div className="text-lg font-mono text-cyan-300">
+<div className="my-4 inline-block px-3 py-1.5 border border-cyan-400 rounded-md text-cyan-300 font-mono text-base shadow-[0_0_8px_#00f0ff55] bg-black/30 tracking-normal font-normal">
   {codeData?.code || 'Loading...'}
 </div>
+
+
 
 
       <div className="text-center mb-1">
@@ -66,14 +78,23 @@ export default function PiCashHeroBanner() {
 
       {/* Timer */}
       <div className="mt-4 mb-6 flex gap-2 justify-center">
-        {[{ label: 'DAYS', value: timeLeft.days }, { label: 'HOURS', value: timeLeft.hours }, { label: 'MINUTES', value: timeLeft.minutes }, { label: 'SECONDS', value: timeLeft.seconds }].map(({ label, value }, i) => (
-          <div key={i} className="flex flex-col items-center">
-            <div className="bg-black text-white text-xl font-bold px-4 py-2 rounded-md shadow w-16 text-center">
-              {String(value).padStart(2, '0')}
+        {!timeLeft ? (
+          <div className="text-cyan-400 text-lg font-semibold">Loading timer...</div>
+        ) : (
+          [
+            { label: 'DAYS', value: timeLeft.days },
+            { label: 'HOURS', value: timeLeft.hours },
+            { label: 'MINUTES', value: timeLeft.minutes },
+            { label: 'SECONDS', value: timeLeft.seconds }
+          ].map(({ label, value }, i) => (
+            <div key={i} className="flex flex-col items-center">
+              <div className="bg-black text-white text-xl font-bold px-4 py-2 rounded-md shadow w-16 text-center">
+                {String(value).padStart(2, '0')}
+              </div>
+              <div className="mt-1 text-xs text-cyan-400 font-semibold">{label}</div>
             </div>
-            <div className="mt-1 text-xs text-cyan-400 font-semibold">{label}</div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
 
       <button

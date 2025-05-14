@@ -1,23 +1,25 @@
 import mongoose from 'mongoose';
 
-mongoose.set('strictQuery', false); // or true if you want strict
+const MONGODB_URI = process.env.MONGODB_URI;
 
-let cached = global.mongoose || { conn: null, promise: null };
+if (!MONGODB_URI) {
+  throw new Error('Please define the MONGODB_URI in .env.local');
+}
+
+let cached = global.mongoose;
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
 
 export async function connectToDatabase() {
   if (cached.conn) return cached.conn;
 
-  if (!process.env.MONGODB_URI) {
-    throw new Error('❌ Please define the MONGODB_URI environment variable in .env.local');
-  }
-
   if (!cached.promise) {
-    cached.promise = mongoose.connect(process.env.MONGODB_URI, {
-      dbName: 'ohmycompetitions',
-    }).then((mongoose) => mongoose);
+    cached.promise = mongoose.connect(MONGODB_URI, {
+      bufferCommands: false
+    });
   }
 
   cached.conn = await cached.promise;
   return cached.conn;
 }
-y

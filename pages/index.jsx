@@ -8,7 +8,6 @@ import FreeCompetitionCard from '@/components/FreeCompetitionCard';
 import PiCompetitionCard from '@/components/PiCompetitionCard';
 import CryptoGiveawayCard from '@/components/CryptoGiveawayCard';
 import CompetitionCard from '@/components/CompetitionCard';
-import TokenSelector from '@/components/TokenSelector';
 import PiCashHeroBanner from '@/components/PiCashHeroBanner';
 
 
@@ -22,9 +21,8 @@ import {
 } from '@/data/competitions';
 
 export default function HomePage() {
-  const [selectedToken, setSelectedToken] = useState('BTC');
-
-  const mockPiCashProps = {
+ 
+   const mockPiCashProps = {
     code: '7H3X-PL4Y',
     prizePool: 14250,
     weekStart: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
@@ -69,10 +67,6 @@ export default function HomePage() {
         <Section title="Featured Competitions" items={techItems} viewMoreHref="/competitions/featured" />
         <Section title="Travel & Lifestyle" items={premiumItems} viewMoreHref="/competitions/travel" />
         <Section title="Pi Giveaways" items={piItems} viewMoreHref="/competitions/pi" extraClass="mt-12" />
-        <div className="flex justify-between items-center mb-4 px-6">
-          <h2 className="text-lg font-bold text-cyan-300">Select Crypto Token</h2>
-          <TokenSelector selected={selectedToken} onChange={setSelectedToken} />
-        </div>
         <Section title="Crypto Giveaways" items={cryptoGiveawaysItems} viewMoreHref="/competitions/crypto-giveaways" />
         <Section title="Daily Competitions" items={dailyItems} viewMoreHref="/competitions/daily" extraClass="mt-12" />
 
@@ -84,7 +78,7 @@ export default function HomePage() {
             <FreeCompetitionCard
               comp={{ endsAt: '2025-05-10T23:59:59Z', ticketsSold: 0, totalTickets: 10000, slug: 'pi-to-the-moon' }}
               title="Pi To The Moon"
-              prize="20,000 π"
+              prize="10,000 π"
             />
           </div>
         </section>
