@@ -1,3 +1,7 @@
+require('dotenv').config({ path: '.env.local' }); // 👈 Load .env.local manually
+const mongoose = require('mongoose');
+const PiCashCode = require('../src/models/PiCashCode');
+
 const { connectToDatabase } = require('../src/lib/mongodb');
 const { ObjectId } = require('mongodb');
 
