@@ -1,48 +1,65 @@
-import { getDb } from '@/lib/mongodb'
+// scripts/seedPiCashCode.js
+import { MongoClient } from 'mongodb';
+import { randomUUID } from 'crypto';
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
+const uri = process.env.MONGODB_URI;
+const client = new MongoClient(uri);
+const dbName = 'ohmycompetitions';
 
-  const db = await getDb()
-
-  const monday = getNextMondayAt314UTC();
-  const expiresAt = new Date(monday.getTime() + (31 * 60 + 4) * 60 * 1000); // +31h 4m
-  const drawAt = getNextFridayAt314UTC();
-  const claimExpiresAt = new Date(drawAt.getTime() + (31 * 60 + 4) * 1000); // +31m 4s
-
-  const newCode = {
-    weekStart: monday,
-    code: generateCode(),
-    prizePool: 10000, // start prize
-    expiresAt,
-    drawAt,
-    claimExpiresAt,
-    ticketsSold: 0
-  };
-
-  await db.collection('pi_cash_codes').insertOne(newCode);
-
-  res.status(200).json({ success: true, data: newCode });
+function generateCode() {
+  const part1 = Math.random().toString(36).substring(2, 6).toUpperCase();
+  const part2 = Math.random().toString(36).substring(2, 6).toUpperCase();
+  return `${part1}-${part2}`;
 }
 
-// --- Helpers ---
-function getNextMondayAt314UTC() {
+function getThisMondayUTC() {
   const now = new Date();
-  const monday = new Date(now);
-  monday.setUTCHours(15, 14, 0, 0);
-  monday.setUTCDate(now.getUTCDate() + ((1 + 7 - now.getUTCDay()) % 7 || 7));
+  const monday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const day = monday.getUTCDay();
+  const diff = day === 0 ? -6 : 1 - day; // adjust if Sunday
+  monday.setUTCDate(monday.getUTCDate() + diff);
+  monday.setUTCHours(0, 0, 0, 0);
   return monday;
 }
 
-function getNextFridayAt314UTC() {
-  const now = new Date();
-  const friday = new Date(now);
-  friday.setUTCHours(15, 14, 0, 0);
-  friday.setUTCDate(now.getUTCDate() + ((5 + 7 - now.getUTCDay()) % 7 || 7));
-  return friday;
+function getExpiry(weekStart) {
+  const expires = new Date(weekStart);
+  expires.setUTCHours(3 + 14, 0, 0); // 3:14 PM UTC Monday
+  expires.setTime(expires.getTime() + (31 * 60 * 60 + 4 * 60) * 1000); // +31h 4m
+  return expires;
 }
 
-function generateCode() {
-  const part = () => Math.random().toString(36).substring(2, 6).toUpperCase();
-  return `${part()}-${part()}`;
+async function seed() {
+  try {
+    await client.connect();
+    const db = client.db(dbName);
+    const col = db.collection('pi_cash_codes');
+
+    const weekStart = getThisMondayUTC();
+    const weekKey = weekStart.toISOString().split('T')[0];
+
+    const existing = await col.findOne({ weekStart: weekKey });
+    if (existing) {
+      console.log(`[ℹ️] Code already exists for ${weekKey}:`, existing.code);
+      return;
+    }
+
+    const code = generateCode();
+    const newDoc = {
+      code,
+      prizePool: 0,
+      weekStart: weekKey,
+      expiresAt: getExpiry(weekStart).toISOString(),
+      createdAt: new Date().toISOString(),
+    };
+
+    await col.insertOne(newDoc);
+    console.log(`[✅] New code created for ${weekKey}:`, code);
+  } catch (err) {
+    console.error('[❌] Error seeding Pi Cash Code:', err);
+  } finally {
+    await client.close();
+  }
 }
+
+seed();

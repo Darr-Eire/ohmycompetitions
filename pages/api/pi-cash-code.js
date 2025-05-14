@@ -1,30 +1,30 @@
-// pages/api/pi-cash-code.js
+import { MongoClient } from 'mongodb';
 
-import { getDb } from '@/lib/mongodb';
+const uri = process.env.MONGODB_URI;
+const client = new MongoClient(uri);
+const dbName = 'ohmycompetitions';
 
 export default async function handler(req, res) {
-  const db = await getDb();
+  try {
+    await client.connect();
+    const db = client.db(dbName);
+    const collection = db.collection('pi_cash_codes');
 
-  if (req.method === 'GET') {
-    try {
-      // Fetch the most recent active Pi Cash Code
-      const code = await db
-        .collection('pi_cash_codes')
-        .findOne(
-          { expiresAt: { $gt: new Date() } }, // active code (expiresAt > current date)
-          { sort: { weekStart: -1 } } // fetch the latest code based on weekStart
-        );
+    const today = new Date();
+    const weekStart = new Date(today.setUTCHours(0, 0, 0, 0));
+    weekStart.setUTCDate(weekStart.getUTCDate() - weekStart.getUTCDay() + 1); // Monday
 
-      if (!code) {
-        return res.status(404).json({ error: 'No active code found' });
-      }
+    const weekStartStr = weekStart.toISOString().split('T')[0];
 
-      return res.status(200).json(code);
-    } catch (error) {
-      console.error('Error fetching Pi Cash Code:', error);
-      return res.status(500).json({ error: 'Internal Server Error' });
+    const doc = await collection.findOne({ weekStart: weekStartStr });
+
+    if (!doc) {
+      return res.status(404).json({ error: 'No code available for this week.' });
     }
-  }
 
-  return res.status(405).json({ error: 'Method Not Allowed' });
+    return res.status(200).json(doc);
+  } catch (err) {
+    console.error('[API] Failed to fetch Pi Cash Code:', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
 }

@@ -1,27 +1,75 @@
-import { getDb } from '../src/lib/mongodb.js'
-import { getPiCashTimes } from '../src/lib/utils.js'
+// scripts/rolloverUnclaimed.js
+import { MongoClient, ObjectId } from 'mongodb';
+import dotenv from 'dotenv';
 
-async function rollover() {
-  const db = await getDb()
+dotenv.config();
 
-  const expired = await db.collection('pi_cash_codes').findOne({
-    claimed: false,
-    winner: { $ne: null },
-    claimExpiresAt: { $lt: new Date() }
-  })
+const uri = process.env.MONGODB_URI;
+const client = new MongoClient(uri);
+const GRACE_PERIOD = 31 * 60 * 1000 + 4000; // 31 minutes 4 seconds
 
-  if (!expired) {
-    console.log('✅ No unclaimed draws to roll over.')
-    return
+async function rolloverUnclaimed() {
+  try {
+    await client.connect();
+    const db = client.db();
+
+    const expiredUnclaimed = await db.collection('pi_cash_codes').find({
+      winner: { $exists: true },
+      claimedAt: { $exists: false },
+      drawAt: { $exists: true },
+      $expr: {
+        $lt: [
+          { $add: [{ $toDate: '$drawAt' }, GRACE_PERIOD] },
+          new Date()
+        ]
+      }
+    }).toArray();
+
+    if (expiredUnclaimed.length === 0) {
+      console.log('✅ No unclaimed prizes to roll over.');
+      return;
+    }
+
+    const totalRollover = expiredUnclaimed.reduce((sum, doc) => sum + (doc.prizePool || 0), 0);
+
+    if (totalRollover === 0) {
+      console.log('⚠️ No prize pool to roll over.');
+      return;
+    }
+
+    const currentWeekStart = new Date();
+    currentWeekStart.setUTCHours(15, 14, 0, 0);
+    currentWeekStart.setUTCDate(currentWeekStart.getUTCDate() - currentWeekStart.getUTCDay()); // last Monday
+
+    const currentCode = await db.collection('pi_cash_codes').findOne({
+      weekStart: currentWeekStart.toISOString()
+    });
+
+    if (!currentCode) {
+      console.log('❌ Current code not found. Seed it first.');
+      return;
+    }
+
+    await db.collection('pi_cash_codes').updateOne(
+      { _id: currentCode._id },
+      { $inc: { prizePool: totalRollover } }
+    );
+
+    for (const ghost of expiredUnclaimed) {
+      await db.collection('ghost_winners').insertOne({
+        userId: ghost.winner,
+        week: ghost.weekStart,
+        missedAt: new Date(),
+        prize: ghost.prizePool,
+      });
+    }
+
+    console.log(`👻 Rolled over ${totalRollover} π to this week's prize pool.`);
+  } catch (err) {
+    console.error('❌ Rollover failed:', err);
+  } finally {
+    await client.close();
   }
-
-  const newCode = getPiCashTimes()
-  newCode.prizePool = Math.round(expired.prizePool * 1.25)
-  newCode.rolloverFrom = expired._id
-
-  const result = await db.collection('pi_cash_codes').insertOne(newCode)
-
-  console.log('🔁 Rolled over unclaimed prize to new code:', newCode.code)
 }
 
-rollover().catch(console.error)
+rolloverUnclaimed();

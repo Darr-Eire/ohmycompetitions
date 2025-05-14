@@ -1,52 +1,52 @@
 // scripts/drawWinner.js
-import { getDb } from '../src/lib/mongodb.js'
+import { MongoClient } from 'mongodb';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const uri = process.env.MONGODB_URI;
+const client = new MongoClient(uri);
+
+const now = new Date();
 
 async function drawWinner() {
-  const db = await getDb()
+  try {
+    await client.connect();
+    const db = client.db();
 
-  // Get current Friday 3:14 PM window
-  const now = new Date()
-  const thisFriday = new Date(now)
-  thisFriday.setUTCDate(now.getUTCDate() + ((5 + 7 - now.getUTCDay()) % 7))
-  thisFriday.setUTCHours(15, 14, 0, 0)
+    const activeCode = await db.collection('pi_cash_codes').findOne({
+      expiresAt: { $lt: now },
+      winner: { $exists: false },
+    });
 
-  // Find latest unclaimed code
-  const code = await db.collection('pi_cash_codes').findOne({
-    drawAt: { $lte: thisFriday },
-    claimed: false,
-    winner: null
-  }, { sort: { weekStart: -1 } })
-
-  if (!code) {
-    console.log('❌ No eligible code to draw for.')
-    return
-  }
-
-  const entries = await db.collection('pi_cash_entries').find({
-    codeId: code._id
-  }).toArray()
-
-  if (entries.length === 0) {
-    console.log('⚠️ No entries to draw from. Prize will roll over.')
-    return
-  }
-
-  const winner = entries[Math.floor(Math.random() * entries.length)]
-
-  await db.collection('pi_cash_codes').updateOne(
-    { _id: code._id },
-    {
-      $set: {
-        winner: {
-          userId: winner.userId,
-          txid: winner.txid,
-          selectedAt: new Date()
-        }
-      }
+    if (!activeCode) {
+      console.log('❌ No eligible code to draw winner from.');
+      return;
     }
-  )
 
-  console.log(`🎯 Winner selected for ${code.code}:`, winner.userId)
+    const entries = await db.collection('pi_cash_entries')
+      .find({ week: activeCode.weekStart.split('T')[0] })
+      .toArray();
+
+    if (entries.length === 0) {
+      console.log('⚠️ No entries for this week.');
+      return;
+    }
+
+    const flatEntries = entries.flatMap(entry => Array(entry.quantity).fill(entry.userId));
+    const winnerId = flatEntries[Math.floor(Math.random() * flatEntries.length)];
+
+    await db.collection('pi_cash_codes').updateOne(
+      { _id: activeCode._id },
+      { $set: { winner: winnerId, drawAt: now.toISOString() } }
+    );
+
+    console.log(`🏆 Winner drawn: ${winnerId}`);
+  } catch (err) {
+    console.error('❌ Draw winner failed:', err);
+  } finally {
+    await client.close();
+  }
 }
 
-drawWinner().catch(console.error)
+drawWinner();

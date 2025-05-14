@@ -11,20 +11,18 @@ import CompetitionCard from '@/components/CompetitionCard';
 import TokenSelector from '@/components/TokenSelector';
 import PiCashHeroBanner from '@/components/PiCashHeroBanner';
 
+
 import {
   techItems,
   premiumItems,
   piItems,
   dailyItems,
   freeItems,
-  cryptoGiveawaysItems
+  cryptoGiveawaysItems,
 } from '@/data/competitions';
 
 export default function HomePage() {
   const [selectedToken, setSelectedToken] = useState('BTC');
-  const [piUser, setPiUser] = useState(null);
-  const [piSdkReady, setPiSdkReady] = useState(false);
-  const [hasWindow, setHasWindow] = useState(false);
 
   const mockPiCashProps = {
     code: '7H3X-PL4Y',
@@ -32,125 +30,7 @@ export default function HomePage() {
     weekStart: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
     expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
     drawAt: new Date(Date.now() + 1000 * 60 * 60 * 5).toISOString(),
-    claimExpiresAt: new Date(Date.now() + 1000 * 60 * 60 * 10).toISOString()
-  };
-
-  useEffect(() => {
-    setHasWindow(typeof window !== 'undefined');
-
-    const script = document.createElement('script');
-    script.src = 'https://sdk.minepi.com/pi-sdk.js';
-    script.async = true;
-    script.onload = () => {
-      const waitForPi = setInterval(() => {
-        if (window.Pi) {
-          clearInterval(waitForPi);
-          window.Pi.init({ version: '2.0' });
-          setPiSdkReady(true);
-          console.log('✅ Pi SDK loaded and initialized');
-        }
-      }, 100);
-    };
-    document.body.appendChild(script);
-  }, []);
-
-  useEffect(() => {
-    fetch('/api/auth/me')
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data?.user) setPiUser(data.user);
-      });
-  }, []);
-
-  const handlePiLogin = async () => {
-  try {
-    const user = await window.Pi.authenticate(['username', 'payments'], async (incompletePayment) => {
-      if (incompletePayment) {
-        console.warn('⚠️ Found incomplete payment:', incompletePayment);
-
-        // Manually resume payment by re-running approval
-        try {
-          await fetch('/api/payments/approve', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paymentId: incompletePayment.identifier }),
-          });
-
-          // Then call complete
-          await fetch('/api/payments/complete', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paymentId: incompletePayment.identifier }),
-          });
-
-          console.log('✅ Incomplete payment handled');
-        } catch (err) {
-          console.error('❌ Failed to resume payment:', err);
-        }
-      }
-    });
-
-    setPiUser(user);
-    console.log('✅ Logged in:', user);
-  } catch (err) {
-    alert(`Login failed: ${err.message}`);
-    console.error('❌ Authentication error:', err);
-  }
-};
-
-
-  const handlePiPayment = async () => {
-    if (!piSdkReady || typeof window === 'undefined' || !window.Pi || typeof window.Pi.createPayment !== 'function') {
-      alert('⚠️ Pi SDK not fully loaded. Please try again.');
-      return;
-    }
-
-    try {
-      window.Pi.createPayment(
-        {
-          amount: 0.01,
-          memo: 'OhMyCompetitions entry',
-          metadata: { entryId: 'test-entry-123' },
-        },
-        {
-          onReadyForServerApproval: async (paymentId) => {
-            console.log('[✅] onReadyForServerApproval:', paymentId);
-            try {
-              const res = await fetch('/api/payments/approve', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ paymentId }),
-              });
-              if (!res.ok) throw new Error(await res.text());
-            } catch (err) {
-              console.error('❌ Error in approval callback:', err);
-            }
-          },
-          onReadyForServerCompletion: async (paymentId, txid) => {
-            console.log('[✅] onReadyForServerCompletion:', paymentId);
-            try {
-              const res = await fetch('/api/payments/complete', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ paymentId }),
-              });
-              if (!res.ok) throw new Error(await res.text());
-            } catch (err) {
-              console.error('❌ Error in completion callback:', err);
-            }
-          },
-          onCancel: (paymentId) => {
-            console.warn('[⚠️] Payment cancelled:', paymentId);
-          },
-          onError: (error, payment) => {
-            console.error('❌ Pi SDK error:', error, payment);
-          },
-        }
-      );
-    } catch (err) {
-      console.error('❌ Pi Payment Error:', err);
-      alert('Pi payment failed. See console.');
-    }
+    claimExpiresAt: new Date(Date.now() + 1000 * 60 * 60 * 10).toISOString(),
   };
 
   const TopWinnersCarousel = () => {
@@ -183,29 +63,6 @@ export default function HomePage() {
     <>
       <div className="mt-0 mb-2 flex justify-center">
         <PiCashHeroBanner {...mockPiCashProps} />
-      </div>
-
-      <div className="flex justify-center mb-6 space-x-4">
-        {piUser ? (
-          <p className="text-white text-lg">👋 Welcome, {piUser.username}</p>
-        ) : (
-          hasWindow && (
-            <>
-              <button
-                onClick={handlePiLogin}
-                className="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-lg text-white font-semibold shadow transition"
-              >
-                Login with Pi
-              </button>
-              <button
-                onClick={handlePiPayment}
-                className="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-lg text-white font-semibold shadow transition"
-              >
-                Make Pi Payment
-              </button>
-            </>
-          )
-        )}
       </div>
 
       <main className="space-y-16">
