@@ -1,4 +1,5 @@
-const { connectToDatabase } = require('../lib/mongodb');
+// scripts/createPiCashCode.js
+const { connectToDatabase } = require('../src/lib/mongodb'); // ✅ Adjusted to correct path
 const { ObjectId } = require('mongodb');
 
 async function main() {
@@ -7,8 +8,8 @@ async function main() {
 
     const now = new Date();
     const weekStart = new Date(now);
-    weekStart.setUTCHours(15, 14, 0, 0); // Monday at 15:14 UTC
-    weekStart.setUTCDate(now.getUTCDate() - now.getUTCDay() + 1); // get to Monday
+    weekStart.setUTCHours(15, 14, 0, 0); // Set time to Monday 15:14 UTC
+    weekStart.setUTCDate(now.getUTCDate() - now.getUTCDay() + 1); // Set to Monday of current week
 
     const code = generateCode();
 
@@ -16,7 +17,7 @@ async function main() {
 
     if (existing) {
       console.warn('⚠️ Code for this week already exists:', existing.code);
-      return;
+      return; 
     }
 
     await db.collection('pi_cash_codes').insertOne({
