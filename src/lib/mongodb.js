@@ -1,30 +1,29 @@
-// /lib/mongodb.js
-import mongoose from 'mongoose';
+const { MongoClient } = require('mongodb');
 
-const MONGODB_URI = process.env.MONGODB_URI;
+const uri = process.env.MONGODB_URI;
 
-if (!MONGODB_URI) {
+if (!uri) {
   throw new Error('❌ Please define the MONGODB_URI environment variable in .env.local');
 }
 
-let cached = global.mongoose;
+let client;
+let clientPromise;
 
-if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
+if (!global._mongoClientPromise) {
+  client = new MongoClient(uri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+  global._mongoClientPromise = client.connect();
 }
 
-export async function connectToDatabase() {
-  if (cached.conn) return cached.conn;
+clientPromise = global._mongoClientPromise;
 
-  if (!cached.promise) {
-    mongoose.set('strictQuery', false);
-    cached.promise = mongoose.connect(MONGODB_URI, {
-      bufferCommands: false,
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-  }
-
-  cached.conn = await cached.promise;
-  return cached.conn;
+async function connectToDatabase() {
+  const client = await clientPromise;
+  return client.db(); // You can specify .db('your-db-name') if you want
 }
+
+module.exports = {
+  connectToDatabase,
+};
