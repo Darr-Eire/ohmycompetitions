@@ -1,19 +1,19 @@
-import { getDb } from '@/lib/mongodb'
+import { connectToDatabase } from '@/lib/mongodb';
+import mongoose from 'mongoose';
 
 export default async function handler(req, res) {
-  const db = await getDb()
+  try {
+    await connectToDatabase();
+    const db = mongoose.connection.db;
 
-  const claimed = await db.collection('pi_cash_codes')
-    .find({ claimed: true, winner: { $ne: null } })
-    .sort({ weekStart: -1 })
-    .toArray()
+    const data = await db
+      .collection('pi_cash_codes')
+      .find({ claimed: true, winner: { $ne: null } })
+      .toArray();
 
-  const winners = claimed.map(entry => ({
-    weekStart: entry.weekStart,
-    code: entry.code,
-    userId: entry.winner.userId,
-    prizePool: entry.prizePool
-  }))
-
-  res.status(200).json(winners)
+    res.status(200).json(data);
+  } catch (err) {
+    console.error('Error in claimed-winners API:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 }

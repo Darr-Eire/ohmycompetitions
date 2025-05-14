@@ -1,19 +1,11 @@
-import { getDb } from '@/lib/mongodb'
+import { connectToDatabase } from '@/lib/mongodb';
+import mongoose from 'mongoose';
 
 export default async function handler(req, res) {
-  const db = await getDb()
+  await connectToDatabase();
+  const db = mongoose.connection.db;
 
-  const unclaimed = await db.collection('pi_cash_codes')
-    .find({ winner: { $ne: null }, claimed: false })
-    .sort({ weekStart: -1 })
-    .toArray()
+  const data = await db.collection('pi_cash_codes').find(...).toArray();
 
-  const ghosts = unclaimed.map(entry => ({
-    weekStart: entry.weekStart,
-    code: entry.code,
-    prizePool: entry.prizePool,
-    rolloverTo: entry.rolloverFrom ? null : true, // Simplified logic
-  }))
-
-  res.status(200).json(ghosts)
+  res.status(200).json(data);
 }

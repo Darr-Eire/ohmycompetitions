@@ -1,30 +1,30 @@
-import { MongoClient } from 'mongodb';
+// /lib/mongodb.js
+import mongoose from 'mongoose';
 
-const uri = process.env.MONGODB_URI;
-const options = {};
+const MONGODB_URI = process.env.MONGODB_URI;
 
-if (!uri) {
+if (!MONGODB_URI) {
   throw new Error('❌ Please define the MONGODB_URI environment variable in .env.local');
 }
 
-let client;
-let clientPromise;
+let cached = global.mongoose;
 
-if (process.env.NODE_ENV === 'development') {
-  if (!global._mongoClientPromise) {
-    client = new MongoClient(uri, options);
-    global._mongoClientPromise = client.connect();
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
+
+export async function connectToDatabase() {
+  if (cached.conn) return cached.conn;
+
+  if (!cached.promise) {
+    mongoose.set('strictQuery', false);
+    cached.promise = mongoose.connect(MONGODB_URI, {
+      bufferCommands: false,
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
   }
-  clientPromise = global._mongoClientPromise;
-} else {
-  client = new MongoClient(uri, options);
-  clientPromise = client.connect();
-}
 
-// 🔧 Optional: Access a specific database
-export async function getDb(dbName) {
-  const client = await clientPromise;
-  return dbName ? client.db(dbName) : client.db();
+  cached.conn = await cached.promise;
+  return cached.conn;
 }
-
-export default clientPromise;

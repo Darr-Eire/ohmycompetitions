@@ -50,9 +50,10 @@ export default function PiCashHeroBanner() {
         Pi Cash Code
       </h1>
 
-      <div className="inline-block bg-[#0a0f1d] border border-cyan-400 text-cyan-300 px-6 py-2 rounded-md text-lg font-mono tracking-widest shadow-[0_0_12px_#00f0ff66] mb-4">
-        {codeData?.code || '????-????'}
-      </div>
+      <div className="text-lg font-mono text-cyan-300">
+  {codeData?.code || 'Loading...'}
+</div>
+
 
       <div className="text-center mb-1">
         <div className="inline-flex items-center gap-2 px-5 py-2 rounded-xl border border-cyan-400 bg-black/30 shadow-[0_0_15px_#00f0ff88] animate-glow-float">

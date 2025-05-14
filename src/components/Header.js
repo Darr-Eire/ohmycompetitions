@@ -71,7 +71,11 @@ export default function Header() {
           </button>
         </div>
       ) : (
-        <p className="text-white text-xs">Not logged in</p>
+        <Link href="/login">
+          <button className="neon-button text-xs px-2 py-1">
+            Log in With Pi
+          </button>
+        </Link>
       )}
 
       {menuOpen && (
@@ -108,3 +112,4 @@ export default function Header() {
     </header>
   );
 }
+
