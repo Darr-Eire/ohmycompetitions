@@ -1,5 +1,5 @@
-// scripts/createPiCashCode.js
-const { connectToDatabase } = require('../src/lib/mongodb'); // ✅ Adjusted to correct path
+// scrzipts/createPiCashCode.js
+import clientPromise from '@/lib/mongodb';
 const { ObjectId } = require('mongodb');
 
 async function main() {

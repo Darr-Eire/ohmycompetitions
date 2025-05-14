@@ -1,6 +1,7 @@
 
 import PiCashCode from '@/models/PiCashCode';
-const { connectToDatabase } = require('../lib/mongodb');
+import { connectToDatabase } from '@/lib/mongodb';
+
 function generateCode() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let raw = '';

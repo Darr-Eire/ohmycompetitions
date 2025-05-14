@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
-const { connectToDatabase } = require('../lib/mongodb');
+import { connectToDatabase } from '@/lib/mongodb';
+
 
 // Define schema inline or require it from your models folder
 const PiCashCodeSchema = new mongoose.Schema({
