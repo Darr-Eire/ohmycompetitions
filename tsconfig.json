@@ -3,7 +3,7 @@
     "target": "es2020",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
-    "checkJs": false,                // ← disable TS checking on .js/.jsx
+    "checkJs": false,
     "skipLibCheck": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
@@ -23,12 +23,12 @@
   },
   "include": [
     "next-env.d.ts",
+    "next.config.js",
     "**/*.ts",
     "**/*.tsx",
     "**/*.js",
     "**/*.jsx",
-    "**/*.d.ts",
-    "scripts/test-mongo.mjs"
-, "next.config.cjs"  ],
+    "scripts/**/*.js"
+  ],
   "exclude": ["node_modules"]
 }
