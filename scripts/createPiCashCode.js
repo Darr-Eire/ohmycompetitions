@@ -1,46 +1,31 @@
-// scripts/createPiCashCode.js
-import 'dotenv/config';
-import mongoose from 'mongoose';
-import PiCashCode from '../src/models/PiCashCode.js';
+require('dotenv').config(); // ✅ Load .env.local
+const mongoose = require('mongoose');
 
-// Connect to MongoDB
+// Define your schema/model
+const PiCashCode = require('../src/models/PiCashCode');
+
 async function connectToDatabase() {
-  if (!process.env.MONGODB_URI) {
-    throw new Error('❌ Please define the MONGODB_URI environment variable in .env.local');
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    throw new Error('❌ MONGODB_URI is not defined in .env.local');
   }
 
-  try {
-    await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log('✅ MongoDB connected');
-  } catch (error) {
-    console.error('❌ MongoDB connection error:', error);
-    process.exit(1);
-  }
-}
+  await mongoose.connect(uri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
 
-function getCurrentWeekStart() {
-  const now = new Date();
-  const monday = new Date(now.setUTCHours(15, 14, 0, 0));
-  monday.setUTCDate(monday.getUTCDate() - ((monday.getUTCDay() + 6) % 7));
-  return monday.toISOString();
-}
-
-function getFutureTime(hours, minutes, seconds = 0) {
-  const now = new Date();
-  now.setUTCHours(now.getUTCHours() + hours);
-  now.setUTCMinutes(now.getUTCMinutes() + minutes);
-  now.setUTCSeconds(now.getUTCSeconds() + seconds);
-  return now.toISOString();
+  console.log('✅ Connected to MongoDB');
 }
 
 async function main() {
   await connectToDatabase();
 
-  const weekStart = getCurrentWeekStart();
-  const existing = await PiCashCode.findOne({ weekStart });
+  const today = new Date();
+  const monday = new Date(today.setDate(today.getDate() - today.getDay() + 1));
+  monday.setUTCHours(15, 14, 0, 0);
+
+  const existing = await PiCashCode.findOne({ weekStart: monday.toISOString() });
 
   if (existing) {
     console.log(`⚠️ Code for this week already exists: ${existing.code}`);
@@ -48,18 +33,29 @@ async function main() {
   }
 
   const newCode = new PiCashCode({
-    code: 'SEED-CODE',
-    prizePool: 15000,
-    weekStart,
-    expiresAt: getFutureTime(31, 4),
-    drawAt: getFutureTime(4 * 24, 0), // Friday
-    claimExpiresAt: getFutureTime(4 * 24, 0, 31 * 60 + 4), // 31m4s after draw
+    code: generateCode(),
+    prizePool: 10000,
+    weekStart: monday,
+    expiresAt: new Date(monday.getTime() + 31 * 60 * 60 * 1000 + 4 * 60 * 1000),
+    drawAt: new Date(monday.getTime() + 3 * 24 * 60 * 60 * 1000), // Example: 3 days later
+    claimExpiresAt: new Date(monday.getTime() + 31 * 60 * 60 * 1000 + 34 * 60 * 1000),
   });
 
   await newCode.save();
-  console.log('✅ New Pi Cash Code seeded successfully:', newCode.code);
-
-  await mongoose.disconnect();
+  console.log(`✅ New Pi Cash Code created: ${newCode.code}`);
+  process.exit(0);
 }
 
-main();
+function generateCode() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let code = '';
+  for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  code += '-';
+  for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
+main().catch((err) => {
+  console.error('❌ Error creating Pi Cash Code:', err);
+  process.exit(1);
+});
