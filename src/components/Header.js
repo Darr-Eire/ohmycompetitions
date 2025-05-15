@@ -30,8 +30,6 @@ export default function Header() {
 
   const navItems = [
     ['Home', '/'],
-        // ✅ Fixed path
-    ['My Account', '/account'], 
     ['Pi Lottery', '/lottery'],          
     ['All Competitions', '/competitions'],
     ['Try Your Luck', '/try-your-luck'],

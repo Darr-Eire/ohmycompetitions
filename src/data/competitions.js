@@ -152,17 +152,17 @@ export const freeItems = [
 export const cryptoGiveawaysItems = [
   {
     comp: { slug: 'crypto-btc', entryFee: 0.5, totalTickets: 5000, ticketsSold: 0, endsAt: '2025-06-02T00:59:00Z' },
-    title: 'Win BTC',
-    prize: '1 BTC',
-    fee: '2',
+    title: 'Win 1 BTC',
+
+    fee: '2 π',
     href: '/crypto/crypto-btc',
     token: 'BTC',
     imageUrl: '/images/crypto-btc.png',
   },
   {
     comp: { slug: 'crypto-eth', entryFee: 0.5, totalTickets: 6000, ticketsSold: 0, endsAt: '2025-06-03T23:59:00Z' },
-    title: 'Win ETH',
-    prize: '1 ETH',
+    title: 'Win 2 ETH',
+
     fee: '1.5 π',
     href: '/crypto/crypto-eth',
     token: 'ETH',
@@ -170,8 +170,8 @@ export const cryptoGiveawaysItems = [
   },
   {
     comp: { slug: 'crypto-xrp', entryFee: 0.4, totalTickets: 8000, ticketsSold: 0, endsAt: '2025-06-09T23:59:00Z' },
-    title: 'Win XRP',
-    prize: '1000 XRP',
+    title: 'Win 1000 XRP',
+  
     fee: '1.6 π',
     href: '/crypto/crypto-crp',
     token: 'XRP',
@@ -179,8 +179,8 @@ export const cryptoGiveawaysItems = [
   },
   {
     comp: { slug: 'crypto-sol', entryFee: 0.4, totalTickets: 7000, ticketsSold: 0, endsAt: '2025-06-05T23:59:00Z' },
-    title: 'Win SOL',
-    prize: '10 SOL',
+    title: 'Win 10 SOL',
+ 
     fee: '1.1 π',
     href: '/crypto/crypto-sol',
     token: 'SOL',
@@ -188,8 +188,8 @@ export const cryptoGiveawaysItems = [
   },
   {
     comp: { slug: 'crypto-bnb', entryFee: 0.4, totalTickets: 4000, ticketsSold: 0, endsAt: '2025-06-07T23:59:00Z' },
-    title: 'Win BNB',
-    prize: '2 BNB',
+    title: 'Win 2 BNB',
+
     fee: '.5 π',
     href: '/crypto/crypto-bnb',
     token: 'BNB',
@@ -197,8 +197,8 @@ export const cryptoGiveawaysItems = [
   },
   {
     comp: { slug: 'crypto-doge', entryFee: 0.3, totalTickets: 10000, ticketsSold: 0, endsAt: '2025-06-11T23:59:00Z' },
-    title: 'Win DOGE',
-    prize: '10,000 DOGE',
+    title: 'Win 10,000 DOGE',
+
     fee: '0.2 π',
     href: '/crypto/crypto-doge',
     token: 'DOGE',
