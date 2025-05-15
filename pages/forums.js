@@ -60,9 +60,10 @@ export default function ForumsPage() {
 
           {/* Pioneer of the Week Feature */}
           <div className="competition-card p-6 mb-8 bg-white bg-opacity-10 rounded-2xl shadow-lg text-center sm:col-span-2">
-            <div className="text-3xl text-yellow-300 mb-2 flex justify-center items-center gap-2">
-              <FaStar /> Pioneer of the Week
-            </div>
+           <div className="text-3xl text-cyan-300 mb-2 font-bold">
+  Pioneer of the Week
+</div>
+
             <h2 className="text-lg font-bold gradient-text mb-2">Nominate Yourself or Vote for a Fellow Pioneer</h2>
             <p className="text-white text-sm mb-4">
               Tell us why you or someone you admire deserves to be recognized this week. The community will vote, and the top Pioneer will be featured!

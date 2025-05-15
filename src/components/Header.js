@@ -29,7 +29,7 @@ export default function Header() {
   }, []);
 
   const navItems = [
-    ['Home', '/'],
+    ['Home', '/homepage'],
     ['Pi Lottery', '/lottery'],          
     ['All Competitions', '/competitions'],
     ['Try Your Luck', '/try-your-luck'],
@@ -53,12 +53,14 @@ export default function Header() {
       </button>
 
       <div className="flex-1 text-center">
-        <Link
-          href="/"
-          className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 text-transparent bg-clip-text drop-shadow"
-        >
-          OhMyCompetitions
-        </Link>
+   <Link
+  href="/homepage"
+  className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 text-transparent bg-clip-text drop-shadow"
+>
+  OhMyCompetitions
+</Link>
+
+
       </div>
 
       {status === 'loading' ? (
