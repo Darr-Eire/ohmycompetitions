@@ -75,7 +75,7 @@ export default function Header() {
       ) : (
         <Link href="/login">
           <button className="neon-button text-xs px-2 py-1">
-            Log in With Pi
+            Log in
           </button>
         </Link>
       )}
