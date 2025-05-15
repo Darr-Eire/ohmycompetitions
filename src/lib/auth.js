@@ -1,14 +1,35 @@
-// lib/auth.js (recommended to reuse across files)
-import jwt from 'jsonwebtoken';
-import cookie from 'cookie';
+// lib/pi.js
 
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key';
+/**
+ * Loads the Pi SDK dynamically in the browser.
+ * Calls setReady(true) once the SDK is fully initialized.
+ *
+ * @param {Function} setReady - A React setState function (e.g., setSdkReady)
+ */
+export function loadPiSdk(setReady) {
+  if (typeof window === 'undefined') return; // SSR guard
 
-export function getUserFromToken(req) {
-  try {
-    const { token } = cookie.parse(req.headers.cookie || '');
-    return jwt.verify(token, JWT_SECRET);
-  } catch (err) {
-    return null;
+  // If already loaded
+  if (window.Pi && typeof window.Pi.createPayment === 'function') {
+    setReady(true);
+    return;
   }
+
+  // Inject the SDK script
+  const script = document.createElement('script');
+  script.src = 'https://sdk.minepi.com/pi-sdk.js';
+  script.async = true;
+
+  script.onload = () => {
+    const checkInterval = setInterval(() => {
+      if (window.Pi && typeof window.Pi.createPayment === 'function') {
+        clearInterval(checkInterval);
+        window.Pi.init({ version: '2.0' });
+        setReady(true);
+        console.log('✅ Pi SDK fully loaded');
+      }
+    }, 100);
+  };
+
+  document.body.appendChild(script);
 }
