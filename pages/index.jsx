@@ -5,8 +5,8 @@ import Link from 'next/link';
 
 export default function WelcomePage() {
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[#0f172a] text-white font-orbitron px-4 py-8">
-      <div className="w-full max-w-md bg-[#0f1b33] border border-cyan-500 rounded-xl shadow-[0_0_80px_#00fff066] px-6 py-8 backdrop-blur-md space-y-8">
+   <main className="min-h-screen flex flex-col items-center justify-start px-4 bg-[#0f172a] text-white font-orbitron">
+  <div className="w-full max-w-3xl bg-[#0f1b33] border border-cyan-500 rounded-2xl px-6 py-10 mt-4 sm:mt-12 backdrop-blur-md space-y-10 shadow-lg">
 
         {/* Hero Title */}
         <div className="text-center space-y-3">
