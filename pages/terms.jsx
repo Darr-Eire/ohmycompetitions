@@ -3,62 +3,83 @@
 import React from 'react';
 import Link from 'next/link';
 
-export default function TermsPage() {
+export default function PiLotteryTermsPage() {
   return (
-    <main className="min-h-screen py-10 px-4 bg-[#0b1120] text-white font-orbitron">
-      <div className="max-w-3xl mx-auto border border-cyan-400 rounded-2xl p-6 sm:p-8 backdrop-blur-md shadow-[0_0_30px_#00fff055]">
-        <h1 className="text-3xl sm:text-4xl font-bold text-cyan-300 mb-6 text-center animate-glow-float">
-          Pi Cash Code — Terms & Conditions
-        </h1>
+    <main className="min-h-screen py-10 px-4 bg-[#0f172a] text-white font-orbitron flex justify-center items-start">
+      <div className="w-full max-w-3xl border border-cyan-500 rounded-2xl shadow-[0_0_40px_#00fff088] p-0 overflow-hidden">
 
-        <ol className="list-decimal list-inside space-y-4 text-sm sm:text-base text-white/90 leading-relaxed">
-          <li>
-            <strong>Eligibility:</strong> Participation is limited to verified Pi Network Pioneers with an active Pi account.
-          </li>
-
-          <li>
-            <strong>Entry Fee:</strong> Each entry ticket costs <span className="text-cyan-300 font-bold">1.25 π</span>. Multiple entries are allowed per person.
-          </li>
-
-          <li>
-            <strong>Code Drop:</strong> A new code is released every Monday at <strong>3:14 PM UTC</strong> and expires after <strong>31 hours and 4 minutes</strong>.
-          </li>
-
-          <li>
-            <strong>Draw Timing:</strong> A winner is selected every Friday at <strong>3:14 PM UTC</strong>. If the winner fails to respond with the correct code within <strong>31 minutes and 4 seconds</strong>, the prize rolls over and increases.
-          </li>
-
-          <li>
-            <strong>Winner Claim:</strong> The selected winner must submit the exact code from the same week via the claim form. Failure to do so forfeits the prize.
-          </li>
-
-          <li>
-            <strong>Prize Rollover:</strong> If unclaimed, the prize pool increases by <span className="text-cyan-300 font-bold">25%</span> and continues to the following week's draw.
-          </li>
-
-          <li>
-            <strong>Ticket Rollover:</strong> <span className="text-cyan-300 font-bold">20%</span> of non-winning tickets automatically roll into the next week's draw.
-          </li>
-
-          <li>
-            <strong>Fraud Prevention:</strong> Any suspicious or automated behavior will result in immediate disqualification and possible account suspension.
-          </li>
-
-          <li>
-            <strong>Changes:</strong> We reserve the right to update these terms at any time. Continued participation implies acceptance of any changes.
-          </li>
-        </ol>
-
-        <div className="text-center mt-8 text-sm text-cyan-400">
-          Last updated: May 14, 2025
+        {/* Neon title bar */}
+        <div className="bg-gradient-to-r from-cyan-400 to-blue-500 py-3 text-center">
+          <h1 className="text-xl sm:text-2xl font-bold text-black uppercase tracking-wide">
+            Pi Lottery Terms & Conditions
+          </h1>
         </div>
 
-        <div className="mt-8 text-center">
-          <Link href="/pi-cash-code">
-            <span className="inline-block px-6 py-2 bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold text-sm rounded-md shadow hover:brightness-110 transition">
-              ← Back to Pi Cash Code
-            </span>
-          </Link>
+        <div className="px-6 py-6 sm:py-8 bg-[#1e293b]">
+          <p className="text-center text-white/90 text-sm sm:text-base mb-6">
+            Welcome to the official Pi Lottery. Please review the following terms before participating.
+          </p>
+
+          {/* Section: General Rules */}
+          <div className="mb-6 border border-cyan-600 rounded-lg p-4">
+            <h2 className="text-lg font-bold text-cyan-400 mb-3 text-center border-b border-cyan-800 pb-1 uppercase">
+              General Rules
+            </h2>
+            <ul className="list-disc list-inside text-white/90 text-sm sm:text-base space-y-1">
+              <li>You must have a verified Pi Wallet to enter.</li>
+              <li>Tickets cost exactly 1 π and cannot be refunded.</li>
+              <li>Each ticket represents one entry for the upcoming draw.</li>
+              <li>You may enter as many times as you want before the deadline.</li>
+            </ul>
+          </div>
+
+          {/* Section: Number Selection */}
+          <div className="mb-6 border border-cyan-600 rounded-lg p-4">
+            <h2 className="text-lg font-bold text-cyan-400 mb-3 text-center border-b border-cyan-800 pb-1 uppercase">
+              Number Selection
+            </h2>
+            <ul className="list-disc list-inside text-white/90 text-sm sm:text-base space-y-1">
+              <li>Select 5 main numbers and 1 bonus ball (6 total).</li>
+              <li>Once submitted, your numbers are final and stored securely.</li>
+              <li>If you win, your wallet must still be linked to claim the prize.</li>
+            </ul>
+          </div>
+
+          {/* Section: Winning & Payouts */}
+          <div className="mb-6 border border-cyan-600 rounded-lg p-4">
+            <h2 className="text-lg font-bold text-cyan-400 mb-3 text-center border-b border-cyan-800 pb-1 uppercase">
+              Winning & Payouts
+            </h2>
+            <ul className="list-disc list-inside text-white/90 text-sm sm:text-base space-y-1">
+              <li>Winners are drawn automatically and publicly.</li>
+              <li>Jackpots increase with more ticket purchases.</li>
+              <li>Winners receive Pi directly via Pi Wallet within 48 hours.</li>
+            </ul>
+          </div>
+
+          {/* Section: Fairness & Security */}
+          <div className="mb-6 border border-cyan-600 rounded-lg p-4">
+            <h2 className="text-lg font-bold text-cyan-400 mb-3 text-center border-b border-cyan-800 pb-1 uppercase">
+              Fairness & Security
+            </h2>
+            <ul className="list-disc list-inside text-white/90 text-sm sm:text-base space-y-1">
+              <li>Draws are randomized and cannot be manipulated.</li>
+              <li>All ticket data is stored securely and transparently.</li>
+              <li>Any attempts to cheat or exploit will result in disqualification.</li>
+            </ul>
+          </div>
+
+          <div className="text-center mt-8 text-sm text-cyan-400">
+            Last updated: May 14, 2025
+          </div>
+
+          <div className="mt-6 text-center">
+            <Link href="/lottery">
+              <span className="inline-block px-6 py-2 bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold text-sm rounded-md shadow hover:brightness-110 transition">
+                ← Back to Lottery
+              </span>
+            </Link>
+          </div>
         </div>
       </div>
     </main>
