@@ -39,14 +39,6 @@ export default function WelcomePage() {
             🌍 Country-Specific Lottery Competitions
           </li>
         </ul>
-
-        {/* Testimonial */}
-        <div className="text-center space-y-2 text-sm text-white/80">
-          <div className="bg-[#0f172a] border border-cyan-600 p-4 rounded-lg shadow-[0_0_20px_#00f0ff22]">
-            “I won my first 500π within days — the games are actually fun and real prizes show up!”
-            <div className="text-cyan-400 font-bold mt-1">— @CryptoQueen</div>
-          </div>
-        </div>
       </div>
     </main>
   );
