@@ -11,18 +11,15 @@ if (!cached) {
   cached = global.mongoose = { conn: null, promise: null };
 }
 
-async function connectToDatabase() {
+export async function connectToDatabase() {
   if (cached.conn) return cached.conn;
 
   if (!cached.promise) {
     cached.promise = mongoose.connect(MONGODB_URI, {
-      bufferCommands: false
+      bufferCommands: false,
     });
   }
 
   cached.conn = await cached.promise;
   return cached.conn;
 }
-
-// 👇 Export it as default to fix the error
-export default connectToDatabase;

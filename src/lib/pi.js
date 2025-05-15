@@ -1,35 +1,33 @@
-// lib/pi.js
-
 /**
- * Dynamically loads the Pi SDK and initializes it.
- * Calls setReady(true) when the SDK is fully loaded and ready.
- *
- * @param {Function} setReady - React state setter (e.g., setSdkReady)
+ * Loads the Pi SDK dynamically in the browser.
+ * Calls setReady(true) once the SDK is fully initialized.
  */
 export function loadPiSdk(setReady) {
-  if (typeof window === 'undefined') return; // SSR guard
+  if (typeof window === 'undefined') return;
 
-  // SDK already available
   if (window.Pi && typeof window.Pi.createPayment === 'function') {
     setReady(true);
     return;
   }
 
-  // Inject Pi SDK script
   const script = document.createElement('script');
   script.src = 'https://sdk.minepi.com/pi-sdk.js';
   script.async = true;
-
   script.onload = () => {
-    const wait = setInterval(() => {
+    const check = setInterval(() => {
       if (window.Pi && typeof window.Pi.createPayment === 'function') {
-        clearInterval(wait);
+        clearInterval(check);
         window.Pi.init({ version: '2.0' });
         setReady(true);
-        console.log('✅ Pi SDK fully loaded');
+        console.log('✅ Pi SDK loaded');
       }
     }, 100);
   };
 
   document.body.appendChild(script);
+}
+
+// Placeholder payment session creator
+export function createPiPaymentSession(paymentDetails) {
+  console.log('🔧 createPiPaymentSession not implemented', paymentDetails);
 }
