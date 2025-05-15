@@ -101,7 +101,6 @@ export default function PiCashHeroBanner() {
       </div>
 
       <div className="mt-4 sm:mt-6 text-center text-xs sm:text-sm">
-        <h3 className="text-sm sm:text-lg font-bold text-cyan-300 mb-1 sm:mb-2">How It Works</h3>
         <ul className="list-disc list-inside space-y-1 text-white/80 text-left max-w-xs mx-auto">
           <li>The code drops every Monday at <span className="font-bold text-white">3:14 PM UTC</span></li>
           <li>Stays active for <span className="font-bold text-white">31h 4m</span></li>

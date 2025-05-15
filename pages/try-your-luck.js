@@ -11,10 +11,12 @@ export default function TryYourLuckPage() {
   const [playedMap, setPlayedMap] = useState({})
 
   const games = [
-    { title: '3.14 Seconds',    href: '/try-your-luck/three-fourteen', icon: '🕒', desc: 'Stop the timer at exactly 3.14s to win!',     storageKey: 'threeFourteenPlayed' },
-    { title: 'Pi Slot Machine',  href: '/try-your-luck/slot-machine',    icon: '🎰', desc: 'Match 3 Pi symbols to win!',              storageKey: 'slotMachinePlayed' },
-    { title: 'Hack the Vault',   href: '/try-your-luck/hack-the-vault',  icon: '🗝️', desc: 'Guess today’s vault code!',               storageKey: 'hackVaultPlayed' },
-  ]
+  { title: '3.14 Seconds',     href: '/try-your-luck/three-fourteen', icon: '🕒', desc: 'Stop the timer at exactly 3.14s to win!', storageKey: 'threeFourteenPlayed' },
+  { title: 'Pi Slot Machine', href: '/try-your-luck/slot-machine',    icon: '🎰', desc: 'Match 3 Pi symbols to win!',              storageKey: 'slotMachinePlayed' },
+  { title: 'Hack the Vault',  href: '/try-your-luck/hack-the-vault',  icon: '🗝️', desc: 'Guess today’s vault code!',               storageKey: 'hackVaultPlayed' },
+  { title: 'Spin the Wheel',  href: '/try-your-luck/spin-wheel',      icon: '🌀', desc: 'Spin for rewards — retry tokens, π, jackpots!', storageKey: 'spinWheelPlayed' },
+]
+
 
   useEffect(() => {
     setStreak(getStreak())
