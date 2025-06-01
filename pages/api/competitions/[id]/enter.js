@@ -1,6 +1,7 @@
 // pages/api/competitions/[id]/enter.js
 import { ObjectId } from 'mongodb';
-import clientPromise from '@/lib/mongodb';
+import { clientPromise } from '@/lib/mongodb';
+
 import { createPiPaymentSession } from '@/lib/pi';
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
