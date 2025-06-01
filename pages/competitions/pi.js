@@ -1,4 +1,5 @@
 'use client'
+
 import PiCompetitionCard from '@/components/PiCompetitionCard'
 
 const piComps = [
@@ -42,21 +43,17 @@ const piComps = [
 
 export default function PiCompetitionsPage() {
   return (
-    <main className="pt-4 pb-10 px-4 bg-[#0d1021] min-h-screen">
-      <h1 className="category-page-title text-center text-2xl font-bold mb-6 text-white font-orbitron">
-        All Pi Competitions
-      </h1>
+    <main className="app-background min-h-screen px-4 py-8 text-white">
+      <div className="max-w-screen-lg mx-auto">
+        <h1 className="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-[#00ffd5] to-[#0077ff] bg-clip-text text-transparent">
+          Pi Competitions
+        </h1>
 
-      <div className="category-grid mx-auto max-w-5xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {piComps.map(item => (
-          <PiCompetitionCard
-            key={item.comp.slug}
-            comp={item.comp}
-            title={item.title}
-            prize={item.prize}
-            fee={item.fee}
-          />
-        ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {piComps.map((item) => (
+            <PiCompetitionCard key={item.comp.slug} {...item} />
+          ))}
+        </div>
       </div>
     </main>
   )

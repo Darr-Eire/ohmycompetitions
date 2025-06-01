@@ -90,17 +90,17 @@ export default function Header() {
                   </button>
 
                   {competitionsOpen && (
-                <ul className="ml-4 border-l border-cyan-700">
-                  <li><Link href="/pi-cash-code" onClick={() => setMenuOpen(false)}><div className="px-4 py-2">Pi Cash Code</div></Link></li>
-  <li><Link href="/lottery" onClick={() => setMenuOpen(false)}><div className="px-4 py-2">Pi Lotterie</div></Link></li>
-  <li><Link href="/competitions/featured" onClick={() => setMenuOpen(false)}><div className="px-4 py-2">Featured</div></Link></li>
-  <li><Link href="/competitions/travel" onClick={() => setMenuOpen(false)}><div className="px-4 py-2">Travel</div></Link></li>
-  <li><Link href="/competitions/pi" onClick={() => setMenuOpen(false)}><div className="px-4 py-2">Pi Giveaways</div></Link></li>
-  <li><Link href="/competitions/crypto-giveaways" onClick={() => setMenuOpen(false)}><div className="px-4 py-2">Crypto Giveaways</div></Link></li>
-  <li><Link href="/competitions/daily" onClick={() => setMenuOpen(false)}><div className="px-4 py-2">Daily Giveaways</div></Link></li>
-  <li><Link href="/ticket-purchase/pi-to-the-moon" onClick={() => setMenuOpen(false)}><div className="px-4 py-2">Free Giveaways</div></Link></li>
-  
-</ul>
+  <ul className="ml-4 border-l border-cyan-700">
+    <li><Link href="/pi-cash-code" onClick={() => setMenuOpen(false)}><div className="px-4 py-2">Pi Cash Code</div></Link></li>
+    <li><Link href="/pi-lottery" onClick={() => setMenuOpen(false)}><div className="px-4 py-2">Pi Lottery</div></Link></li>
+    <li><Link href="/competitions/featured" onClick={() => setMenuOpen(false)}><div className="px-4 py-2">Featured</div></Link></li>
+    <li><Link href="/competitions/travel" onClick={() => setMenuOpen(false)}><div className="px-4 py-2">Travel</div></Link></li>
+    <li><Link href="/competitions/pi" onClick={() => setMenuOpen(false)}><div className="px-4 py-2">Pi Giveaways</div></Link></li>
+    <li><Link href="/competitions/crypto-giveaways" onClick={() => setMenuOpen(false)}><div className="px-4 py-2">Crypto Giveaways</div></Link></li>
+    <li><Link href="/competitions/daily" onClick={() => setMenuOpen(false)}><div className="px-4 py-2">Daily Giveaways</div></Link></li>
+    <li><Link href="/ticket-purchase/pi-to-the-moon" onClick={() => setMenuOpen(false)}><div className="px-4 py-2">Free Giveaways</div></Link></li>
+  </ul>
+
 
                   )}
                 </li>

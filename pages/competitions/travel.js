@@ -1,6 +1,8 @@
-// pages/competitions/travel.jsx
-import React from 'react'
-import CompetitionCard from '@/components/CompetitionCard'
+'use client';
+
+import Head from 'next/head';
+import React from 'react';
+import CompetitionCard from '@/components/CompetitionCard';
 
 const premiumItems = [
   {
@@ -57,19 +59,28 @@ const premiumItems = [
     imageUrl: '/images/spa.jpeg',
     theme: 'premium',
   }
-]
-
-
+];
 
 export default function TravelPage() {
-   return (
-    <main className="max-w-screen-lg mx-auto px-4 py-10">
-      <h1 className="text-3xl font-bold text-center text-pink-500 mb-10">🌍 Travel & Lifestyle Giveaways</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-        {premiumItems.map((item, index) => (
-          <CompetitionCard key={item.comp?.slug || index} {...item} />
-        ))}
-      </div>
-    </main>
-  )
+  return (
+    <>
+      <Head>
+        <title>Travel Competitions | OhMyCompetitions</title>
+      </Head>
+
+      <main className="app-background min-h-screen px-4 py-8 text-white">
+        <div className="max-w-screen-lg mx-auto">
+          <h1 className="text-3xl font-bold text-center mb-10 bg-gradient-to-r from-[#00ffd5] to-[#0077ff] bg-clip-text text-transparent">
+             Travel & Lifestyle Giveaways
+          </h1>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+            {premiumItems.map((item, index) => (
+              <CompetitionCard key={item.comp?.slug || index} {...item} />
+            ))}
+          </div>
+        </div>
+      </main>
+    </>
+  );
 }
