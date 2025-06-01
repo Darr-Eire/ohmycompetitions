@@ -2,8 +2,11 @@
 
 import Head from 'next/head';
 import { useState } from 'react';
-import { Roulette } from 'react-custom-roulette';
+import dynamic from 'next/dynamic';
 
+const Roulette = dynamic(() => import('react-custom-roulette').then(mod => mod.Roulette), {
+  ssr: false,
+});
 
 // 13 total segments: 8 prizes + 5 try again
 const segments = [
