@@ -1,6 +1,8 @@
 // pages/api/forums/upvote.js
 import dbConnect from 'lib/dbConnect';
-import Thread from 'models/Thread';
+import Thread from '@models/Thread'
+
+;
 import { getServerSession } from 'next-auth';
 import { authOptions } from 'lib/auth';
 

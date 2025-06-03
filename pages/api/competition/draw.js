@@ -1,5 +1,6 @@
 import { connectToDatabase } from 'lib/dbConnect';
-import Entry from 'models/Entry';
+import Entry from '@models/Entry'
+;
 import AuditLog from '@models/AuditLog';
 
 

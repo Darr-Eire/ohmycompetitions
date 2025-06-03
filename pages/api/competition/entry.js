@@ -1,5 +1,6 @@
 import dbConnect from 'lib/dbConnect';
-import Entry from 'models/Entry';
+import Entry from '@models/Entry'
+;
 import { generateEntryHash } from 'utils/hash';
 
 

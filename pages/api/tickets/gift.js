@@ -1,6 +1,7 @@
 import dbConnect from 'lib/dbConnect'
 
-import Entry from 'models/Entry'
+import Entry from '@models/Entry'
+
 import User from 'models/User'
 
 export default async function handler(req, res) {
