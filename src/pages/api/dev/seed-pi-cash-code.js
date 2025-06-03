@@ -1,5 +1,6 @@
 import { connectToDatabase } from 'lib/mongodb';
-import PiCashCode from 'src/models/PiCashCode';
+
+import PiCashCode from 'models/PiCashCode';
 
 export default async function handler(req, res) {
   try {
