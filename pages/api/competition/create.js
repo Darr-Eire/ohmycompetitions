@@ -1,6 +1,6 @@
 import { connectToDatabase } from 'lib/dbConnect';
-import Competition from '@
-models/Competition';
+import Competition from '@models/Competition';
+
 
 
 
