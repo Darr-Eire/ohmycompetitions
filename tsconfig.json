@@ -21,10 +21,9 @@
       "@components/*": ["components/*"],
       "@context/*": ["context/*"],
       "@data/*": ["data/*"],
-      "lib/*": ["lib/*"],
+      "@lib/*": ["lib/*"],
+      "@utils/*": ["utils/*"],
       "@models/*": ["../models/*"],
-
-      "utils/*": ["utils/*"],
       "styles/*": ["../styles/*"]
     }
   },
