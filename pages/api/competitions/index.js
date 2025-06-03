@@ -1,5 +1,5 @@
 // pages/api/competitions/index.js
-import { clientPromise } from '@/lib/mongodb';
+import { clientPromise } from 'lib/mongodb';
 
 
 export default async function handler(req, res) {

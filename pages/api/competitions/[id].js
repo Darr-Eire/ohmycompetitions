@@ -1,6 +1,6 @@
 // pages/api/competitions/[id].js
 import { ObjectId } from 'mongodb'
-import { connectToDatabase } from '@/lib/mongodb';
+import { connectToDatabase } from 'lib/mongodb';
 
 
 export default async function handler(req, res) {

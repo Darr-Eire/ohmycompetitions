@@ -1,7 +1,7 @@
 // pages/api/forums/thread/[id].js
-import dbConnect from '@/lib/dbConnect';
-import Thread from '@/models/Thread';
-import Reply from '@/models/Reply';
+import dbConnect from 'lib/dbConnect';
+import Thread from 'models/Thread';
+import Reply from 'models/Reply';
 
 export default async function handler(req, res) {
   await dbConnect();

@@ -1,6 +1,6 @@
 // pages/api/forums/pioneer-nominations.js
-import dbConnect from '@/lib/dbConnect'
-import PioneerNomination from '@/models/PioneerNomination'
+import dbConnect from 'lib/dbConnect'
+import PioneerNomination from 'models/PioneerNomination'
 
 export default async function handler(req, res) {
   await dbConnect()

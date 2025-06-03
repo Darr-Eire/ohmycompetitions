@@ -3,7 +3,7 @@
 import Head from 'next/head'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { getStreak } from '@/lib/streak'
+import { getStreak } from 'lib/streak'
 
 export default function TryYourLuckPage() {
   const [streak, setStreak] = useState(0)

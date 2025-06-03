@@ -1,8 +1,8 @@
 // pages/api/forums/upvote.js
-import dbConnect from '@/lib/dbConnect';
-import Thread from '@/models/Thread';
+import dbConnect from 'lib/dbConnect';
+import Thread from 'models/Thread';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { authOptions } from 'lib/auth';
 
 export default async function handler(req, res) {
   if (req.method !== 'PATCH') return res.status(405).json({ error: 'Method Not Allowed' });

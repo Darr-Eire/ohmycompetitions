@@ -1,4 +1,4 @@
-import { getUserFromToken } from '@/lib/auth';
+import { getUserFromToken } from 'lib/auth';
 
 export default function handler(req, res) {
   const user = getUserFromToken(req);

@@ -1,8 +1,8 @@
 // pages/api/forums/reply.js
 import { getServerSession } from 'next-auth';
-import dbConnect from '@/lib/dbConnect';
-import Reply from '@/models/Reply';
-import { authOptions } from '@/lib/auth';
+import dbConnect from 'lib/dbConnect';
+import Reply from 'models/Reply';
+import { authOptions } from 'lib/auth';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();

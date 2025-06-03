@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-import { connectToDatabase } from '@/lib/mongodb';
+import { connectToDatabase } from 'lib/mongodb';
 
 
 // Define schema inline or require it from your models folder

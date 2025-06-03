@@ -1,5 +1,5 @@
-import dbConnect from '@/lib/dbConnect'
-import Thread from '@/models/Thread'
+import dbConnect from 'lib/dbConnect'
+import Thread from 'models/Thread'
 import ThreadView from '@/components/ThreadView'
 
 export default function ThreadPage({ thread }) {
