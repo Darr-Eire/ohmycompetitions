@@ -1,5 +1,6 @@
 import nextConnect from 'next-connect';
-import { sessionMiddleware } from './session';
+import { sessionMiddleware } from '../session'
+
 import { createPiPayment } from '@lib/piServer';
 
 const handler = nextConnect();
