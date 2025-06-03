@@ -1,0 +1,15 @@
+import dbConnect from '../../../utils/dbConnect';
+import AuditLog from '../../../models/AuditLog';
+import { Parser } from 'json2csv';
+
+export default async function handler(req, res) {
+  await dbConnect();
+
+  const audits = await AuditLog.find({}).lean();
+  const parser = new Parser();
+  const csv = parser.parse(audits);
+
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', 'attachment; filename=audit-logs.csv');
+  res.status(200).send(csv);
+}

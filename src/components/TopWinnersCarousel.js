@@ -7,7 +7,7 @@ const winners = [
   { name: 'Jack Jim', prize: 'Matchday Tickets', date: 'March 26th', image: '/images/winner2.png' },
   { name: 'Shanahan', prize: 'Playstation 5', date: 'February 14th', image: '/images/winner2.png' },
   { name: 'Emily Rose', prize: 'Luxury Car', date: 'January 30th', image: '/images/winner2.png' },
-  { name: 'John Doe', prize: '€10,000 Pi', date: 'December 15th', image: '/images/winner2.png' },
+  { name: 'John Doe', prize: '10,000 Pi', date: 'December 15th', image: '/images/winner2.png' },
 ]
 
 export default function TopWinnersCarousel() {
