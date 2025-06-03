@@ -1,6 +1,7 @@
-import dbConnect from '../../../utils/dbConnect';
-import Entry from '../../../models/Entry';
-import { generateEntryHash } from '../../../utils/hash';
+import dbConnect from 'lib/dbConnect';
+import Entry from 'models/Entry';
+import { generateEntryHash } from 'utils/hash';
+
 
 export default async function handler(req, res) {
   await dbConnect();

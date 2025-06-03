@@ -7,6 +7,7 @@ export default function AdminPanel() {
   const [audits, setAudits] = useState([]);
   const [selectedCompetition, setSelectedCompetition] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [payments, setPayments] = useState([]);
 
   useEffect(() => {
     loadData();
@@ -15,12 +16,14 @@ export default function AdminPanel() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [compRes, auditRes] = await Promise.all([
+      const [compRes, auditRes, paymentRes] = await Promise.all([
         axios.get('/api/admin/competitions'),
-        axios.get('/api/admin/audits')
+        axios.get('/api/admin/audits'),
+        axios.get('/api/admin/payments')  // <- pulling prize pool balances
       ]);
       setCompetitions(compRes.data);
       setAudits(auditRes.data);
+      setPayments(paymentRes.data);
     } catch (err) {
       console.error("Error loading admin data:", err);
     } finally {
@@ -108,38 +111,48 @@ export default function AdminPanel() {
         </section>
       )}
 
-    <section>
-  <h2 className="text-xl mb-3">Audit Logs</h2>
-
-  <button 
-    onClick={() => window.open('/api/admin/audit-export')} 
-    className="bg-blue-600 px-3 py-1 rounded mb-4"
-  >
-    Export Audit Logs
-  </button>
-
-  <div className="space-y-2">
-    {audits.map(audit => (
-      <div key={audit._id} className="border p-4 rounded bg-[#0a0a1f]">
-        <div>Competition: {audit.competitionId}</div>
-        <div>Winner Entry ID: {audit.winnerEntryId}</div>
-        <div>Randomness Seed: {audit.randomnessSeed}</div>
-        <div>
-          Payout TX: {audit.payoutTx ? audit.payoutTx : <span className="text-yellow-400">Pending</span>}
+      <section className="mb-10">
+        <h2 className="text-xl mb-3">Prize Pool Balances</h2>
+        <div className="space-y-2">
+          {payments.map(pool => (
+            <div key={pool._id} className="border p-4 rounded bg-[#0a0a1f]">
+              Competition ID: {pool._id} — Total Pool: {pool.total} Pi
+            </div>
+          ))}
         </div>
-        {!audit.payoutTx && (
-          <button
-            onClick={() => logPayout(audit._id)}
-            className="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded mt-2"
-          >
-            Log Payout
-          </button>
-        )}
-      </div>
-    ))}
-  </div>
-</section>
+      </section>
 
+      <section>
+        <h2 className="text-xl mb-3">Audit Logs</h2>
+
+        <button 
+          onClick={() => window.open('/api/admin/audit-export')} 
+          className="bg-blue-600 px-3 py-1 rounded mb-4"
+        >
+          Export Audit Logs
+        </button>
+
+        <div className="space-y-2">
+          {audits.map(audit => (
+            <div key={audit._id} className="border p-4 rounded bg-[#0a0a1f]">
+              <div>Competition: {audit.competitionId}</div>
+              <div>Winner Entry ID: {audit.winnerEntryId}</div>
+              <div>Randomness Seed: {audit.randomnessSeed}</div>
+              <div>
+                Payout TX: {audit.payoutTx ? audit.payoutTx : <span className="text-yellow-400">Pending</span>}
+              </div>
+              {!audit.payoutTx && (
+                <button
+                  onClick={() => logPayout(audit._id)}
+                  className="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded mt-2"
+                >
+                  Log Payout
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

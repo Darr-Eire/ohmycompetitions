@@ -1,7 +1,8 @@
-import dbConnect from '../../../utils/dbConnect';
-import Entry from '../../../models/Entry';
-import AuditLog from '../../../models/AuditLog';
-import { getRandomNumber } from '../../../utils/randomness';
+import { connectToDatabase } from 'lib/dbConnect';
+import Entry from 'models/Entry';
+import AuditLog from 'models/AuditLog';
+import { getRandomNumber } from 'utils/randomness';
+
 
 export default async function handler(req, res) {
   await dbConnect();

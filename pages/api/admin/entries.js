@@ -1,5 +1,6 @@
-import dbConnect from '../../../utils/dbConnect';
-import Entry from '../../../models/Entry';
+import { connectToDatabase } from 'lib/dbConnect';
+import AuditLog from 'models/AuditLog';
+
 
 export default async function handler(req, res) {
   await dbConnect();
