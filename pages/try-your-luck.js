@@ -1,4 +1,3 @@
-// pages/try-your-luck.js
 'use client'
 
 import Head from 'next/head'
@@ -11,12 +10,11 @@ export default function TryYourLuckPage() {
   const [playedMap, setPlayedMap] = useState({})
 
   const games = [
-  { title: '3.14 Seconds',     href: '/try-your-luck/three-fourteen', icon: '🕒', desc: 'Stop the timer at exactly 3.14s to win!', storageKey: 'threeFourteenPlayed' },
-  { title: 'Pi Slot Machine', href: '/try-your-luck/slot-machine',    icon: '🎰', desc: 'Match 3 Pi symbols to win!',              storageKey: 'slotMachinePlayed' },
-  { title: 'Hack the Vault',  href: '/try-your-luck/hack-the-vault',  icon: '🗝️', desc: 'Guess today’s vault code!',               storageKey: 'hackVaultPlayed' },
-  { title: 'Spin the Wheel',  href: '/try-your-luck/spin-wheel',      icon: '🌀', desc: 'Spin for rewards — retry tokens, π, jackpots!', storageKey: 'spinWheelPlayed' },
-]
-
+    { title: '3.14 Seconds', href: '/try-your-luck/three-fourteen', icon: '🕒', desc: 'Stop the timer at exactly 3.14s to win!', storageKey: 'threeFourteenPlayed' },
+    { title: 'Pi Slot Machine', href: '/try-your-luck/slot-machine', icon: '🎰', desc: 'Match 3 Pi symbols to win!', storageKey: 'slotMachinePlayed' },
+    { title: 'Hack the Vault', href: '/try-your-luck/hack-the-vault', icon: '🗝️', desc: 'Guess today’s vault code!', storageKey: 'hackVaultPlayed' },
+    { title: 'Spin the Wheel', href: '/try-your-luck/spin-wheel', icon: '🌀', desc: 'Spin for rewards — retry tokens, π, jackpots!', storageKey: 'spinWheelPlayed' },
+  ]
 
   useEffect(() => {
     setStreak(getStreak())
@@ -31,20 +29,27 @@ export default function TryYourLuckPage() {
     setPlayedMap(map)
   }
 
+  // 👉 Add reset function here before return
+  function resetGames() {
+    games.forEach(g => {
+      localStorage.removeItem(g.storageKey);
+    });
+    refreshPlayedMap();
+  }
+
   return (
     <>
       <Head><title>Try Your Luck | OhMyCompetitions</title></Head>
 
       <main className="app-background min-h-screen p-4 text-white">
         <div className="max-w-xl mx-auto">
-          {/* Banner */}
+
           <div className="flex justify-center mb-6">
             <div className="competition-top-banner btn-gradient w-full max-w-md text-center px-4 py-3 rounded-3xl text-white">
               Try Your Luck
             </div>
           </div>
 
-          {/* Intro & Streak */}
           <div className="text-center mb-4 px-2">
             <p className="text-base sm:text-lg mb-2">
               Win free tickets, unlock daily rewards, spin for mystery prizes,<br />
@@ -53,9 +58,10 @@ export default function TryYourLuckPage() {
             <p className="text-lg font-bold text-yellow-300 mb-4">
               🔥 Daily Streak: {streak} days 🔥
             </p>
+
+    
           </div>
 
-          {/* Game Cards */}
           <div className="space-y-6">
             {games.map(game => {
               const played = playedMap[game.storageKey]

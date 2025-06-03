@@ -38,6 +38,7 @@ export default function Header() {
     ['Forums', '/forums'],
     ['The Future', '/future'],
     ['Help & Support', '/help-support'],
+    ['How To Play', '/how-to-play'],
     ['How We Got Started', '/how-we-got-started'],
     ['Partners & Sponsors', '/partners'],
   ];
@@ -75,7 +76,8 @@ export default function Header() {
       )}
 
       {menuOpen && (
-        <nav ref={menuRef} className="absolute top-full left-2 mt-2 w-56 rounded-lg shadow-xl backdrop-blur-md bg-[#0f172acc] border border-cyan-700 animate-fade-in">
+        <nav ref={menuRef} className="absolute top-full left-2 mt-2 w-56 rounded-lg shadow-xl backdrop-blur-md bg-[#0f172a]
+ border border-cyan-700 animate-fade-in">
           <ul className="flex flex-col font-orbitron text-xs">
 
             {/* Main Nav Items */}

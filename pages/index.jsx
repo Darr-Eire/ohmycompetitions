@@ -2,11 +2,12 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Footer from '@/components/Footer'; // Assuming you already have a Footer component
 
 export default function WelcomePage() {
   return (
-   <main className="min-h-screen flex flex-col items-center justify-start px-4 bg-[#0f172a] text-white font-orbitron">
-  <div className="w-full max-w-3xl bg-[#0f1b33] border border-cyan-500 rounded-2xl px-6 py-10 mt-4 sm:mt-12 backdrop-blur-md space-y-10 shadow-lg">
+    <main className="min-h-screen flex flex-col items-center justify-start px-4 bg-[#0f172a] text-white font-orbitron">
+      <div className="w-full max-w-3xl bg-[#0f1b33] border border-cyan-500 rounded-2xl px-6 py-10 mt-4 sm:mt-12 backdrop-blur-md space-y-10 shadow-lg">
 
         {/* Hero Title */}
         <div className="text-center space-y-3">
@@ -35,11 +36,16 @@ export default function WelcomePage() {
           <li className="bg-[#0f172a] border border-cyan-600 p-3 rounded-lg shadow-[0_0_20px_#00f0ff22]">
             🎯 Pi Cash Code With Instant Wins
           </li>
+            <li className="bg-[#0f172a] border border-cyan-600 p-3 rounded-lg shadow-[0_0_20px_#00f0ff22]">
+            🔗 Big Crypto Giveaways
+          </li>
           <li className="bg-[#0f172a] border border-cyan-600 p-3 rounded-lg shadow-[0_0_20px_#00f0ff22]">
             🌍 Country-Specific Lottery Competitions
           </li>
         </ul>
       </div>
+
+    
     </main>
   );
 }
