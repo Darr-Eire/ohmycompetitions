@@ -1,11 +1,12 @@
 'use client';
 import Head from 'next/head';
 import { useState } from 'react';
-import PiLotteryTabs from '@/components/PiLotteryTabs';
-import PiNumberPicker from '@/components/PiNumberPicker';
-import PiDrawResults from '@/components/PiDrawResults';
-import PiWinnersBoard from '@/components/PiWinnersBoard';
-import { DEFAULT_PICK_COUNT } from '@/data/piLotteryData';
+import PiLotteryTabs from '@components/PiLotteryTabs';
+import PiNumberPicker from '@components/PiNumberPicker';
+import PiDrawResults from '@components/PiDrawResults';
+import PiWinnersBoard from '@components/PiWinnersBoard';
+import { DEFAULT_PICK_COUNT } from '@data/piLotteryData';
+
 
 export default function PiLotteryPage() {
   const [selected, setSelected] = useState('global');

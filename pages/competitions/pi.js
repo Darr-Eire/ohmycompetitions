@@ -1,6 +1,6 @@
 'use client'
 
-import PiCompetitionCard from '@/components/PiCompetitionCard'
+import PiCompetitionCard from '@components/PiCompetitionCard'
 
 const piComps = [
   {

@@ -1,5 +1,5 @@
 'use client';
-import { countryData } from '@/data/piLotteryData';
+import { countryData } from '@data/piLotteryData';
 
 export default function PiLotteryTabs({ selected, setSelected }) {
   return (

@@ -2,7 +2,7 @@
 import dotenv from 'dotenv'
 dotenv.config()
 
-import dbConnect from '../lib/dbConnect.js'
+import dbConnect from '../src/lib/dbConnect.js'
 import Thread from '../models/Thread.js'
 
 const threads = [

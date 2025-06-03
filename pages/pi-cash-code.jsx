@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import GhostWinnerLog from '@/components/GhostWinnerLog';
-import ClaimedWinnersLog from '@/components/ClaimedWinnersLog';
+import GhostWinnerLog from '@components/GhostWinnerLog';
+import ClaimedWinnersLog from '@components/ClaimedWinnersLog';
 
 export default function PiCashCodePage() {
   const { data: session } = useSession();

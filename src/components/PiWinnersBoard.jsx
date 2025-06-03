@@ -1,5 +1,5 @@
 'use client';
-import { topWinners } from '@/data/piLotteryData';
+import { topWinners } from '@data/piLotteryData';
 
 export default function PiWinnersBoard() {
   return (

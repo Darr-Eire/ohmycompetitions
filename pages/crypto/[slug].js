@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
-import BuyTicketButton from '@/components/BuyTicketButton';
+import BuyTicketButton from '@components/BuyTicketButton';
 import Link from 'next/link';
 
 const CRYPTO_COMPETITIONS = {

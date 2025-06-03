@@ -3,22 +3,23 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
-import DailyCompetitionCard from '@/components/DailyCompetitionCard';
-import FreeCompetitionCard from '@/components/FreeCompetitionCard';
-import PiCompetitionCard from '@/components/PiCompetitionCard';
-import CryptoGiveawayCard from '@/components/CryptoGiveawayCard';
-import CompetitionCard from '@/components/CompetitionCard';
-import PiCashHeroBanner from '@/components/PiCashHeroBanner';
+import DailyCompetitionCard from '@components/DailyCompetitionCard';
+import FreeCompetitionCard from '@components/FreeCompetitionCard';
+import PiCompetitionCard from '@components/PiCompetitionCard';
+import CryptoGiveawayCard from '@components/CryptoGiveawayCard';
+import CompetitionCard from '@components/CompetitionCard';
+import PiCashHeroBanner from '@components/PiCashHeroBanner';
 
 
 import {
   techItems,
   premiumItems,
   piItems,
-  dailyItems,
   freeItems,
   cryptoGiveawaysItems,
-} from '@/data/competitions';
+  dailyItems
+} from '@data/competitions';
+
 
 export default function HomePage() {
  

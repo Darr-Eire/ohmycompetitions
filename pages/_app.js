@@ -1,7 +1,8 @@
 import React from 'react';
 import { SessionProvider } from 'next-auth/react';
-import Layout from '@/components/layout';
-import { PiAuthProvider } from '@/context/PiAuthContext';
+import { PiAuthProvider } from '@context/PiAuthContext';
+import Layout from '@components/Layout';
+
 import '@fontsource/orbitron'; // Font
 import 'styles/globals.css'; // ✅ Correct path using "@/" alias
 

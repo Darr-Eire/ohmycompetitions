@@ -1,8 +1,8 @@
 'use client'
 
 import Head from 'next/head'
-import CryptoGiveawayCard from '@/components/CryptoGiveawayCard'
-import { cryptoGiveawaysItems } from '@/data/competitions'
+import CryptoGiveawayCard from '@components/CryptoGiveawayCard'
+import { cryptoGiveawaysItems } from '@data/competitions'
 
 export default function CryptoGiveawaysPage() {
   return (

@@ -2,12 +2,12 @@
 
 import { useSession } from 'next-auth/react'
 import { useEffect, useState } from 'react'
-import AccountHeader from '@/components/AccountHeader'
-import MyEntriesTable from '@/components/MyEntriesTable'
-import DailyStreakCard from '@/components/DailyStreakCard'
-import GiftTicketModal from '@/components/GiftTicketModal'
-import GameHistoryTable from '@/components/GameHistoryTable'
-import PiLoginButton from '@/components/PiLoginButton'
+import AccountHeader from '@components/AccountHeader'
+import MyEntriesTable from '@components/MyEntriesTable'
+import DailyStreakCard from '@components/DailyStreakCard'
+import GiftTicketModal from '@components/GiftTicketModal'
+import GameHistoryTable from '@components/GameHistoryTable'
+import PiLoginButton from '@components/PiLoginButton'
 import Link from 'next/link'
 
 export default function AccountPage() {

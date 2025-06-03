@@ -1,9 +1,9 @@
 'use client'
-import CompetitionCard from '@/components/CompetitionCard'
-import PiCompetitionCard from '@/components/PiCompetitionCard'
-import DailyCompetitionCard from '@/components/DailyCompetitionCard'
-import FreeCompetitionCard from '@/components/FreeCompetitionCard'
-import CryptoGiveawayCard from '@/components/CryptoGiveawayCard'  // Don't forget to import CryptoGiveawayCard
+import CompetitionCard from '@components/CompetitionCard'
+import PiCompetitionCard from '@components/PiCompetitionCard'
+import DailyCompetitionCard from '@components/DailyCompetitionCard'
+import FreeCompetitionCard from '@components/FreeCompetitionCard'
+import CryptoGiveawayCard from '@components/CryptoGiveawayCard'  // Don't forget to import CryptoGiveawayCard
 
 export default function AllCompetitionsPage() {
    const allComps = [

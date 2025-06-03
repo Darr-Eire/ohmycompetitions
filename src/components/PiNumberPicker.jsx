@@ -1,5 +1,5 @@
 'use client';
-import { DEFAULT_PICK_COUNT, DEFAULT_MAX_NUMBER } from '@/data/piLotteryData';
+import { DEFAULT_PICK_COUNT, DEFAULT_MAX_NUMBER } from '@data/piLotteryData';
 
 export default function PiNumberPicker({ pickedNumbers, setPickedNumbers }) {
   const toggleNumber = (num) => {

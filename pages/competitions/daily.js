@@ -1,7 +1,7 @@
 'use client'
 
 import Head from 'next/head'
-import DailyCompetitionCard from '@/components/DailyCompetitionCard'
+import DailyCompetitionCard from '@components/DailyCompetitionCard'
 
 const dailyComps = [
   {

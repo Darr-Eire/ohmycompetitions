@@ -2,7 +2,7 @@
 
 import Head from 'next/head';
 import React from 'react';
-import CompetitionCard from '@/components/CompetitionCard';
+import CompetitionCard from '@components/CompetitionCard';
 
 const premiumItems = [
   {

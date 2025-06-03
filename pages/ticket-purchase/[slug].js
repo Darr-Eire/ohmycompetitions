@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import BuyTicketButton from '@/components/BuyTicketButton';
+import BuyTicketButton from '@components/BuyTicketButton';
 
 
 const COMPETITIONS = {

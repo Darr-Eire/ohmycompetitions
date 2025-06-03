@@ -18,9 +18,12 @@
     "types": ["node", "react"],
     "baseUrl": ".",
     "paths": {
-      "lib/*": ["lib/*"],
-      "models/*": ["models/*"],
-      "utils/*": ["utils/*"]
+      "lib/*": ["src/lib/*"],
+      "models/*": ["src/models/*"],
+      "utils/*": ["src/utils/*"],
+      "@components/*": ["src/components/*"],
+      "@context/*": ["src/context/*"],
+      "@data/*": ["src/data/*"]
     }
   },
   "include": [

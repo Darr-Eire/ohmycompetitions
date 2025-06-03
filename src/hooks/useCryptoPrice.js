@@ -1,5 +1,5 @@
 import useSWR from 'swr'
-import tokenIdMap from '@/utils/tokenIdMap' // adjust if no alias
+import tokenIdMap from '@utils/tokenIdMap' // adjust if no alias
 
 const fetcher = url => fetch(url).then(res => res.json())
 

@@ -1,5 +1,6 @@
 'use client';
-import { lastWeekResults, countryData } from '@/data/piLotteryData';
+import { lastWeekResults, countryData } from '@data/piLotteryData';
+
 
 export default function PiDrawResults({ selected }) {
   const result = lastWeekResults[selected];

@@ -1,6 +1,6 @@
 // pages/competitions/featured.js
 import Head from 'next/head'
-import CompetitionCard from '@/components/CompetitionCard'
+import CompetitionCard from '@components/CompetitionCard'
 
 const featuredComps = [
   {
