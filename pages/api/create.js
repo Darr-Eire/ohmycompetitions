@@ -1,7 +1,7 @@
 // pages/api/payment/create.js
 import nextConnect from 'next-connect';
 import { sessionMiddleware } from './session';
-import { createPiPayment } from '.lib/piServer';
+import { createPiPayment } from '@lib/piServer';
 
 const handler = nextConnect();
 handler.use(sessionMiddleware);
