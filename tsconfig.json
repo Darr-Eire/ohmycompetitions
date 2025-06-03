@@ -16,14 +16,14 @@
     "jsx": "preserve",
     "incremental": true,
     "types": ["node", "react"],
-    "baseUrl": ".",
+    "baseUrl": "src",
     "paths": {
-      "lib/*": ["src/lib/*"],
-      "models/*": ["src/models/*"],
-      "utils/*": ["src/utils/*"],
-      "@components/*": ["src/components/*"],
-      "@context/*": ["src/context/*"],
-      "@data/*": ["src/data/*"]
+      "@components/*": ["components/*"],
+      "@context/*": ["context/*"],
+      "@data/*": ["data/*"],
+      "lib/*": ["lib/*"],
+      "models/*": ["models/*"],
+      "utils/*": ["utils/*"]
     }
   },
   "include": [
