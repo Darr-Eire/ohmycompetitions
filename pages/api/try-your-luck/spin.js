@@ -1,5 +1,5 @@
 import dbConnect from 'lib/dbConnect'
-import User from 'models/User'
+import User from '@models/User'
 import GameResult from 'models/GameResult'
 import { getServerSession } from 'next-auth'
 import { authOptions } from 'lib/auth'

@@ -2,7 +2,7 @@ import dbConnect from 'lib/dbConnect'
 
 import Entry from '@models/Entry'
 
-import User from 'models/User'
+import User from '@models/User'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()

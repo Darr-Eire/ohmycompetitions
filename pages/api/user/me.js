@@ -1,6 +1,6 @@
 import dbConnect from 'lib/dbConnect'
 
-import User from 'models/User'
+import User from '@models/User'
 import { getServerSession } from 'next-auth'
 import { authOptions } from 'lib/auth'
 
