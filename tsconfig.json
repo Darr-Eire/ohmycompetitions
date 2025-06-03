@@ -22,7 +22,8 @@
       "@context/*": ["context/*"],
       "@data/*": ["data/*"],
       "lib/*": ["lib/*"],
-      "models/*": ["models/*"],
+      "@models/*": ["../models/*"],
+
       "utils/*": ["utils/*"],
       "styles/*": ["../styles/*"]
     }

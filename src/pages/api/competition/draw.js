@@ -1,6 +1,8 @@
 import { connectToDatabase } from 'lib/dbConnect';
 import Entry from 'models/Entry';
-import AuditLog from 'models/AuditLog';
+import AuditLog from '@models/AuditLog';
+
+
 import { getRandomNumber } from 'utils/randomness';
 
 
