@@ -1,13 +1,15 @@
-// pages/api/payments/complete.js
-
-import { MongoClient } from 'mongodb';
-
-const uri = process.env.MONGODB_URI;
-const client = new MongoClient(uri);
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from 'lib/auth';
+import { connectToDatabase } from 'lib/mongodb';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const session = await getServerSession(req, res, authOptions);
+  if (!session) {
+    return res.status(401).json({ error: 'Unauthorized' });
   }
 
   const { paymentId, txid } = req.body;
@@ -42,8 +44,7 @@ export default async function handler(req, res) {
     const { user_uid, metadata, amount } = piData.payment;
 
     console.log('[✅] Payment validated. Storing ticket in MongoDB...');
-    await client.connect();
-    const db = client.db('ohmycompetitions');
+    const { db } = await connectToDatabase();
 
     const drawWeek = new Date().toISOString().slice(0, 10);
     const ticketId = Math.random().toString(36).substring(2, 12);

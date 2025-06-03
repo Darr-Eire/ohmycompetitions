@@ -1,27 +1,24 @@
-// pages/api/competitions/index.js
-import { clientPromise } from 'lib/mongodb';
-
+import { connectToDatabase } from 'lib/mongodb';
 
 export default async function handler(req, res) {
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', ['GET']);
+    return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
+  }
+
   try {
-    const client = await clientPromise
-    const db = client.db()
+    const { db } = await connectToDatabase();
 
-    if (req.method === 'GET') {
-      const comps = await db
-        .collection('competitions')
-        .find({})
-        .sort({ createdAt: -1 })
-        .toArray()
+    const comps = await db
+      .collection('competitions')
+      .find({})
+      .sort({ createdAt: -1 })
+      .limit(100) // optional safety limit
+      .toArray();
 
-      return res.status(200).json(comps)
-    }
-
-    // If method not allowed
-    res.setHeader('Allow', ['GET'])
-    return res.status(405).json({ error: `Method ${req.method} Not Allowed` })
+    return res.status(200).json(comps);
   } catch (err) {
-    console.error('❌ GET /api/competitions failed:', err)
-    return res.status(500).json({ error: 'Internal Server Error: ' + err.message })
+    console.error('❌ GET /api/competitions failed:', err);
+    return res.status(500).json({ error: 'Internal Server Error: ' + err.message });
   }
 }

@@ -1,11 +1,17 @@
-// pages/api/claim-code.js
+// src/pages/api/claim-code.js
 import { connectToDatabase } from 'lib/mongodb';
 import mongoose from 'mongoose';
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).end();
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method Not Allowed' });
+  }
 
   const { input, userId } = req.body;
+
+  if (!input || !userId) {
+    return res.status(400).json({ error: 'Missing input or userId' });
+  }
 
   try {
     await connectToDatabase();
@@ -31,7 +37,7 @@ export default async function handler(req, res) {
       });
     }
 
-    if (input?.trim().toUpperCase() !== active.code) {
+    if (input.trim().toUpperCase() !== active.code) {
       return res.status(400).json({
         success: false,
         message: 'Wrong code ❌',
@@ -40,10 +46,10 @@ export default async function handler(req, res) {
 
     await db.collection('pi_cash_codes').updateOne(
       { _id: active._id },
-      { $set: { claimed: true } }
+      { $set: { claimed: true, claimedAt: new Date() } }
     );
 
-    return res.status(200).json({ success: true });
+    return res.status(200).json({ success: true, message: 'Claim successful 🎉' });
   } catch (err) {
     console.error('[ERROR] /api/claim-code:', err);
     return res.status(500).json({ error: 'Server error' });

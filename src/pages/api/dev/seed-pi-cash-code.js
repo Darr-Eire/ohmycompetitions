@@ -1,17 +1,24 @@
 import { connectToDatabase } from 'lib/mongodb';
-
 import PiCashCode from '@models/PiCashCode';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from 'lib/auth';
 
 export default async function handler(req, res) {
+  const session = await getServerSession(req, res, authOptions);
+
+  if (!session || session.user.role !== 'admin') {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
   try {
     await connectToDatabase();
 
     const now = new Date();
     const weekStart = new Date(now);
     weekStart.setUTCHours(0, 0, 0, 0);
-    weekStart.setUTCDate(now.getUTCDate() - now.getUTCDay()); // last Sunday = start of week
+    weekStart.setUTCDate(now.getUTCDate() - now.getUTCDay());
 
-    const expiresAt = new Date(now.getTime() + 1000 * 60 * 60 * 24); // 24 hours from now
+    const expiresAt = new Date(now.getTime() + 1000 * 60 * 60 * 24);
 
     const result = await PiCashCode.create({
       code: 'PI314CODE',

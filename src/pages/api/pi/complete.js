@@ -1,15 +1,22 @@
-import { clientPromise } from 'lib/mongodb';
-
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from 'lib/auth';
+import { connectToDatabase } from 'lib/mongodb';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' })
+    return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const { paymentId, txid, uid, competitionSlug } = req.body
+  const session = await getServerSession(req, res, authOptions);
+  if (!session) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
 
-  if (!paymentId || !txid || !uid || !competitionSlug) {
-    return res.status(400).json({ error: 'Missing fields' })
+  const { paymentId, txid, competitionSlug } = req.body;
+  const uid = session.user.uid;  // ✅ Take user UID directly from the session (never trust incoming uid from frontend)
+
+  if (!paymentId || !txid || !competitionSlug) {
+    return res.status(400).json({ error: 'Missing fields' });
   }
 
   try {
@@ -20,15 +27,15 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ txid }),
-    })
+    });
 
     if (!piRes.ok) {
-      const text = await piRes.text()
-      return res.status(500).json({ error: 'Completion failed', detail: text })
+      const text = await piRes.text();
+      return res.status(500).json({ error: 'Completion failed', detail: text });
     }
 
-    const client = await clientPromise
-    const db = client.db()
+    const { db } = await connectToDatabase();
+
     await db.collection('entries').insertOne({
       uid,
       paymentId,
@@ -36,11 +43,11 @@ export default async function handler(req, res) {
       competitionSlug,
       status: 'confirmed',
       createdAt: new Date(),
-    })
+    });
 
-    return res.status(200).json({ success: true })
+    return res.status(200).json({ success: true });
   } catch (err) {
-    console.error('❌ Complete error:', err)
-    return res.status(500).json({ error: 'Internal server error' })
+    console.error('❌ Complete error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 }

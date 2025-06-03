@@ -6,9 +6,9 @@ export default function handler(req, res) {
     return res.status(405).end(`Method ${req.method} Not Allowed`)
   }
 
-  // Clear authentication cookies
+  // Correctly clear the pi_token cookie
   res.setHeader('Set-Cookie', [
-    `token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Lax`,
+    `pi_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Strict`,
   ])
 
   return res.status(200).json({ message: 'Logged out' })

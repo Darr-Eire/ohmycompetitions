@@ -1,16 +1,22 @@
-// pages/api/forums/thread/[id].js
 import dbConnect from 'lib/dbConnect';
-import Thread from '@models/Thread'
-
-;
+import Thread from '@models/Thread';
 import Reply from '@models/Reply';
+import mongoose from 'mongoose';
 
 export default async function handler(req, res) {
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', ['GET']);
+    return res.status(405).end();
+  }
+
   await dbConnect();
 
   const { id } = req.query;
 
-  if (req.method !== 'GET') return res.status(405).end();
+  // ✅ Validate ObjectId to avoid crashing if bad ID is passed
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ error: 'Invalid thread ID' });
+  }
 
   try {
     const thread = await Thread.findById(id).lean();
