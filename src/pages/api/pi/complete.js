@@ -1,26 +1,21 @@
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from 'lib/auth';
-import { connectToDatabase } from 'lib/mongodb';
+import { MongoClient } from 'mongodb';
+
+const uri = process.env.MONGODB_URI;
+const client = new MongoClient(uri);
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const session = await getServerSession(req, res, authOptions);
-  if (!session) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
+  const { paymentId, txid } = req.body;
 
-  const { paymentId, txid, competitionSlug } = req.body;
-  const uid = session.user.uid;  // ✅ Take user UID directly from the session (never trust incoming uid from frontend)
-
-  if (!paymentId || !txid || !competitionSlug) {
-    return res.status(400).json({ error: 'Missing fields' });
+  if (!paymentId || !txid) {
+    return res.status(400).json({ error: 'Missing paymentId or txid' });
   }
 
   try {
-    const piRes = await fetch(`https://sandbox.minepi.com/v2/payments/${paymentId}/complete`, {
+    const piRes = await fetch(`https://api.minepi.com/v2/payments/${paymentId}/complete`, {
       method: 'POST',
       headers: {
         Authorization: `Key ${process.env.PI_API_KEY}`,
@@ -31,23 +26,33 @@ export default async function handler(req, res) {
 
     if (!piRes.ok) {
       const text = await piRes.text();
-      return res.status(500).json({ error: 'Completion failed', detail: text });
+      return res.status(500).json({ error: 'Failed to complete payment', detail: text });
     }
 
-    const { db } = await connectToDatabase();
+    const piData = await piRes.json();
+    const { user_uid, metadata, amount } = piData.payment;
 
-    await db.collection('entries').insertOne({
-      uid,
+    await client.connect();
+    const db = client.db('ohmycompetitions');
+
+    const drawWeek = new Date().toISOString().slice(0, 10);
+    const ticketId = Math.random().toString(36).substring(2, 12);
+
+    await db.collection('tickets').insertOne({
+      userId: user_uid,
+      ticketId,
+      competition: metadata?.competitionSlug || 'unknown',
+      quantity: metadata?.quantity || 1,
+      amount,
+      drawWeek,
+      status: 'active',
       paymentId,
       txid,
-      competitionSlug,
-      status: 'confirmed',
       createdAt: new Date(),
     });
 
-    return res.status(200).json({ success: true });
+    return res.status(200).json({ success: true, ticketId });
   } catch (err) {
-    console.error('❌ Complete error:', err);
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
