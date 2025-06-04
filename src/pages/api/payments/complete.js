@@ -1,71 +1,46 @@
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from 'lib/auth';
-import { connectToDatabase } from 'lib/mongodb';
+import { clientPromise } from 'lib/mongodb';
+
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ error: 'Method Not Allowed' })
   }
 
-  const session = await getServerSession(req, res, authOptions);
-  if (!session) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
+  const { paymentId, txid, uid, competitionSlug } = req.body
 
-  const { paymentId, txid } = req.body;
-
-  if (!paymentId || !txid) {
-    console.warn('[❗] Missing paymentId or txid:', { paymentId, txid });
-    return res.status(400).json({ error: 'Missing paymentId or txid' });
+  if (!paymentId || !txid || !uid || !competitionSlug) {
+    return res.status(400).json({ error: 'Missing fields' })
   }
 
   try {
-    console.log('[🔁] Sending completion request to Pi API...');
-    console.log('[📦] Payload:', { paymentId, txid });
-
-    const piRes = await fetch(`https://api.minepi.com/v2/payments/${paymentId}/complete`, {
+    const piRes = await fetch(`https://sandbox.minepi.com/v2/payments/${paymentId}/complete`, {
       method: 'POST',
       headers: {
         Authorization: `Key ${process.env.PI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ txid }),
-    });
-
-    const responseText = await piRes.text();
-    console.log('[📨] Raw response from Pi API:', responseText);
+    })
 
     if (!piRes.ok) {
-      console.error('[❌] Pi server responded with error status');
-      return res.status(500).json({ error: 'Failed to complete payment', details: responseText });
+      const text = await piRes.text()
+      return res.status(500).json({ error: 'Completion failed', detail: text })
     }
 
-    const piData = JSON.parse(responseText);
-    const { user_uid, metadata, amount } = piData.payment;
-
-    console.log('[✅] Payment validated. Storing ticket in MongoDB...');
-    const { db } = await connectToDatabase();
-
-    const drawWeek = new Date().toISOString().slice(0, 10);
-    const ticketId = Math.random().toString(36).substring(2, 12);
-
-    await db.collection('tickets').insertOne({
-      userId: user_uid,
-      ticketId,
-      competition: metadata?.competitionSlug || 'unknown',
-      quantity: metadata?.quantity || 1,
-      amount,
-      drawWeek,
-      status: 'active',
+    const client = await clientPromise
+    const db = client.db()
+    await db.collection('entries').insertOne({
+      uid,
       paymentId,
       txid,
+      competitionSlug,
+      status: 'confirmed',
       createdAt: new Date(),
-    });
+    })
 
-    console.log('[🎟️] Ticket saved:', ticketId);
-    return res.status(200).json({ success: true, ticketId });
+    return res.status(200).json({ success: true })
   } catch (err) {
-    console.error('[🔥] Internal server error during payment completion:', err);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('❌ Complete error:', err)
+    return res.status(500).json({ error: 'Internal server error' })
   }
 }
