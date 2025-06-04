@@ -4,43 +4,65 @@ import Link from 'next/link';
 export default function IndexPage() {
   return (
     <div className="h-screen bg-[#0a1024] text-white flex items-center justify-center px-3 py-4">
-      <div className="w-full max-w-sm bg-[#0f1b33] border border-cyan-400 rounded-2xl px-4 py-6 backdrop-blur-md shadow-[0_0_30px_#00f0ff66] flex flex-col h-full">
+      <div className="w-full max-w-sm bg-[#0f1b33] border border-cyan-400 rounded-2xl px-4 py-6 backdrop-blur-md shadow-[0_0_40px_#00f0ff66] flex flex-col h-full">
 
-        {/* Title and intro */}
-        <div className="text-center space-y-3">
-          <h1 className="text-2xl font-extrabold bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-transparent bg-clip-text tracking-wide drop-shadow-[0_0_15px_#00f0ff]">
+        {/* Top Title */}
+        <div className="text-center mb-3">
+          <h1 className="text-3xl font-extrabold bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-transparent bg-clip-text tracking-wide drop-shadow-[0_0_25px_#00f0ff]">
             Oh My Competitions
           </h1>
-          <p className="text-white/90 text-sm leading-snug">
-            Where Pi Network Pioneers compete, win, and earn! Daily challenges, spins, live draws & prize pools.
+          <p className="text-white/80 text-sm mt-1">
+            Win Big, Play Daily. Powered by Pi Network.
           </p>
         </div>
 
-        {/* Features list */}
-        <ul className="grid grid-cols-1 gap-3 text-sm text-white/90 my-5">
+        {/* Features */}
+        <div className="flex flex-col gap-3 my-4">
           {[
-            '💎 Daily Competitions & Giveaways',
-            '🌀 Spin-to-Win Wheels',
-            '🎯 Pi Cash Code',
-            '🔗 Big Crypto Giveaways',
-            '🌍 Country Lotteries'
+            { icon: '💎', text: 'Daily Competitions & Giveaways' },
+            { icon: '🎡', text: 'Spin-to-Win Prizes' },
+            { icon: '📲', text: 'Pi Cash Code' },
+            { icon: '🎁', text: 'Crypto Giveaways' },
+            { icon: '🌍', text: 'Country Lotteries & Global Draws' }
           ].map((feature, index) => (
-            <li key={index} className="bg-[#0a1024] border border-cyan-500 p-3 rounded-lg shadow-[0_0_30px_#00f0ff66]">
-              {feature}
-            </li>
+            <div key={index} className="flex items-center gap-3 bg-[#0a1024] border border-cyan-500 p-3 rounded-lg shadow-[0_0_30px_#00f0ff66]">
+              <div className="text-2xl">{feature.icon}</div>
+              <div className="text-sm">{feature.text}</div>
+            </div>
           ))}
-        </ul>
+        </div>
 
-        {/* Spacer to push button down */}
+        {/* Stats Block */}
+        <div className="flex justify-center mt-6">
+          <div className="grid grid-cols-2 gap-4 w-full max-w-md px-6 py-6 bg-gradient-to-r from-cyan-300 to-blue-500 rounded-xl shadow-lg text-black text-center text-base">
+            <div>
+              <div className="text-xl font-bold">44,000+</div>
+              <div>Winners</div>
+            </div>
+            <div>
+              <div className="text-xl font-bold">106,400 π</div>
+              <div>Total Pi Won</div>
+            </div>
+            <div>
+              <div className="text-xl font-bold">15,000 π</div>
+              <div>Donated to Charity</div>
+            </div>
+            <div>
+              <div className="text-xl font-bold">5★</div>
+              <div>User Rated</div>
+            </div>
+          </div>
+        </div>
+
         <div className="flex-grow"></div>
 
-        {/* CTA button */}
-        <div className="pt-4">
+        {/* CTA */}
+        <div className="pt-3">
           <Link
             href="/homepage"
-            className="block bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold px-6 py-3 rounded-lg shadow hover:scale-105 transition text-sm w-full text-center"
+            className="block bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold px-6 py-3 rounded-lg shadow-lg hover:scale-105 transition text-sm w-full text-center"
           >
-            Let's Go
+            Let's Go 🚀
           </Link>
         </div>
 
@@ -49,7 +71,7 @@ export default function IndexPage() {
   )
 }
 
-// Disable layout for index.jsx
+// Disable global layout for index.jsx
 IndexPage.getLayout = function PageLayout(page) {
   return <>{page}</>;
 }
