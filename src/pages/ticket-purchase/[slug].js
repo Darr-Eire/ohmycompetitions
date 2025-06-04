@@ -11,62 +11,69 @@ const COMPETITIONS = {
   'ps5-bundle-giveaway': {
     title: 'PS5 Bundle Giveaway',
     prize: 'PlayStation 5 + Extra Controller',
-    entryFee: 0.8,
+    entryFee: 0.25,
     imageUrl: '/images/playstation.jpeg',
+    totalTickets: 2000,
     date: 'June 14, 2025',
     time: '3:14 PM UTC',
     location: 'Online',
     endsAt: '2025-06-14T15:14:00Z',
+ 
   },
   '55-inch-tv-giveaway': {
     title: '55″ Smart TV Giveaway',
     prize: '55″ Smart TV',
     entryFee: 0.25,
     imageUrl: '/images/tv.jpg',
-    date: 'May 8, 2025',
+    date: ' 8, 2025',
     time: '11:30 AM UTC',
     location: 'Online',
     endsAt: '2025-05-08T11:30:00Z',
+    totalTickets: 1500,
   },
   'xbox-one-bundle': {
     title: 'Xbox One Giveaway',
     prize: 'Xbox One + Game Pass',
-    entryFee: 0.3,
+    entryFee: 0.35,
     imageUrl: '/images/xbox.jpeg',
-    date: 'May 9, 2025',
+    date: 'June 9, 2025',
     time: '5:45 PM UTC',
     location: 'Online',
     endsAt: '2025-05-09T17:45:00Z',
+    totalTickets: 1300,
   },
   'gamer-pc-bundle': {
     title: 'Gaming PC Giveaway',
     prize: 'Gamer PC Bundle',
     entryFee: 0.25,
     imageUrl: '/images/bundle.jpeg',
-    date: 'May 8, 2025',
+    date: 'June 8, 2025',
     time: '11:30 AM UTC',
     location: 'Online',
     endsAt: '2025-05-08T11:30:00Z',
+    totalTickets: 1500,
   },
   'electric-bike': {
     title: 'Electric Bike Giveaway',
     prize: 'Electric Bike',
-    entryFee: 0.25,
+    entryFee: 0.65,
     imageUrl: '/images/bike.jpeg',
-    date: 'May 8, 2025',
+    date: 'June 8, 2025',
     time: '11:30 AM UTC',
     location: 'Online',
     endsAt: '2025-05-08T11:30:00Z',
+    totalTickets: 1850,
   },
   'matchday-tickets': {
     title: 'Matchday Tickets Giveaway',
     prize: 'Matchday Tickets',
     entryFee: 0.25,
     imageUrl: '/images/liverpool.jpeg',
-    date: 'May 8, 2025',
+    date: 'June 8, 2025',
     time: '11:30 AM UTC',
     location: 'Online',
     endsAt: '2025-05-08T11:30:00Z',
+     totalTickets: 1200,
   },
   'apple-smart-watch': {
     title: 'Apple Smart Watch Giveaway',
@@ -113,7 +120,7 @@ const COMPETITIONS = {
     prize: 'Amazon Fire Stick',
     entryFee: 0.15,
     imageUrl: '/images/stick.jpeg',
-    date: 'May 30, 2025',
+    date: 'June 30, 2025',
     time: '10:00 AM UTC',
     location: 'Online',
     endsAt: '2025-05-30T10:00:00Z',
@@ -153,39 +160,42 @@ const COMPETITIONS = {
   'dubai-luxury-holiday': {
     title: 'Dubai Luxury Holiday',
     prize: '7-Day All-Inclusive Dubai Trip',
-    entryFee: 20,
+    entryFee: 2.5,
     imageUrl: '/images/dubai-luxury-holiday.jpg',
-    date: 'May 18, 2025',
+    date: 'June 18, 2025',
     time: '10:00 PM UTC',
     location: 'Online',
     endsAt: '2025-05-18T22:00:00Z',
+     totalTickets: 4000,
   },
   'penthouse-stay': {
     title: 'Penthouse Stay',
     prize: 'Luxury Penthouse Hotel Stay',
-    entryFee: 15,
+    entryFee: 1.5,
     imageUrl: '/images/hotel.jpeg',
-    date: 'May 15, 2025',
+    date: 'June 15, 2025',
     time: '9:00 PM UTC',
     location: 'Online',
     endsAt: '2025-05-15T21:00:00Z',
+     totalTickets: 3000,
   },
   'first-class-flight': {
     title: 'First Class Flight',
     prize: 'Return First Class Flights Worldwide',
-    entryFee: 15,
+    entryFee: 2,
     imageUrl: '/images/first.jpeg',
-    date: 'May 15, 2025',
+    date: 'June 15, 2025',
     time: '9:00 PM UTC',
     location: 'Online',
     endsAt: '2025-05-15T21:00:00Z',
+     totalTickets: 2500,
   },
   'pi-giveaway-100k': {
     title: '100,000 Pi Giveaway',
     prize: '100,000 π',
     entryFee: 10,
     imageUrl: '', // Add image path if available
-    date: 'May 20, 2025',
+    date: 'june 20, 2025',
     time: '12:00 AM UTC',
     location: 'Online',
     endsAt: '2025-05-20T00:00:00Z',
@@ -195,7 +205,7 @@ const COMPETITIONS = {
     prize: '50,000 π',
     entryFee: 5,
     imageUrl: '', // Add image path if available
-    date: 'May 11, 2025',
+    date: 'June 11, 2025',
     time: '12:00 AM UTC',
     location: 'Online',
     endsAt: '2025-05-11T00:00:00Z',
@@ -205,7 +215,7 @@ const COMPETITIONS = {
     prize: '25,000 π',
     entryFee: 2,
     imageUrl: '', // Add image path if available
-    date: 'May 11, 2025',
+    date: 'June 11, 2025',
     time: '12:00 AM UTC',
     location: 'Online',
     endsAt: '2025-05-11T00:00:00Z',
@@ -217,7 +227,7 @@ const COMPETITIONS = {
     prize: '1,000 π',
     entryFee: 0.314,
     imageUrl: '', // Add image path if needed
-    date: 'May 3, 2025',
+    date: 'June 25, 2025',
     time: '3:14 PM UTC',
     location: 'Online',
     endsAt: '2025-05-03T15:14:00Z',
@@ -227,27 +237,27 @@ const COMPETITIONS = {
     prize: '5,000 π',
     entryFee: 3.14,
     imageUrl: '', // Add image path if needed
-    date: 'May 4, 2025',
+    date: 'June 25, 2025',
     time: '12:00 PM UTC',
     location: 'Online',
-    endsAt: '2025-05-04T12:00:00Z',
+    endsAt: '2025-06-25T12:00:00Z',
   },
   'hack-the-vault': {
     title: 'Hack The Vault',
     prize: '7,750 π',
     entryFee: 0.375,
     imageUrl: '', // Add image path if needed
-    date: 'May 3, 2025',
+    date: 'June 3, 2025',
     time: '11:59 PM UTC',
     location: 'Online',
     endsAt: '2025-05-03T23:59:59Z',
   },
-  '€5000': {
-    title: '€5000',
-    prize: '€5000 Paid in Pi Equivalent',
+  '5000 Pi': {
+    title: '5000 Pi',
+    prize: '5000',
     entryFee: 1.314,
     imageUrl: '', // Add image path if needed
-    date: 'May 3, 2025',
+    date: 'June 25, 2025',
     time: '3:14 PM UTC',
     location: 'Online',
     endsAt: '2025-05-03T15:14:00Z',
@@ -257,7 +267,7 @@ const COMPETITIONS = {
     prize: '750 π',
     entryFee: 0.375,
     imageUrl: '', // Add image path if needed
-    date: 'May 3, 2025',
+    date: 'June 3, 2025',
     time: '11:59 PM UTC',
     location: 'Online',
     endsAt: '2025-05-03T23:59:59Z',
@@ -267,7 +277,7 @@ const COMPETITIONS = {
     prize: '5,000 π',
     entryFee: 3.14,
     imageUrl: '', // Add image path if needed
-    date: 'May 4, 2025',
+    date: 'June 4, 2025',
     time: '12:00 PM UTC',
     location: 'Online',
     endsAt: '2025-05-04T12:00:00Z',
@@ -277,7 +287,7 @@ const COMPETITIONS = {
     prize: '250,000 Pi in Pi (One Winner)',
     entryFee: 15,
     imageUrl: '/images/250000.png',
-    date: 'May 28, 2025',
+    date: 'June 28, 2025',
     time: '10:00 PM UTC',
     location: 'Global Online Draw',
     endsAt: '2025-05-28T22:00:00Z',
@@ -296,9 +306,10 @@ export default function TicketPurchasePage() {
   const [discount, setDiscount] = useState(0);
   const [timeLeft, setTimeLeft] = useState('');
 
+  // *** MOCK ticketsSold — replace with real data from your API or state
+  const ticketsSold = 750; // example value
 
-
-  // ✅ Get current user if available
+  // Get current user if available
   useEffect(() => {
     if (!router.isReady || !window?.Pi?.getCurrentPioneer) {
       setLoadingUser(false);
@@ -315,7 +326,7 @@ export default function TicketPurchasePage() {
       .finally(() => setLoadingUser(false));
   }, [router.isReady]);
 
-  // ✅ Countdown timer
+  // Countdown timer
   useEffect(() => {
     const comp = COMPETITIONS[slug];
     if (!comp?.endsAt) return;
@@ -338,48 +349,47 @@ export default function TicketPurchasePage() {
     return () => clearInterval(interval);
   }, [slug]);
 
- const handlePiLogin = async () => {
-  setLoadingLogin(true);
+  const handlePiLogin = async () => {
+    setLoadingLogin(true);
 
-  if (!window?.Pi) {
-    alert('⚠️ Pi SDK not available. Use the Pi Browser.');
-    setLoadingLogin(false);
-    return;
-  }
+    if (!window?.Pi) {
+      alert('⚠️ Pi SDK not available. Use the Pi Browser.');
+      setLoadingLogin(false);
+      return;
+    }
 
-  try {
-    const user = await window.Pi.authenticate(['username', 'payments'], async (incompletePayment) => {
-      if (incompletePayment?.identifier) {
-        alert(`⚠️ Found incomplete payment: ${incompletePayment.identifier}`);
+    try {
+      const user = await window.Pi.authenticate(['username', 'payments'], async (incompletePayment) => {
+        if (incompletePayment?.identifier) {
+          alert(`⚠️ Found incomplete payment: ${incompletePayment.identifier}`);
 
-        try {
-          const res = await fetch('/api/payments/complete', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              paymentId: incompletePayment.identifier,
-              txid: incompletePayment.transaction?.txid || 'missing-txid'
-            }),
-          });
+          try {
+            const res = await fetch('/api/payments/complete', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                paymentId: incompletePayment.identifier,
+                txid: incompletePayment.transaction?.txid || 'missing-txid'
+              }),
+            });
 
-          const result = await res.json();
-          console.log('[✅] Tried to complete pending payment:', result);
-        } catch (err) {
-          console.warn('[❌] Failed to complete pending payment:', err);
+            const result = await res.json();
+            console.log('[✅] Tried to complete pending payment:', result);
+          } catch (err) {
+            console.warn('[❌] Failed to complete pending payment:', err);
+          }
         }
-      }
-    });
+      });
 
-    setPiUser(user);
-    console.log('✅ Logged in:', user);
-  } catch (err) {
-    alert(`Login failed: ${err.message}`);
-    console.error('❌ Authentication error:', err);
-  } finally {
-    setLoadingLogin(false);
-  }
-};
-
+      setPiUser(user);
+      console.log('✅ Logged in:', user);
+    } catch (err) {
+      alert(`Login failed: ${err.message}`);
+      console.error('❌ Authentication error:', err);
+    } finally {
+      setLoadingLogin(false);
+    }
+  };
 
   if (!router.isReady) return null;
   const comp = COMPETITIONS[slug];
@@ -403,44 +413,98 @@ export default function TicketPurchasePage() {
           <h1 className="text-xl sm:text-2xl font-bold text-black uppercase">{comp.title}</h1>
         </div>
 
-        <div className="p-4 space-y-4 text-center">
+        <div className="p-6 space-y-6 text-center">
           {comp.imageUrl && (
-            <img src={comp.imageUrl} alt={comp.title} className="w-full max-h-64 object-cover rounded-lg border border-blue-500 mx-auto" />
+            <img
+              src={comp.imageUrl}
+              alt={comp.title}
+              className="w-full max-h-64 object-cover rounded-lg border border-blue-500 mx-auto"
+            />
           )}
-
-          <p className="text-gray-300"><strong>Prize:</strong> {comp.prize}</p>
 
           {timeLeft && (
             <div className="bg-gradient-to-r from-cyan-400 to-blue-500 px-4 py-2 rounded-lg inline-block mx-auto">
-              <p className="text-sm text-black font-mono font-bold">⏳ Ends In: <span>{timeLeft}</span></p>
+              <span className="font-mono font-bold text-black">{timeLeft}</span>
             </div>
           )}
 
-          <div className="text-sm space-y-1">
-            <p><strong>Date:</strong> {comp.date}</p>
-            <p><strong>Time:</strong> {comp.time}</p>
-            <p><strong>Location:</strong> {comp.location}</p>
-          </div>
+          <p className="text-white text-2xl font-bold">{comp.prize}</p>
 
-          <div className="space-y-1 text-sm">
-            <p>Entry Fee: <strong>{comp.entryFee} π</strong></p>
-            {discount > 0 && (
-              <p className="text-green-400">Discount: <strong>-{discount} π</strong></p>
-            )}
-            <p className="font-semibold">Price per ticket: {currentPrice.toFixed(2)} π</p>
-            <div className="flex justify-center gap-4 mt-2">
-              <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="bg-blue-500 px-4 py-1 rounded-full" disabled={quantity <= 1}>−</button>
-              <span className="text-lg">{quantity}</span>
-              <button onClick={() => setQuantity(q => q + 1)} className="bg-blue-500 px-4 py-1 rounded-full">+</button>
+          {/* Details container, centered with right-aligned label/value pairs */}
+          <div className="max-w-md mx-auto text-sm text-white space-y-2">
+            <div className="flex justify-between">
+              <span className="font-semibold">Date</span>
+              <span className="text-right">{comp.date}</span>
             </div>
+
+            <div className="flex justify-between">
+              <span className="font-semibold">Location</span>
+              <span className="text-right">{comp.location}</span>
+            </div>
+
+            <div className="flex justify-between">
+              <span className="font-semibold">Entry Fee</span>
+              <span className="text-right">{comp.entryFee} π</span>
+            </div>
+
+            {discount > 0 && (
+              <div className="flex justify-between text-green-400 font-semibold">
+                <span>Discount:</span>
+                <span className="text-right">-{discount} π</span>
+              </div>
+            )}
+
+            {typeof comp.totalTickets === 'number' && (
+              <div className="flex justify-between text-white font-semibold">
+                <span>Total Tickets:</span>
+                <span className="text-right">{comp.totalTickets}</span>
+              </div>
+            )}
           </div>
 
-          <p className="text-lg font-bold">Total: {totalPrice.toFixed(2)} π</p>
+          {/* Progress bar for tickets sold */}
+          {typeof comp.totalTickets === 'number' && typeof ticketsSold === 'number' && (
+            <div className="max-w-md mx-auto mt-4">
+              <p className="text-sm text-white mb-1 font-semibold">
+                Tickets Sold: {ticketsSold} / {comp.totalTickets}
+              </p>
+              <div className="w-full bg-gray-700 rounded-full h-4 overflow-hidden">
+                <div
+                  className="bg-cyan-400 h-4 rounded-full transition-all duration-500"
+                  style={{
+                    width: `${Math.min(100, (ticketsSold / comp.totalTickets) * 100)}%`,
+                  }}
+                />
+              </div>
+            </div>
+          )}
 
-          <p className="text-gray-300 text-sm">Secure your entry to win <strong>{comp.prize}</strong>.</p>
+          {/* Quantity selector */}
+          <div className="flex justify-center gap-4 mt-4">
+            <button
+              onClick={() => setQuantity(q => Math.max(1, q - 1))}
+              className="bg-blue-500 px-4 py-1 rounded-full disabled:opacity-50"
+              disabled={quantity <= 1}
+            >
+              −
+            </button>
+            <span className="text-lg font-semibold">{quantity}</span>
+            <button
+              onClick={() => setQuantity(q => q + 1)}
+              className="bg-blue-500 px-4 py-1 rounded-full"
+            >
+              +
+            </button>
+          </div>
+
+          <p className="text-lg font-bold mt-6">Total {totalPrice.toFixed(2)} π</p>
+
+          <p className="text-white text-sm mt-2">
+            Secure your entry to win <strong>{comp.prize}</strong>. Good luck!
+          </p>
 
           {loadingUser ? (
-            <p className="text-center text-gray-400">Checking session…</p>
+            <p className="text-center text-white">Checking session…</p>
           ) : !piUser ? (
             <button
               onClick={handlePiLogin}
@@ -461,3 +525,5 @@ export default function TicketPurchasePage() {
     </div>
   );
 }
+
+

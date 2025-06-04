@@ -64,7 +64,7 @@ export default function PiCompetitionCard({ comp, title, prize, fee, userHandle 
            <div className="mt-4 space-y-2 text-sm">
         <p className="text-center text-white">🔗 Total Entries: <strong>{entryCount.toLocaleString()}</strong></p>
       </div>
-         <p className="text-yellow-300">⏳ Ends in: {timeLeft}</p>
+         <p className="text-yellow-300">{timeLeft}</p>
       
       </div>
 

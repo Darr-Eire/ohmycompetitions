@@ -70,7 +70,7 @@ export default function PiLotteryTermsPage() {
           </div>
 
           <div className="text-center mt-8 text-sm text-cyan-400">
-            Last updated: May 14, 2025
+            Last updated:  14, 2025
           </div>
 
           <div className="mt-6 text-center">

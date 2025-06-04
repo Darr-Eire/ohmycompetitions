@@ -18,7 +18,7 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
   }, [sdkReady]);
 
   // Handle payment
-  const handlePayment = async () => {
+ const handlePayment = async () => {
     if (
       typeof window === 'undefined' ||
       !window.Pi ||

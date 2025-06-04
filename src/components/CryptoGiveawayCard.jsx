@@ -61,11 +61,11 @@ export default function CryptoGiveawayCard({
 
       {/* Competition Info */}
       <div className="p-4 text-center space-y-2">
-        <h3 className="text-lg font-bold text-green-400">{title}</h3>
+        <h3 className="text-lg font-bold text-white font-bold">{title}</h3>
         <p className="text-sm text-gray-300">{prize}</p>
-        <p className="text-sm text-yellow-300 font-semibold">Entry Fee: {fee}</p>
-        <p className="text-xs text-gray-400">Total Tickets: {totalTickets}</p>
-        <p className="text-xs text-cyan-400">Ends: {formattedEndDate}</p>
+        <p className="text-sm text-white font-semibold">Entry Fee: {fee}</p>
+        <p className="text-xs text-white">Total Tickets: {totalTickets}</p>
+        <p className="text-xs text-white">Ends: {formattedEndDate}</p>
 
         {/* CTA */}
         <Link

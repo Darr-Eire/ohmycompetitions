@@ -64,17 +64,17 @@ export default function DailyCompetitionCard({ comp, title, prize, fee }) {
       {/* Details */}
       <div className="space-y-3 text-sm text-center">
         <div className="grid grid-cols-2 gap-2 text-left">
-          <p className="text-gray-400">🎁 Prize:</p>
-          <p className="text-yellow-300 font-semibold">{prize}</p>
+          <p className="text-white">🎁 Prize:</p>
+          <p className="text-white font-semibold">{prize}</p>
 
-          <p className="text-gray-400">🎟 Entry Fee:</p>
-          <p className="text-green-300 font-semibold">{fee}</p>
+          <p className="text-white">🎟 Entry Fee:</p>
+          <p className="text-white font-semibold">{fee}</p>
 
-          <p className="text-gray-400">🎫 Total Tickets:</p>
-          <p className="text-cyan-300 font-semibold">{total.toLocaleString()}</p>
+          <p className="text-white">🎫 Total Tickets:</p>
+          <p className="text-white font-semibold">{total.toLocaleString()}</p>
 
-          <p className="text-gray-400">🕒 Ends In:</p>
-          <p className="text-pink-400 font-mono">{timeLeft}</p>
+          
+          <p className="text-white font-mono">{timeLeft}</p>
         </div>
       </div>
 
