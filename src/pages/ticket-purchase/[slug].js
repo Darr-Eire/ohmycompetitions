@@ -25,7 +25,7 @@ const COMPETITIONS = {
     prize: '55″ Smart TV',
     entryFee: 0.25,
     imageUrl: '/images/tv.jpg',
-    date: ' 8, 2025',
+    date: 'June 8, 2025',
     time: '11:30 AM UTC',
     location: 'Online',
     endsAt: '2025-05-08T11:30:00Z',
@@ -497,11 +497,23 @@ export default function TicketPurchasePage() {
             </button>
           </div>
 
-          <p className="text-lg font-bold mt-6">Total {totalPrice.toFixed(2)} π</p>
+<p className="text-lg font-bold mt-6">Total {totalPrice.toFixed(2)} π</p>
 
-          <p className="text-white text-sm mt-2">
-            Secure your entry to win <strong>{comp.prize}</strong>. Good luck!
-          </p>
+<p className="text-white text-sm mt-2">
+  Secure your entry to win <strong>{comp.prize}</strong>. Good luck!
+</p>
+
+<p className="text-xs mt-1 text-gray-400">
+  <Link
+    href="/terms/playstation5"
+    className="underline hover:text-cyan-400"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    Terms & Conditions
+  </Link>
+</p>
+
 
           {loadingUser ? (
             <p className="text-center text-white">Checking session…</p>
