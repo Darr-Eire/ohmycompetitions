@@ -16,8 +16,8 @@ export default function HelpSupport() {
 
         <h2 className="text-xl font-semibold mb-2">Contact Information</h2>
         <ul className="mb-4 list-disc list-inside text-left">
-          <li><strong>Email:</strong> <span className="text-blue-600">ohmycompetitions@gmail.com</span> {/* 🔵 Replace this with your real email */}</li>
-          <li><strong>Phone:</strong> <span className="text-blue-600">+353871365782</span> {/* 🔵 Replace this with your real phone */}</li>
+          <li><strong>Email:</strong> <span className="text-white">ohmycompetitions@gmail.com</span> {/* 🔵 Replace this with your real email */}</li>
+          <li><strong>Phone:</strong> <span className="text-white">+353871365782</span> {/* 🔵 Replace this with your real phone */}</li>
           <li><strong>Address:</strong> <span className="text-blue-600">Dublin,Irland</span> {/* 🔵 Replace this with your real or fake address */}</li>
         </ul>
 

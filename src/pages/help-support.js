@@ -11,7 +11,7 @@ import {
 
 export default function HelpSupport() {
   return (
-    <main className="app-background min-h-screen flex justify-center items-start px-4 py-12 text-white">
+   <main className="app-background min-h-screen flex justify-center px-4 text-white">
       <div className="competition-card max-w-3xl w-full bg-white bg-opacity-10 rounded-2xl shadow-lg">
         {/* Banner */}
         <div className="competition-top-banner title-gradient">
@@ -29,16 +29,16 @@ export default function HelpSupport() {
             <h2 className="text-lg font-bold gradient-text mt-6 mb-2">Contact Information</h2>
             <ul className="flex flex-wrap gap-6 list-inside text-white">
               <li>
-                <strong>Email:</strong>{' '}
-                <span className="gradient-text">ohmycompetitions@gmail.com</span>
+                <strong>Email --</strong>{' '}
+                <span className="text-white">ohmycompetitions@gmail.com</span>
               </li>
               <li>
-                <strong>Phone:</strong>{' '}
-                <span className="gradient-text">+353 87 1365782</span>
+                <strong>Phone --</strong>{' '}
+                <span className="text-white">+353 87 1365782</span>
               </li>
               <li>
-                <strong>Address:</strong>{' '}
-                <span className="gradient-text">Dublin, Ireland</span>
+                <strong>Address --</strong>{' '}
+                <span className="text-white">Dublin, Ireland</span>
               </li>
             </ul>
           </section>

@@ -10,7 +10,7 @@ import {
 
 export default function HowToPlay() {
   return (
-    <main className="app-background min-h-screen flex justify-center items-start px-4 py-12 text-white">
+   <main className="app-background min-h-screen flex justify-center px-4 text-white">
       <div className="competition-card max-w-3xl w-full bg-white bg-opacity-10 rounded-2xl shadow-lg">
         {/* Banner */}
       <div className="competition-top-banner title-gradient text-white">
@@ -20,7 +20,7 @@ export default function HowToPlay() {
         {/* Body */}
         <div className="p-6 space-y-6">
           <p>
-            Welcome to <span className="gradient-text font-semibold">OhMyCompetitions</span> — where your Pi turns into real prizes every single day.
+            Welcome to <span className="text-white font-semibold">OhMyCompetitions</span> — Where your Pi turns into real prizes every single day.
           </p>
 
           {/* Getting Started */}

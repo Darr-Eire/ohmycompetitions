@@ -32,11 +32,10 @@ export default function PartnersPage() {
         {/* Header */}
         <header className="text-center">
           <div className="competition-top-banner title-gradient mb-2">
-            🤝 Partners & Sponsors
+             Partners & Sponsors
           </div>
-          <p className="text-black">
-            Community DApps
-          </p>
+        
+         
         </header>
 
         {/* Partners grid */}

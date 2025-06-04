@@ -64,16 +64,13 @@ export default function TermsAndConditions() {
         <p>
           These Terms and Conditions are governed by and construed in accordance with the laws of Ireland. Any disputes will be subject to the exclusive jurisdiction of the Irish courts.
         </p>
-  <div className="max-w-screen-md mx-auto px-4 py-8 flex justify-center">
-  <Link href="/terms/playstation5" legacyBehavior>
+<div className="max-w-screen-md mx-auto px-4 py-8 flex justify-center">
+  <Link href="/ticket-purchase/ps5-bundle-giveaway" legacyBehavior>
     <a className="btn-gradient inline-block text-sm px-3 py-1 rounded-md">
       Back To Competition
     </a>
   </Link>
 </div>
-
-  
-
 
       </section>
     </main>

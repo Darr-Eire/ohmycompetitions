@@ -154,9 +154,9 @@ export const freeItems = [
 
 export const cryptoGiveawaysItems = [
   {
-    comp: { slug: 'crypto-btc', entryFee: 0.5, totalTickets: 5000, ticketsSold: 0, endsAt: '2025-06-02T00:59:00Z' },
+    comp: { slug: 'crypto-btc', entryFee: 0.5, totalTickets: 10000, ticketsSold: 4500, endsAt: '2025-06-02T00:59:00Z' },
     title: 'Win 1 BTC',
-    fee: '2 π',
+    fee: '10 π',
     href: '/crypto/crypto-btc',
     token: 'BTC',
     imageUrl: '/images/crypto-btc.png',
