@@ -10,7 +10,7 @@ export default function TermsAndConditions() {
 </h1>
 
 
-      <section className="space-y-6 text-gray-300 text-sm leading-relaxed">
+      <section className="space-y-6 text-white text-sm leading-relaxed">
         <p>
           By entering the PlayStation 5 Giveaway (&quot;Giveaway&quot;), you agree to comply with and be bound by these Terms and Conditions. Please read them carefully.
         </p>
