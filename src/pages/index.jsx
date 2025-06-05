@@ -24,7 +24,6 @@ export default function IndexPage() {
         <div className="flex flex-col gap-2 my-3 flex-grow">
           {[
             { icon: '💎', text: 'Daily Competitions' },
-            { icon: '🎡', text: 'Spin-to-Win' },
             { icon: '📲', text: 'Pi Cash Code' },
             { icon: '🎁', text: 'Crypto Giveaways' },
             { icon: '🌍', text: 'Global Lotteries' }
