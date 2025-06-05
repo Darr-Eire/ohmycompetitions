@@ -12,7 +12,7 @@ export default function IndexPage() {
           <h1 className="text-2xl font-extrabold bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-transparent bg-clip-text tracking-wide drop-shadow-[0_0_15px_#00f0ff]">
             Oh My Competitions
           </h1>
-          <p className="text-white/80 text-xs mt-2 leading-relaxed">
+          <p className="text-white/80 text-sm mt-2 leading-relaxed">
             🚀 Welcome to Oh My Competitions!<br />
             Built for Pi Network Pioneers by Pioneers.<br />
             Experience next-generation crypto competitions, community-powered prizes and daily opportunities to grow your Pi journey.<br />
