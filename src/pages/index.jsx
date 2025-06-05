@@ -1,23 +1,27 @@
 import React from 'react';
 import Link from 'next/link';
+import { FaXTwitter, FaFacebookF, FaDiscord, FaInstagram } from 'react-icons/fa6';
 
 export default function IndexPage() {
   return (
     <div className="h-screen bg-[#0a1024] text-white flex items-center justify-center px-3 py-2">
-      <div className="w-full max-w-sm bg-[#0f1b33] border border-cyan-400 rounded-2xl px-3 py-3 backdrop-blur-md shadow-[0_0_30px_#00f0ff66] flex flex-col h-full">
+      <div className="w-full max-w-sm bg-[#0f1b33] border border-cyan-400 rounded-2xl px-4 py-4 backdrop-blur-md shadow-[0_0_30px_#00f0ff66] flex flex-col h-full">
 
-        {/* Top Title */}
-        <div className="text-center mb-2">
+        {/* Header */}
+        <div className="text-center mb-3">
           <h1 className="text-2xl font-extrabold bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-transparent bg-clip-text tracking-wide drop-shadow-[0_0_15px_#00f0ff]">
             Oh My Competitions
           </h1>
-          <p className="text-white/80 text-xs mt-1">
-            Win Big, Play Daily. Powered by Pi Network.
+          <p className="text-white/80 text-xs mt-2 leading-relaxed">
+            🚀 Welcome to Oh My Competitions!<br />
+            Built for Pi Network Pioneers by Pioneers.<br />
+            Experience next-generation crypto competitions, community-powered prizes and daily opportunities to grow your Pi journey.<br />
+            100% fair. 100% community. 100% Pi.
           </p>
         </div>
 
         {/* Features */}
-        <div className="flex flex-col gap-2 my-2">
+        <div className="flex flex-col gap-2 my-3 flex-grow">
           {[
             { icon: '💎', text: 'Daily Competitions' },
             { icon: '🎡', text: 'Spin-to-Win' },
@@ -25,16 +29,16 @@ export default function IndexPage() {
             { icon: '🎁', text: 'Crypto Giveaways' },
             { icon: '🌍', text: 'Global Lotteries' }
           ].map((feature, index) => (
-            <div key={index} className="flex items-center gap-2 bg-[#0a1024] border border-cyan-500 p-2 rounded-lg shadow-[0_0_20px_#00f0ff66]">
+            <div key={index} className="flex items-center gap-2 bg-[#0a1024] border border-cyan-500 p-3 rounded-lg shadow-[0_0_20px_#00f0ff66]">
               <div className="text-xl">{feature.icon}</div>
               <div className="text-xs">{feature.text}</div>
             </div>
           ))}
         </div>
 
-        {/* Stats Block */}
-        <div className="flex justify-center mt-3">
-          <div className="grid grid-cols-2 gap-2 w-full px-3 py-3 bg-gradient-to-r from-cyan-300 to-blue-500 rounded-xl shadow-lg text-black text-center text-xs">
+        {/* Stats */}
+        <div className="flex justify-center mb-4">
+          <div className="grid grid-cols-2 gap-3 w-full px-4 py-4 bg-gradient-to-r from-cyan-300 to-blue-500 rounded-xl shadow-lg text-black text-center text-xs">
             <div>
               <div className="text-lg font-bold">44,000+</div>
               <div>Winners</div>
@@ -54,16 +58,22 @@ export default function IndexPage() {
           </div>
         </div>
 
-        <div className="flex-grow"></div>
-
         {/* CTA */}
-        <div className="pt-2">
+        <div className="mb-3">
           <Link
             href="/homepage"
-            className="block bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold px-5 py-2 rounded-lg shadow-lg hover:scale-105 transition text-sm w-full text-center"
+            className="block bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold px-6 py-3 rounded-lg shadow-lg hover:scale-105 transition text-sm w-full text-center"
           >
             Let's Go 🚀
           </Link>
+        </div>
+
+        {/* Social Icons */}
+        <div className="flex justify-center gap-5 text-2xl mb-1">
+          <Link href="https://twitter.com" target="_blank"><FaXTwitter className="hover:text-cyan-400 transition" /></Link>
+          <Link href="https://facebook.com" target="_blank"><FaFacebookF className="hover:text-cyan-400 transition" /></Link>
+          <Link href="https://discord.com" target="_blank"><FaDiscord className="hover:text-cyan-400 transition" /></Link>
+          <Link href="https://instagram.com" target="_blank"><FaInstagram className="hover:text-cyan-400 transition" /></Link>
         </div>
 
       </div>
