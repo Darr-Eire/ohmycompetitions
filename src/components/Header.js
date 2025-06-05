@@ -51,14 +51,15 @@ export default function Header() {
         </svg>
       </button>
 
-      <div className="flex-1 text-center">
-        <Link
-          href="/homepage"
-          className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 text-transparent bg-clip-text drop-shadow"
-        >
-          OhMyCompetitions
-        </Link>
-      </div>
+     <div className="flex-1 text-center">
+  <Link
+    href="/homepage"
+    className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-transparent bg-clip-text drop-shadow"
+  >
+    OhMyCompetitions
+  </Link>
+</div>
+
 
       {status === 'loading' ? (
         <p className="text-white text-xs">Checking session…</p>

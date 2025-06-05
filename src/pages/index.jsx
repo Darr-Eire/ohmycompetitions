@@ -9,7 +9,7 @@ export default function IndexPage() {
 
         {/* Header */}
         <div className="text-center mb-3">
-          <h1 className="text-2xl font-extrabold bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-transparent bg-clip-text tracking-wide drop-shadow-[0_0_15px_#00f0ff]">
+          <h1 className="text-2xl font-extrabold bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-transparent bg-clip-text tracking-wide">
             Oh My Competitions
           </h1>
           <p className="text-white/80 text-sm mt-2 leading-relaxed">
