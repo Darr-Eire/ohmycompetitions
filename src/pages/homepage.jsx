@@ -88,8 +88,8 @@ export default function HomePage() {
 
         <div className="flex justify-center mt-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 w-full max-w-md px-6 py-6 bg-gradient-to-r from-cyan-300 to-blue-500 rounded-xl shadow-lg text-black text-center text-base">
-            <div><div className="text-xl font-bold">12,000+</div><div>Winners</div></div>
-            <div><div className="text-xl font-bold">156,400 π</div><div>Total Pi Won</div></div>
+            <div><div className="text-xl font-bold">44,000+</div><div>Winners</div></div>
+            <div><div className="text-xl font-bold">106,400 π</div><div>Total Pi Won</div></div>
             <div><div className="text-xl font-bold">15,000 π</div><div>Donated to Charity</div></div>
             <div><div className="text-xl font-bold">5★</div><div>User Rated</div></div>
           </div>

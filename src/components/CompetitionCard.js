@@ -65,6 +65,18 @@ export default function CompetitionCard({
         </span>
       </div>
 
+      {/* Sponsored Badge */}
+      {comp?.type === 'sponsored' && (
+        <div className="flex items-center gap-2 justify-center py-2 bg-black/20">
+          {comp.partnerLogoUrl && (
+            <Image src={comp.partnerLogoUrl} alt="logo" width={28} height={28} className="rounded-full border" />
+          )}
+          <span className="text-cyan-400 text-xs font-semibold">
+            Sponsored by {comp.partnerName}
+          </span>
+        </div>
+      )}
+
       {/* Image */}
       <div className="relative w-full aspect-[16/9] bg-black overflow-hidden">
         <Image src={imageUrl || '/pi.jpeg'} alt={title} fill className="object-cover" priority />
@@ -83,17 +95,11 @@ export default function CompetitionCard({
       <div className="p-4 text-xs sm:text-sm text-center space-y-2">
         <p><span className="text-cyan-300 font-semibold">Prize:</span> {prize}</p>
         <p><span className="text-cyan-300 font-semibold">Entry Fee:</span> {fee}</p>
-        <p>
-          <span className="text-cyan-300 font-semibold">Total Tickets:</span>{' '}
-          {total.toLocaleString()}
-        </p>
+        <p><span className="text-cyan-300 font-semibold">Total Tickets:</span> {total.toLocaleString()}</p>
 
         {/* Progress Bar */}
         <div className="w-full bg-gray-700 h-3 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-cyan-400 to-blue-500"
-            style={{ width: `${percent}%` }}
-          />
+          <div className="h-full bg-gradient-to-r from-cyan-400 to-blue-500" style={{ width: `${percent}%` }} />
         </div>
         <p className="text-gray-300 text-xs">Sold: {sold.toLocaleString()} ({percent}%)</p>
       </div>
