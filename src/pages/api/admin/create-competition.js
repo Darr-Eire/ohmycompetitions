@@ -1,5 +1,5 @@
-import dbConnect from '@/lib/dbConnect';
-import Competition from '@/models/Competition';
+import dbConnect from 'lib/dbConnect';
+import Competition from 'models/Competition';
 
 export default async function handler(req, res) {
   await dbConnect();
