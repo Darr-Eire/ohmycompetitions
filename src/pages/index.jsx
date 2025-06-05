@@ -13,10 +13,10 @@ export default function IndexPage() {
             Oh My Competitions
           </h1>
           <p className="text-white/80 text-sm mt-2 leading-relaxed">
-            🚀 Welcome to Oh My Competitions!<br />
-            Built for Pi Network Pioneers by Pioneers.<br />
-            Experience next-generation crypto competitions, community-powered prizes and daily opportunities to grow your Pi journey.<br />
-            100% fair. 100% community. 100% Pi.
+            Welcome to Oh My Competitions<br />
+            Built for Pi Network Pioneers by Pioneers<br />
+            Experience next generation crypto competitions, community powered prizes and daily opportunities to grow your Pi journey<br />
+            100% fair 100% community 100% Pi
           </p>
         </div>
 
@@ -51,7 +51,7 @@ export default function IndexPage() {
       <div>Donated</div>
     </div>
     <div>
-      <div className="text-base font-bold">5★</div>
+      <div className="text-base font-bold">5 ★</div>
       <div>User Rated</div>
     </div>
   </div>
@@ -64,7 +64,7 @@ export default function IndexPage() {
             href="/homepage"
             className="block bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold px-6 py-3 rounded-lg shadow-lg hover:scale-105 transition text-sm w-full text-center"
           >
-            Let's Go 🚀
+            Let's Go
           </Link>
         </div>
 
