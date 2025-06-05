@@ -37,26 +37,27 @@ export default function IndexPage() {
         </div>
 
         {/* Stats */}
-        <div className="flex justify-center mb-4">
-          <div className="grid grid-cols-2 gap-3 w-full px-4 py-4 bg-gradient-to-r from-cyan-300 to-blue-500 rounded-xl shadow-lg text-black text-center text-xs">
-            <div>
-              <div className="text-lg font-bold">44,000+</div>
-              <div>Winners</div>
-            </div>
-            <div>
-              <div className="text-lg font-bold">106,400 π</div>
-              <div>Total Won</div>
-            </div>
-            <div>
-              <div className="text-lg font-bold">15,000 π</div>
-              <div>Donated</div>
-            </div>
-            <div>
-              <div className="text-lg font-bold">5★</div>
-              <div>User Rated</div>
-            </div>
-          </div>
-        </div>
+       <div className="flex justify-center mb-4">
+  <div className="grid grid-cols-2 gap-2 w-full px-3 py-3 bg-gradient-to-r from-cyan-300 to-blue-500 rounded-xl shadow-lg text-black text-center text-xs">
+    <div>
+      <div className="text-base font-bold">44,000+</div>
+      <div>Winners</div>
+    </div>
+    <div>
+      <div className="text-base font-bold">106,400 π</div>
+      <div>Total Won</div>
+    </div>
+    <div>
+      <div className="text-base font-bold">15,000 π</div>
+      <div>Donated</div>
+    </div>
+    <div>
+      <div className="text-base font-bold">5★</div>
+      <div>User Rated</div>
+    </div>
+  </div>
+</div>
+
 
         {/* CTA */}
         <div className="mb-3">
