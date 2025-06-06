@@ -6,6 +6,7 @@ import { useWindowSize } from '@uidotdev/usehooks';
 import Link from 'next/link';
 import { loadPiSdk } from '../../lib/pi';
 
+
 const PRIZE_POOL = 50;
 const RETRY_FEE = 1;
 const NUM_DIGITS = 4;
@@ -24,8 +25,19 @@ export default function VaultPro() {
     loadPiSdk(setSdkReady);
   }, []);
 
-  const generateVaultCode = () => {
-    return Array.from({ length: NUM_DIGITS }, () => Math.floor(Math.random() * 10));
+  useEffect(() => {
+    if (status === 'playing') {
+      const newCode = Array.from({ length: NUM_DIGITS }, () => Math.floor(Math.random() * 10));
+      setCode(newCode);
+    }
+  }, [status]);
+
+  const adjustDigit = (i, delta) => {
+    setDigits(prev => {
+      const updated = [...prev];
+      updated[i] = (updated[i] + delta + 10) % 10;
+      return updated;
+    });
   };
 
   const startGame = () => {
@@ -33,10 +45,8 @@ export default function VaultPro() {
       alert("You’ve already used your free daily attempt.");
       return;
     }
-    setCode(generateVaultCode());   // ✅ Only generate code once
     setDigits(Array(NUM_DIGITS).fill(0));
     setRetryUsed(false);
-    setCorrectIndexes([]);
     setStatus('playing');
     setDailyUsed(true);
   };
@@ -44,11 +54,11 @@ export default function VaultPro() {
   const enterCode = () => {
     const correct = digits.map((d, idx) => d === code[idx]);
     const isWin = correct.every(Boolean);
-    setCorrectIndexes(correct);
 
     if (isWin) {
       setStatus('success');
     } else {
+      setCorrectIndexes(correct);
       setStatus('hint');
     }
   };
@@ -108,11 +118,7 @@ export default function VaultPro() {
     );
   };
 
-  const reset = () => {
-    setCode([]);
-    setStatus('idle');
-    setDailyUsed(false);
-  };
+  const reset = () => setStatus('idle');
 
   return (
     <main className="app-background min-h-screen flex flex-col items-center px-4 py-12 text-white">
@@ -182,6 +188,7 @@ export default function VaultPro() {
               <button onClick={reset} className="btn-gradient w-full py-3">Play Again Tomorrow</button>
             </>
           )}
+
         </div>
 
         <div className="text-center mt-6">
@@ -191,6 +198,7 @@ export default function VaultPro() {
         <Link href="/try-your-luck" className="text-sm text-cyan-300 underline block text-center mt-2">
           Back to Mini Games
         </Link>
+
       </div>
     </main>
   );

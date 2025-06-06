@@ -4,7 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import BuyTicketButton from '@components/BuyTicketButton';
+// right after imports or near your COMPETITIONS object
 
+const FREE_TICKET_COMPETITIONS = ['pi-to-the-moon'];  // <-- define your free competitions here
 
 const COMPETITIONS = {
   
@@ -234,8 +236,8 @@ const COMPETITIONS = {
   },
   'pi-to-the-moon': {
     title: 'Pi to the Moon',
-    prize: '5,000 π',
-    entryFee: 3.14,
+    prize: '10,000 π',
+    entryFee: 0,
     imageUrl: '', // Add image path if needed
     date: 'June 25, 2025',
     time: '12:00 PM UTC',
@@ -298,101 +300,74 @@ const COMPETITIONS = {
 export default function TicketPurchasePage() {
   const router = useRouter();
   const { slug } = router.query;
+  const comp = COMPETITIONS[slug];
 
   const [piUser, setPiUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const [loadingLogin, setLoadingLogin] = useState(false);
   const [quantity, setQuantity] = useState(1);
-  const [discount, setDiscount] = useState(0);
-  const [timeLeft, setTimeLeft] = useState('');
+  const [sharedBonus, setSharedBonus] = useState(false);
 
-  // *** MOCK ticketsSold — replace with real data from your API or state
-  const ticketsSold = 750; // example value
-
-  // Get current user if available
   useEffect(() => {
     if (!router.isReady || !window?.Pi?.getCurrentPioneer) {
       setLoadingUser(false);
       return;
     }
     window.Pi.getCurrentPioneer()
-      .then((user) => {
+      .then(user => {
         if (user) {
           setPiUser(user);
-          console.log('🔐 Pioneer already logged in:', user);
+          console.log('Pioneer logged in:', user);
         }
       })
-      .catch(console.error)
       .finally(() => setLoadingUser(false));
   }, [router.isReady]);
 
-  // Countdown timer
+  // Free competition logic (limit tickets)
   useEffect(() => {
-    const comp = COMPETITIONS[slug];
-    if (!comp?.endsAt) return;
+    if (!slug || !FREE_TICKET_COMPETITIONS.includes(slug)) return;
 
-    const interval = setInterval(() => {
-      const end = new Date(comp.endsAt).getTime();
-      const now = Date.now();
-      const diff = end - now;
-      if (diff <= 0) {
-        setTimeLeft('Ended');
-        clearInterval(interval);
-        return;
-      }
-      const hrs = Math.floor(diff / (1000 * 60 * 60));
-      const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const secs = Math.floor((diff % (1000 * 60)) / 1000);
-      setTimeLeft(`${hrs}h ${mins}m ${secs}s`);
-    }, 1000);
-
-    return () => clearInterval(interval);
+    const saved = parseInt(localStorage.getItem(`${slug}-claimed`) || 0);
+    setQuantity(saved || 1);
+    setSharedBonus(localStorage.getItem(`${slug}-shared`) === 'true');
   }, [slug]);
+
+  const claimFreeTicket = () => {
+    if (quantity >= (sharedBonus ? 2 : 1)) {
+      alert('You have claimed maximum tickets.');
+      return;
+    }
+    const updated = quantity + 1;
+    setQuantity(updated);
+    localStorage.setItem(`${slug}-claimed`, updated);
+  };
+
+  const handleShare = () => {
+    if (sharedBonus) {
+      alert('You already received your bonus ticket.');
+      return;
+    }
+    setSharedBonus(true);
+    localStorage.setItem(`${slug}-shared`, 'true');
+    claimFreeTicket();
+  };
 
   const handlePiLogin = async () => {
     setLoadingLogin(true);
-
     if (!window?.Pi) {
-      alert('⚠️ Pi SDK not available. Use the Pi Browser.');
+      alert('Pi SDK not available.');
       setLoadingLogin(false);
       return;
     }
-
     try {
-      const user = await window.Pi.authenticate(['username', 'payments'], async (incompletePayment) => {
-        if (incompletePayment?.identifier) {
-          alert(`⚠️ Found incomplete payment: ${incompletePayment.identifier}`);
-
-          try {
-            const res = await fetch('/api/payments/complete', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                paymentId: incompletePayment.identifier,
-                txid: incompletePayment.transaction?.txid || 'missing-txid'
-              }),
-            });
-
-            const result = await res.json();
-            console.log('[✅] Tried to complete pending payment:', result);
-          } catch (err) {
-            console.warn('[❌] Failed to complete pending payment:', err);
-          }
-        }
-      });
-
+      const user = await window.Pi.authenticate(['username', 'payments']);
       setPiUser(user);
-      console.log('✅ Logged in:', user);
-    } catch (err) {
-      alert(`Login failed: ${err.message}`);
-      console.error('❌ Authentication error:', err);
     } finally {
       setLoadingLogin(false);
     }
   };
 
   if (!router.isReady) return null;
-  const comp = COMPETITIONS[slug];
   if (!comp) {
     return (
       <div className="p-6 text-center text-white bg-[#0b1120] min-h-screen">
@@ -403,8 +378,8 @@ export default function TicketPurchasePage() {
     );
   }
 
-  const currentPrice = comp.entryFee - discount;
-  const totalPrice = currentPrice * quantity;
+  const isFree = FREE_TICKET_COMPETITIONS.includes(slug);
+  const totalPrice = comp.entryFee * quantity;
 
   return (
     <div className="bg-[#0b1120] min-h-screen text-white py-6 px-4">
@@ -415,123 +390,57 @@ export default function TicketPurchasePage() {
 
         <div className="p-6 space-y-6 text-center">
           {comp.imageUrl && (
-            <img
-              src={comp.imageUrl}
-              alt={comp.title}
-              className="w-full max-h-64 object-cover rounded-lg border border-blue-500 mx-auto"
-            />
+            <img src={comp.imageUrl} alt={comp.title} className="w-full max-h-64 object-cover rounded-lg border border-blue-500 mx-auto" />
           )}
-
-          {timeLeft && (
-            <div className="bg-gradient-to-r from-cyan-400 to-blue-500 px-4 py-2 rounded-lg inline-block mx-auto">
-              <span className="font-mono font-bold text-black">{timeLeft}</span>
-            </div>
-          )}
-
           <p className="text-white text-2xl font-bold">{comp.prize}</p>
 
-          {/* Details container, centered with right-aligned label/value pairs */}
           <div className="max-w-md mx-auto text-sm text-white space-y-2">
-            <div className="flex justify-between">
-              <span className="font-semibold">Date</span>
-              <span className="text-right">{comp.date}</span>
-            </div>
-
-            <div className="flex justify-between">
-              <span className="font-semibold">Location</span>
-              <span className="text-right">{comp.location}</span>
-            </div>
-
-            <div className="flex justify-between">
-              <span className="font-semibold">Entry Fee</span>
-              <span className="text-right">{comp.entryFee} π</span>
-            </div>
-
-            {discount > 0 && (
-              <div className="flex justify-between text-green-400 font-semibold">
-                <span>Discount:</span>
-                <span className="text-right">-{discount} π</span>
-              </div>
-            )}
-
-            {typeof comp.totalTickets === 'number' && (
-              <div className="flex justify-between text-white font-semibold">
-                <span>Total Tickets:</span>
-                <span className="text-right">{comp.totalTickets}</span>
-              </div>
-            )}
+            <div className="flex justify-between"><span className="font-semibold">Date</span><span>{comp.date}</span></div>
+            <div className="flex justify-between"><span className="font-semibold">Location</span><span>{comp.location}</span></div>
+            <div className="flex justify-between"><span className="font-semibold">Entry Fee</span><span>{comp.entryFee} π</span></div>
           </div>
 
-          {/* Progress bar for tickets sold */}
-          {typeof comp.totalTickets === 'number' && typeof ticketsSold === 'number' && (
-            <div className="max-w-md mx-auto mt-4">
-              <p className="text-sm text-white mb-1 font-semibold">
-                Tickets Sold: {ticketsSold} / {comp.totalTickets}
-              </p>
-              <div className="w-full bg-gray-700 rounded-full h-4 overflow-hidden">
-                <div
-                  className="bg-cyan-400 h-4 rounded-full transition-all duration-500"
-                  style={{
-                    width: `${Math.min(100, (ticketsSold / comp.totalTickets) * 100)}%`,
-                  }}
-                />
+          {isFree ? (
+            <>
+              <p className="text-cyan-300 font-semibold text-lg">Free Ticket Claimed: {quantity}/2</p>
+              <button onClick={claimFreeTicket} disabled={quantity >= (sharedBonus ? 2 : 1)} className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 px-4 rounded-xl mb-3">
+                Claim Free Ticket
+              </button>
+
+              {!sharedBonus && (
+                <button onClick={handleShare} className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold py-3 px-4 rounded-xl">
+                  Share for Bonus Ticket
+                </button>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="flex justify-center gap-4">
+                <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="bg-blue-500 px-4 py-1 rounded-full disabled:opacity-50" disabled={quantity <= 1}>−</button>
+                <span className="text-lg font-semibold">{quantity}</span>
+                <button onClick={() => setQuantity(q => q + 1)} className="bg-blue-500 px-4 py-1 rounded-full">+</button>
               </div>
-            </div>
+
+              <p className="text-lg font-bold mt-6">Total {totalPrice.toFixed(2)} π</p>
+              <p className="text-white text-sm mt-2">Secure your entry to win <strong>{comp.prize}</strong>.</p>
+            </>
           )}
 
-          {/* Quantity selector */}
-          <div className="flex justify-center gap-4 mt-4">
-            <button
-              onClick={() => setQuantity(q => Math.max(1, q - 1))}
-              className="bg-blue-500 px-4 py-1 rounded-full disabled:opacity-50"
-              disabled={quantity <= 1}
-            >
-              −
-            </button>
-            <span className="text-lg font-semibold">{quantity}</span>
-            <button
-              onClick={() => setQuantity(q => q + 1)}
-              className="bg-blue-500 px-4 py-1 rounded-full"
-            >
-              +
-            </button>
-          </div>
+          <p className="text-xs mt-1 text-gray-400">
+            <Link href="/terms" className="underline hover:text-cyan-400" target="_blank" rel="noopener noreferrer">
+              Terms & Conditions
+            </Link>
+          </p>
 
-<p className="text-lg font-bold mt-6">Total {totalPrice.toFixed(2)} π</p>
-
-<p className="text-white text-sm mt-2">
-  Secure your entry to win <strong>{comp.prize}</strong>. Good luck!
-</p>
-
-<p className="text-xs mt-1 text-gray-400">
-  <Link
-    href="/terms/playstation5"
-    className="underline hover:text-cyan-400"
-    target="_blank"
-    rel="noopener noreferrer"
-  >
-    Terms & Conditions
-  </Link>
-</p>
-
-
-          {loadingUser ? (
+          {!isFree && (loadingUser ? (
             <p className="text-center text-white">Checking session…</p>
           ) : !piUser ? (
-            <button
-              onClick={handlePiLogin}
-              disabled={loadingLogin}
-              className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 px-4 rounded-xl"
-            >
+            <button onClick={handlePiLogin} disabled={loadingLogin} className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 px-4 rounded-xl">
               {loadingLogin ? 'Logging in…' : 'Log in with Pi to continue'}
             </button>
           ) : (
-            <BuyTicketButton
-              competitionSlug={slug}
-              entryFee={currentPrice}
-              quantity={quantity}
-            />
-          )}
+            <BuyTicketButton competitionSlug={slug} entryFee={comp.entryFee} quantity={quantity} />
+          ))}
         </div>
       </div>
     </div>
