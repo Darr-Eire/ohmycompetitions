@@ -29,7 +29,6 @@ export default function TryYourLuckPage() {
     setPlayedMap(map)
   }
 
-  // 👉 Add reset function here before return
   function resetGames() {
     games.forEach(g => {
       localStorage.removeItem(g.storageKey);
@@ -59,7 +58,13 @@ export default function TryYourLuckPage() {
               🔥 Daily Streak: {streak} days 🔥
             </p>
 
-    
+            {/* Reset button for test mode */}
+            <button 
+              onClick={resetGames}
+              className="btn-gradient text-white px-6 py-2 rounded-full text-sm"
+            >
+              🔄 Reset Games (Test Mode)
+            </button>
           </div>
 
           <div className="space-y-6">
