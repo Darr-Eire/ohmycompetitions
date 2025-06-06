@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { usePiAuth } from '@/context/PiAuthContext';
+import { usePiAuth } from '../context/PiAuthContext';
 
 const NAV_ITEMS = [
   ['Home', '/homepage'],
