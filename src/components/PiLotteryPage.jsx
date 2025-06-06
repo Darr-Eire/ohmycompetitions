@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import BuyTicketButton from '../components/BuyTicketButton';  // ✅ We import universal button
+import BuyTicketButton from '../components/BuyTicketButton';
 
 const DEFAULT_PICK_COUNT = 6;
 const DEFAULT_MAX_NUMBER = 49;
@@ -20,9 +20,6 @@ const countryData = {
   KE: { name: 'Kenya', flag: '🇰🇪' },
   BR: { name: 'Brazil', flag: '🇧🇷' }
 };
-
-const getFlag = (code) => countryData[code]?.flag || '🏳️';
-const getCountryName = (code) => countryData[code]?.name || code;
 
 export default function PiLotteryPage() {
   const [lotteryType, setLotteryType] = useState('global');
@@ -99,20 +96,19 @@ export default function PiLotteryPage() {
             🎟️ Picked: {pickedNumbers.join(', ') || 'None yet'}
           </div>
 
-          {pickedNumbers.length === DEFAULT_PICK_COUNT && (
-            <BuyTicketButton
-              amount={1.0}
-              memo="Pi Lottery Ticket"
-              metadata={{
-                type: 'pi-lottery-ticket',
-                mainNumbers: pickedNumbers.slice(0, 5),
-                bonusNumber: pickedNumbers[5],
-                countryCode,
-                lotteryType,
-              }}
-              buttonLabel="Pay 1 π & Enter Lottery"
-            />
-          )}
+          <BuyTicketButton
+            amount={1.00}
+            memo="Pi Lottery Ticket"
+            metadata={{
+              type: 'pi-lottery-ticket',
+              mainNumbers: pickedNumbers.slice(0, 5),
+              bonusNumber: pickedNumbers[5],
+              countryCode,
+              lotteryType,
+            }}
+            buttonLabel="Pay 1 π & Enter Lottery"
+            disabled={pickedNumbers.length !== DEFAULT_PICK_COUNT}
+          />
         </div>
       </div>
     </div>

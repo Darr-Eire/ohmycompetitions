@@ -19,12 +19,14 @@ const NAV_ITEMS = [
 const COMPETITION_SUB_ITEMS = [
   ['Pi Cash Code', '/pi-cash-code'],
   ['Pi Lottery', '/pi-lottery'],
+  ['Pi Battles', '/battles'],
   ['Featured', '/competitions/featured'],
   ['Travel', '/competitions/travel'],
+  ['Daily ', '/competitions/daily'],
+  ['Free', '/ticket-purchase/pi-to-the-moon'],
   ['Pi Giveaways', '/competitions/pi'],
   ['Crypto Giveaways', '/competitions/crypto-giveaways'],
-  ['Daily Giveaways', '/competitions/daily'],
-  ['Free Giveaways', '/ticket-purchase/pi-to-the-moon'],
+ 
 ];
 
 // Country flag helper
