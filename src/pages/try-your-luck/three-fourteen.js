@@ -172,24 +172,24 @@ export default function VaultProFree() {
             </>
           )}
 
-          {status === 'success' && (
-            <>
-              <Confetti width={width} height={height} />
-              <p className="text-green-400 font-bold text-xl mb-4">
-                🎉 You cracked the Vault & won {PRIZE_POOL} π!
-              </p>
-              <div className="flex justify-center space-x-4 mb-4">
-                <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="underline">
-                  Share on Twitter
-                </a>
-                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="underline">
-                  Share on WhatsApp
-                </a>
-              </div>
-              <button onClick={reset} className="btn-gradient w-full py-3">Play Again Tomorrow</button>
-            </>
-          )}
-        </div>
+        {status === 'success' && (
+  <>
+    <Confetti width={width} height={height} />
+    <p className="text-green-400 font-bold text-xl mb-4">
+      🎉 You cracked the Vault & won {PRIZE_POOL} π!
+    </p>
+    <div className="flex justify-center space-x-4 mb-4">
+      <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="underline">
+        Share on Twitter
+      </a>
+      <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="underline">
+        Share on WhatsApp
+      </a>
+    </div>
+    <button onClick={reset} className="btn-gradient w-full py-3">Play Again Tomorrow</button>
+  </>
+        )}</div>
+
 
         {/* Recent Winners */}
         <div className="bg-white bg-opacity-10 rounded-2xl shadow-lg p-6 text-center overflow-hidden">

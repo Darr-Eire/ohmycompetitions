@@ -162,20 +162,57 @@ export default function VaultProFree() {
                 ))}
               </div>
 
-              {!retryUsed ? (
-                <button onClick={retry} className="btn-gradient w-full py-3 text-lg rounded-full shadow-lg">
-                   {RETRY_FEE} π for Retry
-                </button>
-              ) : (
-                <>
-                  <p className="text-red-400 font-semibold mb-2">
-                    The Vault stays locked...See you tomorrow Pioneer 🚀
-                  </p>
-                  <button onClick={reset} className="btn-gradient w-full py-3">Back to Menu</button>
-                </>
-              )}
-            </>
-          )}
+        {!retryUsed ? (
+  <button
+    onClick={async () => {
+      if (!window?.Pi?.createPayment) {
+        alert('⚠️ Pi SDK not ready.');
+        return;
+      }
+      try {
+        window.Pi.createPayment(
+          {
+            amount: RETRY_FEE,
+            memo: 'Vault Pro Retry',
+            metadata: { game: 'vault-pro', attempt: 'retry' },
+          },
+          {
+            onReadyForServerApproval: async (paymentId) => {
+              // optional: approve on server if needed
+              console.log('Retry paymentId:', paymentId);
+            },
+            onReadyForServerCompletion: async (paymentId, txid) => {
+              console.log('Payment completed with txid:', txid);
+              setRetryUsed(true);
+              setStatus('playing');
+            },
+            onCancel: () => {
+              console.warn('Payment cancelled');
+            },
+            onError: (error) => {
+              console.error('Payment error:', error);
+              alert('Payment failed');
+            },
+          }
+        );
+      } catch (err) {
+        console.error('Pi payment failed', err);
+        alert('Payment error');
+      }
+    }}
+    className="btn-gradient w-full py-3 text-lg rounded-full shadow-lg"
+  >
+    {RETRY_FEE} π for Retry
+  </button>
+) : (
+  <>
+    <p className="text-red-400 font-semibold mb-2">
+      The Vault stays locked...See you tomorrow Pioneer 🚀
+    </p>
+    <button onClick={reset} className="btn-gradient w-full py-3">Back to Menu</button>
+  </>
+)}
+
 
           {status === 'success' && (
             <>
