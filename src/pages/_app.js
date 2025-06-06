@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import { PiAuthProvider } from '../context/PiAuthContext';
 import Layout from '../components/Layout';
 import '@fontsource/orbitron';
-import '../styles/globals.css';  // ✅ corrected path
+import 'styles/globals.css';  // ✅ corrected path
 
 export default function App({ Component, pageProps }) {
 
