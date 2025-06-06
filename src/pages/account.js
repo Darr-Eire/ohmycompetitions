@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { usePiAuth } from '../../context/PiAuthContext';
-import AccountHeader from '@/components/AccountHeader';
-import MyEntriesTable from '@/components/MyEntriesTable';
-import DailyStreakCard from '@/components/DailyStreakCard';
-import GiftTicketModal from '@/components/GiftTicketModal';
-import GameHistoryTable from '@/components/GameHistoryTable';
+import { usePiAuth } from '../context/PiAuthContext';
+import AccountHeader from '../components/AccountHeader';
+import MyEntriesTable from '../components/MyEntriesTable';
+import DailyStreakCard from '../components/DailyStreakCard';
+import GiftTicketModal from '../components/GiftTicketModal';
+import GameHistoryTable from '../components/GameHistoryTable';
 import Link from 'next/link';
 
 export default function AccountPage() {

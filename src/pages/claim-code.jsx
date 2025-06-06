@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { usePiAuth } from '../../context/PiAuthContext';
+import { usePiAuth } from '../context/PiAuthContext';
 
 export default function ClaimCodePage() {
   const { user, login, loading: userLoading } = usePiAuth();
