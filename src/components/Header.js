@@ -28,6 +28,12 @@ const COMPETITION_SUB_ITEMS = [
   ['Free Giveaways', '/ticket-purchase/pi-to-the-moon'],
 ];
 
+function countryCodeToFlagEmoji(code) {
+  return code
+    .toUpperCase()
+    .replace(/./g, char => String.fromCodePoint(127397 + char.charCodeAt()));
+}
+
 export default function Header() {
   const { data: session, status } = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -66,13 +72,19 @@ export default function Header() {
 
       {status === 'loading' ? (
         <p className="text-white text-xs">Checking session…</p>
-      ) : session ? (
-        <div className="text-white text-xs flex items-center gap-2">
-          <span>👋 {session.user?.username}</span>
-          <button onClick={() => signOut()} className="neon-button text-xs px-2 py-1">Log Out</button>
-        </div>
       ) : (
-        <Link href="/login"><button className="neon-button text-xs px-2 py-1">Log in</button></Link>
+        <div className="text-white text-xs flex items-center gap-2">
+          {session ? (
+            <>
+              <span>
+                {session.user?.username} {session.user?.country ? countryCodeToFlagEmoji(session.user.country) : ''}
+              </span>
+              <button onClick={() => signOut()} className="neon-button text-xs px-2 py-1">Log Out</button>
+            </>
+          ) : (
+            <span>Guest</span>
+          )}
+        </div>
       )}
 
       {menuOpen && (
