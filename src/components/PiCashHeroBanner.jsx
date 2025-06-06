@@ -7,14 +7,15 @@ export default function PiCashHeroBanner() {
   const router = useRouter();
   const [codeData, setCodeData] = useState(null);
   const [timeLeft, setTimeLeft] = useState(null);
+  const [intervalId, setIntervalId] = useState(null);
 
   useEffect(() => {
     const fetchCode = async () => {
       try {
         const res = await fetch('/api/pi-cash-code');
         const data = await res.json();
-        console.log('Code data:', data);
         setCodeData(data);
+        updateTimer(data.expiresAt);
       } catch (err) {
         console.error('Failed to load code:', err);
       }
@@ -22,32 +23,34 @@ export default function PiCashHeroBanner() {
     fetchCode();
   }, []);
 
-  useEffect(() => {
-    if (!codeData?.expiresAt) return;
+  const updateTimer = (expiresAt) => {
+    if (!expiresAt) return;
 
-    const getRemainingTime = (end) => {
-      const total = Date.parse(end) - Date.now();
-      const seconds = Math.floor((total / 1000) % 60);
-      const minutes = Math.floor((total / 1000 / 60) % 60);
-      const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
-      const days = Math.floor(total / (1000 * 60 * 60 * 24));
-      return { total, days, hours, minutes, seconds };
-    };
-
-    const updateTime = () => {
-      const updated = getRemainingTime(codeData.expiresAt);
-      if (updated.total <= 0) {
-        clearInterval(timer);
+    const calculateTimeLeft = () => {
+      const total = Date.parse(expiresAt) - Date.now();
+      if (total <= 0) {
         setTimeLeft(null);
-      } else {
-        setTimeLeft(updated);
+        clearInterval(intervalId);
+        return;
       }
+      setTimeLeft({
+        days: Math.floor(total / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((total / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((total / (1000 * 60)) % 60),
+        seconds: Math.floor((total / 1000) % 60),
+      });
     };
 
-    updateTime();
-    const timer = setInterval(updateTime, 1000);
-    return () => clearInterval(timer);
-  }, [codeData?.expiresAt]);
+    calculateTimeLeft();
+    const id = setInterval(calculateTimeLeft, 1000);
+    setIntervalId(id);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [intervalId]);
 
   return (
     <div className="relative w-full max-w-md sm:max-w-xl mx-auto mt-2 sm:mt-4 px-2 sm:px-4 py-4 sm:py-6 border border-cyan-500 rounded-2xl text-white text-center font-orbitron overflow-hidden shadow-[0_0_60px_#00fff055] bg-[#0b1120]/30">
@@ -66,30 +69,27 @@ export default function PiCashHeroBanner() {
         </div>
       </div>
 
-      {/* Timer and Button Row */}
+      {/* Timer Section */}
       <div className="mt-3 sm:mt-4 mb-4 flex flex-col gap-3 items-center">
-        {/* Timer */}
         <div className="flex gap-1 sm:gap-2 justify-center">
           {!timeLeft ? (
             <div className="text-cyan-400 text-sm sm:text-lg font-semibold">Loading timer...</div>
           ) : (
-            [
-              { label: 'Days', value: timeLeft.days },
-              { label: 'Hours', value: timeLeft.hours },
-              { label: 'Mins', value: timeLeft.minutes },
-              { label: 'Secs', value: timeLeft.seconds }
-            ].map(({ label, value }, i) => (
-              <div key={i} className="flex flex-col items-center">
-                <div className="bg-black text-white text-base sm:text-xl font-bold px-3 py-1 sm:px-4 sm:py-2 rounded-md shadow w-12 text-center">
-                  {String(value).padStart(2, '0')}
+            ['Days', 'Hours', 'Mins', 'Secs'].map((label, i) => {
+              const val = Object.values(timeLeft)[i];
+              return (
+                <div key={i} className="flex flex-col items-center">
+                  <div className="bg-black text-white text-base sm:text-xl font-bold px-3 py-1 sm:px-4 sm:py-2 rounded-md shadow w-12 text-center">
+                    {String(val).padStart(2, '0')}
+                  </div>
+                  <div className="mt-1 text-[10px] sm:text-xs text-cyan-400 font-semibold">{label}</div>
                 </div>
-                <div className="mt-1 text-[10px] sm:text-xs text-cyan-400 font-semibold">{label}</div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 
-        {/* Button matches timer width */}
+        {/* CTA Button */}
         <div className="w-[90%] max-w-xs">
           <button
             onClick={() => router.push('/pi-cash-code')}

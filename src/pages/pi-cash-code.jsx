@@ -5,7 +5,6 @@ import { usePiAuth } from '../context/PiAuthContext';
 import GhostWinnerLog from '../components/GhostWinnerLog';
 import ClaimedWinnersLog from '../components/ClaimedWinnersLog';
 import { loadPiSdk } from '../lib/pi';
-import BuyTicketButton from '../components/BuyTicketButton';
 
 export default function PiCashCodePage() {
   const { user, login, loading: userLoading } = usePiAuth();
@@ -13,43 +12,56 @@ export default function PiCashCodePage() {
   const [quantity, setQuantity] = useState(1);
   const ticketPrice = 1.25;
   const totalPrice = (ticketPrice * quantity).toFixed(2);
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [timeLeft, setTimeLeft] = useState(null);
+  const [liveTickets, setLiveTickets] = useState(0);
 
   useEffect(() => {
     const fetchCode = async () => {
       const res = await fetch('/api/pi-cash-code');
       const data = await res.json();
       setCodeData(data);
+      setLiveTickets(data.ticketsSold || 0);
+      updateTimeLeft(data.expiresAt);
     };
     fetchCode();
   }, []);
 
-  useEffect(() => {
-    loadPiSdk(() => {});
-  }, []);
+  useEffect(() => { loadPiSdk(() => {}); }, []);
 
-  useEffect(() => {
-    if (!codeData?.expiresAt) return;
-    const getRemainingTime = (end) => {
-      const total = Date.parse(end) - Date.now();
-      const seconds = Math.floor((total / 1000) % 60);
-      const minutes = Math.floor((total / 1000 / 60) % 60);
-      const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
-      const days = Math.floor(total / (1000 * 60 * 60 * 24));
-      return { total, days, hours, minutes, seconds };
-    };
-
-    const timer = setInterval(() => {
-      const updated = getRemainingTime(codeData.expiresAt);
-      setTimeLeft(updated);
-      if (updated.total <= 0) clearInterval(timer);
+  const updateTimeLeft = (expiresAt) => {
+    if (!expiresAt) return;
+    const intervalId = setInterval(() => {
+      const diff = Date.parse(expiresAt) - Date.now();
+      if (diff <= 0) {
+        clearInterval(intervalId);
+        setTimeLeft(null);
+        return;
+      }
+      setTimeLeft({
+        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((diff / (1000 * 60)) % 60),
+        seconds: Math.floor((diff / 1000) % 60),
+      });
     }, 1000);
+    return () => clearInterval(intervalId);
+  };
 
-    return () => clearInterval(timer);
-  }, [codeData?.expiresAt]);
+  const handlePurchase = async () => {
+    const res = await fetch('/api/pi-cash-code-purchase', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ weekStart: codeData.weekStart, quantity }),
+    });
+    const result = await res.json();
+    setLiveTickets(result.ticketsSold);
+  };
+
+  const now = new Date();
+  const dropTime = new Date(codeData?.dropAt);
+  const showCode = now >= dropTime;
 
   if (userLoading) return <div className="text-white text-center py-10">Loading...</div>;
-
   if (!user) {
     return (
       <div className="p-6 text-center text-white">
@@ -67,23 +79,29 @@ export default function PiCashCodePage() {
         <h1 className="text-3xl sm:text-4xl font-bold text-cyan-300 animate-glow-float">Pi Cash Code</h1>
 
         <div className="bg-[#101426] border-2 border-cyan-400 rounded-xl px-6 py-3 text-2xl font-mono text-cyan-300 tracking-widest shadow-[0_0_20px_#00ffd5aa]">
-          {codeData?.code || '????-????'}
+          {showCode ? (codeData?.code || '????-????') : 'Code drops soon 🔒'}
         </div>
 
         <div className="bg-black border border-cyan-400 text-cyan-300 text-lg font-bold px-4 py-2 rounded-lg shadow-[0_0_15px_#00f0ff88]">
           Current Prize Pool: {codeData?.prizePool?.toLocaleString() || 'Loading...'} π
         </div>
 
-        <div className="mt-6 flex gap-2 justify-center">
-          {[{ label: 'DAYS', value: timeLeft.days }, { label: 'HRS', value: timeLeft.hours }, { label: 'MIN', value: timeLeft.minutes }, { label: 'SEC', value: timeLeft.seconds }].map(({ label, value }, i) => (
-            <div key={i} className="flex flex-col items-center">
-              <div className="bg-black text-white text-xl font-bold px-4 py-2 rounded-md shadow w-16 text-center">
-                {String(value).padStart(2, '0')}
-              </div>
-              <div className="mt-1 text-xs text-cyan-400 font-semibold tracking-wide">{label}</div>
-            </div>
-          ))}
+        <div className="bg-black text-cyan-400 font-semibold mt-2 rounded-lg py-2">
+          Tickets Sold: {liveTickets}
         </div>
+
+        {timeLeft && (
+          <div className="mt-6 flex gap-2 justify-center">
+            {[{ label: 'DAYS', value: timeLeft.days }, { label: 'HRS', value: timeLeft.hours }, { label: 'MIN', value: timeLeft.minutes }, { label: 'SEC', value: timeLeft.seconds }].map(({ label, value }, i) => (
+              <div key={i} className="flex flex-col items-center">
+                <div className="bg-black text-white text-xl font-bold px-4 py-2 rounded-md shadow w-16 text-center">
+                  {String(value).padStart(2, '0')}
+                </div>
+                <div className="mt-1 text-xs text-cyan-400 font-semibold tracking-wide">{label}</div>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="flex items-center justify-center gap-4 mt-6">
           <button onClick={() => setQuantity((prev) => Math.max(1, prev - 1))} className="bg-cyan-500 text-black font-bold px-4 py-1 rounded-full hover:brightness-110">−</button>
@@ -91,24 +109,17 @@ export default function PiCashCodePage() {
           <button onClick={() => setQuantity((prev) => prev + 1)} className="bg-cyan-500 text-black font-bold px-4 py-1 rounded-full hover:brightness-110">+</button>
         </div>
 
-       
+        <p className="text-cyan-300 mt-2 font-semibold text-sm">Total: {totalPrice} π</p>
 
- <p className="text-cyan-300 mt-2 font-semibold text-sm">Total: {totalPrice} π</p>
-
-{!codeData ? (
-  <div className="text-white">Loading payment options...</div>
-) : (
-  <BuyTicketButton 
-    competitionSlug={`pi-cash-code-${codeData.weekStart}`}
-    entryFee={ticketPrice}
-    quantity={quantity}
-  />
-)}
-
+        <button
+          onClick={handlePurchase}
+          className="w-full mt-4 py-3 bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold rounded-lg"
+        >
+          Purchase {quantity} Ticket(s)
+        </button>
 
         <section className="mt-8 text-center">
           <h2 className="text-1xl font-semi-bold text-black mb-2">How It Works</h2>
-
           <div className="inline-block text-left">
             <ul className="list-disc list-inside text-white/90 space-y-2 text-sm sm:text-base">
               <li>The code drops every Monday at <strong>3:14 PM UTC</strong>.</li>
@@ -116,7 +127,6 @@ export default function PiCashCodePage() {
               <li>Friday draw at <strong>3:14 PM UTC</strong>.</li>
               <li>The winner must return the code within <strong>31 minutes and 4 seconds</strong>.</li>
             </ul>
-
             <div className="text-center mt-3">
               <a href="/terms" className="text-xs text-cyan-400 underline hover:text-cyan-300 transition">
                 View full Terms & Conditions

@@ -1,23 +1,28 @@
-import mongoose from 'mongoose'
+// src/lib/dbConnect.js
 
-const MONGO_URI = process.env.MONGODB_URI
-console.log('Loaded MONGO_URI:', MONGO_URI) // Debug log
-if (!MONGO_URI) throw new Error('❌ MONGODB_URI not set in .env')
+import mongoose from 'mongoose';
 
+const MONGODB_URI = process.env.MONGO_DB_URL;  // ✅ use MONGO_DB_URL as requested
 
-
-let cached = global._mongoose
-if (!cached) {
-  cached = global._mongoose = { conn: null, promise: null }
+if (!MONGODB_URI) {
+  throw new Error('⚠️ Please define the MONGO_DB_URL inside your environment variables.');
 }
 
-export default async function dbConnect() {
-  if (cached.conn) return cached.conn
+// Global cache to prevent re-opening connections in dev
+let cached = global.mongoose || { conn: null, promise: null };
+
+async function dbConnect() {
+  if (cached.conn) return cached.conn;
+
   if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGO_URI, {
+    mongoose.set('strictQuery', false);  // ✅ prevent mongoose deprecation warning
+    cached.promise = mongoose.connect(MONGODB_URI, {
       bufferCommands: false,
-    }).then((mongoose) => mongoose)
+    }).then((mongoose) => mongoose);
   }
-  cached.conn = await cached.promise
-  return cached.conn
+  cached.conn = await cached.promise;
+  return cached.conn;
 }
+
+export { dbConnect };
+

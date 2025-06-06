@@ -124,7 +124,7 @@ export default function AccountPage() {
         </div>
 
         <div className="pt-4 border-t border-white/20 text-sm">
-          <h3 className="font-bold text-cyan-300 mb-2">Payment History</h3>
+          <h3 className="font-bold text-cyan-300 mb-2">Purchase History</h3>
           {payments.length === 0 ? (
             <p>No payments yet.</p>
           ) : (
