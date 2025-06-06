@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import '@fontsource/orbitron';
+import { PiAuthProvider } from '../context/PiAuthContext';
 
 export default function AccountPage() {
   const [piUser, setPiUser] = useState(null);
