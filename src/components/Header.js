@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
+import { usePiAuth } from '../context/PiAuthContext';
+
 
 const NAV_ITEMS = [
   ['Home', '/homepage'],
@@ -27,30 +29,12 @@ const COMPETITION_SUB_ITEMS = [
   ['Free Giveaways', '/ticket-purchase/pi-to-the-moon'],
 ];
 
+// optional country flag helper
 function countryCodeToFlagEmoji(code) {
   if (!code) return '';
   return code
     .toUpperCase()
     .replace(/./g, char => String.fromCodePoint(127397 + char.charCodeAt()));
-}
-
-function loadPiSdk(setSdkReady) {
-  if (typeof window === 'undefined') return;
-
-  if (window.Pi) {
-    setSdkReady(true);
-    return;
-  }
-
-  const script = document.createElement('script');
-  script.src = 'https://sdk.minepi.com/pi-sdk.js';
-  script.onload = function () {
-    setSdkReady(true);
-  };
-  script.onerror = function () {
-    console.error('Failed to load Pi SDK');
-  };
-  document.body.appendChild(script);
 }
 
 export default function Header() {
@@ -59,62 +43,25 @@ export default function Header() {
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
 
-  const [sdkReady, setSdkReady] = useState(false);
-  const [user, setUser] = useState(null);
+  const { user, login, loading } = usePiAuth(); // use PiAuthContext
 
-  // On first mount, load user from localStorage if exists
-  useEffect(function () {
-    const storedUser = localStorage.getItem('piUser');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
+  const toggleMenu = () => setMenuOpen(prev => !prev);
+  const toggleCompetitions = () => setCompetitionsOpen(prev => !prev);
 
-  useEffect(function () {
-    loadPiSdk(setSdkReady);
-  }, []);
-
-  useEffect(function () {
-    function handleClickOutside(e) {
+  useEffect(() => {
+    const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target) && !buttonRef.current.contains(e.target)) {
         setMenuOpen(false);
         setCompetitionsOpen(false);
       }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return function () {
-      document.removeEventListener('mousedown', handleClickOutside);
     };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  function toggleMenu() {
-    setMenuOpen(prev => !prev);
-  }
-
-  function toggleCompetitions() {
-    setCompetitionsOpen(prev => !prev);
-  }
-
-  async function handleLogin() {
-    if (!sdkReady || typeof window === 'undefined' || !window.Pi) {
-      alert('Pi SDK not ready. Make sure you are in the Pi Browser.');
-      return;
-    }
-
-    try {
-      const scopes = ['username', 'payments'];
-      const result = await window.Pi.authenticate(scopes);
-      setUser(result.user);
-      localStorage.setItem('piUser', JSON.stringify(result.user)); // <-- persist user in localStorage
-    } catch (err) {
-      console.error('Pi authentication failed', err);
-      alert('Login failed.');
-    }
-  }
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] border-b border-cyan-700 px-3 py-1.5 flex items-center shadow-[0_4px_30px_rgba(0,255,255,0.4)] backdrop-blur-md">
-      
+
       <button ref={buttonRef} onClick={toggleMenu} className="neon-button text-white text-xs px-2 py-1">
         <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M4 8h16M4 16h16" />
@@ -128,12 +75,14 @@ export default function Header() {
       </div>
 
       <div className="text-white flex items-center gap-2">
-        {user ? (
+        {loading ? (
+          <span className="text-sm">Loading...</span>
+        ) : user ? (
           <span className="text-sm sm:text-base font-semibold">
             {user.username} {user.country && countryCodeToFlagEmoji(user.country)}
           </span>
         ) : (
-          <button onClick={handleLogin} className="neon-button text-sm px-3 py-1.5">Log In</button>
+          <button onClick={login} className="neon-button text-sm px-3 py-1.5">Log In</button>
         )}
       </div>
 

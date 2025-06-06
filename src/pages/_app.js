@@ -1,28 +1,19 @@
-import React, { ReactElement, ReactNode } from 'react';
+import React from 'react';
 import { SessionProvider } from 'next-auth/react';
 import { PiAuthProvider } from '@context/PiAuthContext';
 import Layout from '@components/Layout';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/router';
+import '@fontsource/orbitron';
 import 'styles/globals.css';
 
 export default function App({ Component, pageProps }) {
-  const router = useRouter();
+  const getLayout = Component.getLayout || ((page) => (
+    <Layout>{page}</Layout>
+  ));
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      // Example auth check
-      const response = await fetch('/api/auth/status');
-      const data = await response.json();
-
-      if (!data.isAuthenticated) {
-        router.push('/login'); // or your Pi login initiation
-      }
-    };
-
-    checkAuth();
-  }, [router]);
-
-  return <Component {...pageProps} />;
-}  
+  return (
+    <PiAuthProvider>
+      {getLayout(<Component {...pageProps} />)}
+    </PiAuthProvider>
+  );
+}
