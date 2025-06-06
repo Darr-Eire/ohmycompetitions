@@ -1,9 +1,8 @@
 'use client';
 
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { useState, useRef, useEffect } from 'react';
-import { usePiAuth } from '../context/PiAuthContext';
-
+import { usePiAuth } from '@/context/PiAuthContext';
 
 const NAV_ITEMS = [
   ['Home', '/homepage'],
@@ -29,21 +28,19 @@ const COMPETITION_SUB_ITEMS = [
   ['Free Giveaways', '/ticket-purchase/pi-to-the-moon'],
 ];
 
-// optional country flag helper
+// Country code to flag emoji
 function countryCodeToFlagEmoji(code) {
-  if (!code) return '';
   return code
     .toUpperCase()
     .replace(/./g, char => String.fromCodePoint(127397 + char.charCodeAt()));
 }
 
 export default function Header() {
+  const { user, login, loading } = usePiAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [competitionsOpen, setCompetitionsOpen] = useState(false);
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
-
-  const { user, login, loading } = usePiAuth(); // use PiAuthContext
 
   const toggleMenu = () => setMenuOpen(prev => !prev);
   const toggleCompetitions = () => setCompetitionsOpen(prev => !prev);
@@ -61,7 +58,7 @@ export default function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] border-b border-cyan-700 px-3 py-1.5 flex items-center shadow-[0_4px_30px_rgba(0,255,255,0.4)] backdrop-blur-md">
-
+      
       <button ref={buttonRef} onClick={toggleMenu} className="neon-button text-white text-xs px-2 py-1">
         <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M4 8h16M4 16h16" />
@@ -74,15 +71,17 @@ export default function Header() {
         </Link>
       </div>
 
-      <div className="text-white flex items-center gap-2">
+      <div className="text-white text-sm flex items-center gap-2">
         {loading ? (
-          <span className="text-sm">Loading...</span>
+          <span>Loading...</span>
         ) : user ? (
-          <span className="text-sm sm:text-base font-semibold">
+          <span className="text-lg font-bold">
             {user.username} {user.country && countryCodeToFlagEmoji(user.country)}
           </span>
         ) : (
-          <button onClick={login} className="neon-button text-sm px-3 py-1.5">Log In</button>
+          <button onClick={login} className="neon-button text-sm px-3 py-1">
+            Log in with Pi
+          </button>
         )}
       </div>
 
