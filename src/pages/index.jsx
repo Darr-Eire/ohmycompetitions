@@ -4,11 +4,11 @@ import { FaXTwitter, FaFacebookF, FaDiscord, FaInstagram } from 'react-icons/fa6
 
 export default function IndexPage() {
   return (
-    <div className="h-screen bg-[#0a1024] text-white flex items-center justify-center px-3 py-2">
-      <div className="w-full max-w-sm bg-[#0f1b33] border border-cyan-400 rounded-2xl px-4 py-4 backdrop-blur-md shadow-[0_0_30px_#00f0ff66] flex flex-col h-full">
+    <div className="min-h-screen bg-[#0a1024] text-white flex items-center justify-center px-3 py-4">
+      <div className="w-full max-w-sm bg-[#0f1b33] border border-cyan-400 rounded-2xl px-4 py-4 backdrop-blur-md shadow-[0_0_30px_#00f0ff66] flex flex-col">
 
         {/* Header */}
-        <div className="text-center mb-3">
+        <div className="text-center mb-4">
           <h1 className="text-2xl font-extrabold bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-transparent bg-clip-text tracking-wide">
             Oh My Competitions
           </h1>
@@ -36,28 +36,26 @@ export default function IndexPage() {
         </div>
 
         {/* Stats */}
-<div className="flex justify-center mb-4">
-  <div className="grid grid-cols-2 gap-2 w-full px-3 py-3 bg-[#0a1024]/80 border border-cyan-400 rounded-xl shadow-lg text-center text-xs">
-    <div>
-      <div className="text-base font-bold text-cyan-300">44,000+</div>
-      <div className="text-white/80">Winners</div>
-    </div>
-    <div>
-      <div className="text-base font-bold text-cyan-300">106,400 π</div>
-      <div className="text-white/80">Total Won</div>
-    </div>
-    <div>
-      <div className="text-base font-bold text-cyan-300">15,000 π</div>
-      <div className="text-white/80">Donated</div>
-    </div>
-    <div>
-      <div className="text-base font-bold text-cyan-300">5 ★</div>
-      <div className="text-white/80">User Rated</div>
-    </div>
-  </div>
-</div>
-
-
+        <div className="flex justify-center mb-4">
+          <div className="grid grid-cols-2 gap-2 w-full px-3 py-3 bg-[#0a1024]/80 border border-cyan-400 rounded-xl shadow-lg text-center text-xs">
+            <div>
+              <div className="text-base font-bold text-cyan-300">44,000+</div>
+              <div className="text-white/80">Winners</div>
+            </div>
+            <div>
+              <div className="text-base font-bold text-cyan-300">106,400 π</div>
+              <div className="text-white/80">Total Won</div>
+            </div>
+            <div>
+              <div className="text-base font-bold text-cyan-300">15,000 π</div>
+              <div className="text-white/80">Donated</div>
+            </div>
+            <div>
+              <div className="text-base font-bold text-cyan-300">5 ★</div>
+              <div className="text-white/80">User Rated</div>
+            </div>
+          </div>
+        </div>
 
         {/* CTA */}
         <div className="mb-3">
