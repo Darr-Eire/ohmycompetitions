@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { loadPiSdk } from 'lib/pi';
 
-export default function PiCashCodeBuyButton({ weekStart, quantity, prizePool }) {
+export default function PiCashCodeBuyButton({ weekStart, quantity, prizePool, userId }) {
   const [sdkReady, setSdkReady] = useState(false);
   const ticketPrice = 1.25;
   const total = (ticketPrice * quantity).toFixed(2);
@@ -24,12 +24,17 @@ export default function PiCashCodeBuyButton({ weekStart, quantity, prizePool }) 
       {
         amount: parseFloat(total),
         memo: `Pi Cash Code Entry Week ${weekStart}`,
-        metadata: { type: 'pi-cash-ticket', weekStart, quantity },
+        metadata: { 
+          type: 'pi-cash-code', 
+          weekStart, 
+          quantity,
+          userId 
+        },
       },
       {
         onReadyForServerApproval: async (paymentId) => {
           try {
-            const res = await fetch('/api/pi-cash-code/approve', {
+            const res = await fetch('/api/payments/approve', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ paymentId }),
@@ -45,10 +50,17 @@ export default function PiCashCodeBuyButton({ weekStart, quantity, prizePool }) 
         onReadyForServerCompletion: async (paymentId, txid) => {
           try {
             console.log('🧾 Completing with txid:', txid);
-            const res = await fetch('/api/pi-cash-code/complete', {
+            const res = await fetch('/api/payments/complete', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ paymentId, txid, weekStart }),
+              body: JSON.stringify({ 
+                paymentId, 
+                txid, 
+                type: 'pi-cash-code',
+                weekStart, 
+                quantity,
+                userId 
+              }),
             });
             if (!res.ok) throw new Error(await res.text());
             const data = await res.json();
