@@ -1,6 +1,6 @@
 import React from 'react';
-import { PiAuthProvider } from '@/context/PiAuthContext';
-import Layout from '@/components/Layout';
+import { PiAuthProvider } from '../context/PiAuthContext';
+import Layout from '../components/Layout';
 import '@fontsource/orbitron';
 import 'styles/globals.css';
 
