@@ -25,7 +25,7 @@ export default function PiCashCodePage() {
   }, []);
 
   useEffect(() => {
-    loadPiSdk(() => {}); // optional
+    loadPiSdk(() => {});
   }, []);
 
   useEffect(() => {
@@ -93,16 +93,13 @@ export default function PiCashCodePage() {
 
         <p className="text-cyan-300 mt-2 font-semibold text-sm">Total: {totalPrice} π</p>
 
-        <BuyTicketButton 
-          amount={totalPrice}
-          memo={`Pi Cash Code Ticket x${quantity}`}
-          metadata={{
-            type: 'pi-cash-ticket',
-            week: codeData?.weekStart?.split('T')[0],
-            quantity
-          }}
-          buttonLabel="Enter Now"
-        />
+        {codeData?.weekStart && (
+          <BuyTicketButton 
+            competitionSlug={`pi-cash-code-${codeData.weekStart}`}
+            entryFee={ticketPrice}
+            quantity={quantity}
+          />
+        )}
 
         <section className="mt-8 text-center">
           <h2 className="text-1xl font-semi-bold text-black mb-2">How It Works</h2>

@@ -1,281 +1,222 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Confetti from 'react-confetti'
 import { useWindowSize } from '@uidotdev/usehooks'
+import { updateDailyStreak, getStreak } from 'lib/streak'
 import Link from 'next/link'
 
-const PRIZE_POOL = 50
-const RETRY_FEE = 1
-const NUM_DIGITS = 4
-
-const initialWinners = [
-  { name: 'Alice', prize: 50, time: Date.now() - 30 * 60 * 1000, country: '🇬🇧', correctDigits: 4 },
-  { name: 'Bob', prize: 50, time: Date.now() - 4 * 60 * 60 * 1000, country: '🇺🇸', correctDigits: 3 },
-  { name: 'Lina', prize: 50, time: Date.now() - 1 * 24 * 60 * 60 * 1000, country: '🇩🇪', correctDigits: 4 },
-  { name: 'Marco', prize: 50, time: Date.now() - 2 * 24 * 60 * 60 * 1000, country: '🇮🇹', correctDigits: 3 },
-  { name: 'Sofia', prize: 50, time: Date.now() - 3 * 24 * 60 * 60 * 1000, country: '🇪🇸', correctDigits: 4 },
-  { name: 'Kenji', prize: 50, time: Date.now() - 5 * 24 * 60 * 60 * 1000, country: '🇯🇵', correctDigits: 3 },
-  { name: 'Ahmed', prize: 50, time: Date.now() - 7 * 24 * 60 * 60 * 1000, country: '🇪🇬', correctDigits: 3 },
-  { name: 'Sophia', prize: 50, time: Date.now() - 10 * 24 * 60 * 60 * 1000, country: '🇦🇺', correctDigits: 4 },
-  { name: 'Lucas', prize: 50, time: Date.now() - 12 * 24 * 60 * 60 * 1000, country: '🇧🇷', correctDigits: 3 },
+const initialBoard = [
+  { name: 'Alice', result: '🏆 Perfect!', time: Date.now() - 2 * 60e3 },
+  { name: 'Bob', result: '❌ 3.12s', time: Date.now() - 5 * 60e3 },
+  { name: 'Charlie', result: '❌ 3.20s', time: Date.now() - 20 * 60e3 },
 ]
 
-const fmtRelative = (ms) => {
+const fmtRelative = ms => {
   const sec = Math.floor(ms / 1000)
+  if (sec < 60) return `${sec}s ago`
   const min = Math.floor(sec / 60)
-  const hours = Math.floor(min / 60)
-  const days = Math.floor(hours / 24)
-
-  if (hours < 1) return 'Just won!'
-  if (hours < 24) return `${hours}h ago`
-  return `${days}d ago`
+  if (min < 60) return `${min}m ago`
+  return `${Math.floor(min / 60)}h ago`
 }
 
-export default function VaultProFree() {
+export default function ThreeFourteenGame() {
+  const canvasRef = useRef(null)
+  const [running, setRunning] = useState(false)
+  const [time, setTime] = useState(0)
+  const [result, setResult] = useState('')
+  const [board, setBoard] = useState(initialBoard)
+  const [retryAvailable, setRetryAvailable] = useState(false)
+  const intervalRef = useRef(null)
   const { width, height } = useWindowSize()
 
-  const [code, setCode] = useState([])
-  const [digits, setDigits] = useState(Array(NUM_DIGITS).fill(0))
-  const [status, setStatus] = useState('idle')
-  const [correctIndexes, setCorrectIndexes] = useState([])
-  const [retryUsed, setRetryUsed] = useState(false)
-  const [dailyUsed, setDailyUsed] = useState(false)
-  const [winners, setWinners] = useState(initialWinners)
+  useEffect(() => {
+    if (localStorage.getItem('threeFourteenPlayed') === new Date().toDateString()) {
+      setResult('⏳ You already played today!')
+    }
+  }, [])
 
   useEffect(() => {
-    if (status === 'playing') {
-      const newCode = Array.from({ length: NUM_DIGITS }, () => Math.floor(Math.random() * 10))
-      setCode(newCode)
-    }
-  }, [status])
+    if (!running) return
+    intervalRef.current = setInterval(() => {
+      setTime(prev => +(prev + 0.01).toFixed(2))
+    }, 10)
+    return () => clearInterval(intervalRef.current)
+  }, [running])
 
-  const adjustDigit = (i, delta) => {
-    setDigits((prev) => {
-      const updated = [...prev]
-      updated[i] = (updated[i] + delta + 10) % 10
-      return updated
-    })
+  const stop = () => {
+    clearInterval(intervalRef.current)
+    setRunning(false)
+    localStorage.setItem('threeFourteenPlayed', new Date().toDateString())
+
+    const diff = Math.abs(3.14 - time)
+    const outcome = diff <= 0.05 ? '🏆 Perfect!' : `❌ ${time.toFixed(2)}s`
+    if (diff <= 0.05) updateDailyStreak()
+    setRetryAvailable(diff > 0.05 && diff <= 0.15)
+
+    setResult(outcome)
+    setBoard(prev => [
+      { name: 'You', result: outcome, time: Date.now() },
+      ...prev,
+    ].slice(0, 10))
   }
 
-  const startGame = () => {
-    if (dailyUsed) {
-      alert("You’ve already used your free daily attempt.")
-      return
-    }
-    setDigits(Array(NUM_DIGITS).fill(0))
-    setRetryUsed(false)
-    setStatus('playing')
-    setDailyUsed(true)
-  }
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    const size = 300
+    canvas.width = size
+    canvas.height = size
+    let raf
 
-  const enterCode = () => {
-    const correct = digits.map((d, idx) => d === code[idx])
-    const totalCorrect = correct.filter(Boolean).length
-    const isWin = totalCorrect === NUM_DIGITS
+    const draw = () => {
+      ctx.clearRect(0, 0, size, size)
 
-    if (isWin) {
-      setStatus('success')
-      setWinners([{ name: 'You', prize: PRIZE_POOL, time: Date.now(), country: '🇬🇧', correctDigits: 4 }, ...winners.slice(0, 9)])
-    } else {
-      setCorrectIndexes(correct)
-      setWinners([{ name: 'You', prize: 0, time: Date.now(), country: '🇬🇧', correctDigits: totalCorrect }, ...winners.slice(0, 9)])
-      setStatus('hint')
-    }
-  }
+      const bg = ctx.createLinearGradient(0, 0, 0, size)
+      bg.addColorStop(0, '#1E3A8A')
+      bg.addColorStop(1, '#2563eb')
+      ctx.fillStyle = bg
+      ctx.fillRect(0, 0, size, size)
 
-const retry = async () => {
-  if (!window?.Pi?.createPayment) {
-    alert('⚠️ Pi SDK not ready.')
-    return
-  }
-  try {
-    window.Pi.createPayment(
-      {
-        amount: RETRY_FEE,
-        memo: 'Vault Pro Retry',
-        metadata: { game: 'vault-pro', attempt: 'retry' },
-      },
-      {
-        onReadyForServerApproval: async (paymentId) => {
-          const res = await fetch('/api/payments/approve', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paymentId }),
-          });
-          if (!res.ok) throw new Error(await res.text());
-          console.log('✅ Payment approved');
-        },
-        onReadyForServerCompletion: async (paymentId, txid) => {
-          const res = await fetch('/api/payments/complete', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paymentId, txid }),
-          });
-          if (!res.ok) throw new Error(await res.text());
-          console.log('✅ Payment completed');
-          setRetryUsed(true);
-          setStatus('playing');
-        },
-        onCancel: () => console.warn('Payment cancelled'),
-        onError: (err) => {
-          console.error('Payment error:', err);
-          alert('Payment failed');
-        },
+      ctx.save()
+      ctx.translate(size / 2, size / 2)
+      ctx.strokeStyle = 'rgba(255,255,255,0.4)'
+      ctx.lineWidth = 2
+      for (let i = 0; i < 60; i++) {
+        const len = i % 5 ? 6 : 12
+        ctx.beginPath()
+        ctx.moveTo(0, -size / 2 + 20)
+        ctx.lineTo(0, -size / 2 + 20 + len)
+        ctx.stroke()
+        ctx.rotate((2 * Math.PI) / 60)
       }
-    )
-  } catch (err) {
-    console.error('Payment failed', err)
-    alert('Payment error')
-  }
-}
+      ctx.restore()
 
+      ctx.save()
+      ctx.translate(size / 2, size / 2)
+      const angle = (time % 10) / 10 * 2 * Math.PI - Math.PI / 2
+      ctx.rotate(angle)
+      ctx.fillStyle = '#ffa726'
+      ctx.beginPath()
+      ctx.moveTo(-4, 0)
+      ctx.lineTo(4, 0)
+      ctx.lineTo(2, -size * 0.35)
+      ctx.lineTo(-2, -size * 0.35)
+      ctx.closePath()
+      ctx.fill()
+      ctx.restore()
 
-  const reset = () => {
-    setStatus('idle')
-  }
+      ctx.save()
+      ctx.translate(size / 2, size / 2)
+      ctx.fillStyle = '#fff'
+      ctx.beginPath()
+      ctx.arc(0, 0, 8, 0, 2 * Math.PI)
+      ctx.fill()
+      ctx.restore()
 
-  const shareText = `I just cracked the Vault on OhMyCompetitions and won ${PRIZE_POOL} π! Come try your luck.`
+      ctx.fillStyle = '#fff'
+      ctx.font = 'bold 32px Orbitron, monospace'
+      ctx.textAlign = 'center'
+      ctx.fillText(`${time.toFixed(2)}s`, size / 2, size * 0.9)
+
+      raf = requestAnimationFrame(draw)
+    }
+
+    draw()
+    return () => cancelAnimationFrame(raf)
+  }, [time])
+
+  const shareText = result.includes('❌')
+    ? `I got ${result.slice(2)} on 3.14 Challenge!`
+    : `I nailed 3.14s!`
   const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`
 
   return (
-    <main className="app-background min-h-screen flex flex-col items-center px-4 py-12 text-white">
-      <div className="max-w-md w-full space-y-4">
+    <main className="app-background flex flex-col items-center px-4 sm:px-6 py-4 text-white">
+      <h1 className="btn-gradient text-white text-3xl font-semibold px-4 py-2 rounded-3xl shadow-lg mb-6">
+        ⏱️ 3.14 Stopwatch<br />Challenge
+      </h1>
 
-        {/* Header */}
-        <div className="text-center mb-2">
-          <h1 className="title-gradient text-2xl font-bold text-white">Pi Vault</h1>
-        </div>
+      <div className="w-full max-w-md mx-auto space-y-4">
+        <div className="competition-card relative bg-white bg-opacity-10 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500 to-blue-600 opacity-30 mix-blend-screen animate-pulse-slow" />
+          <div className="relative z-10 p-4 space-y-4">
+            <canvas ref={canvasRef} className="mx-auto w-64 h-64 rounded-full shadow-inner" />
 
-        <p className="text-center text-white text-lg mb-2">
-          🔐 Have you got what it takes, Pioneer? <br />
-          Crack the secret <span className="text-white">4-digit vault</span> and win 
-          <span className="text-cyan-300"> {PRIZE_POOL} π</span><br />
-          One free daily chance — one shot at crypto glory 🚀
-        </p>
-
-        <div className="bg-white bg-opacity-10 rounded-2xl shadow-lg p-6 text-center">
-          {status === 'idle' && (
-            <button onClick={startGame} disabled={dailyUsed}
-              className={`w-full py-3 rounded-full text-lg font-semibold text-white ${
-                dailyUsed ? 'bg-gray-500 cursor-not-allowed' : 'btn-gradient'
-              }`}>
-              Free Daily Attempt
-            </button>
-          )}
-
-          {status === 'playing' && (
-            <>
-              <p className="text-yellow-300 font-semibold text-lg mb-4">Crack Code:</p>
-              <div className="flex justify-center gap-4 mb-6">
-                {digits.map((digit, i) => (
-                  <div key={i} className="flex flex-col items-center space-y-2">
-                    <button onClick={() => adjustDigit(i, 1)} className="btn-gradient w-10 h-10 rounded-full text-lg">▲</button>
-                    <div className="text-3xl font-mono">{digit}</div>
-                    <button onClick={() => adjustDigit(i, -1)} className="btn-gradient w-10 h-10 rounded-full text-lg">▼</button>
-                  </div>
-                ))}
-              </div>
-              <button onClick={enterCode} className="btn-gradient w-full py-3 text-lg rounded-full shadow-lg">
-                Crack Code
-              </button>
-            </>
-          )}
-
-          {status === 'hint' && (
-            <>
-              <p className="text-yellow-300 font-semibold text-lg mb-3">
-                Close Pioneer! Correct digits shown:
-              </p>
-              <div className="flex justify-center gap-4 mb-4">
-                {digits.map((d, i) => (
-                  <div key={i}
-                    className={`w-14 h-14 flex justify-center items-center rounded-full text-2xl font-bold ${
-                      correctIndexes[i] ? 'bg-green-400 text-black' : 'bg-red-400 text-black'
-                    }`}>
-                    {d}
-                  </div>
-                ))}
-              </div>
-
-              {!retryUsed ? (
-                <button onClick={retry} className="btn-gradient w-full py-3 text-lg rounded-full shadow-lg">
-                  Pay {RETRY_FEE} π for Retry
+            <div className="flex flex-wrap justify-center gap-4">
+              {!running && !result && (
+                <button
+                  onClick={() => { setTime(0); setResult(''); setRunning(true) }}
+                  className="btn-gradient py-2 px-4 text-lg"
+                >
+                  Start
                 </button>
-              ) : (
-                <>
-                  <p className="text-red-400 font-semibold mb-2">
-                    The Vault stays locked... See you tomorrow Pioneer 🚀
-                  </p>
-                  <button onClick={reset} className="btn-gradient w-full py-3">Back to Menu</button>
-                </>
               )}
-            </>
-          )}
+              {running && (
+                <button onClick={stop} className="btn-gradient py-2 px-4 text-lg">
+                  Stop
+                </button>
+              )}
+              {!running && result && (
+                <button onClick={() => window.location.reload()} className="btn-gradient py-2 px-4 text-lg">
+                  Reset
+                </button>
+              )}
+              {!running && result.startsWith('❌') && retryAvailable && (
+                <button
+                  onClick={() => {
+                    // Simulated retry payment
+                    alert('1 π deducted. Retry granted.')
+                    setTime(0)
+                    setResult('')
+                    setRunning(true)
+                  }}
+                  className="bg-yellow-400 text-black font-bold py-2 px-4 rounded shadow hover:brightness-110 transition"
+                >
+                  Retry for 1 π
+                </button>
+              )}
+            </div>
 
-        {status === 'success' && (
-  <>
-    <Confetti width={width} height={height} />
-    <p className="text-green-400 font-bold text-xl mb-4">
-      🎉 You cracked the Vault & won {PRIZE_POOL} π!
-    </p>
-    <div className="flex justify-center space-x-4 mb-4">
-      <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="underline">
-        Share on Twitter
-      </a>
-      <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="underline">
-        Share on WhatsApp
-      </a>
-    </div>
-    <button onClick={reset} className="btn-gradient w-full py-3">Play Again Tomorrow</button>
-  </>
-        )}</div>
-
-
-        {/* Recent Winners */}
-        <div className="bg-white bg-opacity-10 rounded-2xl shadow-lg p-6 text-center overflow-hidden">
-          <h2 className="title-gradient text-2xl font-bold mb-4">Recent Vault Winners</h2>
-          {winners.filter(e => e.correctDigits === 4).length === 0 ? (
-            <p className="text-white text-sm mb-2">No winners yet. The vault remains sealed...</p>
-          ) : (
-            winners.filter(e => e.correctDigits === 4).map((entry, i) => (
-              <div key={i} className="text-sm text-white flex justify-center items-center space-x-2">
-                <span>🏆 {entry.country} {entry.name}</span>
-                <span>won {entry.prize} π</span>
-                <span>· {fmtRelative(Date.now() - entry.time)}</span>
+            {result && (
+              <div className="text-center space-y-2">
+                <p className="text-lg font-bold">{result}</p>
+                <div className="flex justify-center space-x-4">
+                  <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="underline">
+                    Share on Twitter
+                  </a>
+                  <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="underline">
+                    Share on WhatsApp
+                  </a>
+                </div>
               </div>
-            ))
-          )}
+            )}
+
+            <p className="text-center text-yellow-300">🔥 Streak: {getStreak()} days 🔥</p>
+          </div>
         </div>
 
-        {/* Close Attempts */}
-        <div className="bg-white bg-opacity-10 rounded-2xl shadow-lg p-6 text-center overflow-hidden">
-          <h2 className="title-gradient text-2xl font-bold mb-4">Close Pioneer Attempts</h2>
-          {winners.filter(e => e.correctDigits < 4).length === 0 ? (
-            <p className="text-white text-sm mb-2">No close attempts yet.</p>
-          ) : (
-            winners.filter(e => e.correctDigits < 4).map((entry, i) => (
-              <div key={i} className="text-sm text-white flex justify-center items-center space-x-2">
-                <span>⚠️ {entry.country} {entry.name}</span>
-                <span>Hit {entry.correctDigits}/4</span>
-                <span>· {fmtRelative(Date.now() - entry.time)}</span>
-              </div>
-            ))
-          )}
+        <div className="btn-gradient w-full rounded-3xl shadow-2xl p-4">
+          <h2 className="text-xl font-semibold mb-2 text-white">Live Leaderboard</h2>
+          <ul className="space-y-1 text-sm text-white">
+            {board.map((entry, idx) => (
+              <li key={idx}>
+                {entry.name} {entry.result} · {fmtRelative(Date.now() - entry.time)}
+              </li>
+            ))}
+          </ul>
         </div>
 
-        {/* T&Cs Link */}
-        <div className="text-center">
-          <Link href="/terms/vault-pro-plus" className="text-sm text-cyan-300 underline my-4 block">
-            Pi Vault Terms & Conditions
-          </Link>
-        </div>
-
-        {/* Back Button */}
-        <Link href="/try-your-luck" className="text-sm text-cyan-300 underline mt-2 mx-auto block text-center">
-          Back to Mini Games
+        <Link
+          href="/try-your-luck"
+          className="btn-gradient mt-6 w-full text-center py-2 rounded-xl text-white font-semibold"
+        >
+          ← Back to Mini Games
         </Link>
+
+        {result.includes('🏆') && <Confetti width={width} height={height} />}
       </div>
     </main>
   )
