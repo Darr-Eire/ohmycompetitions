@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { usePiAuth } from '../context/PiAuthContext';
+import { useState, useRef, useEffect } from 'react';
 
 const NAV_ITEMS = [
   ['Home', '/homepage'],
@@ -28,7 +27,7 @@ const COMPETITION_SUB_ITEMS = [
   ['Free Giveaways', '/ticket-purchase/pi-to-the-moon'],
 ];
 
-// Country code to flag emoji
+// Country flag helper
 function countryCodeToFlagEmoji(code) {
   return code
     .toUpperCase()
@@ -36,11 +35,41 @@ function countryCodeToFlagEmoji(code) {
 }
 
 export default function Header() {
-  const { user, login, loading } = usePiAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [competitionsOpen, setCompetitionsOpen] = useState(false);
+  const [user, setUser] = useState(null);
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
+  const [sdkReady, setSdkReady] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const script = document.createElement('script');
+      script.src = 'https://sdk.minepi.com/pi-sdk.js';
+      script.async = true;
+      script.onload = () => {
+        if (window.Pi) {
+          window.Pi.init({ version: '2.0' });
+          setSdkReady(true);
+        }
+      };
+      document.body.appendChild(script);
+    }
+  }, []);
+
+  const handleLogin = async () => {
+    if (!sdkReady || !window.Pi?.authenticate) {
+      alert('Pi SDK not ready.');
+      return;
+    }
+    try {
+      const result = await window.Pi.authenticate(['username', 'payments']);
+      setUser(result.user);
+    } catch (err) {
+      console.error('Pi login failed:', err);
+      alert('Login failed.');
+    }
+  };
 
   const toggleMenu = () => setMenuOpen(prev => !prev);
   const toggleCompetitions = () => setCompetitionsOpen(prev => !prev);
@@ -72,22 +101,19 @@ export default function Header() {
       </div>
 
       <div className="text-white text-sm flex items-center gap-2">
-        {loading ? (
-          <span>Loading...</span>
-        ) : user ? (
-          <span className="text-lg font-bold">
-            {user.username} {user.country && countryCodeToFlagEmoji(user.country)}
+        {user ? (
+          <span className="text-lg">
+            {user.username} {user?.country && countryCodeToFlagEmoji(user.country)}
           </span>
         ) : (
-          <button onClick={login} className="neon-button text-sm px-3 py-1">
-            Log in with Pi
-          </button>
+          <button onClick={handleLogin} className="neon-button text-xs px-2 py-1">Log In with Pi</button>
         )}
       </div>
 
       {menuOpen && (
         <nav ref={menuRef} className="absolute top-full left-2 mt-2 w-56 rounded-lg shadow-xl backdrop-blur-md bg-[#0f172a] border border-cyan-700 animate-fade-in">
           <ul className="flex flex-col font-orbitron text-xs">
+
             {NAV_ITEMS.map(([label, href]) => (
               label === 'All Competitions' ? (
                 <li key={href}>
