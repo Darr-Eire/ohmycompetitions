@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 
-// Navigation constants
 const NAV_ITEMS = [
   ['Home', '/homepage'],
   ['All Competitions', '/competitions'],
@@ -28,7 +27,6 @@ const COMPETITION_SUB_ITEMS = [
   ['Free Giveaways', '/ticket-purchase/pi-to-the-moon'],
 ];
 
-// Convert country code to flag emoji
 function countryCodeToFlagEmoji(code) {
   if (!code) return '';
   return code
@@ -36,7 +34,6 @@ function countryCodeToFlagEmoji(code) {
     .replace(/./g, char => String.fromCodePoint(127397 + char.charCodeAt()));
 }
 
-// Load Pi SDK helper
 function loadPiSdk(setSdkReady) {
   if (typeof window === 'undefined') return;
 
@@ -65,12 +62,10 @@ export default function Header() {
   const [sdkReady, setSdkReady] = useState(false);
   const [user, setUser] = useState(null);
 
-  // Load SDK on mount
   useEffect(function () {
     loadPiSdk(setSdkReady);
   }, []);
 
-  // Close menu on outside click
   useEffect(function () {
     function handleClickOutside(e) {
       if (menuRef.current && !menuRef.current.contains(e.target) && !buttonRef.current.contains(e.target)) {
@@ -108,10 +103,6 @@ export default function Header() {
     }
   }
 
-  function handleLogout() {
-    setUser(null);
-  }
-
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] border-b border-cyan-700 px-3 py-1.5 flex items-center shadow-[0_4px_30px_rgba(0,255,255,0.4)] backdrop-blur-md">
       
@@ -127,21 +118,19 @@ export default function Header() {
         </Link>
       </div>
 
-      <div className="text-white text-xs flex items-center gap-2">
+      <div className="text-white flex items-center gap-2">
         {user ? (
-          <>
-            <span>{user.username} {user.country && countryCodeToFlagEmoji(user.country)}</span>
-            <button onClick={handleLogout} className="neon-button text-xs px-2 py-1">Log Out</button>
-          </>
+          <span className="text-sm sm:text-base font-semibold">
+            {user.username} {user.country && countryCodeToFlagEmoji(user.country)}
+          </span>
         ) : (
-          <button onClick={handleLogin} className="neon-button text-xs px-2 py-1">Log In</button>
+          <button onClick={handleLogin} className="neon-button text-sm px-3 py-1.5">Log In</button>
         )}
       </div>
 
       {menuOpen && (
         <nav ref={menuRef} className="absolute top-full left-2 mt-2 w-56 rounded-lg shadow-xl backdrop-blur-md bg-[#0f172a] border border-cyan-700 animate-fade-in">
           <ul className="flex flex-col font-orbitron text-xs">
-
             {NAV_ITEMS.map(([label, href]) => (
               label === 'All Competitions' ? (
                 <li key={href}>
@@ -168,7 +157,6 @@ export default function Header() {
                 </li>
               )
             ))}
-
           </ul>
         </nav>
       )}
