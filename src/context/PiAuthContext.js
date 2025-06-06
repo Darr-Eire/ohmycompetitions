@@ -1,69 +1,68 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+'use client';
+
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const PiAuthContext = createContext();
 
+export function usePiAuth() {
+  return useContext(PiAuthContext);
+}
+
+function loadPiSdk(setSdkReady) {
+  if (typeof window === 'undefined') return;
+  if (window.Pi) {
+    setSdkReady(true);
+    return;
+  }
+
+  const script = document.createElement('script');
+  script.src = 'https://sdk.minepi.com/pi-sdk.js';
+  script.onload = () => setSdkReady(true);
+  script.onerror = () => console.error('Failed to load Pi SDK');
+  document.body.appendChild(script);
+}
+
 export function PiAuthProvider({ children }) {
-  const [user, setUser] = useState(null);
   const [sdkReady, setSdkReady] = useState(false);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const script = document.createElement('script');
-      script.src = 'https://sdk.minepi.com/pi-sdk.js';
-      script.async = true;
-      script.onload = () => {
-        if (window.Pi) {
-          window.Pi.init({ version: '2.0' });
-          setSdkReady(true);
-          console.log('✅ Pi SDK initialized');
-        } else {
-          console.warn('❌ Pi SDK not available');
-        }
-      };
-      document.body.appendChild(script);
-
-      return () => {
-        document.body.removeChild(script);
-      };
+    const storedUser = localStorage.getItem('piUser');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
     }
+    setLoading(false);
   }, []);
 
-  const loginWithPi = async () => {
-    if (!sdkReady || !window.Pi?.authenticate) {
-      alert('Pi SDK not ready yet.');
+  useEffect(() => {
+    loadPiSdk(setSdkReady);
+  }, []);
+
+  async function login() {
+    if (!sdkReady || typeof window === 'undefined' || !window.Pi) {
+      alert('Pi SDK not ready.');
       return;
     }
-
     try {
-      const { accessToken } = await window.Pi.authenticate(['username', 'payments']);
-
-      const res = await fetch('/api/auth/pi-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken }),
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        setUser(data.user);
-      } else {
-        throw new Error(data.error);
-      }
+      const result = await window.Pi.authenticate(['username', 'payments']);
+      setUser(result.user);
+      localStorage.setItem('piUser', JSON.stringify(result.user));
     } catch (err) {
-      console.error('Pi login failed:', err);
-      alert('Login failed');
+      console.error('Pi authentication failed', err);
     }
-  };
+  }
 
-  const logout = () => setUser(null);
+  function logout() {
+    setUser(null);
+    localStorage.removeItem('piUser');
+  }
+
+  const value = { user, login, logout, loading };
 
   return (
-    <PiAuthContext.Provider value={{ user, loginWithPi, logout }}>
+    <PiAuthContext.Provider value={value}>
       {children}
     </PiAuthContext.Provider>
   );
-}
-
-export function usePiAuth() {
-  return useContext(PiAuthContext);
 }
