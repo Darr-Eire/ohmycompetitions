@@ -1,5 +1,5 @@
 import { connectToDatabase } from 'lib/dbConnect';
-import AuditLog from '@models/AuditLog';
+import AuditLog from 'models/AuditLog';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from 'lib/auth';
 

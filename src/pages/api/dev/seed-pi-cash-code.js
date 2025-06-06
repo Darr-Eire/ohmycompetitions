@@ -1,5 +1,5 @@
 import { connectToDatabase } from 'lib/mongodb';
-import PiCashCode from '@models/PiCashCode';
+import PiCashCode from 'models/PiCashCode';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from 'lib/auth';
 

@@ -1,5 +1,5 @@
 import dbConnect from 'lib/dbConnect';
-import Nomination from '@models/Nomination';
+import Nomination from 'models/Nomination';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {

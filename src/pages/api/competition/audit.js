@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from 'lib/auth';
 import dbConnect from 'lib/dbConnect';
-import AuditLog from '@models/AuditLog';
+import AuditLog from 'models/AuditLog';
 
 export default async function handler(req, res) {
   await dbConnect();

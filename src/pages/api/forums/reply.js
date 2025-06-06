@@ -1,6 +1,6 @@
 import { getServerSession } from 'next-auth/next';
 import dbConnect from 'lib/dbConnect';
-import Reply from '@models/Reply';
+import Reply from 'models/Reply';
 import { authOptions } from 'lib/auth';
 
 export default async function handler(req, res) {

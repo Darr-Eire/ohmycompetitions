@@ -1,5 +1,5 @@
 import dbConnect from 'lib/dbConnect';
-import Message from '@models/Message';
+import Message from 'models/Message';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {

@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 
 
-import Competition from '../models/Competition.js';
+import Competition from '../src/models/Competition.js';
 
 const MONGO_URI = process.env.MONGODB_URI || 'your-mongodb-connection-string';
 

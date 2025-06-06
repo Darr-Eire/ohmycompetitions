@@ -31,17 +31,22 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const navItems = [
-    ['Home', '/homepage'],
-    ['All Competitions', '/competitions'], // dropdown will hook here
-    ['Try Your Luck', '/try-your-luck'],
-    ['Forums', '/forums'],
-    ['The Future', '/future'],
-    ['Help & Support', '/help-support'],
-    ['How To Play', '/how-to-play'],
-    ['How We Got Started', '/how-we-got-started'],
-    ['Partners & Sponsors', '/partners'],
-  ];
+  const navItems = 
+[
+  ['Home', '/homepage'],
+  ['All Competitions', '/competitions'],
+  ['Pi Battles', '/battles'],         
+  ['Try Your Luck', '/try-your-luck'],
+  ['Forums', '/forums'],
+  ['The Future', '/future'],
+  ['Help & Support', '/help-support'],
+  ['How To Play', '/how-to-play'],
+  ['How We Got Started', '/how-we-got-started'],
+  ['Partners & Sponsors', '/partners'],
+]
+
+
+
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] border-b border-cyan-700 px-3 py-1.5 flex items-center shadow-md backdrop-blur-md">

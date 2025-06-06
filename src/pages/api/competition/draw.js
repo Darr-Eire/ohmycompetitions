@@ -1,6 +1,6 @@
 import { connectToDatabase } from 'lib/dbConnect';
-import Entry from '@models/Entry';
-import AuditLog from '@models/AuditLog';
+import Entry from 'models/Entry';
+import AuditLog from 'models/AuditLog';
 import { getRandomNumber } from 'utils/randomness';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from 'lib/auth';
