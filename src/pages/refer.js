@@ -1,14 +1,23 @@
-// pages/refer.js
-'use client'
+'use client';
 
-import { useSession } from 'next-auth/react'
+import { usePiAuth } from '@/context/PiAuthContext';
 
 export default function ReferPage() {
-  const { data: session } = useSession()
+  const { user, login, loading } = usePiAuth();
 
-  if (!session) return <p className="p-8 text-center">Please sign in to get your referral link.</p>
+  if (loading) return <p className="p-8 text-center">Loading...</p>;
 
-  const link = `${process.env.NEXTAUTH_URL}/competitions/pi-day-freebie?ref=${session.user.id}`
+  if (!user)
+    return (
+      <div className="p-8 text-center">
+        <p>Please sign in with Pi to get your referral link.</p>
+        <button onClick={login} className="btn btn-primary mt-4">
+          Log In
+        </button>
+      </div>
+    );
+
+  const link = `${process.env.NEXT_PUBLIC_SITE_URL}/competitions/pi-day-freebie?ref=${user.id}`;
 
   return (
     <main className="max-w-md mx-auto p-6 space-y-4">
@@ -21,5 +30,5 @@ export default function ReferPage() {
         Copy to Clipboard
       </button>
     </main>
-  )
+  );
 }

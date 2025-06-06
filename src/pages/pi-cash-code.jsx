@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
-import GhostWinnerLog from '@components/GhostWinnerLog';
-import ClaimedWinnersLog from '@components/ClaimedWinnersLog';
+import { usePiAuth } from '@/context/PiAuthContext';
+import GhostWinnerLog from '@/components/GhostWinnerLog';
+import ClaimedWinnersLog from '@/components/ClaimedWinnersLog';
 
 export default function PiCashCodePage() {
-  const { data: session } = useSession();
+  const { user, login, loading: userLoading } = usePiAuth();
   const [codeData, setCodeData] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const ticketPrice = 1.25;
@@ -44,7 +44,7 @@ export default function PiCashCodePage() {
   }, [codeData?.expiresAt]);
 
   const handleConfirmTicket = async () => {
-    if (!session?.user) {
+    if (!user) {
       alert('⚠️ Please log in with Pi Network first.');
       return;
     }
@@ -66,7 +66,7 @@ export default function PiCashCodePage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             txid: payment.transaction.txid,
-            userId: session.user.id,
+            userId: user.id,
             week: codeData?.weekStart?.split('T')[0],
             quantity,
           }),
@@ -81,6 +81,21 @@ export default function PiCashCodePage() {
       alert('❌ Payment failed or was cancelled.');
     }
   };
+
+  if (userLoading) {
+    return <div className="text-white text-center py-10">Loading...</div>;
+  }
+
+  if (!user) {
+    return (
+      <div className="p-6 text-center text-white">
+        <p className="mb-4">🔐 Please log in with Pi to access this page.</p>
+        <button onClick={login} className="btn-gradient px-6 py-3 rounded-full font-bold">
+          Log In
+        </button>
+      </div>
+    );
+  }
 
   return (
     <main className="flex justify-center items-start min-h-screen bg-transparent font-orbitron pt-6">
@@ -121,25 +136,24 @@ export default function PiCashCodePage() {
           Enter Now
         </button>
 
-       <section className="mt-8 text-center">
-  <h2 className="text-1xl font-semi-bold text-black mb-2">How It Works</h2>
+        <section className="mt-8 text-center">
+          <h2 className="text-1xl font-semi-bold text-black mb-2">How It Works</h2>
 
-  <div className="inline-block text-left">
-    <ul className="list-disc list-inside text-white/90 space-y-2 text-sm sm:text-base">
-      <li>The code drops every Monday at <strong>3:14 PM UTC</strong>.</li>
-      <li>It remains active for <strong>31 hours and 4 minutes</strong>.</li>
-      <li>Friday draw at <strong>3:14 PM UTC</strong>.</li>
-      <li>The winner must return the code within <strong>31 minutes and 4 seconds</strong>.</li>
-    </ul>
+          <div className="inline-block text-left">
+            <ul className="list-disc list-inside text-white/90 space-y-2 text-sm sm:text-base">
+              <li>The code drops every Monday at <strong>3:14 PM UTC</strong>.</li>
+              <li>It remains active for <strong>31 hours and 4 minutes</strong>.</li>
+              <li>Friday draw at <strong>3:14 PM UTC</strong>.</li>
+              <li>The winner must return the code within <strong>31 minutes and 4 seconds</strong>.</li>
+            </ul>
 
-    <div className="text-center mt-3">
-      <a href="/terms" className="text-xs text-cyan-400 underline hover:text-cyan-300 transition">
-        View full Terms & Conditions
-      </a>
-    </div>
-  </div>
-</section>
-
+            <div className="text-center mt-3">
+              <a href="/terms" className="text-xs text-cyan-400 underline hover:text-cyan-300 transition">
+                View full Terms & Conditions
+              </a>
+            </div>
+          </div>
+        </section>
 
         <section className="mt-10 space-y-6">
           <div className="bg-[#0b1120] bg-opacity-50 backdrop-blur-md border border-cyan-400 rounded-xl p-4 shadow-[0_0_20px_#00ffd5aa]">
