@@ -1,117 +1,85 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { usePiAuth } from '../context/PiAuthContext';
-import AccountHeader from '../components/AccountHeader';
-import MyEntriesTable from '../components/MyEntriesTable';
-import DailyStreakCard from '../components/DailyStreakCard';
-import GiftTicketModal from '../components/GiftTicketModal';
-import GameHistoryTable from '../components/GameHistoryTable';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import '@fontsource/orbitron';
 
 export default function AccountPage() {
-  const { user, login, loading } = usePiAuth();
-  const [entries, setEntries] = useState([]);
-  const [showGiftModal, setShowGiftModal] = useState(false);
+  const [piUser, setPiUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [country, setCountry] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [referralCount, setReferralCount] = useState(0);
 
+  // Load Pi user info if available
   useEffect(() => {
-    const fetchEntries = async () => {
-      if (!user?.uid) return;
+    if (!window?.Pi?.getCurrentPioneer) {
+      setLoading(false);
+      return;
+    }
 
-      try {
-        const res = await fetch('/api/user/entries');
-        const data = await res.json();
+    window.Pi.getCurrentPioneer().then(user => {
+      setPiUser(user);
+      setLoading(false);
 
-        const safeEntries = Array.isArray(data)
-          ? data
-          : Array.isArray(data.entries)
-            ? data.entries
-            : [];
+      const storedProfile = JSON.parse(localStorage.getItem(`profile_${user.uid}`) || '{}');
+      setCountry(storedProfile.country || '');
+      setFullName(storedProfile.fullName || '');
+      setReferralCount(storedProfile.referrals || 0);
+    }).catch(err => {
+      console.error(err);
+      setLoading(false);
+    });
+  }, []);
 
-        setEntries(safeEntries);
-      } catch (err) {
-        console.error('Failed to load user entries', err);
-      }
-    };
+  const handleSave = () => {
+    if (!piUser) return;
+    const profile = { fullName, country, referrals: referralCount };
+    localStorage.setItem(`profile_${piUser.uid}`, JSON.stringify(profile));
+    alert('✅ Profile saved!');
+  };
 
-    fetchEntries();
-  }, [user]);
+  if (loading) return <div className="text-white p-10">Loading your account...</div>;
 
-  if (loading) {
-    return <div className="p-6 text-white">Loading user...</div>;
-  }
-
-  if (!user) {
-    return (
-      <div className="p-6 text-center text-white">
-        <p className="mb-4">🔐 Please log in with Pi to access your account.</p>
-        <button onClick={login} className="btn-gradient px-6 py-3 rounded-full font-bold">Log In</button>
-      </div>
-    );
-  }
+  if (!piUser) return (
+    <div className="text-white p-10">
+      <p>Please log in with Pi Browser to view your account.</p>
+      <Link href="/" className="underline text-cyan-300">Go Home</Link>
+    </div>
+  );
 
   return (
-    <main className="app-background min-h-screen px-4 py-8 text-white">
-      <div className="max-w-4xl mx-auto space-y-8">
+    <main className="min-h-screen bg-[#0b1120] text-white py-8 px-4 font-orbitron">
+      <div className="max-w-lg mx-auto border border-cyan-400 rounded-2xl shadow-xl p-6 space-y-6 bg-[#101726]">
 
-        <div className="flex justify-center">
-          <div className="btn-gradient px-6 py-2 rounded-full text-xl font-bold text-center shadow-md">
-            My Account
-          </div>
+        <h1 className="text-2xl font-bold text-center text-cyan-300">My Account</h1>
+
+        <div className="space-y-3">
+          <div><span className="font-bold">Username:</span> {piUser.username}</div>
+          <div><span className="font-bold">User ID:</span> {piUser.uid}</div>
+          <div><span className="font-bold">Joined:</span> {new Date().toLocaleDateString()}</div>
         </div>
 
-        <AccountHeader user={user} />
+        <div className="space-y-4">
+          <label className="block text-sm text-cyan-300">Full Name:</label>
+          <input value={fullName} onChange={e => setFullName(e.target.value)} className="w-full p-2 rounded bg-black text-white border border-cyan-500" />
 
-        <div className="text-center bg-white bg-opacity-10 backdrop-blur-lg rounded-xl shadow p-6">
-          <h2 className="text-2xl font-bold mb-4">🎁 Gift Tickets</h2>
-          <p className="text-sm text-white mb-4">
-            Purchase and gift tickets to friends using their username.
-          </p>
-          <button
-            onClick={() => setShowGiftModal(true)}
-            className="btn-gradient text-lg px-6 py-3 rounded-full font-semibold"
-          >
-            Buy & Gift a Ticket
+          <label className="block text-sm text-cyan-300">Country:</label>
+          <input value={country} onChange={e => setCountry(e.target.value)} className="w-full p-2 rounded bg-black text-white border border-cyan-500" />
+
+          <button onClick={handleSave} className="w-full py-3 rounded-lg font-bold bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black shadow-lg">
+            Save Profile
           </button>
         </div>
 
-        {showGiftModal && (
-          <GiftTicketModal
-            user={user}
-            onClose={() => setShowGiftModal(false)}
-            useUsername
-          />
-        )}
-
-        <div className="rounded-xl shadow-lg p-6 bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black">
-          <h2 className="text-2xl font-bold mb-4 text-center text-black">🎟️ My Competitions</h2>
-          <div className="bg-white bg-opacity-80 rounded-lg p-4 overflow-x-auto text-black">
-            <MyEntriesTable entries={entries} />
-          </div>
+        <div className="pt-4 border-t border-white/20 text-sm">
+          <p><strong>Referrals Earned:</strong> {referralCount}</p>
+          <p><strong>Competitions Entered:</strong> (future: link to history)</p>
         </div>
 
-        <div className="bg-white bg-opacity-10 backdrop-blur-lg p-6 rounded-xl shadow space-y-6 text-center">
-          <DailyStreakCard uid={user.uid} />
-          <div>
-            <h3 className="text-2xl font-bold mb-3">🎮 Mini Games</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Link href="/try-your-luck/three-fourteen" className="btn-gradient text-center py-2 rounded-lg font-semibold">
-                ⏱️ 3.14 Challenge
-              </Link>
-              <Link href="/try-your-luck/slot-machine" className="btn-gradient text-center py-2 rounded-lg font-semibold">
-                🎰 Pi Slot Machine
-              </Link>
-              <Link href="/try-your-luck/mystery-wheel" className="btn-gradient text-center py-2 rounded-lg font-semibold">
-                🎡 Mystery Wheel
-              </Link>
-              <Link href="/try-your-luck/hack-the-vault" className="btn-gradient text-center py-2 rounded-lg font-semibold">
-                🔐 Hack the Vault
-              </Link>
-            </div>
-          </div>
+        <div className="text-center pt-4">
+          <Link href="/" className="text-sm text-cyan-400 underline">← Back to Home</Link>
         </div>
-
-        <GameHistoryTable />
 
       </div>
     </main>

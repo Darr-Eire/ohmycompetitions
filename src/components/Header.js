@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from 'react';
 
 const NAV_ITEMS = [
   ['Home', '/homepage'],
+  ['My Account', '/account'],
   ['All Competitions', '/competitions'],
   ['Try Your Luck', '/try-your-luck'],
   ['Forums', '/forums'],
