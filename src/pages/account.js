@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import '@fontsource/orbitron';
+import { usePiAuth } from '../context/PiAuthContext';  // <-- 🔑 use context!
 
 export default function AccountPage() {
-  const [piUser, setPiUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { user: piUser, loading: authLoading } = usePiAuth();
+
   const [country, setCountry] = useState('');
   const [fullName, setFullName] = useState('');
   const [language, setLanguage] = useState('en');
@@ -17,34 +18,23 @@ export default function AccountPage() {
   const [bonusTickets, setBonusTickets] = useState(0);
 
   useEffect(() => {
-    if (!window?.Pi?.getCurrentPioneer) {
-      setLoading(false);
-      return;
-    }
+    if (!piUser) return;
 
-    window.Pi.getCurrentPioneer().then(user => {
-      setPiUser(user);
-      setLoading(false);
+    const profile = JSON.parse(localStorage.getItem(`profile_${piUser.uid}`) || '{}');
+    setCountry(profile.country || '');
+    setFullName(profile.fullName || '');
+    setLanguage(profile.language || 'en');
 
-      const profile = JSON.parse(localStorage.getItem(`profile_${user.uid}`) || '{}');
-      setCountry(profile.country || '');
-      setFullName(profile.fullName || '');
-      setLanguage(profile.language || 'en');
+    const refCount = parseInt(localStorage.getItem(`referrals_${piUser.username}`) || '0', 10);
+    setReferralCount(refCount);
+    setBonusTickets(Math.floor(refCount / 10));
 
-      const refCount = parseInt(localStorage.getItem(`referrals_${user.username}`) || '0', 10);
-      setReferralCount(refCount);
-      setBonusTickets(Math.floor(refCount / 10));
+    setEntries(JSON.parse(localStorage.getItem(`entries_${piUser.uid}`) || '[]'));
+    setPayments(JSON.parse(localStorage.getItem(`payments_${piUser.uid}`) || '[]'));
 
-      setEntries(JSON.parse(localStorage.getItem(`entries_${user.uid}`) || '[]'));
-      setPayments(JSON.parse(localStorage.getItem(`payments_${user.uid}`) || '[]'));
-
-      const storedHide = localStorage.getItem('hide_uid') === 'true';
-      setHideId(storedHide);
-    }).catch(err => {
-      console.error(err);
-      setLoading(false);
-    });
-  }, []);
+    const storedHide = localStorage.getItem('hide_uid') === 'true';
+    setHideId(storedHide);
+  }, [piUser]);
 
   const handleSave = () => {
     if (!piUser) return;
@@ -61,7 +51,7 @@ export default function AccountPage() {
 
   const referralUrl = `https://yourapp.com?ref=${piUser?.username}`;
 
-  if (loading) return <div className="text-white p-10">Loading account...</div>;
+  if (authLoading) return <div className="text-white p-10">Loading account...</div>;
   if (!piUser) return <div className="text-white p-10">Please log in with Pi.</div>;
 
   return (
