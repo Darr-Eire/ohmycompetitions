@@ -1,4 +1,5 @@
 'use client';
+
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -10,7 +11,6 @@ import CryptoGiveawayCard from '@components/CryptoGiveawayCard';
 import CompetitionCard from '@components/CompetitionCard';
 import PiCashHeroBanner from '@components/PiCashHeroBanner';
 
-
 import {
   techItems,
   premiumItems,
@@ -20,10 +20,72 @@ import {
   dailyItems
 } from '@data/competitions';
 
+// Helper to load Pi SDK
+function loadPiSdk(setSdkReady: (ready: boolean) => void) {
+  if (typeof window === 'undefined') return;
+
+  if (window.Pi) {
+    setSdkReady(true);
+    return;
+  }
+
+  const script = document.createElement('script');
+  script.src = 'https://sdk.minepi.com/pi-sdk.js';
+  script.onload = () => setSdkReady(true);
+  script.onerror = () => console.error('Failed to load Pi SDK');
+  document.body.appendChild(script);
+}
 
 export default function HomePage() {
- 
-   const mockPiCashProps = {
+  const [sdkReady, setSdkReady] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
+
+  // Load SDK
+  useEffect(() => {
+    loadPiSdk(setSdkReady);
+  }, []);
+
+  // Authenticate once SDK is ready
+  useEffect(() => {
+    const authenticate = async () => {
+      if (!sdkReady || typeof window === 'undefined' || !window.Pi) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const scopes = ['username', 'payments'];
+        const result = await window.Pi.authenticate(scopes);
+        setUser(result.user);
+        setLoading(false);
+      } catch (err) {
+        console.error('Pi authentication failed', err);
+        setLoading(false);
+      }
+    };
+
+    authenticate();
+  }, [sdkReady]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen text-white">
+        Authenticating with Pi Network...
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex justify-center items-center min-h-screen text-white">
+        Failed to authenticate with Pi.
+      </div>
+    );
+  }
+
+  // Your mock PiCash props
+  const mockPiCashProps = {
     code: '7H3X-PL4Y',
     prizePool: 14250,
     weekStart: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
@@ -32,42 +94,41 @@ export default function HomePage() {
     claimExpiresAt: new Date(Date.now() + 1000 * 60 * 60 * 10).toISOString(),
   };
 
- const TopWinnersCarousel = () => {
-  const winners = [
-    { name: 'Jack Jim', prize: 'Matchday Tickets', date: 'March 26th', image: '/images/winner2.png' },
-    { name: 'Shanahan', prize: 'Playstation 5', date: 'February 14th', image: '/images/winner2.png' },
-    { name: 'Emily Rose', prize: 'Luxury Car', date: 'January 30th', image: '/images/winner2.png' },
-    { name: 'John Doe', prize: '€10,000 Pi', date: 'December 15th', image: '/images/winner2.png' },
-  ];
-  const [index, setIndex] = useState(0);
+  const TopWinnersCarousel = () => {
+    const winners = [
+      { name: 'Jack Jim', prize: 'Matchday Tickets', date: 'March 26th', image: '/images/winner2.png' },
+      { name: 'Shanahan', prize: 'Playstation 5', date: 'February 14th', image: '/images/winner2.png' },
+      { name: 'Emily Rose', prize: 'Luxury Car', date: 'January 30th', image: '/images/winner2.png' },
+      { name: 'John Doe', prize: '€10,000 Pi', date: 'December 15th', image: '/images/winner2.png' },
+    ];
+    const [index, setIndex] = useState(0);
 
-  useEffect(() => {
-    const interval = setInterval(() => setIndex((prev) => (prev + 1) % winners.length), 5000);
-    return () => clearInterval(interval);
-  }, []);
+    useEffect(() => {
+      const interval = setInterval(() => setIndex((prev) => (prev + 1) % winners.length), 5000);
+      return () => clearInterval(interval);
+    }, []);
 
-  const current = winners[index];
-  return (
-    <div className="max-w-md mx-auto mt-12 bg-white bg-opacity-10 backdrop-blur-lg rounded-xl shadow-lg p-6 text-white text-center">
-      <h2 className="text-2xl font-bold mb-4">🏆 Top Winner</h2>
+    const current = winners[index];
+    return (
+      <div className="max-w-md mx-auto mt-12 bg-white bg-opacity-10 backdrop-blur-lg rounded-xl shadow-lg p-6 text-white text-center">
+        <h2 className="text-2xl font-bold mb-4">🏆 Top Winner</h2>
 
-      <div className="flex justify-center items-center mb-4">
-        <Image
-          src={current.image}
-          alt={current.name}
-          width={120}
-          height={120}
-          className="rounded-full border-4 border-blue-500"
-        />
+        <div className="flex justify-center items-center mb-4">
+          <Image
+            src={current.image}
+            alt={current.name}
+            width={120}
+            height={120}
+            className="rounded-full border-4 border-blue-500"
+          />
+        </div>
+
+        <h3 className="text-xl font-semibold">{current.name}</h3>
+        <p className="text-blue-300">{current.prize}</p>
+        <p className="text-sm text-white/70">{current.date}</p>
       </div>
-
-      <h3 className="text-xl font-semibold">{current.name}</h3>
-      <p className="text-blue-300">{current.prize}</p>
-      <p className="text-sm text-white/70">{current.date}</p>
-    </div>
-  );
-};
-
+    );
+  };
 
   return (
     <>
@@ -110,7 +171,7 @@ export default function HomePage() {
   );
 }
 
-// Reusable Section
+// Section component stays same
 function Section({ title, items, viewMoreHref, viewMoreText = 'View More', extraClass = '' }) {
   const isDaily = title.toLowerCase().includes('daily');
   const isFree = title.toLowerCase().includes('free');
