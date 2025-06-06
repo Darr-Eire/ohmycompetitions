@@ -23,8 +23,8 @@
       "@data/*": ["data/*"],
       "@lib/*": ["lib/*"],
       "@utils/*": ["utils/*"],
-      "@models/*": ["../models/*"],
-      "styles/*": ["../styles/*"]
+      "@models/*": ["models/*"],
+      "@styles/*": ["styles/*"]
     }
   },
   "include": [
