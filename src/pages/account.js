@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { usePiAuth } from '@/context/PiAuthContext';
+import { usePiAuth } from '../../context/PiAuthContext';
 import AccountHeader from '@/components/AccountHeader';
 import MyEntriesTable from '@/components/MyEntriesTable';
 import DailyStreakCard from '@/components/DailyStreakCard';

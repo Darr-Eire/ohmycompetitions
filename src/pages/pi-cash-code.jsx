@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { usePiAuth } from '@/context/PiAuthContext';
+import { usePiAuth } from '../../context/PiAuthContext';
 import GhostWinnerLog from '@/components/GhostWinnerLog';
 import ClaimedWinnersLog from '@/components/ClaimedWinnersLog';
 
