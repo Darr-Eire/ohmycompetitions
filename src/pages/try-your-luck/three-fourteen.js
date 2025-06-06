@@ -84,10 +84,52 @@ export default function VaultProFree() {
     }
   }
 
-  const retry = () => {
-    setRetryUsed(true)
-    setStatus('playing')
+const retry = async () => {
+  if (!window?.Pi?.createPayment) {
+    alert('⚠️ Pi SDK not ready.')
+    return
   }
+  try {
+    window.Pi.createPayment(
+      {
+        amount: RETRY_FEE,
+        memo: 'Vault Pro Retry',
+        metadata: { game: 'vault-pro', attempt: 'retry' },
+      },
+      {
+        onReadyForServerApproval: async (paymentId) => {
+          const res = await fetch('/api/payments/approve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId }),
+          });
+          if (!res.ok) throw new Error(await res.text());
+          console.log('✅ Payment approved');
+        },
+        onReadyForServerCompletion: async (paymentId, txid) => {
+          const res = await fetch('/api/payments/complete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId, txid }),
+          });
+          if (!res.ok) throw new Error(await res.text());
+          console.log('✅ Payment completed');
+          setRetryUsed(true);
+          setStatus('playing');
+        },
+        onCancel: () => console.warn('Payment cancelled'),
+        onError: (err) => {
+          console.error('Payment error:', err);
+          alert('Payment failed');
+        },
+      }
+    )
+  } catch (err) {
+    console.error('Payment failed', err)
+    alert('Payment error')
+  }
+}
+
 
   const reset = () => {
     setStatus('idle')

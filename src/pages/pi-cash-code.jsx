@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePiAuth } from '../context/PiAuthContext';
 import GhostWinnerLog from '../components/GhostWinnerLog';
 import ClaimedWinnersLog from '../components/ClaimedWinnersLog';
-import { loadPiSdk } from '../lib/pi'; // <-- make sure you have this helper
+import { loadPiSdk } from '../lib/pi';
+import BuyTicketButton from '../components/BuyTicketButton';
 
 export default function PiCashCodePage() {
   const { user, login, loading: userLoading } = usePiAuth();
@@ -13,7 +14,6 @@ export default function PiCashCodePage() {
   const ticketPrice = 1.25;
   const totalPrice = (ticketPrice * quantity).toFixed(2);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-  const [sdkReady, setSdkReady] = useState(false);
 
   useEffect(() => {
     const fetchCode = async () => {
@@ -25,12 +25,11 @@ export default function PiCashCodePage() {
   }, []);
 
   useEffect(() => {
-    loadPiSdk(setSdkReady);
+    loadPiSdk(() => {}); // optional
   }, []);
 
   useEffect(() => {
     if (!codeData?.expiresAt) return;
-
     const getRemainingTime = (end) => {
       const total = Date.parse(end) - Date.now();
       const seconds = Math.floor((total / 1000) % 60);
@@ -49,77 +48,7 @@ export default function PiCashCodePage() {
     return () => clearInterval(timer);
   }, [codeData?.expiresAt]);
 
-  const handleConfirmTicket = async () => {
-    if (!user) {
-      alert('⚠️ Please log in with Pi Network first.');
-      return;
-    }
-    if (!sdkReady || typeof window === 'undefined' || !window.Pi) {
-      alert('⚠️ Pi SDK not ready. Make sure you are in the Pi Browser.');
-      return;
-    }
-
-    try {
-      window.Pi.createPayment(
-        {
-          amount: parseFloat(totalPrice),
-          memo: `Pi Cash Code Ticket x${quantity}`,
-          metadata: {
-            type: 'pi-cash-ticket',
-            week: codeData?.weekStart?.split('T')[0],
-            quantity,
-          },
-        },
-        {
-          onReadyForServerApproval: async (paymentId) => {
-            try {
-              const res = await fetch('/api/pi-cash-code/approve', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ paymentId }),
-              });
-              if (!res.ok) throw new Error(await res.text());
-              console.log('[✅] Payment approved on server');
-            } catch (err) {
-              console.error('[ERROR] Approving payment:', err);
-              alert('❌ Server approval failed.');
-            }
-          },
-
-          onReadyForServerCompletion: async (paymentId, txid) => {
-            try {
-              const res = await fetch('/api/pi-cash-code/complete', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ paymentId, txid, week: codeData?.weekStart?.split('T')[0] }),
-              });
-              if (!res.ok) throw new Error(await res.text());
-              const data = await res.json();
-              alert(`✅ Ticket purchased! 🎟️ ID: ${data.ticketId}`);
-            } catch (err) {
-              console.error('[ERROR] Completing payment:', err);
-              alert('❌ Server completion failed.');
-            }
-          },
-
-          onCancel: (paymentId) => {
-            console.warn('[APP] Payment cancelled:', paymentId);
-          },
-
-          onError: (error, payment) => {
-            console.error('[APP] Payment error:', error, payment);
-          },
-        }
-      );
-    } catch (error) {
-      console.error('Payment error:', error);
-      alert('❌ Payment failed or was cancelled.');
-    }
-  };
-
-  if (userLoading) {
-    return <div className="text-white text-center py-10">Loading...</div>;
-  }
+  if (userLoading) return <div className="text-white text-center py-10">Loading...</div>;
 
   if (!user) {
     return (
@@ -164,12 +93,16 @@ export default function PiCashCodePage() {
 
         <p className="text-cyan-300 mt-2 font-semibold text-sm">Total: {totalPrice} π</p>
 
-        <button
-          onClick={handleConfirmTicket}
-          className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold text-lg px-6 py-3 rounded-lg shadow-[0_0_20px_#00ffd5aa] hover:brightness-110 transition"
-        >
-          Enter Now
-        </button>
+        <BuyTicketButton 
+          amount={totalPrice}
+          memo={`Pi Cash Code Ticket x${quantity}`}
+          metadata={{
+            type: 'pi-cash-ticket',
+            week: codeData?.weekStart?.split('T')[0],
+            quantity
+          }}
+          buttonLabel="Enter Now"
+        />
 
         <section className="mt-8 text-center">
           <h2 className="text-1xl font-semi-bold text-black mb-2">How It Works</h2>
