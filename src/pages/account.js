@@ -11,7 +11,6 @@ export default function AccountPage() {
   const [fullName, setFullName] = useState('');
   const [referralCount, setReferralCount] = useState(0);
 
-  // Load Pi user info if available
   useEffect(() => {
     if (!window?.Pi?.getCurrentPioneer) {
       setLoading(false);
@@ -22,10 +21,13 @@ export default function AccountPage() {
       setPiUser(user);
       setLoading(false);
 
-      const storedProfile = JSON.parse(localStorage.getItem(`profile_${user.uid}`) || '{}');
-      setCountry(storedProfile.country || '');
-      setFullName(storedProfile.fullName || '');
-      setReferralCount(storedProfile.referrals || 0);
+      const profile = JSON.parse(localStorage.getItem(`profile_${user.uid}`) || '{}');
+      setCountry(profile.country || '');
+      setFullName(profile.fullName || '');
+
+      // Load referrals
+      const storedCount = parseInt(localStorage.getItem(`referrals_${user.username}`) || '0', 10);
+      setReferralCount(storedCount);
     }).catch(err => {
       console.error(err);
       setLoading(false);
@@ -34,13 +36,14 @@ export default function AccountPage() {
 
   const handleSave = () => {
     if (!piUser) return;
-    const profile = { fullName, country, referrals: referralCount };
+    const profile = { fullName, country };
     localStorage.setItem(`profile_${piUser.uid}`, JSON.stringify(profile));
     alert('✅ Profile saved!');
   };
 
-  if (loading) return <div className="text-white p-10">Loading your account...</div>;
+  const referralUrl = `https://yourapp.com?ref=${piUser?.username}`;
 
+  if (loading) return <div className="text-white p-10">Loading your account...</div>;
   if (!piUser) return (
     <div className="text-white p-10">
       <p>Please log in with Pi Browser to view your account.</p>
@@ -57,7 +60,6 @@ export default function AccountPage() {
         <div className="space-y-3">
           <div><span className="font-bold">Username:</span> {piUser.username}</div>
           <div><span className="font-bold">User ID:</span> {piUser.uid}</div>
-          <div><span className="font-bold">Joined:</span> {new Date().toLocaleDateString()}</div>
         </div>
 
         <div className="space-y-4">
@@ -73,8 +75,21 @@ export default function AccountPage() {
         </div>
 
         <div className="pt-4 border-t border-white/20 text-sm">
-          <p><strong>Referrals Earned:</strong> {referralCount}</p>
-          <p><strong>Competitions Entered:</strong> (future: link to history)</p>
+          <h3 className="font-bold text-cyan-300 mb-2">Referral Program</h3>
+
+          <div className="bg-white/10 p-3 rounded text-center">
+            <p>Your link:</p>
+            <div className="bg-black p-2 rounded text-sm break-all">{referralUrl}</div>
+            <button className="mt-3 px-4 py-2 bg-cyan-500 rounded text-black font-bold"
+              onClick={() => { navigator.clipboard.writeText(referralUrl); alert('Copied!'); }}>
+              Copy Link
+            </button>
+          </div>
+
+          <div className="mt-4">
+            <p className="font-bold text-green-400">Total Referrals: {referralCount}</p>
+            <p>Each referral earns 1 bonus entry for both you and your friend.</p>
+          </div>
         </div>
 
         <div className="text-center pt-4">

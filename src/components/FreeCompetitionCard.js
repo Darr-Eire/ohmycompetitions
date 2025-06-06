@@ -50,11 +50,18 @@ export default function FreeCompetitionCard({ comp, title, prize, userHandle }) 
     }
   }, [comp.slug]);
 
-  const handleClaimFreeTicket = () => {
-    localStorage.setItem(`free_claim_${comp.slug}`, true);
-    setHasClaimed(true);
-    alert('✅ You successfully claimed your free ticket!');
-  };
+ const handleClaimFreeTicket = () => {
+  localStorage.setItem(`free_claim_${comp.slug}`, true);
+  setHasClaimed(true);
+  alert('✅ You successfully claimed your free ticket!');
+
+  // ✅ STEP 3 — Referral Logic
+  const referrer = localStorage.getItem('referral_user');
+  if (referrer) {
+    const prev = parseInt(localStorage.getItem(`referrals_${referrer}`) || '0', 10);
+    localStorage.setItem(`referrals_${referrer}`, prev + 1);
+  }
+};
 
   useEffect(() => {
     const referrals = parseInt(localStorage.getItem(`referrals_${comp.slug}`) || '0', 10);
