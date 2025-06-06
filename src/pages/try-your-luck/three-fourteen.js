@@ -1,17 +1,25 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Confetti from 'react-confetti'
 import { useWindowSize } from '@uidotdev/usehooks'
-import { updateDailyStreak, getStreak } from 'lib/streak'
 import Link from 'next/link'
 
-const initialBoard = [
-  { name: 'Alice', result: '🏆 Perfect!', time: Date.now() - 2 * 60e3 },
-  { name: 'Bob', result: '❌ 3.12s', time: Date.now() - 5 * 60e3 },
-  { name: 'Charlie', result: '❌ 3.20s', time: Date.now() - 20 * 60e3 },
+// Levels & prize logic
+const levels = [
+  { name: 'Daily Free', fee: 0, prize: 5 },
+  { name: 'Level 1', fee: 0.50, prize: 0.50 * 5 },
+  { name: 'Level 2', fee: 1.00, prize: 1.00 * 5 },
+  { name: 'Level 3', fee: 2.00, prize: 2.00 * 5 },
 ]
 
+// Recent winners list (initial data)
+const initialWinners = [
+  { name: 'Alice', prize: 10, time: Date.now() - 5 * 60e3 },
+  { name: 'Bob', prize: 5, time: Date.now() - 15 * 60e3 },
+]
+
+// Format time difference
 const fmtRelative = ms => {
   const sec = Math.floor(ms / 1000)
   if (sec < 60) return `${sec}s ago`
@@ -20,21 +28,29 @@ const fmtRelative = ms => {
   return `${Math.floor(min / 60)}h ago`
 }
 
-export default function ThreeFourteenGame() {
-  const canvasRef = useRef(null)
+export default function PiGame() {
   const [running, setRunning] = useState(false)
   const [time, setTime] = useState(0)
   const [result, setResult] = useState('')
-  const [board, setBoard] = useState(initialBoard)
-  const [retryAvailable, setRetryAvailable] = useState(false)
+  const [winners, setWinners] = useState(initialWinners)
+  const [playedFreeToday, setPlayedFreeToday] = useState(false)
+  const [freeLocked, setFreeLocked] = useState(false)
+  const [selectedLevel, setSelectedLevel] = useState(0)
   const intervalRef = useRef(null)
   const { width, height } = useWindowSize()
 
   useEffect(() => {
-    if (localStorage.getItem('threeFourteenPlayed') === new Date().toDateString()) {
-      setResult('⏳ You already played today!')
+    const todayKey = new Date().toDateString()
+    if (localStorage.getItem('piGamePlayed') === todayKey) {
+      setPlayedFreeToday(true)
     }
   }, [])
+
+  const savePlayedToday = () => {
+    const todayKey = new Date().toDateString()
+    localStorage.setItem('piGamePlayed', todayKey)
+    setPlayedFreeToday(true)
+  }
 
   useEffect(() => {
     if (!running) return
@@ -47,175 +63,171 @@ export default function ThreeFourteenGame() {
   const stop = () => {
     clearInterval(intervalRef.current)
     setRunning(false)
-    localStorage.setItem('threeFourteenPlayed', new Date().toDateString())
 
-    const diff = Math.abs(3.14 - time)
-    const outcome = diff <= 0.05 ? '🏆 Perfect!' : `❌ ${time.toFixed(2)}s`
-    if (diff <= 0.05) updateDailyStreak()
-    setRetryAvailable(diff > 0.05 && diff <= 0.15)
-
-    setResult(outcome)
-    setBoard(prev => [
-      { name: 'You', result: outcome, time: Date.now() },
-      ...prev,
-    ].slice(0, 10))
+    if (time.toFixed(2) === "3.14") {
+      const prize = levels[selectedLevel].prize
+      setResult(`🏆 Perfect! You won ${prize} π`)
+      addWinner({ name: 'You', prize, time: Date.now() })
+    } else {
+      if (selectedLevel === 0) {
+        setResult('Unlucky! Try again tomorrow.')
+      } else {
+        setResult('Unlucky! Try again.')
+      }
+    }
   }
 
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    const size = 300
-    canvas.width = size
-    canvas.height = size
-    let raf
+  const addWinner = (winner) => {
+    setWinners(prev => [winner, ...prev].slice(0, 10))
+  }
 
-    const draw = () => {
-      ctx.clearRect(0, 0, size, size)
-
-      const bg = ctx.createLinearGradient(0, 0, 0, size)
-      bg.addColorStop(0, '#1E3A8A')
-      bg.addColorStop(1, '#2563eb')
-      ctx.fillStyle = bg
-      ctx.fillRect(0, 0, size, size)
-
-      ctx.save()
-      ctx.translate(size / 2, size / 2)
-      ctx.strokeStyle = 'rgba(255,255,255,0.4)'
-      ctx.lineWidth = 2
-      for (let i = 0; i < 60; i++) {
-        const len = i % 5 ? 6 : 12
-        ctx.beginPath()
-        ctx.moveTo(0, -size / 2 + 20)
-        ctx.lineTo(0, -size / 2 + 20 + len)
-        ctx.stroke()
-        ctx.rotate((2 * Math.PI) / 60)
+  const startAttempt = () => {
+    if (selectedLevel === 0) {
+      if (!playedFreeToday) {
+        savePlayedToday()
+        resetGame()
+        setRunning(true)
+      } else {
+        alert('You already used today’s free play.')
       }
-      ctx.restore()
-
-      ctx.save()
-      ctx.translate(size / 2, size / 2)
-      const angle = (time % 10) / 10 * 2 * Math.PI - Math.PI / 2
-      ctx.rotate(angle)
-      ctx.fillStyle = '#ffa726'
-      ctx.beginPath()
-      ctx.moveTo(-4, 0)
-      ctx.lineTo(4, 0)
-      ctx.lineTo(2, -size * 0.35)
-      ctx.lineTo(-2, -size * 0.35)
-      ctx.closePath()
-      ctx.fill()
-      ctx.restore()
-
-      ctx.save()
-      ctx.translate(size / 2, size / 2)
-      ctx.fillStyle = '#fff'
-      ctx.beginPath()
-      ctx.arc(0, 0, 8, 0, 2 * Math.PI)
-      ctx.fill()
-      ctx.restore()
-
-      ctx.fillStyle = '#fff'
-      ctx.font = 'bold 32px Orbitron, monospace'
-      ctx.textAlign = 'center'
-      ctx.fillText(`${time.toFixed(2)}s`, size / 2, size * 0.9)
-
-      raf = requestAnimationFrame(draw)
+    } else {
+      resetGame()
+      setRunning(true)
     }
+  }
 
-    draw()
-    return () => cancelAnimationFrame(raf)
-  }, [time])
+  const resetGame = () => {
+    clearInterval(intervalRef.current)
+    setRunning(false)
+    setTime(0)
+    setResult('')
+  }
 
-  const shareText = result.includes('❌')
-    ? `I got ${result.slice(2)} on 3.14 Challenge!`
-    : `I nailed 3.14s!`
-  const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`
-  const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`
+  const handleLevelChange = (idx) => {
+    if (selectedLevel === 0 && idx !== 0) {
+      setFreeLocked(true)
+    }
+    setSelectedLevel(idx)
+    resetGame()
+  }
 
   return (
-    <main className="app-background flex flex-col items-center px-4 sm:px-6 py-4 text-white">
-      <h1 className="btn-gradient text-white text-3xl font-semibold px-4 py-2 rounded-3xl shadow-lg mb-6">
-        ⏱️ 3.14 Stopwatch<br />Challenge
-      </h1>
+    <main className="app-background min-h-screen p-4 text-white flex flex-col items-center">
+      <div className="max-w-md w-full space-y-4">
 
-      <div className="w-full max-w-md mx-auto space-y-4">
-        <div className="competition-card relative bg-white bg-opacity-10 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-cyan-500 to-blue-600 opacity-30 mix-blend-screen animate-pulse-slow" />
-          <div className="relative z-10 p-4 space-y-4">
-            <canvas ref={canvasRef} className="mx-auto w-64 h-64 rounded-full shadow-inner" />
+        {/* Title */}
+        <div className="competition-top-banner title-gradient mb-4 text-center">
+          3.14 Challenge
+        </div>
 
-            <div className="flex flex-wrap justify-center gap-4">
-              {!running && !result && (
-                <button
-                  onClick={() => { setTime(0); setResult(''); setRunning(true) }}
-                  className="btn-gradient py-2 px-4 text-lg"
-                >
-                  Start
-                </button>
-              )}
-              {running && (
-                <button onClick={stop} className="btn-gradient py-2 px-4 text-lg">
-                  Stop
-                </button>
-              )}
-              {!running && result && (
-                <button onClick={() => window.location.reload()} className="btn-gradient py-2 px-4 text-lg">
-                  Reset
-                </button>
-              )}
-              {!running && result.startsWith('❌') && retryAvailable && (
-                <button
-                  onClick={() => {
-                    // Simulated retry payment
-                    alert('1 π deducted. Retry granted.')
-                    setTime(0)
-                    setResult('')
-                    setRunning(true)
-                  }}
-                  className="bg-yellow-400 text-black font-bold py-2 px-4 rounded shadow hover:brightness-110 transition"
-                >
-                  Retry for 1 π
-                </button>
-              )}
-            </div>
+        {/* Funky Pioneer Message */}
+        <div className="text-center mb-2">
+          <p className="text-xl font-bold text-cyan-300">
+            Can You Beat the Pi Timer?
+          </p>
+          <p className="text-sm text-white mt-1">
+            Hit exactly 3.14s to claim your Pi reward!
+          </p>
+        </div>
 
-            {result && (
-              <div className="text-center space-y-2">
-                <p className="text-lg font-bold">{result}</p>
-                <div className="flex justify-center space-x-4">
-                  <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="underline">
-                    Share on Twitter
-                  </a>
-                  <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="underline">
-                    Share on WhatsApp
-                  </a>
-                </div>
-              </div>
+        {/* Main Card */}
+        <div className="bg-white bg-opacity-10 rounded-2xl shadow-lg p-6 text-center">
+
+          {/* Prize Info */}
+          <div className="mb-4">
+            <p className="text-lg font-semibold text-cyan-300">
+              Playing for {levels[selectedLevel].prize.toFixed(2)} π Prize
+            </p>
+            {selectedLevel === 0 ? (
+              <p className="text-sm text-white">Free Play: Win 5 π</p>
+            ) : (
+              <p className="text-sm text-white">
+                Entry Fee: {levels[selectedLevel].fee.toFixed(2)} π → Win 5X Stake
+              </p>
             )}
-
-            <p className="text-center text-yellow-300">🔥 Streak: {getStreak()} days 🔥</p>
           </div>
-        </div>
 
-        <div className="btn-gradient w-full rounded-3xl shadow-2xl p-4">
-          <h2 className="text-xl font-semibold mb-2 text-white">Live Leaderboard</h2>
-          <ul className="space-y-1 text-sm text-white">
-            {board.map((entry, idx) => (
-              <li key={idx}>
-                {entry.name} {entry.result} · {fmtRelative(Date.now() - entry.time)}
-              </li>
+          {/* Level Selector */}
+          <div className="flex justify-center flex-wrap gap-2 mb-4">
+            {levels.map((level, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleLevelChange(idx)}
+                className={`py-1 px-4 rounded-full text-sm font-semibold ${selectedLevel === idx ? 'bg-cyan-300 text-black' : 'bg-white bg-opacity-20'}`}
+                disabled={(idx === 0 && (playedFreeToday || freeLocked))}
+              >
+                {level.name}
+              </button>
             ))}
-          </ul>
+          </div>
+
+          {/* Timer */}
+          <div className="flex justify-center items-center py-4">
+            <div className="text-6xl font-mono">{time.toFixed(2)}s</div>
+          </div>
+
+          {/* Buttons */}
+          <div className="flex justify-center gap-4">
+            {!running && (
+              <button
+                onClick={startAttempt}
+                className="btn-gradient py-2 px-6 text-lg rounded-full shadow-lg"
+              >
+                Start Play
+              </button>
+            )}
+            {running && (
+              <button
+                onClick={stop}
+                className="btn-gradient py-2 px-6 text-lg rounded-full shadow-lg"
+              >
+                Stop
+              </button>
+            )}
+          </div>
+
+          {/* Result */}
+          {result && (
+            <div className="mt-4">
+              <p className="text-lg font-bold">{result}</p>
+            </div>
+          )}
         </div>
 
-        <Link
-          href="/try-your-luck"
-          className="btn-gradient mt-6 w-full text-center py-2 rounded-xl text-white font-semibold"
-        >
-          ← Back to Mini Games
+        {/* Terms */}
+        <div className="text-center">
+          <Link href="/terms" className="text-sm text-cyan-300 underline mt-2 block">
+            Terms & Conditions apply
+          </Link>
+        </div>
+
+        {/* Recent Winners */}
+    <div className="bg-white bg-opacity-10 rounded-2xl shadow-lg p-6 text-center">
+  <h2 className="text-xl font-semibold mb-4 text-cyan-300">
+    🏆 Recent Winners
+  </h2>
+  <ul className="space-y-3">
+    {winners.map((entry, idx) => (
+      <li key={idx} className="bg-white bg-opacity-10 rounded-xl py-3 px-4 flex justify-between items-center shadow">
+        <div className="text-left">
+          <p className="font-semibold text-white">{entry.name}</p>
+          <p className="text-sm text-cyan-300">Won {entry.prize} π by hitting 3.14s</p>
+        </div>
+        <div className="text-xs text-white opacity-70">
+          {fmtRelative(Date.now() - entry.time)}
+        </div>
+      </li>
+    ))}
+  </ul>
+</div>
+
+
+        {/* Back Button */}
+        <Link href="/try-your-luck" className="text-sm text-cyan-300 underline mt-2 mx-auto block text-center">
+          Back to Mini Games
         </Link>
 
+        {/* Confetti */}
         {result.includes('🏆') && <Confetti width={width} height={height} />}
       </div>
     </main>

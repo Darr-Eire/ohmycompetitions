@@ -529,3 +529,19 @@ body {
 .shadow-neon {
   box-shadow: 0 0 8px #22d3ee, 0 0 16px #0ff;
 }
+.btn-cyber {
+  background: linear-gradient(90deg, #00f2fe 0%, #4facfe 100%);
+  color: #000;
+  font-weight: bold;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  box-shadow: 0 0 20px #00f2fe;
+  transition: transform 0.1s ease;
+}
+.btn-cyber:hover {
+  transform: scale(1.05);
+}
+
+.neon-text {
+  text-shadow: 0 0 5px #00f2fe, 0 0 10px #00f2fe, 0 0 20px #00f2fe;
+}
