@@ -10,9 +10,9 @@ const RETRY_FEE = 1
 const NUM_DIGITS = 4
 
 const initialWinners = [
-  { name: 'Alice', prize: 50, time: Date.now() - 30 * 60 * 1000, country: '🇬🇧', correctDigits: 4 }, // recent within 1 hour
-  { name: 'Bob', prize: 50, time: Date.now() - 4 * 60 * 60 * 1000, country: '🇺🇸', correctDigits: 3 }, // recent 4 hours ago
-  { name: 'Lina', prize: 50, time: Date.now() - 1 * 24 * 60 * 60 * 1000, country: '🇩🇪', correctDigits: 4 }, 
+  { name: 'Alice', prize: 50, time: Date.now() - 30 * 60 * 1000, country: '🇬🇧', correctDigits: 4 },
+  { name: 'Bob', prize: 50, time: Date.now() - 4 * 60 * 60 * 1000, country: '🇺🇸', correctDigits: 3 },
+  { name: 'Lina', prize: 50, time: Date.now() - 1 * 24 * 60 * 60 * 1000, country: '🇩🇪', correctDigits: 4 },
   { name: 'Marco', prize: 50, time: Date.now() - 2 * 24 * 60 * 60 * 1000, country: '🇮🇹', correctDigits: 3 },
   { name: 'Sofia', prize: 50, time: Date.now() - 3 * 24 * 60 * 60 * 1000, country: '🇪🇸', correctDigits: 4 },
   { name: 'Kenji', prize: 50, time: Date.now() - 5 * 24 * 60 * 60 * 1000, country: '🇯🇵', correctDigits: 3 },
@@ -20,8 +20,6 @@ const initialWinners = [
   { name: 'Sophia', prize: 50, time: Date.now() - 10 * 24 * 60 * 60 * 1000, country: '🇦🇺', correctDigits: 4 },
   { name: 'Lucas', prize: 50, time: Date.now() - 12 * 24 * 60 * 60 * 1000, country: '🇧🇷', correctDigits: 3 },
 ]
-
-
 
 const fmtRelative = (ms) => {
   const sec = Math.floor(ms / 1000)
@@ -31,7 +29,7 @@ const fmtRelative = (ms) => {
   return `${Math.floor(min / 60)}h ago`
 }
 
-export default function VaultProFree() {
+export default function VaultPro() {
   const { width, height } = useWindowSize()
 
   const [code, setCode] = useState([])
@@ -74,23 +72,50 @@ export default function VaultProFree() {
 
     if (isWin) {
       setStatus('success')
-      setWinners([{ name: 'You', prize: PRIZE_POOL, time: Date.now() }, ...winners.slice(0, 9)])
+      setWinners([{ name: 'You', prize: PRIZE_POOL, time: Date.now(), country: '🇬🇧', correctDigits: 4 }, ...winners.slice(0, 9)])
     } else {
       setCorrectIndexes(correct)
       setStatus('hint')
     }
   }
 
-  const retry = () => {
-    setRetryUsed(true)
-    setStatus('playing')
+  const retry = async () => {
+    if (!window?.Pi?.createPayment) {
+      alert('⚠️ Pi SDK not ready.')
+      return
+    }
+    try {
+      window.Pi.createPayment(
+        {
+          amount: RETRY_FEE,
+          memo: 'Vault Pro Retry',
+          metadata: { game: 'vault-pro', attempt: 'retry' },
+        },
+        {
+          onReadyForServerApproval: async (paymentId) => {
+            console.log('Retry paymentId:', paymentId)
+          },
+          onReadyForServerCompletion: async (paymentId, txid) => {
+            console.log('Payment completed:', txid)
+            setRetryUsed(true)
+            setStatus('playing')
+          },
+          onCancel: () => console.warn('Payment cancelled'),
+          onError: (err) => {
+            console.error('Payment error:', err)
+            alert('Payment failed')
+          },
+        }
+      )
+    } catch (err) {
+      console.error('Payment failed', err)
+      alert('Payment error')
+    }
   }
 
-  const reset = () => {
-    setStatus('idle')
-  }
+  const reset = () => setStatus('idle')
 
-  const shareText = `I just cracked the Vault on OhMyCompetitions and won ${PRIZE_POOL} π! Come try your luck.`
+  const shareText = `I just cracked the Vault and won ${PRIZE_POOL} π! Come try your luck.`
   const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`
 
@@ -98,34 +123,21 @@ export default function VaultProFree() {
     <main className="app-background min-h-screen flex flex-col items-center px-4 py-12 text-white">
       <div className="max-w-md w-full space-y-4">
 
-        {/* Header */}
-  <div className="text-center mb-2">
-  <h1 className="title-gradient text-2xl font-bold text-white">Pi Vault</h1>
-</div>
+        <div className="text-center mb-2">
+          <h1 className="title-gradient text-2xl font-bold text-white">Pi Vault</h1>
+        </div>
 
-
-       <p className="text-center text-white text-lg mb-2">
-   Have you got what it takes, Pioneer? <br />
-  Crack the secret <span className="text-white">4-digit vault</span> and win 
-  <span className="text-cyan-300"> {PRIZE_POOL} π</span><br />
-  One free daily chance — one shot at crypto glory 
-</p>
-
+        <p className="text-center text-white text-lg mb-2">
+          Have you got what it takes, Pioneer? Crack the 4-digit vault and win <span className="text-cyan-300">{PRIZE_POOL} π</span> — One free daily chance!
+        </p>
 
         <div className="bg-white bg-opacity-10 rounded-2xl shadow-lg p-6 text-center">
 
           {status === 'idle' && (
-            <>
-             <button 
-  onClick={startGame} 
-  disabled={dailyUsed}
-  className={`w-full py-3 rounded-full text-lg font-semibold text-white ${
-    dailyUsed ? 'bg-gray-500 cursor-not-allowed' : 'btn-gradient'
-  }`}>
-  Free Daily Attempt
-</button>
-
-            </>
+            <button onClick={startGame} disabled={dailyUsed}
+              className={`w-full py-3 rounded-full text-lg font-semibold text-white ${dailyUsed ? 'bg-gray-500 cursor-not-allowed' : 'btn-gradient'}`}>
+              Free Daily Attempt
+            </button>
           )}
 
           {status === 'playing' && (
@@ -140,141 +152,56 @@ export default function VaultProFree() {
                   </div>
                 ))}
               </div>
-              <button onClick={enterCode} className="btn-gradient w-full py-3 text-lg rounded-full shadow-lg">
-                Crack Code
-              </button>
+              <button onClick={enterCode} className="btn-gradient w-full py-3 text-lg rounded-full shadow-lg">Crack Code</button>
             </>
           )}
 
           {status === 'hint' && (
             <>
-              <p className="text-yellow-300 font-semibold text-lg mb-3">
-                Close Pioneer Correct digits shown:
-              </p>
+              <p className="text-yellow-300 font-semibold text-lg mb-3">Close Pioneer! Correct digits shown:</p>
               <div className="flex justify-center gap-4 mb-4">
                 {digits.map((d, i) => (
-                  <div key={i}
-                    className={`w-14 h-14 flex justify-center items-center rounded-full text-2xl font-bold ${
-                      correctIndexes[i] ? 'bg-green-400 text-black' : 'bg-red-400 text-black'
-                    }`}>
+                  <div key={i} className={`w-14 h-14 flex justify-center items-center rounded-full text-2xl font-bold ${correctIndexes[i] ? 'bg-green-400 text-black' : 'bg-red-400 text-black'}`}>
                     {d}
                   </div>
                 ))}
               </div>
 
-        {!retryUsed ? (
-  <button
-    onClick={async () => {
-      if (!window?.Pi?.createPayment) {
-        alert('⚠️ Pi SDK not ready.');
-        return;
-      }
-      try {
-        window.Pi.createPayment(
-          {
-            amount: RETRY_FEE,
-            memo: 'Vault Pro Retry',
-            metadata: { game: 'vault-pro', attempt: 'retry' },
-          },
-          {
-            onReadyForServerApproval: async (paymentId) => {
-              // optional: approve on server if needed
-              console.log('Retry paymentId:', paymentId);
-            },
-            onReadyForServerCompletion: async (paymentId, txid) => {
-              console.log('Payment completed with txid:', txid);
-              setRetryUsed(true);
-              setStatus('playing');
-            },
-            onCancel: () => {
-              console.warn('Payment cancelled');
-            },
-            onError: (error) => {
-              console.error('Payment error:', error);
-              alert('Payment failed');
-            },
-          }
-        );
-      } catch (err) {
-        console.error('Pi payment failed', err);
-        alert('Payment error');
-      }
-    }}
-    className="btn-gradient w-full py-3 text-lg rounded-full shadow-lg"
-  >
-    {RETRY_FEE} π for Retry
-  </button>
-) : (
-  <>
-    <p className="text-red-400 font-semibold mb-2">
-      The Vault stays locked...See you tomorrow Pioneer 🚀
-    </p>
-    <button onClick={reset} className="btn-gradient w-full py-3">Back to Menu</button>
-  </>
-)}
-
+              {!retryUsed ? (
+                <button onClick={retry} className="btn-gradient w-full py-3 text-lg rounded-full shadow-lg">
+                  Pay {RETRY_FEE} π for Retry
+                </button>
+              ) : (
+                <>
+                  <p className="text-red-400 font-semibold mb-2">The Vault stays locked... See you tomorrow Pioneer 🚀</p>
+                  <button onClick={reset} className="btn-gradient w-full py-3">Back to Menu</button>
+                </>
+              )}
+            </>
+          )}
 
           {status === 'success' && (
             <>
               <Confetti width={width} height={height} />
-              <p className="text-green-400 font-bold text-xl mb-4">
-                 You cracked the Vault & won {PRIZE_POOL} π!
-              </p>
+              <p className="text-green-400 font-bold text-xl mb-4">You cracked the Vault & won {PRIZE_POOL} π!</p>
               <div className="flex justify-center space-x-4 mb-4">
-                <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="underline">
-                  Share on Twitter
-                </a>
-                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="underline">
-                  Share on WhatsApp
-                </a>
+                <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="underline">Share on Twitter</a>
+                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="underline">Share on WhatsApp</a>
               </div>
               <button onClick={reset} className="btn-gradient w-full py-3">Play Again Tomorrow</button>
             </>
           )}
+
         </div>
 
-{/* Recent Winners - Scrolling List */}
-<div className="bg-white bg-opacity-10 rounded-2xl shadow-lg p-6 text-center overflow-hidden">
-  <h2 className="title-gradient text-2xl font-bold mb-4">Recent Vault Winners</h2>
-
-  <div className="relative h-48 overflow-hidden">
-    <div className="absolute top-0 left-0 w-full animate-scroll-y space-y-3">
-      {winners.concat(winners).map((entry, i) => (
-        <div key={i} className="text-sm text-white flex justify-center items-center space-x-2">
-          <span>🏆 {entry.country} {entry.name}</span>
-          <span>won {entry.prize} π</span>
-          <span>Hit {entry.correctDigits}/4</span>
-          <span>· {fmtRelative(Date.now() - entry.time)}</span>
-        </div>
-      ))}
-    </div>
-  </div>
-
-  <style jsx>{`
-    @keyframes scrollY {
-      0% { transform: translateY(0%); }
-      100% { transform: translateY(-50%); }
-    }
-    .animate-scroll-y {
-      animation: scrollY 8s linear infinite;
-    }
-  `}</style>
-</div>
-
-
-
-
-        {/* T&Cs Link */}
-        <div className="text-center">
-          <Link href="/terms/vault-pro-plus" className="text-sm text-cyan-300 underline my-4 block">
-            Pi Vault Terms & Conditions
-          </Link>
+        <div className="text-center mt-6">
+          <Link href="/terms/vault-pro-plus" className="text-sm text-cyan-300 underline">Pi Vault Terms & Conditions</Link>
         </div>
 
-        {/* Back Button */}
-        <Link href="/try-your-luck" className="text-sm text-cyan-300 underline mt-2 mx-auto block text-center">
+        <Link href="/try-your-luck" className="text-sm text-cyan-300 underline block text-center mt-2">
           Back to Mini Games
         </Link>
+
       </div>
     </main>
   )
