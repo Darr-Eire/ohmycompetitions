@@ -91,15 +91,20 @@ export default function PiCashCodePage() {
           <button onClick={() => setQuantity((prev) => prev + 1)} className="bg-cyan-500 text-black font-bold px-4 py-1 rounded-full hover:brightness-110">+</button>
         </div>
 
-        <p className="text-cyan-300 mt-2 font-semibold text-sm">Total: {totalPrice} π</p>
+       
 
-        {codeData?.weekStart && (
-          <BuyTicketButton 
-            competitionSlug={`pi-cash-code-${codeData.weekStart}`}
-            entryFee={ticketPrice}
-            quantity={quantity}
-          />
-        )}
+ <p className="text-cyan-300 mt-2 font-semibold text-sm">Total: {totalPrice} π</p>
+
+{!codeData ? (
+  <div className="text-white">Loading payment options...</div>
+) : (
+  <BuyTicketButton 
+    competitionSlug={`pi-cash-code-${codeData.weekStart}`}
+    entryFee={ticketPrice}
+    quantity={quantity}
+  />
+)}
+
 
         <section className="mt-8 text-center">
           <h2 className="text-1xl font-semi-bold text-black mb-2">How It Works</h2>
