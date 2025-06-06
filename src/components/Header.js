@@ -62,6 +62,14 @@ export default function Header() {
   const [sdkReady, setSdkReady] = useState(false);
   const [user, setUser] = useState(null);
 
+  // On first mount, load user from localStorage if exists
+  useEffect(function () {
+    const storedUser = localStorage.getItem('piUser');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
   useEffect(function () {
     loadPiSdk(setSdkReady);
   }, []);
@@ -97,6 +105,7 @@ export default function Header() {
       const scopes = ['username', 'payments'];
       const result = await window.Pi.authenticate(scopes);
       setUser(result.user);
+      localStorage.setItem('piUser', JSON.stringify(result.user)); // <-- persist user in localStorage
     } catch (err) {
       console.error('Pi authentication failed', err);
       alert('Login failed.');
