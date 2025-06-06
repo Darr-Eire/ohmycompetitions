@@ -1,18 +1,29 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useState, useEffect } from 'react'
 import Confetti from 'react-confetti'
 import { useWindowSize } from '@uidotdev/usehooks'
 import Link from 'next/link'
 
-// Mock initial winners
-const initialBoard = [
-  { name: 'Alice', time: Date.now() - 2 * 60e3 },
-  { name: 'Bob',   time: Date.now() - 5 * 60e3 },
-  { name: 'Charlie', time: Date.now() - 20 * 60e3 },
+const PRIZE_POOL = 50
+const RETRY_FEE = 1
+const NUM_DIGITS = 4
+
+const initialWinners = [
+  { name: 'Alice', prize: 50, time: Date.now() - 30 * 60 * 1000, country: '🇬🇧', correctDigits: 4 }, // recent within 1 hour
+  { name: 'Bob', prize: 50, time: Date.now() - 4 * 60 * 60 * 1000, country: '🇺🇸', correctDigits: 3 }, // recent 4 hours ago
+  { name: 'Lina', prize: 50, time: Date.now() - 1 * 24 * 60 * 60 * 1000, country: '🇩🇪', correctDigits: 4 }, 
+  { name: 'Marco', prize: 50, time: Date.now() - 2 * 24 * 60 * 60 * 1000, country: '🇮🇹', correctDigits: 3 },
+  { name: 'Sofia', prize: 50, time: Date.now() - 3 * 24 * 60 * 60 * 1000, country: '🇪🇸', correctDigits: 4 },
+  { name: 'Kenji', prize: 50, time: Date.now() - 5 * 24 * 60 * 60 * 1000, country: '🇯🇵', correctDigits: 3 },
+  { name: 'Ahmed', prize: 50, time: Date.now() - 7 * 24 * 60 * 60 * 1000, country: '🇪🇬', correctDigits: 3 },
+  { name: 'Sophia', prize: 50, time: Date.now() - 10 * 24 * 60 * 60 * 1000, country: '🇦🇺', correctDigits: 4 },
+  { name: 'Lucas', prize: 50, time: Date.now() - 12 * 24 * 60 * 60 * 1000, country: '🇧🇷', correctDigits: 3 },
 ]
 
-const fmtRelative = ms => {
+
+
+const fmtRelative = (ms) => {
   const sec = Math.floor(ms / 1000)
   if (sec < 60) return `${sec}s ago`
   const min = Math.floor(sec / 60)
@@ -20,182 +31,159 @@ const fmtRelative = ms => {
   return `${Math.floor(min / 60)}h ago`
 }
 
-export default function HackTheVaultPage() {
-  const canvasRef = useRef(null)
-  const [status, setStatus] = useState('idle')
-  const [countdown, setCountdown] = useState(60)
-  const [digits, setDigits] = useState([0, 0, 0])
-  const [board, setBoard] = useState(initialBoard)
+export default function VaultProFree() {
   const { width, height } = useWindowSize()
-  const target = [4, 2, 9]
 
-  const shareText = status === 'won'
-    ? `I hacked the vault in the Hack The Vault challenge!`
-    : status === 'lost'
-      ? `I tried hacking the vault in the Hack The Vault challenge!`
-      : ''
-  const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`
-  const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`
-
-  const changeDigit = (i, delta) => {
-    if (status !== 'hacking') return
-    setDigits(d => {
-      const nd = [...d]
-      nd[i] = (nd[i] + delta + 10) % 10
-      return nd
-    })
-  }
-
-  const enterCode = () => {
-    if (status !== 'hacking') return
-    if (digits.every((d, i) => d === target[i])) {
-      setStatus('won')
-    } else {
-      setStatus('shake')
-      setTimeout(() => setStatus('hacking'), 300)
-    }
-  }
+  const [code, setCode] = useState([])
+  const [digits, setDigits] = useState(Array(NUM_DIGITS).fill(0))
+  const [status, setStatus] = useState('idle')
+  const [correctIndexes, setCorrectIndexes] = useState([])
+  const [retryUsed, setRetryUsed] = useState(false)
+  const [dailyUsed, setDailyUsed] = useState(false)
+  const [winners, setWinners] = useState(initialWinners)
 
   useEffect(() => {
-    if (status === 'won') {
-      setBoard(prev => [
-        { name: 'You', time: Date.now() },
-        ...prev
-      ].slice(0, 10))
+    if (status === 'playing') {
+      const newCode = Array.from({ length: NUM_DIGITS }, () => Math.floor(Math.random() * 10))
+      setCode(newCode)
     }
   }, [status])
 
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    const boxW = 350, boxH = 120
-    canvas.width = boxW
-    canvas.height = boxH + 40
-    canvas.style.width = '100%'
-    canvas.style.height = `${((boxH + 40) / boxW) * 100}%`
+  const adjustDigit = (i, delta) => {
+    setDigits((prev) => {
+      const updated = [...prev]
+      updated[i] = (updated[i] + delta + 10) % 10
+      return updated
+    })
+  }
 
-    let raf, countdownId, shakeProg = 0
-    const easeOut = t => t * (2 - t)
-
-    const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-      const bg = ctx.createLinearGradient(0, 0, 0, canvas.height)
-      bg.addColorStop(0, '#1E3A8A')
-      bg.addColorStop(1, '#2563eb')
-      ctx.fillStyle = bg
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-      ctx.fillStyle = '#fff'
-      ctx.font = '20px monospace'
-      ctx.textAlign = 'center'
-      ctx.fillText('HACK THE VAULT', canvas.width / 2, 24)
-      if (status === 'hacking') {
-        const flash = countdown < 10 && Math.floor(performance.now() / 500) % 2
-        ctx.fillStyle = flash ? '#fee' : '#fff'
-        ctx.font = '16px monospace'
-        ctx.fillText(`Time: ${countdown}s`, canvas.width / 2, 44)
-      }
-
-      const bx = (canvas.width - boxW) / 2
-      let by = 50
-      let ox = bx, oy = by
-      if (status === 'shake' && shakeProg < 1) {
-        const s = easeOut(shakeProg) * 6
-        ox += (Math.random() * 2 - 1) * s
-        oy += (Math.random() * 2 - 1) * s
-        shakeProg += 0.1
-      }
-
-      ctx.save()
-      ctx.shadowColor = 'rgba(0,255,255,0.4)'
-      ctx.shadowBlur = 15
-      ctx.strokeStyle = '#00ffd5'
-      ctx.lineWidth = 4
-      ctx.strokeRect(ox, oy, boxW, boxH)
-      ctx.restore()
-
-      const dw = boxW / digits.length
-      const cy = oy + boxH / 2
-      digits.forEach((d, i) => {
-        const cx = ox + i * dw + dw / 2
-        const grad = ctx.createRadialGradient(cx, cy, 8, cx, cy, dw * 0.4)
-        grad.addColorStop(0, '#00ffd5')
-        grad.addColorStop(1, '#0077ff')
-        ctx.fillStyle = grad
-        ctx.beginPath()
-        ctx.arc(cx, cy, dw * 0.4, 0, 2 * Math.PI)
-        ctx.fill()
-        ctx.strokeStyle = '#39ff14'
-        ctx.lineWidth = 2
-        ctx.beginPath()
-        ctx.arc(cx, cy, dw * 0.4, 0, 2 * Math.PI)
-        ctx.stroke()
-
-        ctx.fillStyle = '#fff'
-        ctx.font = '24px monospace'
-        ctx.textAlign = 'center'
-        ctx.fillText(d, cx, cy + 8)
-      })
-
-      ctx.fillStyle = '#fff'
-      ctx.beginPath()
-      ctx.moveTo(canvas.width / 2 - 10, oy - 5)
-      ctx.lineTo(canvas.width / 2 + 10, oy - 5)
-      ctx.lineTo(canvas.width / 2, oy + 10)
-      ctx.closePath()
-      ctx.fill()
-
-      raf = requestAnimationFrame(draw)
+  const startGame = () => {
+    if (dailyUsed) {
+      alert("You’ve already used your free daily attempt.")
+      return
     }
-    draw()
+    setDigits(Array(NUM_DIGITS).fill(0))
+    setRetryUsed(false)
+    setStatus('playing')
+    setDailyUsed(true)
+  }
 
-    if (status === 'hacking') {
-      countdownId = setInterval(() => {
-        setCountdown(c => {
-          if (c <= 1) {
-            clearInterval(countdownId)
-            setStatus('lost')
-            return 0
-          }
-          return c - 1
-        })
-      }, 1000)
-    }
+  const enterCode = () => {
+    const correct = digits.map((d, idx) => d === code[idx])
+    const isWin = correct.every(Boolean)
 
-    return () => {
-      cancelAnimationFrame(raf)
-      clearInterval(countdownId)
+    if (isWin) {
+      setStatus('success')
+      setWinners([{ name: 'You', prize: PRIZE_POOL, time: Date.now() }, ...winners.slice(0, 9)])
+    } else {
+      setCorrectIndexes(correct)
+      setStatus('hint')
     }
-  }, [digits, status, countdown])
+  }
+
+  const retry = () => {
+    setRetryUsed(true)
+    setStatus('playing')
+  }
+
+  const reset = () => {
+    setStatus('idle')
+  }
+
+  const shareText = `I just cracked the Vault on OhMyCompetitions and won ${PRIZE_POOL} π! Come try your luck.`
+  const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`
+  const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`
 
   return (
     <main className="app-background min-h-screen flex flex-col items-center px-4 py-12 text-white">
-      <div className="w-full max-w-md mx-auto space-y-4">
-        <div className="competition-card bg-white bg-opacity-10 rounded-2xl shadow-lg w-full text-center p-6">
-          <div className="title-gradient mb-4 text-2xl">🔐 Hack the Vault</div>
-          {status === 'won' && <Confetti width={width} height={height} />}
+      <div className="max-w-md w-full space-y-4">
+
+        {/* Header */}
+  <div className="text-center mb-2">
+  <h1 className="title-gradient text-2xl font-bold text-white">Pi Vault</h1>
+</div>
+
+
+       <p className="text-center text-white text-lg mb-2">
+   Have you got what it takes, Pioneer? <br />
+  Crack the secret <span className="text-white">4-digit vault</span> and win 
+  <span className="text-cyan-300"> {PRIZE_POOL} π</span><br />
+  One free daily chance — one shot at crypto glory 
+</p>
+
+
+        <div className="bg-white bg-opacity-10 rounded-2xl shadow-lg p-6 text-center">
+
           {status === 'idle' && (
-            <button
-              className="btn-gradient w-full mb-4 py-2"
-              onClick={() => {
-                setStatus('hacking')
-                setCountdown(60)
-                setDigits([0, 0, 0])
-              }}
-            >
-              Start Hacking
-            </button>
+            <>
+             <button 
+  onClick={startGame} 
+  disabled={dailyUsed}
+  className={`w-full py-3 rounded-full text-lg font-semibold text-white ${
+    dailyUsed ? 'bg-gray-500 cursor-not-allowed' : 'btn-gradient'
+  }`}>
+  Free Daily Attempt
+</button>
+
+            </>
           )}
-          {(status === 'won' || status === 'lost') && (
-            <div className="text-center space-y-2 mb-4">
-              <p className={`text-lg font-bold ${status === 'won' ? 'text-green-400' : 'text-red-400'}`}>
-                {status === 'won'
-                  ? '🎉 Vault Opened! You Win!'
-                  : '💥 Time’s up. You Lost.'}
+
+          {status === 'playing' && (
+            <>
+              <p className="text-yellow-300 font-semibold text-lg mb-4">Crack Code:</p>
+              <div className="flex justify-center gap-4 mb-6">
+                {digits.map((digit, i) => (
+                  <div key={i} className="flex flex-col items-center space-y-2">
+                    <button onClick={() => adjustDigit(i, 1)} className="btn-gradient w-10 h-10 rounded-full text-lg">▲</button>
+                    <div className="text-3xl font-mono">{digit}</div>
+                    <button onClick={() => adjustDigit(i, -1)} className="btn-gradient w-10 h-10 rounded-full text-lg">▼</button>
+                  </div>
+                ))}
+              </div>
+              <button onClick={enterCode} className="btn-gradient w-full py-3 text-lg rounded-full shadow-lg">
+                Crack Code
+              </button>
+            </>
+          )}
+
+          {status === 'hint' && (
+            <>
+              <p className="text-yellow-300 font-semibold text-lg mb-3">
+                Close Pioneer Correct digits shown:
               </p>
-              <div className="flex justify-center space-x-4">
+              <div className="flex justify-center gap-4 mb-4">
+                {digits.map((d, i) => (
+                  <div key={i}
+                    className={`w-14 h-14 flex justify-center items-center rounded-full text-2xl font-bold ${
+                      correctIndexes[i] ? 'bg-green-400 text-black' : 'bg-red-400 text-black'
+                    }`}>
+                    {d}
+                  </div>
+                ))}
+              </div>
+
+              {!retryUsed ? (
+                <button onClick={retry} className="btn-gradient w-full py-3 text-lg rounded-full shadow-lg">
+                   {RETRY_FEE} π for Retry
+                </button>
+              ) : (
+                <>
+                  <p className="text-red-400 font-semibold mb-2">
+                    The Vault stays locked...See you tomorrow Pioneer 🚀
+                  </p>
+                  <button onClick={reset} className="btn-gradient w-full py-3">Back to Menu</button>
+                </>
+              )}
+            </>
+          )}
+
+          {status === 'success' && (
+            <>
+              <Confetti width={width} height={height} />
+              <p className="text-green-400 font-bold text-xl mb-4">
+                 You cracked the Vault & won {PRIZE_POOL} π!
+              </p>
+              <div className="flex justify-center space-x-4 mb-4">
                 <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="underline">
                   Share on Twitter
                 </a>
@@ -203,44 +191,52 @@ export default function HackTheVaultPage() {
                   Share on WhatsApp
                 </a>
               </div>
-            </div>
-          )}
-          <canvas ref={canvasRef} className="mx-auto w-full rounded-lg shadow-md mb-4" />
-          {status === 'hacking' && (
-            <div className="flex justify-center gap-4 mb-4">
-              {digits.map((d, i) => (
-                <div key={i} className="flex flex-col items-center">
-                  <button onClick={() => changeDigit(i, +1)} className="bg-blue-600 hover:bg-blue-700 text-white w-10 h-10 rounded">▲</button>
-                  <div className="text-2xl my-1">{d}</div>
-                  <button onClick={() => changeDigit(i, -1)} className="bg-blue-600 hover:bg-blue-700 text-white w-10 h-10 rounded">▼</button>
-                </div>
-              ))}
-            </div>
-          )}
-          {status === 'hacking' && (
-            <button className="btn-gradient w-full py-2" onClick={enterCode}>
-              Enter Code
-            </button>
+              <button onClick={reset} className="btn-gradient w-full py-3">Play Again Tomorrow</button>
+            </>
           )}
         </div>
 
-        <div className="btn-gradient w-full rounded-3xl shadow-2xl p-4">
-          <h2 className="text-xl font-semibold mb-2 text-white">Live Leaderboard</h2>
-          <ul className="space-y-1 text-sm text-white">
-            {board.map((entry, i) => (
-              <li key={i}>
-                {entry.name} opened the vault {fmtRelative(Date.now() - entry.time)}
-              </li>
-            ))}
-          </ul>
+{/* Recent Winners - Scrolling List */}
+<div className="bg-white bg-opacity-10 rounded-2xl shadow-lg p-6 text-center overflow-hidden">
+  <h2 className="title-gradient text-2xl font-bold mb-4">Recent Vault Winners</h2>
+
+  <div className="relative h-48 overflow-hidden">
+    <div className="absolute top-0 left-0 w-full animate-scroll-y space-y-3">
+      {winners.concat(winners).map((entry, i) => (
+        <div key={i} className="text-sm text-white flex justify-center items-center space-x-2">
+          <span>🏆 {entry.country} {entry.name}</span>
+          <span>won {entry.prize} π</span>
+          <span>Hit {entry.correctDigits}/4</span>
+          <span>· {fmtRelative(Date.now() - entry.time)}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <style jsx>{`
+    @keyframes scrollY {
+      0% { transform: translateY(0%); }
+      100% { transform: translateY(-50%); }
+    }
+    .animate-scroll-y {
+      animation: scrollY 8s linear infinite;
+    }
+  `}</style>
+</div>
+
+
+
+
+        {/* T&Cs Link */}
+        <div className="text-center">
+          <Link href="/terms/vault-pro-plus" className="text-sm text-cyan-300 underline my-4 block">
+            Pi Vault Terms & Conditions
+          </Link>
         </div>
 
         {/* Back Button */}
-        <Link
-          href="/try-your-luck"
-          className="btn-gradient w-full max-w-md text-center py-2 rounded-xl text-white font-semibold"
-        >
-          ← Back to Mini Games
+        <Link href="/try-your-luck" className="text-sm text-cyan-300 underline mt-2 mx-auto block text-center">
+          Back to Mini Games
         </Link>
       </div>
     </main>
