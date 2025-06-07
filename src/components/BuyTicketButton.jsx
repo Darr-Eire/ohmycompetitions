@@ -31,7 +31,6 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
         },
         {
           onReadyForServerApproval: async (paymentId) => {
-            // Approve payment on your server
             const res = await fetch('/api/payments/approve', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -43,7 +42,6 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
 
           onReadyForServerCompletion: async (paymentId, txid) => {
             try {
-              // Complete payment on your server
               const res = await fetch('/api/payments/complete', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -52,7 +50,7 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
               if (!res.ok) throw new Error(await res.text());
               const data = await res.json();
 
-              // --- Update tickets sold in competitions collection AFTER payment is complete
+              // Update tickets sold after payment success
               const updateRes = await fetch('/api/competitions/buy', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
