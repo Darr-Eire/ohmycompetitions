@@ -7,7 +7,6 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
   const [sdkReady, setSdkReady] = useState(false);
   const [processing, setProcessing] = useState(false);
 
-  // Load Pi SDK on mount
   useEffect(() => {
     loadPiSdk(setSdkReady);
   }, []);
@@ -23,6 +22,12 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
     const totalAmount = parseFloat((entryFee * quantity).toFixed(2));
 
     try {
+      if (!window.Pi || typeof window.Pi.createPayment !== 'function') {
+        alert('⚠️ Pi SDK not ready or unavailable.');
+        setProcessing(false);
+        return;
+      }
+
       window.Pi.createPayment(
         {
           amount: totalAmount,
@@ -50,7 +55,6 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
               if (!res.ok) throw new Error(await res.text());
               const data = await res.json();
 
-              // Update tickets sold after payment success
               const updateRes = await fetch('/api/competitions/buy', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
