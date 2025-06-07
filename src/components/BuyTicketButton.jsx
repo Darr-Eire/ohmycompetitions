@@ -55,6 +55,7 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
               if (!res.ok) throw new Error(await res.text());
               const data = await res.json();
 
+              // Update tickets sold after successful payment
               const updateRes = await fetch('/api/competitions/buy', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

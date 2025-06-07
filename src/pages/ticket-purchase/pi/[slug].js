@@ -115,30 +115,38 @@ export default function PiTicketPage() {
             console.log('✅ Payment approved');
           },
           onReadyForServerCompletion: async (paymentId, txid) => {
-            const res = await fetch('/api/payments/complete', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ paymentId, txid }),
-            });
-            if (!res.ok) throw new Error(await res.text());
-            console.log('✅ Payment completed');
-            alert('✅ Entry confirmed! Good luck!');
+            try {
+              const res = await fetch('/api/payments/complete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ paymentId, txid }),
+              });
+              if (!res.ok) throw new Error(await res.text());
+              console.log('✅ Payment completed');
+              alert('✅ Entry confirmed! Good luck!');
+            } catch (err) {
+              console.error('Error completing payment:', err);
+              alert('❌ Server completion failed. See console.');
+            } finally {
+              setProcessing(false);
+            }
           },
           onCancel: () => {
             console.warn('Payment cancelled');
+            setProcessing(false);
           },
           onError: (err) => {
             console.error('Payment error:', err);
             alert('Payment failed');
+            setProcessing(false);
           },
         }
       );
     } catch (err) {
       console.error(err);
       alert('❌ Something went wrong during payment.');
+      setProcessing(false);
     }
-
-    setProcessing(false);
   };
 
   if (!slug) return null;
@@ -155,24 +163,23 @@ export default function PiTicketPage() {
           {competition.title}
         </h1>
 
-       <section className="text-white text-base max-w-md mx-auto text-left space-y-3">
-  {[
-    ['Prize', competition.prize],
-    ['Entry Fee', `${competition.entryFee} π`],
-    ['Total Tickets', competition.totalTickets.toLocaleString()],
-    ['Tickets Sold', competition.ticketsSold.toLocaleString()],
-    ['Location', competition.location],
-    ['Date', competition.date],
-    ['Time', competition.time],
-    ['Time Left', `${timeLeft.days}d ${timeLeft.hours}h ${timeLeft.minutes}m ${timeLeft.seconds}s`],
-  ].map(([label, value]) => (
-    <div key={label} className="flex justify-between">
-      <span className="font-semibold">{label}</span>
-      <span>{value}</span>
-    </div>
-  ))}
-</section>
-
+        <section className="text-white text-base max-w-md mx-auto text-left space-y-3">
+          {[
+            ['Prize', competition.prize],
+            ['Entry Fee', `${competition.entryFee} π`],
+            ['Total Tickets', competition.totalTickets.toLocaleString()],
+            ['Tickets Sold', competition.ticketsSold.toLocaleString()],
+            ['Location', competition.location],
+            ['Date', competition.date],
+            ['Time', competition.time],
+            ['Time Left', `${timeLeft.days}d ${timeLeft.hours}h ${timeLeft.minutes}m ${timeLeft.seconds}s`],
+          ].map(([label, value]) => (
+            <div key={label} className="flex justify-between">
+              <span className="font-semibold">{label}</span>
+              <span>{value}</span>
+            </div>
+          ))}
+        </section>
 
         <div className="flex justify-center items-center gap-4 mt-6">
           <button
