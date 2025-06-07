@@ -11,7 +11,7 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
     loadPiSdk(setSdkReady);
   }, []);
 
-  const handlePayment = async () => {
+const handlePayment = async () => {
   try {
     // Your payment logic (e.g. Pi.createPayment) should be here, omitted for brevity
 
@@ -34,3 +34,14 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
     alert('❌ Server completion failed. See console.');
   }
 };
+
+
+  return (
+    <button
+      onClick={handlePayment}
+      className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-xl shadow transition"
+    >
+      Confirm Ticket Purchase
+    </button>
+  );
+}
