@@ -45,7 +45,7 @@ export const techItems = [
     imageUrl: '/images/xbox.jpeg',
     theme: 'tech',
   },
-    {
+  {
     comp: {
       slug: 'nintendo-switch',
       entryFee: 0.36,
@@ -73,88 +73,107 @@ export const techItems = [
     imageUrl: '/images/airpods.png',
     theme: 'tech',
   },
- {
-    comp: { slug: 'gamer-pc-bundle' },
+  {
+    comp: {
+      slug: 'gamer-pc-bundle',
+      comingSoon: true,
+    },
     title: 'Gaming PC',
     prize: 'Gamer PC Bundle',
     href: '/competitions/gamer-pc-bundle',
     imageUrl: '/images/bundle.jpeg',
     theme: 'tech',
-    comingSoon: true,
   },
   {
-    comp: { slug: 'electric-bike' },
+    comp: {
+      slug: 'electric-bike',
+      comingSoon: true,
+    },
     title: 'Electric Bike',
     prize: 'Electric Bike',
     href: '/competitions/electric-bike',
     imageUrl: '/images/bike.jpeg',
     theme: 'tech',
-    comingSoon: true,
   },
   {
-    comp: { slug: 'matchday-tickets' },
+    comp: {
+      slug: 'matchday-tickets',
+      comingSoon: true,
+    },
     title: 'Matchday Tickets',
     prize: 'Matchday Tickets',
     href: '/competitions/matchday-tickets',
     imageUrl: '/images/liverpool.jpeg',
     theme: 'tech',
-    comingSoon: true,
   },
   {
-    comp: { slug: 'apple-smart-watch' },
+    comp: {
+      slug: 'apple-smart-watch',
+      comingSoon: true,
+    },
     title: 'Apple Smart Watch',
     prize: 'Apple Smart Watch',
     href: '/competitions/apple-smart-watch',
     imageUrl: '/images/watch.png',
     theme: 'tech',
-    comingSoon: true,
   },
   {
-    comp: { slug: 'gamingchair' },
+    comp: {
+      slug: 'gamingchair',
+      comingSoon: true,
+    },
     title: 'Gaming Chair',
     prize: 'Gaming Chair',
     href: '/competitions/gamingchair',
     imageUrl: '/images/chair.png',
     theme: 'tech',
-    comingSoon: true,
   },
   {
-    comp: { slug: 'macbook-pro' },
+    comp: {
+      slug: 'macbook-pro',
+      comingSoon: true,
+    },
     title: 'MacBook Pro',
     prize: 'MacBook Pro',
     href: '/competitions/macbook-pro',
     imageUrl: '/images/macbook.jpeg',
     theme: 'tech',
-    comingSoon: true,
   },
   {
-    comp: { slug: 'projector' },
+    comp: {
+      slug: 'projector',
+      comingSoon: true,
+    },
     title: 'Mini Projector',
     prize: 'Projector',
     href: '/competitions/projector',
     imageUrl: '/images/projector.png',
     theme: 'tech',
-    comingSoon: true,
   },
   {
-    comp: { slug: 'amazon-firestick' },
+    comp: {
+      slug: 'amazon-firestick',
+      comingSoon: true,
+    },
     title: 'Amazon Fire Stick',
     prize: 'Amazon Fire Stick',
     href: '/competitions/amazon-firestick',
     imageUrl: '/images/stick.jpeg',
     theme: 'tech',
-    comingSoon: true,
   },
   {
-    comp: { slug: 'gopro' },
+    comp: {
+      slug: 'gopro',
+      comingSoon: true,
+    },
     title: 'GoPro',
     prize: 'GoPro Camera',
     href: '/competitions/gopro',
     imageUrl: '/images/gopro.png',
     theme: 'tech',
-    comingSoon: true,
   },
 ];
+
 
 export const premiumItems = [
   {

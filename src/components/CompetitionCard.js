@@ -84,7 +84,7 @@ export default function CompetitionCard({
 
        <p>
   <span className="text-cyan-300 font-semibold">Total Tickets:</span>{' '}
-  {comp?.comingSoon ? 'THB' : total.toLocaleString()}
+  {comp?.comingSoon ? 'TBH' : total.toLocaleString()}
 </p>
 
 

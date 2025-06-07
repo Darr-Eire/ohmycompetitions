@@ -84,7 +84,8 @@ export default function PiLotteryPage() {
                   pickedNumbers.includes(num)
                     ? 'bg-cyan-300 text-black'
                     : 'bg-[#0f172a] border border-cyan-400 text-white'
-                }`}>
+                }`}
+              >
                 {num}
               </button>
             ))}
@@ -96,19 +97,30 @@ export default function PiLotteryPage() {
             🎟️ Picked: {pickedNumbers.join(', ') || 'None yet'}
           </div>
 
-          <BuyTicketButton
-            amount={1.00}
-            memo="Pi Lottery Ticket"
-            metadata={{
-              type: 'pi-lottery-ticket',
-              mainNumbers: pickedNumbers.slice(0, 5),
-              bonusNumber: pickedNumbers[5],
-              countryCode,
-              lotteryType,
-            }}
-            buttonLabel="Pay 1 π & Enter Lottery"
-            disabled={pickedNumbers.length !== DEFAULT_PICK_COUNT}
-          />
+         {pickedNumbers.length === DEFAULT_PICK_COUNT ? (
+  <BuyTicketButton
+    amount={1.00}
+    memo="Pi Lottery Ticket"
+    metadata={{
+      type: 'pi-lottery-ticket',
+      mainNumbers: pickedNumbers.slice(0, 5),
+      bonusNumber: pickedNumbers[5],
+      countryCode,
+      lotteryType,
+    }}
+    buttonLabel="Coming Soon"
+    disabled={true}
+  />
+) : (
+  <button
+    disabled
+    className="mt-4 w-full py-3 rounded-xl font-bold text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] opacity-60 cursor-not-allowed"
+  >
+    Coming Soon
+  </button>
+)}
+
+
         </div>
       </div>
     </div>
