@@ -176,9 +176,7 @@ export const techItems = [
     theme: 'tech',
   },
 ];
-
-export const competitions = [...]; 
-
+ 
 export const premiumItems = [
   {
     comp: {
@@ -414,5 +412,12 @@ export const cryptoGiveawaysItems = [
   },
 ];
 
-
+export const competitions = [
+  ...techItems,
+  ...premiumItems,
+  ...piItems,
+  ...dailyItems,
+  ...freeItems,
+  ...cryptoGiveawaysItems,
+];
 
