@@ -17,7 +17,7 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
       return;
     }
 
-    if (processing) return; // prevent double click
+    if (processing) return; // prevent double clicks
     setProcessing(true);
 
     const totalAmount = parseFloat((entryFee * quantity).toFixed(2));
@@ -29,7 +29,8 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
         return;
       }
 
-      window.Pi.createPayment(
+      // Await this call to properly catch errors (important)
+      await window.Pi.createPayment(
         {
           amount: totalAmount,
           memo: `Entry for ${competitionSlug}`,
