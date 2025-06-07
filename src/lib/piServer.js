@@ -11,3 +11,5 @@ export async function createPiPayment({ amount, memo, metadata }) {
   });
   return payment.paymentUrl || payment.url;
 }
+// piServer.js
+export const verifyPiTransaction = () => { ... }

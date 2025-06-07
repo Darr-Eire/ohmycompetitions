@@ -177,7 +177,7 @@ export const techItems = [
   },
 ];
 
-
+export const competitions = [...]; 
 
 export const premiumItems = [
   {
@@ -349,14 +349,14 @@ export const dailyItems = [
 ];
 
 
-export const competitions = [
+export const freeItems = [
   {
     comp: { 
       slug: 'pi-to-the-moon',
       entryFee: 0,
       totalTickets: 20000,
       ticketsSold: 0,
-      startsAt: '2025-08-20T18:00:00Z',  // <-- ADD THIS
+      startsAt: '2025-08-20T18:00:00Z',
       endsAt: '2025-08-31T18:00:00Z',
       location: 'Online Global Draw'
     },
@@ -366,6 +366,7 @@ export const competitions = [
     theme: 'free'
   }
 ];
+
 
 
 export const cryptoGiveawaysItems = [
