@@ -6,7 +6,7 @@ if (!global.mongoose) {
   global.mongoose = cached;
 }
 
-async function dbConnect() {
+async function connectToDatabase() {
   if (cached.conn) {
     return cached.conn;
   }
@@ -18,7 +18,7 @@ async function dbConnect() {
       throw new Error('Please define the MONGO_DB_URL environment variable');
     }
 
-    mongoose.set('strictQuery', true); // clean up deprecation warnings
+    mongoose.set('strictQuery', true);
 
     cached.promise = mongoose.connect(MONGO_URI, {
       bufferCommands: false,
@@ -29,6 +29,4 @@ async function dbConnect() {
   return cached.conn;
 }
 
-// dbConnect.js
-export const connectToDatabase = () => { ... }
-
+export { connectToDatabase };

@@ -6,7 +6,6 @@ if (!MONGODB_URI) {
   throw new Error('❌ Please define the MONGODB_URI inside .env.local');
 }
 
-// Global caching to prevent creating multiple connections during hot reloads (especially in dev mode)
 let cached = global.mongoose;
 
 if (!cached) {
@@ -29,5 +28,6 @@ export async function connectToDatabase() {
   cached.conn = await cached.promise;
   return cached.conn;
 }
-// mongodb.js
-export const clientPromise = () => { ... }
+
+// This gives you compatible "clientPromise" for old code that imports it
+export const clientPromise = connectToDatabase;

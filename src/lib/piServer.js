@@ -11,5 +11,9 @@ export async function createPiPayment({ amount, memo, metadata }) {
   });
   return payment.paymentUrl || payment.url;
 }
-// piServer.js
-export const verifyPiTransaction = () => { ... }
+
+// Correct export for verifyPiTransaction
+export async function verifyPiTransaction(paymentId) {
+  const payment = await client.getPayment(paymentId);
+  return payment && payment.status === 'completed';
+}
