@@ -1,5 +1,6 @@
-import dbConnect from '@/lib/dbConnect';
-import PiCashCode from '@/models/PiCashCode';
+import dbConnect from '../../lib/dbConnect';
+import PiCashCode from '../../models/PiCashCode';
+
 
 export default async function handler(req, res) {
   await dbConnect();
