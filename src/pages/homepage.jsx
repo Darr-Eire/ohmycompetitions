@@ -62,7 +62,7 @@ export default function HomePage() {
   );
 }
 
-function Section({ title, items, viewMoreHref, viewMoreText = 'View More', extraClass = '' }) {
+function Section({ title, items = [], viewMoreHref, viewMoreText = 'View More', extraClass = '' }) {
   const isDaily = title.toLowerCase().includes('daily');
   const isFree = title.toLowerCase().includes('free');
   const isPi = title.toLowerCase().includes('pi');
@@ -77,11 +77,11 @@ function Section({ title, items, viewMoreHref, viewMoreText = 'View More', extra
       </div>
 
       <div className="centered-carousel lg:hidden">
-        {items.map((item, i) => renderCard(item, i, { isDaily, isFree, isPi, isCrypto }))}
+        {Array.isArray(items) && items.map((item, i) => renderCard(item, i, { isDaily, isFree, isPi, isCrypto }))}
       </div>
 
       <div className="hidden lg:grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-        {items.map((item, i) => renderCard(item, i, { isDaily, isFree, isPi, isCrypto }))}
+        {Array.isArray(items) && items.map((item, i) => renderCard(item, i, { isDaily, isFree, isPi, isCrypto }))}
       </div>
 
       <div className="text-center mt-4">
@@ -95,6 +95,7 @@ function Section({ title, items, viewMoreHref, viewMoreText = 'View More', extra
     </section>
   );
 }
+
 
 function renderCard(item, i, { isDaily, isFree, isPi, isCrypto }) {
   const key = item?.comp?.slug || i;

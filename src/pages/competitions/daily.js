@@ -4,6 +4,18 @@ import Head from 'next/head'
 import DailyCompetitionCard from '@components/DailyCompetitionCard'
 
 const dailyComps = [
+    {
+    comp: {
+      slug: 'daily-jackpot',
+      entryFee: 0.45,
+      totalTickets: 1820,
+      ticketsSold: 0,
+      endsAt: '2025-05-03T23:59:59Z',
+    },
+    title: 'Daily Jackpot',
+    prize: '750 π',
+    fee: '0.45 π',
+  },
   {
     comp: {
       slug: 'everyday-pioneer',
@@ -16,65 +28,17 @@ const dailyComps = [
     prize: '1,000 π',
     fee: '0.314 π',
   },
-  {
+    {
     comp: {
-      slug: 'pi-to-the-moon',
-      entryFee: 3.14,
-      totalTickets: 1900,
+      slug: 'daily-pi-slice',
+      entryFee: 0.37,
+      totalTickets: 1500,
       ticketsSold: 0,
       endsAt: '2025-05-04T12:00:00Z',
     },
-    title: 'Pi to the Moon',
-    prize: '5,000 π',
-    fee: '3.14 π',
-  },
-  {
-    comp: {
-      slug: 'hack-the-vault',
-      entryFee: 0.375,
-      totalTickets: 2225,
-      ticketsSold: 1800,
-      endsAt: '2025-05-03T23:59:59Z',
-    },
-    title: 'Hack The Vault',
-    prize: '7,750 π',
-    fee: '0.375 π',
-  },
-  {
-    comp: {
-      slug: '€5000',
-      entryFee: 1.314,
-      totalTickets: 5000,
-      ticketsSold: 0,
-      endsAt: '2025-05-03T15:14:00Z',
-    },
-    title: '€5000',
-    prize: '€5000 Paid in Pi Equivalent',
-    fee: '0.314 π',
-  },
-  {
-    comp: {
-      slug: 'daily-jackpot',
-      entryFee: 0.375,
-      totalTickets: 2225,
-      ticketsSold: 0,
-      endsAt: '2025-05-03T23:59:59Z',
-    },
-    title: 'Daily Jackpot',
-    prize: '750 π',
-    fee: '0.375 π',
-  },
-  {
-    comp: {
-      slug: 'the-daily-dash',
-      entryFee: 3.14,
-      totalTickets: 1900,
-      ticketsSold: 0,
-      endsAt: '2025-05-04T12:00:00Z',
-    },
-    title: 'The Daily Dash',
-    prize: '5,000 π',
-    fee: '3.14 π',
+    title: 'Daily Pi Slice',
+    prize: '500 π',
+    fee: '0.37π',
   },
 ]
 

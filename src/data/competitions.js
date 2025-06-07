@@ -213,8 +213,8 @@ export const dailyItems = [
   {
     comp: { 
       slug: 'daily-jackpot', 
-      entryFee: 0.375, 
-      totalTickets: 2400, 
+      entryFee: 0.45, 
+      totalTickets: 1820, 
       ticketsSold: 0, 
       endsAt: '2025-06-30T23:59:59Z',
       comingSoon: true
@@ -228,8 +228,8 @@ export const dailyItems = [
   {
     comp: { 
       slug: 'everyday-pioneer', 
-      entryFee: 0.314, 
-      totalTickets: 1700, 
+      entryFee: 0.31, 
+      totalTickets: 1900, 
       ticketsSold: 0, 
       endsAt: '2025-06-30T15:14:00Z',
       comingSoon: true
@@ -243,14 +243,14 @@ export const dailyItems = [
   {
     comp: { 
       slug: 'daily-pi-slice', 
-      entryFee: 0.314, 
-      totalTickets: 3000, 
+      entryFee: 0.37, 
+      totalTickets: 1500, 
       ticketsSold: 0, 
       endsAt: '2025-06-25T15:14:00Z',
       comingSoon: true
     },
     title: 'Daily Pi Slice',
-    prize: '2,000 π',
+    prize: '500 π',
     href: '/competitions/daily-pi-slice',
     imageUrl: '/images/daily.png',
     theme: 'daily',
