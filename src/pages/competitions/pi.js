@@ -3,41 +3,29 @@
 import PiCompetitionCard from '@components/PiCompetitionCard'
 
 const piComps = [
-  {
-    comp: {
-      slug: 'pi-giveaway-100k',
-      entryFee: 10,
-      totalTickets: 33000,
-      ticketsSold: 0,
-      endsAt: '2025-05-20T00:00:00Z',
-    },
-    title: '100,000 Pi Giveaway',
-    prize: '100,000 π',
-    fee: '10 π',
+   {
+    comp: { slug: 'pi-giveaway-10k', entryFee: 2.2, totalTickets: 5200, ticketsSold: 0, endsAt: '2025-06-30T00:00:00Z' },
+    title: '10,000 Pi',
+    prize: '10,000 π',
+    href: '/competitions/pi-giveaway-10k',
+    imageUrl: '/images/10000.png',
+    theme: 'pi',
   },
   {
-    comp: {
-      slug: 'pi-giveaway-50k',
-      entryFee: 5,
-      totalTickets: 17000,
-      ticketsSold: 0,
-      endsAt: '2025-05-11T00:00:00Z',
-    },
-    title: '50,000 Pi Giveaway',
-    prize: '50,000 π',
-    fee: '5 π',
+    comp: { slug: 'pi-giveaway-5k', entryFee: 1.8, totalTickets: 2900, ticketsSold: 0, endsAt: '2025-06-29T00:00:00Z' },
+    title: '5,000 Pi',
+    prize: '5,000 π',
+    href: '/competitions/pi-giveaway-5k',
+    imageUrl: '/images/5000.png',
+    theme: 'pi',
   },
   {
-    comp: {
-      slug: 'pi-giveaway-25k',
-      entryFee: 2,
-      totalTickets: 17000,
-      ticketsSold: 0,
-      endsAt: '2025-05-11T00:00:00Z',
-    },
-    title: '25,000 Pi Giveaway',
-    prize: '25,000 π',
-    fee: '2 π',
+    comp: { slug: 'pi-giveaway-2.5k', entryFee: 1.6, totalTickets: 1600, ticketsSold: 0, endsAt: '2025-06-28T00:00:00Z' },
+    title: '2,500 Pi',
+    prize: '2,500 π',
+    href: '/competitions/pi-giveaway-2.5k',
+    imageUrl: '/images/2500.png',
+    theme: 'pi',
   },
 ]
 

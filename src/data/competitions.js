@@ -1,6 +1,4 @@
-// data/competitions.js
 
-// src/data/competitions.js
 
 export const techItems = [
   {
@@ -9,7 +7,8 @@ export const techItems = [
       entryFee: 0.40,
       totalTickets: 1100,
       ticketsSold: 0,
-      endsAt: '2025-06-26T14:00:00Z',
+      startsAt: '2025-07-26T14:00:00Z', // 7 days before endsAt
+      endsAt: '2025-07-26T14:00:00Z',
     },
     title: 'PS5 Bundle',
     prize: 'PlayStation 5',
@@ -23,7 +22,8 @@ export const techItems = [
       entryFee: 0.45,
       totalTickets: 1500,
       ticketsSold: 0,
-      endsAt: '2025-05-08T11:30:00Z',
+      startsAt: '2025-07-16T11:30:00Z',
+      endsAt: '2025-07-16T11:30:00Z',
     },
     title: '55″ Smart TV',
     prize: '55″ Smart TV',
@@ -37,7 +37,8 @@ export const techItems = [
       entryFee: 0.35,
       totalTickets: 1300,
       ticketsSold: 0,
-      endsAt: '2025-04-05T17:45:00Z',
+      startsAt: '2025-07-12T17:45:00Z',
+      endsAt: '2025-07-12T17:45:00Z',
     },
     title: 'Xbox One',
     prize: 'Xbox One + Game Pass',
@@ -51,7 +52,8 @@ export const techItems = [
       entryFee: 0.36,
       totalTickets: 1830,
       ticketsSold: 0,
-      endsAt: '2025-06-03T13:30:00Z',
+      startsAt: '2025-07-09T13:30:00Z',
+      endsAt: '2025-07-09T13:30:00Z',
     },
     title: 'Nintendo Switch',
     prize: 'Nintendo Switch',
@@ -65,7 +67,8 @@ export const techItems = [
       entryFee: 0.30,
       totalTickets: 1665,
       ticketsSold: 0,
-      endsAt: '2025-06-04T11:45:00Z',
+    startsAt: '2025-07-12T13:30:00Z',
+      endsAt: '2025-07-12T13:30:00Z',
     },
     title: 'Apple AirPods',
     prize: 'Apple AirPods',
@@ -175,9 +178,17 @@ export const techItems = [
 ];
 
 
+
 export const premiumItems = [
   {
-    comp: { slug: 'dubai-luxury-holiday', entryFee: 2.5, totalTickets: 4000, ticketsSold: 0, endsAt: '2025-06-30T22:00:00Z', comingSoon: true },
+    comp: {
+      slug: 'dubai-luxury-holiday',
+      entryFee: 2.5,
+      totalTickets: 4000,
+      ticketsSold: 0,
+      endsAt: '2025-06-30T22:00:00Z',
+      comingSoon: true,
+    },
     title: 'Dubai Luxury Holiday',
     href: '/competitions/dubai-luxury-holiday',
     prize: '7-Day Dubai Trip',
@@ -185,7 +196,14 @@ export const premiumItems = [
     theme: 'premium',
   },
   {
-    comp: { slug: 'penthouse-stay', entryFee: 15, totalTickets: 3000, ticketsSold: 0, endsAt: '2025-06-30T21:00:00Z', comingSoon: true },
+    comp: {
+      slug: 'penthouse-stay',
+      entryFee: 15,
+      totalTickets: 3000,
+      ticketsSold: 0,
+      endsAt: '2025-06-30T21:00:00Z',
+      comingSoon: true,
+    },
     title: 'Penthouse Stay',
     href: '/competitions/penthouse-stay',
     prize: 'Penthouse Hotel Stay of your choice',
@@ -193,15 +211,69 @@ export const premiumItems = [
     theme: 'premium',
   },
   {
-    comp: { slug: 'first-class-flight', entryFee: 2, totalTickets: 2500, ticketsSold: 0, endsAt: '2025-06-30T21:00:00Z', comingSoon: true },
+    comp: {
+      slug: 'first-class-flight',
+      entryFee: 2,
+      totalTickets: 2500,
+      ticketsSold: 0,
+      endsAt: '2025-06-30T21:00:00Z',
+      comingSoon: true,
+    },
     title: 'First Class Flight',
     href: '/competitions/first-class-flight',
     prize: 'Return flights to anywhere in the world',
     imageUrl: '/images/first.jpeg',
     theme: 'premium',
   },
+  {
+    comp: {
+      slug: 'weekend-getaway',
+      entryFee: 12,
+      totalTickets: 4000,
+      ticketsSold: 0,
+      endsAt: '2025-06-01T22:00:00Z',
+      comingSoon: true,
+    },
+    title: 'Weekend Getaway',
+    prize: '€2,000 Travel Voucher',
+    fee: '12 π',
+    href: '/competitions/weekend-getaway',
+    imageUrl: '/images/weekend.jpeg',
+    theme: 'premium',
+  },
+  {
+    comp: {
+      slug: 'airbnb-voucher',
+      entryFee: 10,
+      totalTickets: 3500,
+      ticketsSold: 0,
+      endsAt: '2025-06-05T22:00:00Z',
+      comingSoon: true,
+    },
+    title: 'Airbnb Voucher',
+    prize: '€1,000 Airbnb Credit',
+    fee: '10 π',
+    href: '/competitions/airbnb-voucher',
+    imageUrl: '/images/air.png',
+    theme: 'premium',
+  },
+  {
+    comp: {
+      slug: 'spa-day-package',
+      entryFee: 8,
+      totalTickets: 3000,
+      ticketsSold: 0,
+      endsAt: '2025-06-05T22:00:00Z',
+      comingSoon: true,
+    },
+    title: 'Spa Day Package',
+    prize: 'Luxury Spa Experience',
+    fee: '8 π',
+    href: '/competitions/spa-day-package',
+    imageUrl: '/images/spa.jpeg',
+    theme: 'premium',
+  },
 ];
-
 export const piItems = [
   {
     comp: { slug: 'pi-giveaway-10k', entryFee: 2.2, totalTickets: 5200, ticketsSold: 0, endsAt: '2025-06-30T00:00:00Z' },
@@ -276,15 +348,26 @@ export const dailyItems = [
   },
 ];
 
-export const freeItems = [
+
+export const competitions = [
   {
-    comp: { slug: 'pi-to-the-moon', entryFee: 0, totalTickets: 20000, ticketsSold: 0, endsAt: '2025-05-31T18:00:00Z' },
+    comp: { 
+      slug: 'pi-to-the-moon',
+      entryFee: 0,
+      totalTickets: 20000,
+      ticketsSold: 0,
+      startsAt: '2025-08-20T18:00:00Z',  // <-- ADD THIS
+      endsAt: '2025-08-31T18:00:00Z',
+      location: 'Online Global Draw'
+    },
     title: 'Pi To The Moon',
     prize: '10,000 π',
     href: '/competitions/pi-to-the-moon',
-    theme: 'free',
-  },
+    theme: 'free'
+  }
 ];
+
+
 export const cryptoGiveawaysItems = [
   {
     comp: { slug: 'crypto-btc', entryFee: 0.5, totalTickets: 10000, ticketsSold: 4500, endsAt: '2025-06-02T00:59:00Z', comingSoon: true },

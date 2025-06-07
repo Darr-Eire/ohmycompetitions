@@ -94,11 +94,12 @@ export default function FreeCompetitionCard({ comp, title, prize, userHandle }) 
       {/* Full Details Section */}
       <div className="bg-white/5 rounded-lg p-4 text-sm space-y-2">
         <p><span className="font-semibold text-cyan-300">Prize:</span> {prize}</p>
+                <p><span className="font-semibold text-cyan-300">Entry Fee:</span> <span className="font-bold">FREE</span></p>
+
         <p><span className="font-semibold text-cyan-300">Date:</span> {formattedDate}</p>
-        <p><span className="font-semibold text-cyan-300">Location:</span> {comp.location || 'Online Global Draw'}</p>
-        <p><span className="font-semibold text-cyan-300">Entry Fee:</span> <span className="font-bold">FREE</span></p>
+       
         <p><span className="font-semibold text-cyan-300">Total Tickets:</span> {total.toLocaleString()}</p>
-        <p className="font-mono text-cyan-400">⏳ Time Left: {timeLeft}</p>
+    <p><span className="font-semibold text-cyan-300">Location:</span> {comp.location || 'Online Global Draw'}</p>
       </div>
 
       {/* Progress Bar */}

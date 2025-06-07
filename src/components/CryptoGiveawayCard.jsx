@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 
 export default function CryptoGiveawayCard({
@@ -14,6 +14,10 @@ export default function CryptoGiveawayCard({
 }) {
   const widgetRef = useRef(null)
   const comingSoon = comp?.comingSoon === true
+
+  // Timer states
+  const [timeLeft, setTimeLeft] = useState('')
+  const [status, setStatus] = useState('UPCOMING')
 
   useEffect(() => {
     if (!widgetRef.current) return
@@ -39,6 +43,50 @@ export default function CryptoGiveawayCard({
     widgetRef.current.appendChild(script)
   }, [token])
 
+  // Countdown timer effect
+  useEffect(() => {
+    if (comingSoon) {
+      setTimeLeft('')
+      setStatus('COMING SOON')
+      return
+    }
+
+    const interval = setInterval(() => {
+      const now = Date.now()
+      const end = new Date(endsAt).getTime()
+      let diff = end - now
+
+      if (diff <= 0) {
+        setTimeLeft('')
+        setStatus('ENDED')
+        clearInterval(interval)
+        return
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+      diff -= days * (1000 * 60 * 60 * 24)
+
+      const hrs = Math.floor(diff / (1000 * 60 * 60))
+      diff -= hrs * (1000 * 60 * 60)
+
+      const mins = Math.floor(diff / (1000 * 60))
+      diff -= mins * (1000 * 60)
+
+      const secs = Math.floor(diff / 1000)
+
+      let timeStr = ''
+      if (days > 0) timeStr += `${days}d `
+      if (hrs > 0 || days > 0) timeStr += `${hrs}h `
+      if (mins > 0 || hrs > 0 || days > 0) timeStr += `${mins}m `
+      if (days === 0 && hrs === 0) timeStr += `${secs}s`
+
+      setTimeLeft(timeStr.trim())
+      setStatus('LIVE')
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [endsAt, comingSoon])
+
   const formattedEndDate = new Date(endsAt).toLocaleString('en-US', {
     weekday: 'short',
     month: 'short',
@@ -59,42 +107,37 @@ export default function CryptoGiveawayCard({
         <div ref={widgetRef} className="w-full h-[200px]" />
       </div>
 
-  
-{/* Competition Info */}
-<div className="p-4 text-center space-y-2">
-  <h3 className="text-lg font-bold text-white">{title}</h3>
-  <p className="text-sm text-gray-300">{prize}</p>
-  <p className="text-sm text-white font-semibold">
-    Entry Fee: {comingSoon ? 'TBH' : fee}
-  </p>
-  <p className="text-xs text-white">
-    Total Tickets: {comingSoon ? 'TBH' : totalTickets.toLocaleString()}
-  </p>
-  <p className="text-xs text-white">
-    {comingSoon ? 'TBH' : formattedEndDate}
-  </p>
+      {/* Competition Info */}
+      <div className="p-4 text-center space-y-2">
+        <h3 className="text-lg font-bold text-white">{title}</h3>
+        <p className="text-sm text-gray-300">{prize}</p>
+        <p className="text-sm text-white font-semibold">
+          Entry Fee: {comingSoon ? 'TBA' : fee}
+        </p>
+        <p className="text-xs text-white">
+          Total Tickets: {comingSoon ? 'TBA' : totalTickets.toLocaleString()}
+        </p>
+        <p className="text-xs text-white">
+          {status === 'LIVE' ? `Ends in: ${timeLeft}` : comingSoon ? 'TBA' : formattedEndDate}
+        </p>
 
-  {/* CTA */}
-{comingSoon ? (
-  <button
-    disabled
-    className="w-full py-2 rounded-md bg-gradient-to-r from-[#00ffd5] to-[#0077ff] opacity-60 cursor-not-allowed font-bold text-black shadow mt-2"
-  >
-    Coming Soon
-  </button>
-
-
-
-  ) : (
-    <Link
-      href={href || (comp?.slug ? `/competitions/${comp.slug}` : '#')}
-      className="inline-block px-5 py-2 mt-2 rounded-md bg-cyan-500 text-black font-semibold shadow hover:bg-cyan-400 transition"
-    >
-      Enter Now
-    </Link>
-  )}
-</div>
-
+        {/* CTA */}
+        {comingSoon ? (
+          <button
+            disabled
+            className="w-full py-2 rounded-md bg-gradient-to-r from-[#00ffd5] to-[#0077ff] opacity-60 cursor-not-allowed font-bold text-black shadow mt-2"
+          >
+            Coming Soon
+          </button>
+        ) : (
+          <Link
+            href={href || (comp?.slug ? `/competitions/${comp.slug}` : '#')}
+            className="inline-block px-5 py-2 mt-2 rounded-md bg-cyan-500 text-black font-semibold shadow hover:bg-cyan-400 transition"
+          >
+            Enter Now
+          </Link>
+        )}
+      </div>
     </div>
   )
 }

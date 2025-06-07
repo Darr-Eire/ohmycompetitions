@@ -5,40 +5,49 @@ import DailyCompetitionCard from '@components/DailyCompetitionCard'
 
 const dailyComps = [
     {
-    comp: {
-      slug: 'daily-jackpot',
-      entryFee: 0.45,
-      totalTickets: 1820,
-      ticketsSold: 0,
-      endsAt: '2025-05-03T23:59:59Z',
+    comp: { 
+      slug: 'daily-jackpot', 
+      entryFee: 0.45, 
+      totalTickets: 1820, 
+      ticketsSold: 0, 
+      endsAt: '2025-06-30T23:59:59Z',
+      comingSoon: true
     },
     title: 'Daily Jackpot',
-    prize: '750 π',
-    fee: '0.45 π',
+    prize: '750 π',
+    href: '/competitions/daily-jackpot',
+    imageUrl: '/images/jackpot.png',
+    theme: 'daily',
   },
   {
-    comp: {
-      slug: 'everyday-pioneer',
-      entryFee: 0.314,
-      totalTickets: 1900,
-      ticketsSold: 0,
-      endsAt: '2025-05-03T15:14:00Z',
+    comp: { 
+      slug: 'everyday-pioneer', 
+      entryFee: 0.31, 
+      totalTickets: 1900, 
+      ticketsSold: 0, 
+      endsAt: '2025-06-30T15:14:00Z',
+      comingSoon: true
     },
     title: 'Everyday Pioneer',
-    prize: '1,000 π',
-    fee: '0.314 π',
+    prize: '1,000 π',
+    href: '/competitions/everyday-pioneer',
+    imageUrl: '/images/everyday.png',
+    theme: 'daily',
   },
-    {
-    comp: {
-      slug: 'daily-pi-slice',
-      entryFee: 0.37,
-      totalTickets: 1500,
-      ticketsSold: 0,
-      endsAt: '2025-05-04T12:00:00Z',
+  {
+    comp: { 
+      slug: 'daily-pi-slice', 
+      entryFee: 0.37, 
+      totalTickets: 1500, 
+      ticketsSold: 0, 
+      endsAt: '2025-06-25T15:14:00Z',
+      comingSoon: true
     },
     title: 'Daily Pi Slice',
-    prize: '500 π',
-    fee: '0.37π',
+    prize: '500 π',
+    href: '/competitions/daily-pi-slice',
+    imageUrl: '/images/daily.png',
+    theme: 'daily',
   },
 ]
 

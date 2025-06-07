@@ -214,8 +214,8 @@ export default function PiTicketPage() {
           {processing ? 'Processing...' : 'Pay with Pi'}
         </button>
 
-        <p className="mt-4 text-center text-cyan-400 font-semibold">
-          🚀 Pioneers, this is your chance to win big and help grow the Pi ecosystem! 🚀
+        <p className="mt-4 text-center text-white font-semibold">
+          Pioneers, this is your chance to win big and help grow the Pi ecosystem!
         </p>
       </div>
     </div>
