@@ -17,12 +17,13 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
       return;
     }
 
+    if (processing) return; // prevent double click
     setProcessing(true);
 
     const totalAmount = parseFloat((entryFee * quantity).toFixed(2));
 
     try {
-      if (!window.Pi || typeof window.Pi.createPayment !== 'function') {
+      if (!window?.Pi || typeof window.Pi.createPayment !== 'function') {
         alert('⚠️ Pi SDK not ready or unavailable.');
         setProcessing(false);
         return;
@@ -36,13 +37,19 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
         },
         {
           onReadyForServerApproval: async (paymentId) => {
-            const res = await fetch('/api/payments/approve', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ paymentId }),
-            });
-            if (!res.ok) throw new Error(await res.text());
-            console.log('[✅] Payment approved on server');
+            try {
+              const res = await fetch('/api/payments/approve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ paymentId }),
+              });
+              if (!res.ok) throw new Error(await res.text());
+              console.log('[✅] Payment approved on server');
+            } catch (e) {
+              console.error('[ERROR] Approving payment:', e);
+              alert('❌ Payment approval failed. Check console.');
+              setProcessing(false);
+            }
           },
 
           onReadyForServerCompletion: async (paymentId, txid) => {
