@@ -4,298 +4,35 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import BuyTicketButton from '@components/BuyTicketButton';
-// right after imports or near your COMPETITIONS object
 
-const FREE_TICKET_COMPETITIONS = ['pi-to-the-moon'];  // <-- define your free competitions here
+// Import all competition data directly
+import { techItems, premiumItems, piItems, dailyItems, freeItems, cryptoGiveawaysItems } from '../../data/competitions';
 
-const COMPETITIONS = {
-  
-  'ps5-bundle-giveaway': {
-    title: 'PS5 Bundle Giveaway',
-    prize: 'PlayStation 5 + Extra Controller',
-    entryFee: 0.25,
-    imageUrl: '/images/playstation.jpeg',
-    totalTickets: 2000,
-    date: 'June 14, 2025',
-    time: '3:14 PM UTC',
-    location: 'Online',
-    endsAt: '2025-06-14T15:14:00Z',
- 
-  },
-  '55-inch-tv-giveaway': {
-    title: '55″ Smart TV Giveaway',
-    prize: '55″ Smart TV',
-    entryFee: 0.25,
-    imageUrl: '/images/tv.jpg',
-    date: 'June 8, 2025',
-    time: '11:30 AM UTC',
-    location: 'Online',
-    endsAt: '2025-05-08T11:30:00Z',
-    totalTickets: 1500,
-  },
-  'xbox-one-bundle': {
-    title: 'Xbox One Giveaway',
-    prize: 'Xbox One + Game Pass',
-    entryFee: 0.35,
-    imageUrl: '/images/xbox.jpeg',
-    date: 'June 9, 2025',
-    time: '5:45 PM UTC',
-    location: 'Online',
-    endsAt: '2025-05-09T17:45:00Z',
-    totalTickets: 1300,
-  },
-  'gamer-pc-bundle': {
-    title: 'Gaming PC Giveaway',
-    prize: 'Gamer PC Bundle',
-    entryFee: 0.25,
-    imageUrl: '/images/bundle.jpeg',
-    date: 'June 8, 2025',
-    time: '11:30 AM UTC',
-    location: 'Online',
-    endsAt: '2025-05-08T11:30:00Z',
-    totalTickets: 1500,
-  },
-  'electric-bike': {
-    title: 'Electric Bike Giveaway',
-    prize: 'Electric Bike',
-    entryFee: 0.65,
-    imageUrl: '/images/bike.jpeg',
-    date: 'June 8, 2025',
-    time: '11:30 AM UTC',
-    location: 'Online',
-    endsAt: '2025-05-08T11:30:00Z',
-    totalTickets: 1850,
-  },
-  'matchday-tickets': {
-    title: 'Matchday Tickets Giveaway',
-    prize: 'Matchday Tickets',
-    entryFee: 0.25,
-    imageUrl: '/images/liverpool.jpeg',
-    date: 'June 8, 2025',
-    time: '11:30 AM UTC',
-    location: 'Online',
-    endsAt: '2025-05-08T11:30:00Z',
-     totalTickets: 1200,
-  },
-  'apple-smart-watch': {
-    title: 'Apple Smart Watch Giveaway',
-    prize: 'Apple Smart Watch',
-    entryFee: 0.25,
-    imageUrl: '/images/watch.png',
-    date: 'June 1, 2025',
-    time: '12:00 PM UTC',
-    location: 'Online',
-    endsAt: '2025-06-01T12:00:00Z',
-  },
-  'gamingchair': {
-    title: 'Gaming Chair Giveaway',
-    prize: 'Gaming Chair',
-    entryFee: 0.3,
-    imageUrl: '/images/chair.png',
-    date: 'June 2, 2025',
-    time: '2:00 PM UTC',
-    location: 'Online',
-    endsAt: '2025-06-02T14:00:00Z',
-  },
-  'macbook-pro': {
-    title: 'MacBook Pro Giveaway',
-    prize: 'MacBook Pro',
-    entryFee: 0.5,
-    imageUrl: '/images/macbook.jpeg',
-    date: 'June 5, 2025',
-    time: '3:00 PM UTC',
-    location: 'Online',
-    endsAt: '2025-06-05T15:00:00Z',
-  },
-  'projector': {
-    title: 'Mini Projector Giveaway',
-    prize: 'Projector',
-    entryFee: 0.3,
-    imageUrl: '/images/projector.png',
-    date: 'June 2, 2025',
-    time: '2:00 PM UTC',
-    location: 'Online',
-    endsAt: '2025-06-02T14:00:00Z',
-  },
-  'amazon-firestick': {
-    title: 'Amazon Fire Stick Giveaway',
-    prize: 'Amazon Fire Stick',
-    entryFee: 0.15,
-    imageUrl: '/images/stick.jpeg',
-    date: 'June 30, 2025',
-    time: '10:00 AM UTC',
-    location: 'Online',
-    endsAt: '2025-05-30T10:00:00Z',
-  },
-  'gopro': {
-    title: 'GoPro Giveaway',
-    prize: 'GoPro Camera',
-    entryFee: 0.3,
-    imageUrl: '/images/gopro.png',
-    date: 'June 2, 2025',
-    time: '2:00 PM UTC',
-    location: 'Online',
-    endsAt: '2025-06-02T14:00:00Z',
-  },
-  'nintendo-switch': {
-    title: 'Nintendo Switch Giveaway',
-    prize: 'Nintendo Switch',
-    entryFee: 0.35,
-    imageUrl: '/images/nintendo.png',
-    date: 'June 3, 2025',
-    time: '1:30 PM UTC',
-    location: 'Online',
-    endsAt: '2025-06-03T13:30:00Z',
-  },
-  'apple-airpods': {
-    title: 'Apple AirPods Giveaway',
-    prize: 'Apple AirPods',
-    entryFee: 0.2,
-    imageUrl: '/images/airpods.png',
-    date: 'June 4, 2025',
-    time: '11:45 AM UTC',
-    location: 'Online',
-    endsAt: '2025-06-04T11:45:00Z',
-  },
+// Flatten all competitions into one object
+const flattenCompetitions = [
+  ...techItems,
+  ...premiumItems,
+  ...piItems,
+  ...dailyItems,
+  ...freeItems,
+  ...cryptoGiveawaysItems,
+];
 
+// Build a master competition map by slug
+const COMPETITIONS = {};
+flattenCompetitions.forEach(item => {
+  COMPETITIONS[item.comp.slug] = {
+    ...item.comp,
+    title: item.title,
+    prize: item.prize,
+    imageUrl: item.imageUrl,
+    location: item.location || 'Online',
+    date: item.date || 'N/A',
+    time: item.time || 'N/A',
+  };
+});
 
-  'dubai-luxury-holiday': {
-    title: 'Dubai Luxury Holiday',
-    prize: '7-Day All-Inclusive Dubai Trip',
-    entryFee: 2.5,
-    imageUrl: '/images/dubai-luxury-holiday.jpg',
-    date: 'June 18, 2025',
-    time: '10:00 PM UTC',
-    location: 'Online',
-    endsAt: '2025-05-18T22:00:00Z',
-     totalTickets: 4000,
-  },
-  'penthouse-stay': {
-    title: 'Penthouse Stay',
-    prize: 'Luxury Penthouse Hotel Stay',
-    entryFee: 1.5,
-    imageUrl: '/images/hotel.jpeg',
-    date: 'June 15, 2025',
-    time: '9:00 PM UTC',
-    location: 'Online',
-    endsAt: '2025-05-15T21:00:00Z',
-     totalTickets: 3000,
-  },
-  'first-class-flight': {
-    title: 'First Class Flight',
-    prize: 'Return First Class Flights Worldwide',
-    entryFee: 2,
-    imageUrl: '/images/first.jpeg',
-    date: 'June 15, 2025',
-    time: '9:00 PM UTC',
-    location: 'Online',
-    endsAt: '2025-05-15T21:00:00Z',
-     totalTickets: 2500,
-  },
-  'pi-giveaway-100k': {
-    title: '100,000 Pi Giveaway',
-    prize: '100,000 π',
-    entryFee: 10,
-    imageUrl: '', // Add image path if available
-    date: 'june 20, 2025',
-    time: '12:00 AM UTC',
-    location: 'Online',
-    endsAt: '2025-05-20T00:00:00Z',
-  },
-  'pi-giveaway-50k': {
-    title: '50,000 Pi Giveaway',
-    prize: '50,000 π',
-    entryFee: 5,
-    imageUrl: '', // Add image path if available
-    date: 'June 11, 2025',
-    time: '12:00 AM UTC',
-    location: 'Online',
-    endsAt: '2025-05-11T00:00:00Z',
-  },
-  'pi-giveaway-25k': {
-    title: '25,000 Pi Giveaway',
-    prize: '25,000 π',
-    entryFee: 2,
-    imageUrl: '', // Add image path if available
-    date: 'June 11, 2025',
-    time: '12:00 AM UTC',
-    location: 'Online',
-    endsAt: '2025-05-11T00:00:00Z',
-  },
-
- 
-  'everyday-pioneer': {
-    title: 'Everyday Pioneer',
-    prize: '1,000 π',
-    entryFee: 0.314,
-    imageUrl: '', // Add image path if needed
-    date: 'June 25, 2025',
-    time: '3:14 PM UTC',
-    location: 'Online',
-    endsAt: '2025-05-03T15:14:00Z',
-  },
-  'pi-to-the-moon': {
-    title: 'Pi to the Moon',
-    prize: '10,000 π',
-    entryFee: 0,
-    imageUrl: '', // Add image path if needed
-    date: 'June 25, 2025',
-    time: '12:00 PM UTC',
-    location: 'Online',
-    endsAt: '2025-06-25T12:00:00Z',
-  },
-  'hack-the-vault': {
-    title: 'Hack The Vault',
-    prize: '7,750 π',
-    entryFee: 0.375,
-    imageUrl: '', // Add image path if needed
-    date: 'June 3, 2025',
-    time: '11:59 PM UTC',
-    location: 'Online',
-    endsAt: '2025-05-03T23:59:59Z',
-  },
-  '5000 Pi': {
-    title: '5000 Pi',
-    prize: '5000',
-    entryFee: 1.314,
-    imageUrl: '', // Add image path if needed
-    date: 'June 25, 2025',
-    time: '3:14 PM UTC',
-    location: 'Online',
-    endsAt: '2025-05-03T15:14:00Z',
-  },
-  'daily-jackpot': {
-    title: 'Daily Jackpot',
-    prize: '750 π',
-    entryFee: 0.375,
-    imageUrl: '', // Add image path if needed
-    date: 'June 3, 2025',
-    time: '11:59 PM UTC',
-    location: 'Online',
-    endsAt: '2025-05-03T23:59:59Z',
-  },
-  'the-daily-dash': {
-    title: 'The Daily Dash',
-    prize: '5,000 π',
-    entryFee: 3.14,
-    imageUrl: '', // Add image path if needed
-    date: 'June 4, 2025',
-    time: '12:00 PM UTC',
-    location: 'Online',
-    endsAt: '2025-05-04T12:00:00Z',
-  },
-  'main-prize': {
-    title: 'Main Prize 250,000 Pi',
-    prize: '250,000 Pi in Pi (One Winner)',
-    entryFee: 15,
-    imageUrl: '/images/250000.png',
-    date: 'June 28, 2025',
-    time: '10:00 PM UTC',
-    location: 'Global Online Draw',
-    endsAt: '2025-05-28T22:00:00Z',
-  },
-};
-
+const FREE_TICKET_COMPETITIONS = ['pi-to-the-moon'];  // free competitions slugs
 
 export default function TicketPurchasePage() {
   const router = useRouter();
@@ -323,7 +60,6 @@ export default function TicketPurchasePage() {
       .finally(() => setLoadingUser(false));
   }, [router.isReady]);
 
-  // Free competition logic (limit tickets)
   useEffect(() => {
     if (!slug || !FREE_TICKET_COMPETITIONS.includes(slug)) return;
 
@@ -394,11 +130,34 @@ export default function TicketPurchasePage() {
           )}
           <p className="text-white text-2xl font-bold">{comp.prize}</p>
 
-          <div className="max-w-md mx-auto text-sm text-white space-y-2">
-            <div className="flex justify-between"><span className="font-semibold">Date</span><span>{comp.date}</span></div>
-            <div className="flex justify-between"><span className="font-semibold">Location</span><span>{comp.location}</span></div>
-            <div className="flex justify-between"><span className="font-semibold">Entry Fee</span><span>{comp.entryFee} π</span></div>
-          </div>
+         <div className="max-w-md mx-auto text-sm text-white space-y-2">
+  <div className="flex justify-between">
+    <span className="font-semibold">Date</span>
+    <span>{new Date(comp.endsAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+  </div>
+
+  <div className="flex justify-between">
+    <span className="font-semibold">Start Time</span>
+    <span>{new Date(comp.endsAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} UTC</span>
+  </div>
+
+  <div className="flex justify-between">
+    <span className="font-semibold">Location</span>
+    <span>{comp.location || 'Online'}</span>
+  </div>
+
+  <div className="flex justify-between">
+    <span className="font-semibold">Entry Fee</span>
+  <span>{(comp.entryFee ?? 0).toFixed(2)} π</span>
+
+  </div>
+
+  <div className="flex justify-between">
+    <span className="font-semibold">Tickets Sold</span>
+    <span>{comp.ticketsSold} / {comp.totalTickets}</span>
+  </div>
+</div>
+
 
           {isFree ? (
             <>
@@ -446,5 +205,3 @@ export default function TicketPurchasePage() {
     </div>
   );
 }
-
-

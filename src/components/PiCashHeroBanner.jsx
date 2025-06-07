@@ -5,54 +5,53 @@ import { useRouter } from 'next/navigation';
 
 export default function PiCashHeroBanner() {
   const router = useRouter();
-  const [codeData, setCodeData] = useState(null);
+  const [data, setData] = useState(null);
   const [timeLeft, setTimeLeft] = useState(null);
 
+  // Fetch real data from the correct endpoint
   useEffect(() => {
-    const fetchCode = async () => {
+    const fetchData = async () => {
       try {
         const res = await fetch('/api/pi-cash-code');
-        const data = await res.json();
-        setCodeData(data);
+        const json = await res.json();
+        setData(json);
       } catch (err) {
-        console.error('Failed to load code:', err);
+        console.error('Failed to fetch PiCash data:', err);
       }
     };
-    fetchCode();
+    fetchData();
   }, []);
 
-useEffect(() => {
-  if (!codeData?.expiresAt) return;
+  // Setup countdown timer
+  useEffect(() => {
+    if (!data?.expiresAt) return;
 
-  const targetTime = new Date(codeData.expiresAt).getTime();
+    const target = new Date(data.expiresAt).getTime();
 
-  const calculateTimeLeft = () => {
-    const now = Date.now();
-    const diff = targetTime - now;
+    const calculate = () => {
+      const now = Date.now();
+      const diff = target - now;
 
-    if (diff <= 0) {
+      if (diff <= 0) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        return;
+      }
+
       setTimeLeft({
-        days: 0,
-        hours: 0,
-        minutes: 0,
-        seconds: 0,
+        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((diff / (1000 * 60)) % 60),
+        seconds: Math.floor((diff / 1000) % 60),
       });
-      return;
-    }
+    };
 
-    setTimeLeft({
-      days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-      hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-      minutes: Math.floor((diff / (1000 * 60)) % 60),
-      seconds: Math.floor((diff / 1000) % 60),
-    });
-  };
+    calculate();
+    const timer = setInterval(calculate, 1000);
+    return () => clearInterval(timer);
+  }, [data?.expiresAt]);
 
-  calculateTimeLeft();
-  const intervalId = setInterval(calculateTimeLeft, 1000);
-  return () => clearInterval(intervalId);
-}, [codeData?.expiresAt]);
-
+  // If no data yet, don't render anything
+  if (!data) return null;
 
   return (
     <div className="relative w-full max-w-md sm:max-w-xl mx-auto mt-2 sm:mt-4 px-2 sm:px-4 py-4 sm:py-6 border border-cyan-500 rounded-2xl text-white text-center font-orbitron overflow-hidden shadow-[0_0_60px_#00fff055] bg-[#0b1120]/30">
@@ -66,7 +65,7 @@ useEffect(() => {
         <div className="inline-flex items-center gap-1 sm:gap-2 px-4 sm:px-5 py-1.5 sm:py-2 rounded-xl border border-cyan-400 bg-black/30 shadow-[0_0_15px_#00f0ff88] animate-glow-float">
           <span className="text-sm sm:text-base font-bold text-cyan-300 tracking-wide">Prize Pool:</span>
           <span className="text-cyan-400 font-extrabold text-base sm:text-lg drop-shadow-md">
-            {codeData?.prizePool?.toLocaleString() || '...'} π
+            {data.prizePool.toLocaleString()} π
           </span>
         </div>
       </div>
@@ -110,4 +109,3 @@ useEffect(() => {
     </div>
   );
 }
-

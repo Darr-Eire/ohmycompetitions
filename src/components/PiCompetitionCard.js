@@ -60,29 +60,34 @@ export default function PiCompetitionCard({ comp, title, prize, fee, userHandle 
       {/* Prize Details */}
       <div className="text-center space-y-2 text-sm">
          <p className="text-blue-300">Winner Takes All</p>  
-         <p className="text-blue-300">🎫 Entry Fee: {fee}</p> 
+         <p className="text-blue-300"> Entry Fee: {(comp.entryFee ?? 0).toFixed(2)} π</p>
+
            <div className="mt-4 space-y-2 text-sm">
-        <p className="text-center text-white">🔗 Total Entries: <strong>{entryCount.toLocaleString()}</strong></p>
+      <p className="text-center text-white">
+   Total Entries: <strong>{(comp.ticketsSold ?? 0).toLocaleString()}</strong>
+</p>
+
       </div>
          <p className="text-yellow-300">{timeLeft}</p>
       
       </div>
 
-      {/* Stats */}
-   
+  
 
-      {/* Top Countries */}
-      <div className="mt-4 bg-[#1a1c2e] p-3 rounded-lg border border-blue-500 text-sm">
-        <p className="text-center text-blue-300 font-semibold mb-2">🌐 Top Contributing Countries</p>
-        <ul className="space-y-1">
-          {topCountries.map((c, i) => (
-            <li key={i} className="flex justify-between">
-              <span>{c.code} {c.name}</span>
-              <span className="text-cyan-300">{c.entries.toLocaleString()}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
+    {/* Top Countries */}
+<div className="mt-4 bg-[#1a1c2e] p-3 rounded-lg border border-blue-500 text-sm">
+  <p className="text-center text-blue-300 font-semibold mb-2">🌐 Top Contributing Countries</p>
+  <ul className="space-y-1">
+    {topCountries.map((c, i) => (
+      <li key={i} className="flex justify-between">
+        {/* Removed c.code */}
+        <span>{c.name}</span>
+        <span className="text-cyan-300">{c.entries.toLocaleString()}</span>
+      </li>
+    ))}
+  </ul>
+</div>
+
 
       {/* Invite Bonus */}
       <div className="mt-4 bg-[#1a1c2e] p-3 rounded-lg border border-cyan-400 text-sm text-center">
@@ -95,7 +100,7 @@ export default function PiCompetitionCard({ comp, title, prize, fee, userHandle 
         <Link href={`/ticket-purchase/pi/${comp.slug}`}>
 
           <button className="w-full py-3 rounded-lg font-bold bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black hover:brightness-110 transition-transform">
-            🌎 Join the Global Draw — Win Big, With Pi
+             Join the Global Draw — Win Big, With Pi
           </button>
         </Link>
       </div>

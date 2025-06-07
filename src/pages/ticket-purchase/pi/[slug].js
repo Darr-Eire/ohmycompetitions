@@ -1,7 +1,7 @@
-'use client'
+'use client';
 
-import { useRouter } from 'next/router'
-import { useState, useEffect } from 'react'
+import { useRouter } from 'next/router';
+import { useState, useEffect } from 'react';
 
 const piCompetitions = {
   'pi-giveaway-10k': {
@@ -13,7 +13,8 @@ const piCompetitions = {
     endsAt: '2025-06-30T00:00:00Z',
     location: 'Online',
     totalTickets: 5200,
-  }, 
+    ticketsSold: 0,
+  },
   'pi-giveaway-5k': {
     title: '5,000 Pi Giveaway',
     prize: '5,000 π',
@@ -23,8 +24,9 @@ const piCompetitions = {
     endsAt: '2025-06-30T00:00:00Z',
     location: 'Online',
     totalTickets: 2900,
+    ticketsSold: 0,
   },
-  'pi-giveaway-2,500k': {
+  'pi-giveaway-2.5k': {
     title: '2,500 Pi Giveaway',
     prize: '2,500 π',
     entryFee: 1.6,
@@ -33,46 +35,61 @@ const piCompetitions = {
     endsAt: '2025-06-29T00:00:00Z',
     location: 'Online',
     totalTickets: 1600,
+    ticketsSold: 0,
   },
 };
 
 export default function PiTicketPage() {
-  const router = useRouter()
-  const { slug } = router.query
-  const competition = piCompetitions[slug]
+  const router = useRouter();
+  const { slug } = router.query;
+  const competition = piCompetitions[slug];
 
-  const [quantity, setQuantity] = useState(1)
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0 });
-  const [processing, setProcessing] = useState(false)
+  const [quantity, setQuantity] = useState(1);
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
-    if (!competition) return
-    const interval = setInterval(() => {
-      const diff = new Date(competition.endsAt) - new Date()
+    if (!competition) return;
+
+    const updateTimer = () => {
+      const diff = new Date(competition.endsAt).getTime() - Date.now();
       if (diff <= 0) {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0 })
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
       } else {
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24)
-        const minutes = Math.floor((diff / (1000 * 60)) % 60)
-        setTimeLeft({ days, hours, minutes })
+        setTimeLeft({
+          days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((diff / (1000 * 60)) % 60),
+          seconds: Math.floor((diff / 1000) % 60),
+        });
       }
-    }, 1000)
-    return () => clearInterval(interval)
-  }, [competition])
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, [competition]);
 
   const handlePayment = async () => {
-    if (timeLeft.days === 0 && timeLeft.hours === 0 && timeLeft.minutes === 0) {
-      alert('This competition has ended.')
-      return
+    if (!competition) return;
+
+    if (
+      timeLeft.days === 0 &&
+      timeLeft.hours === 0 &&
+      timeLeft.minutes === 0 &&
+      timeLeft.seconds === 0
+    ) {
+      alert('This competition has ended.');
+      return;
     }
-    setProcessing(true)
+
+    setProcessing(true);
 
     try {
-      const total = competition.entryFee * quantity
+      const total = competition.entryFee * quantity;
 
       if (!window?.Pi?.createPayment) {
-        alert("⚠️ Pi SDK not ready");
+        alert('⚠️ Pi SDK not ready');
         setProcessing(false);
         return;
       }
@@ -105,50 +122,95 @@ export default function PiTicketPage() {
             });
             if (!res.ok) throw new Error(await res.text());
             console.log('✅ Payment completed');
-            alert("✅ Entry confirmed! Good luck!");
+            alert('✅ Entry confirmed! Good luck!');
           },
           onCancel: () => {
-            console.warn("Payment cancelled");
+            console.warn('Payment cancelled');
           },
           onError: (err) => {
-            console.error("Payment error:", err);
-            alert("Payment failed");
+            console.error('Payment error:', err);
+            alert('Payment failed');
           },
         }
       );
     } catch (err) {
       console.error(err);
-      alert("❌ Something went wrong during payment.");
+      alert('❌ Something went wrong during payment.');
     }
+
     setProcessing(false);
   };
 
-  if (!slug) return null
-  if (!competition) return <p style={{ color: '#fff' }}>Competition not found.</p>
+  if (!slug) return null;
+  if (!competition) return (
+    <p className="text-white text-center mt-12 font-orbitron">
+      Competition not found.
+    </p>
+  );
 
   return (
-    <div style={{ background: '#0a0e1a', minHeight: '100vh', padding: '2rem', display: 'flex', justifyContent: 'center' }}>
-      <div style={{ maxWidth: '500px', background: '#0d1424', border: '2px solid #00bfff', borderRadius: '20px', padding: '2rem', color: '#fff' }}>
-        <h1 style={{ fontSize: '2rem', color: '#00bfff', marginBottom: '1rem' }}>{competition.title}</h1>
-        <p style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Prize: {competition.prize}</p>
-        <p style={{ fontSize: '1rem', marginBottom: '1rem' }}>Entry Fee: {competition.entryFee} π</p>
+    <div className="bg-[#0b1120] min-h-screen flex flex-col justify-center items-center px-6 py-10 font-orbitron text-white">
+      <div className="max-w-md w-full bg-[#0d1424] border border-blue-500 rounded-xl shadow-xl p-8">
+        <h1 className="text-3xl font-bold text-cyan-400 text-center mb-6">
+          {competition.title}
+        </h1>
 
-        <div style={{ marginBottom: '1rem' }}>
-          <button onClick={() => setQuantity(q => Math.max(1, q - 1))}>-</button>
-          <span style={{ margin: '0 1rem' }}>{quantity}</span>
-          <button onClick={() => setQuantity(q => q + 1)}>+</button>
+       <section className="text-white text-base max-w-md mx-auto text-left space-y-3">
+  {[
+    ['Prize', competition.prize],
+    ['Entry Fee', `${competition.entryFee} π`],
+    ['Total Tickets', competition.totalTickets.toLocaleString()],
+    ['Tickets Sold', competition.ticketsSold.toLocaleString()],
+    ['Location', competition.location],
+    ['Date', competition.date],
+    ['Time', competition.time],
+    ['Time Left', `${timeLeft.days}d ${timeLeft.hours}h ${timeLeft.minutes}m ${timeLeft.seconds}s`],
+  ].map(([label, value]) => (
+    <div key={label} className="flex justify-between">
+      <span className="font-semibold">{label}</span>
+      <span>{value}</span>
+    </div>
+  ))}
+</section>
+
+
+        <div className="flex justify-center items-center gap-4 mt-6">
+          <button
+            onClick={() => setQuantity(q => Math.max(1, q - 1))}
+            disabled={quantity <= 1}
+            className="bg-blue-600 text-white px-5 py-2 rounded-full font-bold disabled:opacity-50 select-none"
+            aria-label="Decrease quantity"
+          >
+            −
+          </button>
+          <span className="text-xl font-bold min-w-[3rem] text-center">{quantity}</span>
+          <button
+            onClick={() => setQuantity(q => q + 1)}
+            className="bg-blue-600 text-white px-5 py-2 rounded-full font-bold select-none"
+            aria-label="Increase quantity"
+          >
+            +
+          </button>
         </div>
 
-        <p style={{ marginBottom: '1rem' }}>Total: {(competition.entryFee * quantity).toFixed(2)} π</p>
+        <p className="text-center text-lg font-bold mt-6">
+          Total: {(competition.entryFee * quantity).toFixed(2)} π
+        </p>
 
         <button
           onClick={handlePayment}
           disabled={processing}
-          style={{ background: '#00bfff', color: '#000', padding: '0.75rem 1.5rem', borderRadius: '10px', fontWeight: 'bold' }}
+          className={`w-full mt-6 py-3 rounded-xl font-bold text-black bg-gradient-to-r from-cyan-400 to-blue-500 shadow-lg transition-transform ${
+            processing ? 'cursor-not-allowed opacity-70' : 'hover:scale-105'
+          }`}
         >
           {processing ? 'Processing...' : 'Pay with Pi'}
         </button>
+
+        <p className="mt-4 text-center text-cyan-400 font-semibold">
+          🚀 Pioneers, this is your chance to win big and help grow the Pi ecosystem! 🚀
+        </p>
       </div>
     </div>
-  )
+  );
 }

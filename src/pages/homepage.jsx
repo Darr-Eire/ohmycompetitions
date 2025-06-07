@@ -1,4 +1,5 @@
 'use client';
+
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -10,7 +11,6 @@ import CryptoGiveawayCard from '@components/CryptoGiveawayCard';
 import CompetitionCard from '@components/CompetitionCard';
 import PiCashHeroBanner from '@components/PiCashHeroBanner';
 
-
 import {
   techItems,
   premiumItems,
@@ -20,59 +20,11 @@ import {
   dailyItems
 } from '@data/competitions';
 
-
 export default function HomePage() {
- 
-   const mockPiCashProps = {
-    code: '7H3X-PL4Y',
-    prizePool: 14250,
-    weekStart: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 2).toISOString(),
-    drawAt: new Date(Date.now() + 1000 * 60 * 60 * 5).toISOString(),
-    claimExpiresAt: new Date(Date.now() + 1000 * 60 * 60 * 10).toISOString(),
-  };
-
- const TopWinnersCarousel = () => {
-  const winners = [
-    { name: 'Jack Jim', prize: 'Matchday Tickets', date: 'March 26th', image: '/images/winner2.png' },
-    { name: 'Shanahan', prize: 'Playstation 5', date: 'February 14th', image: '/images/winner2.png' },
-    { name: 'Emily Rose', prize: 'Luxury Car', date: 'January 30th', image: '/images/winner2.png' },
-    { name: 'John Doe', prize: '€10,000 Pi', date: 'December 15th', image: '/images/winner2.png' },
-  ];
-  const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => setIndex((prev) => (prev + 1) % winners.length), 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const current = winners[index];
-  return (
-    <div className="max-w-md mx-auto mt-12 bg-white bg-opacity-10 backdrop-blur-lg rounded-xl shadow-lg p-6 text-white text-center">
-      <h2 className="text-2xl font-bold mb-4">🏆 Top Winner</h2>
-
-      <div className="flex justify-center items-center mb-4">
-        <Image
-          src={current.image}
-          alt={current.name}
-          width={120}
-          height={120}
-          className="rounded-full border-4 border-blue-500"
-        />
-      </div>
-
-      <h3 className="text-xl font-semibold">{current.name}</h3>
-      <p className="text-blue-300">{current.prize}</p>
-      <p className="text-sm text-white/70">{current.date}</p>
-    </div>
-  );
-};
-
-
   return (
     <>
       <div className="mt-0 mb-2 flex justify-center">
-        <PiCashHeroBanner {...mockPiCashProps} />
+        <PiCashHeroBanner />
       </div>
 
       <main className="space-y-16">
@@ -110,7 +62,6 @@ export default function HomePage() {
   );
 }
 
-// Reusable Section
 function Section({ title, items, viewMoreHref, viewMoreText = 'View More', extraClass = '' }) {
   const isDaily = title.toLowerCase().includes('daily');
   const isFree = title.toLowerCase().includes('free');
@@ -126,29 +77,11 @@ function Section({ title, items, viewMoreHref, viewMoreText = 'View More', extra
       </div>
 
       <div className="centered-carousel lg:hidden">
-        {items.map((item, i) => {
-          const key = item?.comp?.slug || i;
-          if (!item?.comp) return null;
-
-          if (isDaily) return <DailyCompetitionCard key={key} {...item} />;
-          if (isFree) return <FreeCompetitionCard key={key} {...item} />;
-          if (isPi) return <PiCompetitionCard key={key} {...item} />;
-          if (isCrypto) return <CryptoGiveawayCard key={key} {...item} />;
-          return <CompetitionCard key={key} {...item} />;
-        })}
+        {items.map((item, i) => renderCard(item, i, { isDaily, isFree, isPi, isCrypto }))}
       </div>
 
       <div className="hidden lg:grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-        {items.map((item, i) => {
-          const key = item?.comp?.slug || i;
-          if (!item?.comp) return null;
-
-          if (isDaily) return <DailyCompetitionCard key={key} {...item} />;
-          if (isFree) return <FreeCompetitionCard key={key} {...item} />;
-          if (isPi) return <PiCompetitionCard key={key} {...item} />;
-          if (isCrypto) return <CryptoGiveawayCard key={key} {...item} />;
-          return <CompetitionCard key={key} {...item} />;
-        })}
+        {items.map((item, i) => renderCard(item, i, { isDaily, isFree, isPi, isCrypto }))}
       </div>
 
       <div className="text-center mt-4">
@@ -160,5 +93,60 @@ function Section({ title, items, viewMoreHref, viewMoreText = 'View More', extra
         </Link>
       </div>
     </section>
+  );
+}
+
+function renderCard(item, i, { isDaily, isFree, isPi, isCrypto }) {
+  const key = item?.comp?.slug || i;
+  if (!item?.comp) return null;
+
+  if (isDaily) return <DailyCompetitionCard key={key} {...item} />;
+  if (isFree) return <FreeCompetitionCard key={key} {...item} />;
+  if (isPi) return <PiCompetitionCard key={key} {...item} />;
+  if (isCrypto) return <CryptoGiveawayCard key={key} {...item} />;
+
+
+return (
+  <CompetitionCard
+    key={key}
+    comp={{ ...item.comp, comingSoon: item.comp.comingSoon ?? false }}
+    title={item.title}
+    prize={item.prize}
+    fee={`${(item.comp.entryFee ?? 0).toFixed(2)} π`}
+    imageUrl={item.imageUrl}
+    endsAt={item.comp.endsAt}
+  />
+);
+
+
+ 
+}
+
+
+function TopWinnersCarousel() {
+  const winners = [
+    { name: 'Jack Jim', prize: 'Matchday Tickets', date: 'March 26th', image: '/images/winner2.png' },
+    { name: 'Shanahan', prize: 'Playstation 5', date: 'February 14th', image: '/images/winner2.png' },
+    { name: 'Emily Rose', prize: 'Luxury Car', date: 'January 30th', image: '/images/winner2.png' },
+    { name: 'John Doe', prize: '€10,000 Pi', date: 'December 15th', image: '/images/winner2.png' },
+  ];
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => setIndex((prev) => (prev + 1) % winners.length), 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const current = winners[index];
+  return (
+    <div className="max-w-md mx-auto mt-12 bg-white bg-opacity-10 backdrop-blur-lg rounded-xl shadow-lg p-6 text-white text-center">
+      <h2 className="text-2xl font-bold mb-4">🏆 Top Winner</h2>
+      <div className="flex justify-center items-center mb-4">
+        <Image src={current.image} alt={current.name} width={120} height={120} className="rounded-full border-4 border-blue-500" />
+      </div>
+      <h3 className="text-xl font-semibold">{current.name}</h3>
+      <p className="text-blue-300">{current.prize}</p>
+      <p className="text-sm text-white/70">{current.date}</p>
+    </div>
   );
 }

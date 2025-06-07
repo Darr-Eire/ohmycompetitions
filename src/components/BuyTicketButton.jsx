@@ -58,46 +58,37 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
           }
         },
 
-        onReadyForServerCompletion: async (paymentId, txid) => {
-          try {
-            console.log('🧾 Completing with txid:', txid);
-            const res = await fetch('/api/payments/complete', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ paymentId, txid }),
-            });
+       onReadyForServerCompletion: async (paymentId, txid) => {
+  try {
+    console.log('🧾 Completing with txid:', txid);
+    // Complete payment on your server
+    const res = await fetch('/api/payments/complete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ paymentId, txid }),
+    });
 
-            if (!res.ok) {
-              throw new Error(await res.text());
-            }
+    if (!res.ok) {
+      throw new Error(await res.text());
+    }
 
-            const data = await res.json();
-            console.log('[🎟️] Ticket issued:', data);
-            alert(`✅ Ticket purchased successfully!\n🎟️ ID: ${data.ticketId}`);
-          } catch (err) {
-            console.error('[ERROR] Completing payment:', err);
-            alert('❌ Server completion failed. See console.');
-          }
-        },
+    const data = await res.json();
+    console.log('[🎟️] Ticket issued:', data);
 
-        onCancel: (paymentId) => {
-          console.warn('[APP] Payment cancelled:', paymentId);
-        },
+    // --- NEW: Update tickets sold in your competitions collection
+    const updateRes = await fetch('/api/competitions/buy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug: competitionSlug, quantity }),
+    });
 
-        onError: (error, payment) => {
-          console.error('[APP] Payment error:', error, payment);
-        },
-      }
-    );
-  }; // ✅ Close handlePayment function here
+    if (!updateRes.ok) {
+      throw new Error('Failed to update tickets sold');
+    }
 
-  return (
-    <button
-      onClick={handlePayment}
-      className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-xl shadow transition"
-    >
-      Confirm Ticket Purchase
-    </button>
-  );
-} // ✅ Close component function
-
+    alert(`✅ Ticket purchased successfully!\n🎟️ ID: ${data.ticketId}`);
+  } catch (err) {
+    console.error('[ERROR] Completing payment:', err);
+    alert('❌ Server completion failed. See console.');
+  }
+}

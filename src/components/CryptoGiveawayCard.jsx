@@ -10,9 +10,10 @@ export default function CryptoGiveawayCard({
   href,
   token = 'BTC',
   totalTickets = 5000,
-  endsAt = '2025-06-01T23:59:59Z'
+  endsAt = '2025-06-01T23:59:59Z',
 }) {
   const widgetRef = useRef(null)
+  const comingSoon = comp?.comingSoon === true
 
   useEffect(() => {
     if (!widgetRef.current) return
@@ -24,15 +25,15 @@ export default function CryptoGiveawayCard({
     script.async = true
     script.innerHTML = JSON.stringify({
       symbol: `BINANCE:${token}USDT`,
-      width: "100%",
-      height: "200",
-      locale: "en",
-      dateRange: "1D",
-      colorTheme: "dark",
-      trendLineColor: "#00FF00",
-      underLineColor: "rgba(0, 255, 0, 0.15)",
+      width: '100%',
+      height: '200',
+      locale: 'en',
+      dateRange: '1D',
+      colorTheme: 'dark',
+      trendLineColor: '#00FF00',
+      underLineColor: 'rgba(0, 255, 0, 0.15)',
       isTransparent: true,
-      autosize: true
+      autosize: true,
     })
 
     widgetRef.current.appendChild(script)
@@ -48,7 +49,6 @@ export default function CryptoGiveawayCard({
 
   return (
     <div className="relative rounded-xl bg-gradient-to-br from-[#0f172a] to-[#1e293b] shadow-xl border border-cyan-600/20 overflow-hidden transition-all duration-300 max-w-sm mx-auto">
-
       {/* HOT Badge */}
       <div className="absolute top-2 right-2 z-10 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded shadow animate-pulse">
         🔥 HOT
@@ -59,29 +59,42 @@ export default function CryptoGiveawayCard({
         <div ref={widgetRef} className="w-full h-[200px]" />
       </div>
 
-      {/* Competition Info */}
-      <div className="p-4 text-center space-y-2">
-        <h3 className="text-lg font-bold text-white font-bold">{title}</h3>
-        <p className="text-sm text-gray-300">{prize}</p>
-        <p className="text-sm text-white font-semibold">Entry Fee: {fee}</p>
-        <p className="text-xs text-white">Total Tickets: {totalTickets}</p>
-        <p className="text-xs text-white"> {formattedEndDate}</p>
+  
+{/* Competition Info */}
+<div className="p-4 text-center space-y-2">
+  <h3 className="text-lg font-bold text-white">{title}</h3>
+  <p className="text-sm text-gray-300">{prize}</p>
+  <p className="text-sm text-white font-semibold">
+    Entry Fee: {comingSoon ? 'TBH' : fee}
+  </p>
+  <p className="text-xs text-white">
+    Total Tickets: {comingSoon ? 'TBH' : totalTickets.toLocaleString()}
+  </p>
+  <p className="text-xs text-white">
+    {comingSoon ? 'TBH' : formattedEndDate}
+  </p>
 
-        {/* CTA */}
-        <Link
-          href={href || (comp?.slug ? `/competitions/${comp.slug}` : '#')}
-          className="inline-block px-5 py-2 mt-2 rounded-md bg-cyan-500 text-black font-semibold shadow hover:bg-cyan-400 transition"
-        >
-          Enter Now
-        </Link>
-      </div>
+  {/* CTA */}
+{comingSoon ? (
+  <button
+    disabled
+    className="w-full py-2 rounded-md bg-gradient-to-r from-[#00ffd5] to-[#0077ff] opacity-60 cursor-not-allowed font-bold text-black shadow mt-2"
+  >
+    Coming Soon
+  </button>
+
+
+
+  ) : (
+    <Link
+      href={href || (comp?.slug ? `/competitions/${comp.slug}` : '#')}
+      className="inline-block px-5 py-2 mt-2 rounded-md bg-cyan-500 text-black font-semibold shadow hover:bg-cyan-400 transition"
+    >
+      Enter Now
+    </Link>
+  )}
+</div>
+
     </div>
   )
 }
-
-
-
-
-
-
-
