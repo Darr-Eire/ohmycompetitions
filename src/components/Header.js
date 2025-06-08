@@ -5,7 +5,7 @@ import { useState, useRef, useEffect } from 'react';
 
 const NAV_ITEMS = [
   ['Home', '/homepage'],
-  ['My Account', '/account'],
+  ['Profile', '/account/profile'],   // 🔥 replaced My Account
   ['All Competitions', '/competitions'],
   ['Try Your Luck', '/try-your-luck'],
   ['Forums', '/forums'],
@@ -15,6 +15,7 @@ const NAV_ITEMS = [
   ['How We Got Started', '/how-we-got-started'],
   ['Partners & Sponsors', '/partners'],
 ];
+
 
 const COMPETITION_SUB_ITEMS = [
   ['Pi Cash Code', '/pi-cash-code'],
