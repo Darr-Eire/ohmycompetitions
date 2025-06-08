@@ -52,7 +52,7 @@ export default function CompetitionCard({
       if (days === 0 && hrs === 0) timeStr += `${secs}S`;
 
       setTimeLeft(timeStr.trim());
-      setStatus('LIVE');
+      setStatus('LIVE NOW');
     }, 1000);
 
     return () => clearInterval(interval);
