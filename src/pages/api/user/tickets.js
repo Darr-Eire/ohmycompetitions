@@ -9,14 +9,14 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
-  const { piUserId } = req.body;
+  const { email } = req.body;
 
-  if (!piUserId) {
-    return res.status(400).json({ message: 'Missing Pi User ID' });
+  if (!email) {
+    return res.status(400).json({ message: 'Missing email' });
   }
 
   try {
-    const user = await User.findOne({ piUserId });
+    const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
