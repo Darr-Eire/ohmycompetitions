@@ -71,9 +71,9 @@ export default function AdminCompetitionsPage() {
           {competitions.map(comp => (
             <tr key={comp._id} className="border-b border-cyan-800">
               <td className="p-3">{comp.title}</td>
-              <td className="p-3">{comp.comp?.slug ?? '—'}</td>
-              <td className="p-3">{comp.theme}</td>
-              <td className="p-3">{comp.comp?.totalTickets?.toLocaleString() ?? '—'}</td>
+              <td className="p-3">{comp.slug ?? '—'}</td>
+              <td className="p-3">{comp.theme ?? '—'}</td>
+              <td className="p-3">{comp.totalTickets?.toLocaleString() ?? '—'}</td>
               <td className="p-3 space-x-3">
                 <button onClick={() => handleDelete(comp._id)} className="btn-danger">Delete</button>
               </td>

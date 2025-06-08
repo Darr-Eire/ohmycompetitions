@@ -1,44 +1,41 @@
+// src/pages/api/auth/[...nextauth].js
+
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { connectToDatabase } from '../../../lib/dbConnect.js';
-import User from '../../../models/User.js';
-import bcrypt from 'bcryptjs';
 
-export const authOptions = {
+export default NextAuth({
   providers: [
     CredentialsProvider({
-      name: 'Credentials',
+      name: 'Admin Login',
       credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' }
+        username: { label: 'Username', type: 'text' },
+        password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        await connectToDatabase();
-        const user = await User.findOne({ email: credentials.email });
-
-        if (!user) return null;
-
-        const isValid = await bcrypt.compare(credentials.password, user.password);
-        if (!isValid) return null;
-
-        return { id: user._id, email: user.email, role: user.role };
-      }
-    })
+        if (
+          credentials?.username === process.env.ADMIN_USERNAME &&
+          credentials?.password === process.env.ADMIN_PASSWORD
+        ) {
+          return { id: 1, name: 'Admin', role: 'admin' }; // <-- ADD role here
+        }
+        return null;
+      },
+    }),
   ],
+  session: { strategy: 'jwt' },
+  pages: {
+    signIn: '/admin/login',
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+
   callbacks: {
-    async session({ session, token }) {
-      session.user.id = token.sub;
-      session.user.role = token.role;
-      return session;
-    },
     async jwt({ token, user }) {
       if (user) token.role = user.role;
       return token;
-    }
+    },
+    async session({ session, token }) {
+      session.user.role = token.role;
+      return session;
+    },
   },
-  pages: {
-    signIn: '/admin/login'
-  }
-};
-
-export default NextAuth(authOptions);
+});
