@@ -1,6 +1,6 @@
 export function loadPiSdk(setSdkReady) {
   if (window.Pi) {
-    window.Pi.init({ version: '2.0', sandbox: process.env.NODE_ENV !== 'production' });
+    window.Pi.init({ version: '2.0', sandbox: false });
     setSdkReady(true);
     return;
   }
@@ -10,7 +10,7 @@ export function loadPiSdk(setSdkReady) {
   script.async = true;
 
   script.onload = () => {
-    window.Pi.init({ version: '2.0', sandbox: process.env.NODE_ENV !== 'production' });
+    window.Pi.init({ version: '2.0', sandbox: false });
     setSdkReady(true);
   };
 
