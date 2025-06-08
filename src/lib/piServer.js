@@ -1,17 +1,24 @@
-import crypto from 'crypto';
+let sdkLoaded = false;
 
-export function verifyPayment(payment, developerSecret) {
-  const fields = [
-    payment.identifier,
-    payment.user_uid,
-    payment.amount,
-    payment.currency,
-    payment.created_at,
-  ];
-  const payload = fields.join('|');
-  const hmac = crypto
-    .createHmac('sha256', developerSecret)
-    .update(payload)
-    .digest('hex');
-  return hmac === payment.txn_signature;
+export function loadPiSdk(setSdkReady) {
+  if (sdkLoaded) {
+    setSdkReady(true);
+    return;
+  }
+
+  const script = document.createElement('script');
+  script.src = 'https://sdk.minepi.com/pi-sdk.js';
+  script.async = true;
+
+  script.onload = () => {
+    sdkLoaded = true;
+    setSdkReady(true);
+  };
+
+  script.onerror = () => {
+    console.error('Failed to load Pi SDK');
+    setSdkReady(false);
+  };
+
+  document.body.appendChild(script);
 }
