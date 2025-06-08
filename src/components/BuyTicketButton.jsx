@@ -13,36 +13,45 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
   }, []);
 
   const handlePayment = async () => {
+    if (!sdkReady) {
+      setError('Pi SDK not ready. Please wait and try again.');
+      return;
+    }
+
     setProcessing(true);
     setError(null);
 
     try {
+      // Authenticate user before any SDK calls
+      const user = await window.Pi.authenticate(['username', 'payments']);
+      console.log('Authenticated user:', user);
+
+      // Check for any pending payment
+      const currentPayment = await fetchCurrentPaymentSafe();
+
+      if (currentPayment) {
+        console.log('Pending payment found:', currentPayment);
+
+        if (currentPayment.status === 'INCOMPLETE') {
+          setError('You have a pending payment. Complete or wait for it to expire.');
+          setProcessing(false);
+          return;
+        }
+
+        if (currentPayment.status === 'PENDING') {
+          setError('Your previous payment is still waiting for developer approval.');
+          setProcessing(false);
+          return;
+        }
+      }
+
+      // No pending payment, proceed
       const paymentData = {
         amount: (entryFee * quantity).toFixed(8),
         memo: `Ticket purchase for ${competitionSlug}`,
         metadata: { competitionSlug, quantity }
       };
 
-      // First: check for existing payment
-      const currentPayment = await window.Pi.createPayment.fetchCurrentPayment();
-
-      if (currentPayment) {
-        console.log('Pending payment found:', currentPayment);
-
-        if (currentPayment.status === 'INCOMPLETE') {
-          setError('You have a pending payment already. Please complete or wait for it to expire.');
-          setProcessing(false);
-          return;
-        }
-
-        if (currentPayment.status === 'PENDING') {
-          setError('Previous payment still waiting for developer approval. Try again later.');
-          setProcessing(false);
-          return;
-        }
-      }
-
-      // No pending payment -> proceed
       const payment = await window.Pi.createPayment(paymentData);
 
       payment.onReadyForServerApproval(async (paymentId) => {
@@ -61,6 +70,7 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ paymentId, txid }),
         });
+        setProcessing(false);
       });
 
       payment.onCancelled(() => {
@@ -76,8 +86,19 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
 
     } catch (err) {
       console.error('Unexpected error:', err);
-      setError('An unexpected error occurred.');
+      setError('An unexpected error occurred. Please try again.');
       setProcessing(false);
+    }
+  };
+
+  // Safe wrapper for fetchCurrentPayment() to avoid crashes on Sandbox
+  const fetchCurrentPaymentSafe = async () => {
+    try {
+      const payment = await window.Pi.createPayment.fetchCurrentPayment();
+      return payment;
+    } catch (err) {
+      console.warn('No current payment found or SDK error:', err);
+      return null;
     }
   };
 
