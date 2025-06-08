@@ -14,7 +14,7 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity, p
 
   const handlePayment = async () => {
     if (!sdkReady) {
-      setError('Pi SDK not ready. Please wait.');
+      setError('Pi SDK not ready.');
       return;
     }
 
@@ -27,25 +27,25 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity, p
     setError(null);
 
     try {
-      // 1️⃣ Server-side payment status check first
+      // Server-side pending check
       const response = await fetch(`/api/payments/status?userUid=${piUser.uid}`);
       const status = await response.json();
 
       if (status.pending) {
-        setError('You have a pending payment. Please wait or complete it.');
+        setError('Pending payment found. Complete or wait.');
         setProcessing(false);
         return;
       }
 
-      // 2️⃣ Client-side SDK check to prevent cached stuck payments
+      // Client-side SDK check for local stuck payments
       const clientPayment = await fetchCurrentPaymentSafe();
       if (clientPayment && ['INCOMPLETE', 'PENDING'].includes(clientPayment.status)) {
-        setError('You still have an unresolved payment in Pi SDK. Please wait until it clears.');
+        setError('Local SDK payment unresolved. Please wait.');
         setProcessing(false);
         return;
       }
 
-      // 3️⃣ Fully clear — start new payment
+      // New payment flow begins
       const paymentData = {
         amount: (entryFee * quantity).toFixed(8),
         memo: `Ticket purchase for ${competitionSlug}`,
@@ -92,7 +92,7 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity, p
     try {
       return await window.Pi.createPayment.fetchCurrentPayment();
     } catch (err) {
-      console.warn('No current payment or SDK error:', err);
+      console.warn('SDK state error:', err);
       return null;
     }
   };
@@ -108,9 +108,7 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity, p
       </button>
 
       {error && (
-        <div className="mt-4 text-red-500 font-semibold">
-          {error}
-        </div>
+        <div className="mt-4 text-red-500 font-semibold">{error}</div>
       )}
     </div>
   );

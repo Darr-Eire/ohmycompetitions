@@ -1,33 +1,23 @@
-/**
- * Loads the Pi SDK dynamically in the browser.
- * Calls setReady(true) once the SDK is fully initialized.
- */
-export function loadPiSdk(setReady) {
-  if (typeof window === 'undefined') return;
-
-  if (window.Pi && typeof window.Pi.createPayment === 'function') {
-    setReady(true);
+export function loadPiSdk(setSdkReady) {
+  if (window.Pi) {
+    window.Pi.init({ version: '2.0', sandbox: process.env.NODE_ENV !== 'production' });
+    setSdkReady(true);
     return;
   }
 
   const script = document.createElement('script');
   script.src = 'https://sdk.minepi.com/pi-sdk.js';
   script.async = true;
+
   script.onload = () => {
-    const check = setInterval(() => {
-      if (window.Pi && typeof window.Pi.createPayment === 'function') {
-        clearInterval(check);
-        window.Pi.init({ version: '2.0' });
-        setReady(true);
-        console.log('✅ Pi SDK loaded');
-      }
-    }, 100);
+    window.Pi.init({ version: '2.0', sandbox: process.env.NODE_ENV !== 'production' });
+    setSdkReady(true);
+  };
+
+  script.onerror = () => {
+    console.error('Failed to load Pi SDK');
+    setSdkReady(false);
   };
 
   document.body.appendChild(script);
-}
-
-// Placeholder payment session creator
-export function createPiPaymentSession(paymentDetails) {
-  console.log('🔧 createPiPaymentSession not implemented', paymentDetails);
 }
