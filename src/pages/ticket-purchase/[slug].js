@@ -4,11 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import BuyTicketButton from '@components/BuyTicketButton';
+import { loadPiSdk } from '@lib/pi';
 
-// Import competition data
+// Import your competition data
 import { techItems, premiumItems, piItems, dailyItems, freeItems, cryptoGiveawaysItems } from '../../data/competitions';
 
-// Flatten competitions by slug
+// Flatten competitions into object lookup by slug
 const flattenCompetitions = [
   ...techItems,
   ...premiumItems,
@@ -31,20 +32,27 @@ flattenCompetitions.forEach(item => {
   };
 });
 
-const FREE_TICKET_COMPETITIONS = ['pi-to-the-moon']; // Slugs with free tickets
+// Which comps have free tickets
+const FREE_TICKET_COMPETITIONS = ['pi-to-the-moon'];
 
 export default function TicketPurchasePage() {
   const router = useRouter();
   const { slug } = router.query;
   const comp = COMPETITIONS[slug];
 
+  const [sdkReady, setSdkReady] = useState(false);
   const [piUser, setPiUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const [loadingLogin, setLoadingLogin] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [sharedBonus, setSharedBonus] = useState(false);
 
-  // Check if Pi user is logged in
+  // Load Pi SDK when component mounts
+  useEffect(() => {
+    loadPiSdk(setSdkReady);
+  }, []);
+
+  // Attempt auto-login via getCurrentPioneer()
   useEffect(() => {
     if (!router.isReady || !window?.Pi?.getCurrentPioneer) {
       setLoadingUser(false);
@@ -60,7 +68,7 @@ export default function TicketPurchasePage() {
       .finally(() => setLoadingUser(false));
   }, [router.isReady]);
 
-  // Load free ticket claim & share status from localStorage
+  // Load free ticket claim status
   useEffect(() => {
     if (!slug || !FREE_TICKET_COMPETITIONS.includes(slug)) return;
 
@@ -69,7 +77,7 @@ export default function TicketPurchasePage() {
     setSharedBonus(localStorage.getItem(`${slug}-shared`) === 'true');
   }, [slug]);
 
-  // Claim free ticket logic
+  // Handle free ticket claiming
   const claimFreeTicket = () => {
     const maxTickets = sharedBonus ? 2 : 1;
     if (quantity >= maxTickets) {
@@ -81,7 +89,6 @@ export default function TicketPurchasePage() {
     localStorage.setItem(`${slug}-claimed`, updated);
   };
 
-  // Handle sharing for bonus ticket
   const handleShare = () => {
     if (sharedBonus) {
       alert('You already received your bonus ticket.');
@@ -92,7 +99,6 @@ export default function TicketPurchasePage() {
     claimFreeTicket();
   };
 
-  // Pi login handler
   const handlePiLogin = async () => {
     setLoadingLogin(true);
     if (!window?.Pi) {
@@ -101,7 +107,7 @@ export default function TicketPurchasePage() {
       return;
     }
     try {
-      const user = await window.Pi.authenticate(['username', 'payments']);
+      const user = await window.Pi.authenticate(['username']);
       setPiUser(user);
     } finally {
       setLoadingLogin(false);
@@ -127,7 +133,7 @@ export default function TicketPurchasePage() {
 
   return (
     <div className="bg-[#0b1120] min-h-screen text-white py-6 px-4">
-      <div className="max-w-xl mx-auto border border-blue-500 rounded-xl shadow-xl overflow-hidden bg-[#0b1120]">
+      <div className="max-w-xl mx-auto border border-blue-500 rounded-xl shadow-xl bg-[#0b1120]">
         <div className="bg-gradient-to-r from-cyan-400 to-blue-500 px-4 py-3 text-center">
           <h1 className="text-xl sm:text-2xl font-bold text-black uppercase">{comp.title}</h1>
         </div>
@@ -145,7 +151,7 @@ export default function TicketPurchasePage() {
           <div className="max-w-md mx-auto text-sm text-white space-y-2">
             <div className="flex justify-between">
               <span className="font-semibold">Date</span>
-              <span>{new Date(comp.endsAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+              <span>{new Date(comp.endsAt).toLocaleDateString('en-GB')}</span>
             </div>
 
             <div className="flex justify-between">
@@ -171,11 +177,8 @@ export default function TicketPurchasePage() {
 
           {isFree ? (
             <>
-              <p className="text-cyan-300 font-semibold text-lg">
-                Free Ticket Claimed: {quantity}/2
-              </p>
-              <button
-                onClick={claimFreeTicket}
+              <p className="text-cyan-300 font-semibold text-lg">Free Ticket Claimed: {quantity}/2</p>
+              <button onClick={claimFreeTicket}
                 disabled={quantity >= (sharedBonus ? 2 : 1)}
                 className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 px-4 rounded-xl mb-3"
               >
@@ -183,10 +186,8 @@ export default function TicketPurchasePage() {
               </button>
 
               {!sharedBonus && (
-                <button
-                  onClick={handleShare}
-                  className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold py-3 px-4 rounded-xl"
-                >
+                <button onClick={handleShare}
+                  className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold py-3 px-4 rounded-xl">
                   Share for Bonus Ticket
                 </button>
               )}
@@ -194,18 +195,13 @@ export default function TicketPurchasePage() {
           ) : (
             <>
               <div className="flex justify-center gap-4">
-                <button
-                  onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                  className="bg-blue-500 px-4 py-1 rounded-full disabled:opacity-50"
-                  disabled={quantity <= 1}
-                >
+                <button onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                  className="bg-blue-500 px-4 py-1 rounded-full disabled:opacity-50" disabled={quantity <= 1}>
                   −
                 </button>
                 <span className="text-lg font-semibold">{quantity}</span>
-                <button
-                  onClick={() => setQuantity(q => q + 1)}
-                  className="bg-blue-500 px-4 py-1 rounded-full"
-                >
+                <button onClick={() => setQuantity(q => q + 1)}
+                  className="bg-blue-500 px-4 py-1 rounded-full">
                   +
                 </button>
               </div>
@@ -218,29 +214,23 @@ export default function TicketPurchasePage() {
           )}
 
           <p className="text-xs mt-1 text-gray-400">
-            <Link
-              href="/terms"
-              className="underline hover:text-cyan-400"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <Link href="/terms" className="underline hover:text-cyan-400" target="_blank" rel="noopener noreferrer">
               Terms & Conditions
             </Link>
           </p>
 
-          {!isFree && (loadingUser ? (
-            <p className="text-center text-white">Checking session…</p>
-          ) : !piUser ? (
-            <button
-              onClick={handlePiLogin}
-              disabled={loadingLogin}
-              className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 px-4 rounded-xl"
-            >
-              {loadingLogin ? 'Logging in…' : 'Log in with Pi to continue'}
-            </button>
-          ) : (
-            <BuyTicketButton competitionSlug={slug} entryFee={comp.entryFee} quantity={quantity} />
-          ))}
+          {!isFree && (
+            loadingUser ? (
+              <p className="text-center text-white">Checking session…</p>
+            ) : !piUser ? (
+              <button onClick={handlePiLogin} disabled={loadingLogin}
+                className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 px-4 rounded-xl">
+                {loadingLogin ? 'Logging in…' : 'Log in with Pi to continue'}
+              </button>
+            ) : (
+              <BuyTicketButton competitionSlug={slug} entryFee={comp.entryFee} quantity={quantity} />
+            )
+          )}
         </div>
       </div>
     </div>
