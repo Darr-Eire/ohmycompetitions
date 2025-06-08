@@ -7,8 +7,7 @@ export default async function handler(req, res) {
   const appAccessKey = process.env.PI_API_KEY;
 
   try {
-    await axios.post(
-      `https://api.minepi.com/v2/payments/${paymentId}/complete`,
+    await axios.post(`https://sandbox.minepi.com/v2/payments/${paymentId}/complete`,
       { txid },
       { headers: { Authorization: `Key ${appAccessKey}` } }
     );
@@ -17,6 +16,6 @@ export default async function handler(req, res) {
 
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Completion failed' });
   }
 }

@@ -8,21 +8,17 @@ export default async function handler(req, res) {
 
   try {
     const { data } = await axios.get(
-      `https://api.minepi.com/v2/payments?user_uid=${userUid}`,
+      `https://sandbox.minepi.com/v2/payments?user_uid=${userUid}`,
       { headers: { Authorization: `Key ${appAccessKey}` } }
     );
 
-    if (!data.data || data.data.length === 0) {
-      return res.status(200).json({ pending: false });
-    }
+    const latest = data?.data?.[0];
+    const pending = latest && ['INCOMPLETE', 'PENDING'].includes(latest.status);
 
-    const latestPayment = data.data[0];
-    const isPending = ['INCOMPLETE', 'PENDING'].includes(latestPayment.status);
-
-    res.status(200).json({ pending: isPending });
+    res.status(200).json({ pending });
 
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Status check failed' });
   }
 }
