@@ -7,12 +7,11 @@ import User from 'models/User';
 
 export default async function handler(req, res) {
   const session = await getServerSession(req, res, authOptions);
-  if (!session) {
+  if (!session?.user?.email) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
   await dbConnect();
-
   const email = session.user.email;
 
   if (req.method === 'GET') {
@@ -30,9 +29,9 @@ export default async function handler(req, res) {
         social: user.social || {},
       };
 
-      res.status(200).json(profile);
+      return res.status(200).json(profile);
     } catch (err) {
-      res.status(500).json({ message: 'Failed to load profile' });
+      return res.status(500).json({ message: 'Failed to load profile' });
     }
   }
 
@@ -44,23 +43,24 @@ export default async function handler(req, res) {
         { email },
         {
           $set: {
-            name: data.name,
-            country: data.country,
-            flag: data.flag,
-            profileImage: data.profileImage,
-            bio: data.bio,
-            birthdate: data.birthdate,
-            social: data.social,
+            name: data.name || '',
+            country: data.country || '',
+            flag: data.flag || '',
+            profileImage: data.profileImage || '',
+            bio: data.bio || '',
+            birthdate: data.birthdate || '',
+            social: data.social || {},
           },
         },
-        { new: true, upsert: false }
+        { new: true }
       );
 
-      res.status(200).json({ message: 'Profile updated', user: updated });
+      return res.status(200).json({ message: 'Profile updated', user: updated });
     } catch (err) {
-      res.status(500).json({ message: 'Failed to save profile' });
+      return res.status(500).json({ message: 'Failed to save profile' });
     }
   }
 
   res.setHeader('Allow', ['GET', 'POST']);
+  res.status(405).end(`Method ${req.method} Not Allowed`);
 }
