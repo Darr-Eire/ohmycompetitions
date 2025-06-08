@@ -27,14 +27,14 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity, p
     setError(null);
 
     try {
-      const currentPayment = await fetchCurrentPaymentSafe();
+      // NEW: Server-side payment status check
+      const response = await fetch(`/api/payments/status?userUid=${piUser.uid}`);
+      const status = await response.json();
 
-      if (currentPayment) {
-        if (['INCOMPLETE', 'PENDING'].includes(currentPayment.status)) {
-          setError('You have a pending payment. Please complete or wait.');
-          setProcessing(false);
-          return;
-        }
+      if (status.pending) {
+        setError('You have a pending payment. Please wait or complete it.');
+        setProcessing(false);
+        return;
       }
 
       const paymentData = {
@@ -76,15 +76,6 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity, p
       console.error('Unexpected error:', err);
       setError('Unexpected error occurred.');
       setProcessing(false);
-    }
-  };
-
-  const fetchCurrentPaymentSafe = async () => {
-    try {
-      return await window.Pi.createPayment.fetchCurrentPayment();
-    } catch (err) {
-      console.warn('No pending payment or SDK error', err);
-      return null;
     }
   };
 

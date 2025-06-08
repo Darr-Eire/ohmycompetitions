@@ -17,7 +17,15 @@ function onIncompletePaymentFound(payment) {
 export async function makePiPayment(entryFee, competitionSlug, quantity) {
   try {
     // Always check if any pending payment exists first
-    const currentPayment = await fetchCurrentPaymentSafe();
+   const fetchCurrentPaymentSafe = async () => {
+  try {
+    return await window.Pi.createPayment.fetchCurrentPayment();
+  } catch (err) {
+    console.warn('No pending payment or SDK error', err);
+    return null;
+  }
+}
+
 
     if (currentPayment) {
       if (['INCOMPLETE', 'PENDING'].includes(currentPayment.status)) {
