@@ -13,7 +13,8 @@ const piCashCodeSchema = new mongoose.Schema({
 const PiCashCode = mongoose.models.PiCashCode || mongoose.model('PiCashCode', piCashCodeSchema);
 
 // Your live connection string
-const MONGO_URI = 'mongodb+srv://ohmycompetitions:190990Dj@ohmycompetitions.ffrvvr5.mongodb.net/ohmycompetitions?retryWrites=true&w=majority&appName=ohmycompetitions';
+const MONGO_URI = process.env.MONGO_URI;
+
 
 async function seed() {
   try {
