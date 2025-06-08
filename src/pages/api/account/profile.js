@@ -16,8 +16,12 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     try {
-      const user = await User.findOne({ email }).lean();
-      if (!user) return res.status(404).json({ message: 'User not found' });
+      let user = await User.findOne({ email });
+
+      // Auto-create profile if not exists
+      if (!user) {
+        user = await User.create({ email });
+      }
 
       const profile = {
         name: user.name || '',
@@ -52,7 +56,7 @@ export default async function handler(req, res) {
             social: data.social || {},
           },
         },
-        { new: true }
+        { new: true, upsert: true }
       );
 
       return res.status(200).json({ message: 'Profile updated', user: updated });
