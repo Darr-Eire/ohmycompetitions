@@ -14,7 +14,7 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
 
   const handlePayment = async () => {
     if (!sdkReady) {
-      setError('Pi SDK not ready. Please wait and try again.');
+      setError('Pi SDK not ready. Please wait.');
       return;
     }
 
@@ -22,30 +22,19 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
     setError(null);
 
     try {
-      // Authenticate user before any SDK calls
       const user = await window.Pi.authenticate(['username', 'payments']);
       console.log('Authenticated user:', user);
 
-      // Check for any pending payment
       const currentPayment = await fetchCurrentPaymentSafe();
 
       if (currentPayment) {
-        console.log('Pending payment found:', currentPayment);
-
-        if (currentPayment.status === 'INCOMPLETE') {
-          setError('You have a pending payment. Complete or wait for it to expire.');
-          setProcessing(false);
-          return;
-        }
-
-        if (currentPayment.status === 'PENDING') {
-          setError('Your previous payment is still waiting for developer approval.');
+        if (['INCOMPLETE', 'PENDING'].includes(currentPayment.status)) {
+          setError('You have a pending payment. Please complete or wait.');
           setProcessing(false);
           return;
         }
       }
 
-      // No pending payment, proceed
       const paymentData = {
         amount: (entryFee * quantity).toFixed(8),
         memo: `Ticket purchase for ${competitionSlug}`,
@@ -55,7 +44,6 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
       const payment = await window.Pi.createPayment(paymentData);
 
       payment.onReadyForServerApproval(async (paymentId) => {
-        console.log('Payment ready for server approval:', paymentId);
         await fetch('/api/payments/approve', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -64,7 +52,6 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
       });
 
       payment.onReadyForServerCompletion(async (paymentId, txid) => {
-        console.log('Payment ready for server completion:', paymentId, txid);
         await fetch('/api/payments/complete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -73,31 +60,24 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
         setProcessing(false);
       });
 
-      payment.onCancelled(() => {
-        console.log('Payment cancelled');
-        setProcessing(false);
-      });
-
+      payment.onCancelled(() => setProcessing(false));
       payment.onError((err) => {
         console.error('Payment error:', err);
-        setError('Payment failed, please try again.');
+        setError('Payment failed.');
         setProcessing(false);
       });
 
     } catch (err) {
       console.error('Unexpected error:', err);
-      setError('An unexpected error occurred. Please try again.');
+      setError('Unexpected error occurred.');
       setProcessing(false);
     }
   };
 
-  // Safe wrapper for fetchCurrentPayment() to avoid crashes on Sandbox
   const fetchCurrentPaymentSafe = async () => {
     try {
-      const payment = await window.Pi.createPayment.fetchCurrentPayment();
-      return payment;
+      return await window.Pi.createPayment.fetchCurrentPayment();
     } catch (err) {
-      console.warn('No current payment found or SDK error:', err);
       return null;
     }
   };
@@ -112,11 +92,7 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
         {processing ? 'Processing...' : 'Confirm Ticket Purchase'}
       </button>
 
-      {error && (
-        <div className="mt-4 text-red-500 font-semibold">
-          {error}
-        </div>
-      )}
+      {error && <div className="mt-4 text-red-500 font-semibold">{error}</div>}
     </div>
   );
 }

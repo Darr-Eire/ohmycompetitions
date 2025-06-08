@@ -1,19 +1,21 @@
-// src/lib/piServer.js
-import { Access } from 'pi-access-sdk';
+// lib/piServer.js
 
-const client = new Access({ apiKey: process.env.PI_API_KEY });
+import crypto from 'crypto';
 
-export async function createPiPayment({ amount, memo, metadata }) {
-  const payment = await client.createPayment({
-    amount: amount.toString(),
-    memo,
-    metadata,
-  });
-  return payment.paymentUrl || payment.url;
-}
+export function verifyPayment(payment, developerSecret) {
+  const fields = [
+    payment.identifier,
+    payment.user_uid,
+    payment.amount,
+    payment.currency,
+    payment.created_at,
+  ];
 
-// Correct export for verifyPiTransaction
-export async function verifyPiTransaction(paymentId) {
-  const payment = await client.getPayment(paymentId);
-  return payment && payment.status === 'completed';
+  const payload = fields.join('|');
+  const hmac = crypto
+    .createHmac('sha256', developerSecret)
+    .update(payload)
+    .digest('hex');
+
+  return hmac === payment.txn_signature;
 }

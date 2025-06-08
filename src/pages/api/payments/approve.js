@@ -1,36 +1,46 @@
-// pages/api/payments/approve.js
+import axios from 'axios';
+import { verifyPayment } from '../../../lib/piServer';
+import dbConnect from '../../../lib/dbConnect';
+import Competition from '../../../models/Competition';
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  if (req.method !== 'POST') return res.status(405).end();
 
   const { paymentId } = req.body;
 
-  if (!paymentId) {
-    return res.status(400).json({ error: 'Missing paymentId' });
-  }
-
   try {
-    const piResponse = await fetch(`https://api.minepi.com/v2/payments/${paymentId}/approve`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Key ${process.env.PI_API_KEY}`,  // This must be set securely in Vercel/ENV
-        'Content-Type': 'application/json',
-      },
-    });
+    const appAccessKey = process.env.PI_API_KEY;
+    const developerSecret = process.env.PI_SECRET_KEY;
 
-    const result = await piResponse.json();
+    const paymentResponse = await axios.get(
+      `https://api.minepi.com/v2/payments/${paymentId}`,
+      { headers: { Authorization: `Key ${appAccessKey}` } }
+    );
 
-    if (!piResponse.ok) {
-      console.error('[❌] Pi Server Approval Failed:', result);
-      return res.status(500).json({ error: 'Failed to approve payment', details: result });
-    }
+    const payment = paymentResponse.data;
+    const isValid = verifyPayment(payment, developerSecret);
 
-    console.log('[✅] Payment approved successfully:', result);
-    return res.status(200).json({ success: true, data: result });
+    if (!isValid) return res.status(400).json({ error: 'Invalid payment signature' });
+
+    const { competitionSlug, quantity } = payment.metadata;
+
+    // Update ticket sales here (MongoDB)
+    await dbConnect();
+
+    await Competition.updateOne(
+      { slug: competitionSlug },
+      { $inc: { 'comp.ticketsSold': quantity } }
+    );
+
+    await axios.post(
+      `https://api.minepi.com/v2/payments/${paymentId}/approve`,
+      {},
+      { headers: { Authorization: `Key ${appAccessKey}` } }
+    );
+
+    res.status(200).json({ success: true });
   } catch (err) {
-    console.error('[🔥] Server error during Pi approval:', err);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('Approve error:', err);
+    res.status(500).json({ error: 'Server error approving payment' });
   }
 }
