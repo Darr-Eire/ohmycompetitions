@@ -17,7 +17,6 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity, p
       setError('Pi SDK not ready.');
       return;
     }
-
     if (!piUser) {
       setError('Please log in with Pi first.');
       return;
@@ -27,7 +26,7 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity, p
     setError(null);
 
     try {
-      // Server-side pending check
+      // Backend payment status check
       const response = await fetch(`/api/payments/status?userUid=${piUser.uid}`);
       const status = await response.json();
       if (status.pending) {
@@ -36,10 +35,10 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity, p
         return;
       }
 
-      // Client SDK check
+      // Client SDK state check
       const clientPayment = await fetchCurrentPaymentSafe();
       if (clientPayment && ['INCOMPLETE', 'PENDING'].includes(clientPayment.status)) {
-        setError('Unresolved SDK payment. Please wait or refresh.');
+        setError('Unresolved payment in SDK. Please refresh or wait.');
         setProcessing(false);
         return;
       }
