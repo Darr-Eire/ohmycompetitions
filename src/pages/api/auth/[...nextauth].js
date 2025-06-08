@@ -16,25 +16,38 @@ export default NextAuth({
           credentials?.username === process.env.ADMIN_USERNAME &&
           credentials?.password === process.env.ADMIN_PASSWORD
         ) {
-          return { id: 1, name: 'Admin', role: 'admin' }; // <-- ADD role here
+          return {
+            id: 1,
+            name: 'Admin',
+            email: process.env.ADMIN_EMAIL,   // ✅ Include email here
+            role: 'admin'
+          };
         }
         return null;
       },
     }),
   ],
+
   session: { strategy: 'jwt' },
+
   pages: {
     signIn: '/admin/login',
   },
+
   secret: process.env.NEXTAUTH_SECRET,
 
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.role = user.role;
+      if (user) {
+        token.role = user.role;
+        token.email = user.email;   // ✅ add email into token
+      }
       return token;
     },
+
     async session({ session, token }) {
       session.user.role = token.role;
+      session.user.email = token.email;  // ✅ attach email to session.user
       return session;
     },
   },
