@@ -27,7 +27,7 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity, p
     setError(null);
 
     try {
-      // 1️⃣ Server-side backend check
+      // NEW: Server-side payment status check
       const response = await fetch(`/api/payments/status?userUid=${piUser.uid}`);
       const status = await response.json();
 
@@ -37,18 +37,6 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity, p
         return;
       }
 
-      // 2️⃣ Client-side SDK check (this is what was missing)
-      const clientPayment = await fetchCurrentPaymentSafe();
-
-      if (clientPayment) {
-        if (['INCOMPLETE', 'PENDING'].includes(clientPayment.status)) {
-          setError('You still have an unresolved payment in Pi SDK. Please wait until it expires.');
-          setProcessing(false);
-          return;
-        }
-      }
-
-      // 3️⃣ Safe to create payment
       const paymentData = {
         amount: (entryFee * quantity).toFixed(8),
         memo: `Ticket purchase for ${competitionSlug}`,
@@ -88,15 +76,6 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity, p
       console.error('Unexpected error:', err);
       setError('Unexpected error occurred.');
       setProcessing(false);
-    }
-  };
-
-  const fetchCurrentPaymentSafe = async () => {
-    try {
-      return await window.Pi.createPayment.fetchCurrentPayment();
-    } catch (err) {
-      console.warn('No current payment or SDK error:', err);
-      return null;
     }
   };
 
