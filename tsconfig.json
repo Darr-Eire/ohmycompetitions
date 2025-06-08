@@ -22,14 +22,13 @@
       "@context/*": ["context/*"],
       "@data/*": ["data/*"],
       "@lib/*": ["lib/*"],
-      "@utils/*": ["utils/*"],
       "@models/*": ["models/*"],
-      "@styles/*": ["styles/*"]
+      "@styles/*": ["styles/*"],
+      "@utils/*": ["utils/*"]
     }
   },
   "include": [
     "next-env.d.ts",
-    "next.config.js",
     "**/*.ts",
     "**/*.tsx",
     "**/*.js",
