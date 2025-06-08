@@ -5,15 +5,22 @@ import { getSession } from 'next-auth/react';
 export default async function handler(req, res) {
   await dbConnect();
 
-  const session = await getSession({ req });
-
-  if (!session) {
-    return res.status(401).json({ message: 'Unauthorized' });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
-  const { country } = req.body;
+  const { piUserId, country } = req.body;
 
-  await User.findByIdAndUpdate(session.user.id, { country });
+  if (!piUserId || !country) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
 
-  res.status(200).json({ message: 'Country updated successfully' });
+  try {
+    await User.findOneAndUpdate({ piUserId }, { country });
+
+    res.status(200).json({ message: 'Country updated successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server Error' });
+  }
 }

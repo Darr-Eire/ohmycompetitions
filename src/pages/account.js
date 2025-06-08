@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { countries } from 'data/countries'; // <-- We’ll create this for flag selector
+import { countries } from 'data/countries';  // <-- Make sure this file exists
 import Image from 'next/image';
 
 export default function AccountPage() {
@@ -16,20 +16,32 @@ export default function AccountPage() {
   }, []);
 
   const fetchUser = async () => {
-    const res = await axios.get('/api/user/me'); // <-- Your user API endpoint
+    const piUserId = localStorage.getItem('piUserId');  // Pi UID stored after login
+
+    if (!piUserId) {
+      console.error("No Pi User ID found in localStorage");
+      return;
+    }
+
+    const res = await axios.post('/api/user/me', { piUserId });  // <-- POST not GET now
     setUser(res.data);
     setSelectedCountry(res.data.country);
   };
 
   const fetchTickets = async () => {
-    const res = await axios.get('/api/user/tickets'); // <-- Your ticket purchases API endpoint
+    const piUserId = localStorage.getItem('piUserId');
+    if (!piUserId) return;
+
+    const res = await axios.post('/api/user/tickets', { piUserId });
     setTickets(res.data);
   };
 
   const handleCountryChange = async (e) => {
     const newCountry = e.target.value;
     setSelectedCountry(newCountry);
-    await axios.post('/api/user/update-country', { country: newCountry });
+    const piUserId = localStorage.getItem('piUserId');
+
+    await axios.post('/api/user/update-country', { piUserId, country: newCountry });
   };
 
   if (!user) return <div className="text-white text-center mt-10">Loading your account...</div>;
@@ -41,8 +53,7 @@ export default function AccountPage() {
       {/* User Info */}
       <div className="bg-[#111827] rounded-2xl shadow-lg p-6 mb-8 border border-cyan-400">
         <h2 className="text-xl mb-4 font-semibold">Personal Info</h2>
-        <p><strong>Name:</strong> {user.name}</p>
-        <p><strong>Email:</strong> {user.email}</p>
+        <p><strong>Username:</strong> {user.username}</p>
 
         {/* Country Selector */}
         <div className="mt-4">

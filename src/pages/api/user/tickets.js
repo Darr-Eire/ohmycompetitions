@@ -1,20 +1,28 @@
-import dbConnect from 'lib/dbConnect'; // your db connection helper
-import Ticket from 'models/Ticket'; // your mongoose model for tickets
-import { getSession } from 'next-auth/react'; // if you're using NextAuth
+import dbConnect from 'lib/dbConnect';
+import Ticket from 'models/Ticket';
+import User from 'models/User';
 
 export default async function handler(req, res) {
   await dbConnect();
 
-  const session = await getSession({ req });
-
-  if (!session) {
-    return res.status(401).json({ message: 'Unauthorized' });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
-  const userId = session.user.id;
+  const { piUserId } = req.body;
+
+  if (!piUserId) {
+    return res.status(400).json({ message: 'Missing Pi User ID' });
+  }
 
   try {
-    const tickets = await Ticket.find({ userId });
+    const user = await User.findOne({ piUserId });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const tickets = await Ticket.find({ userId: user._id });
 
     const formattedTickets = tickets.map(ticket => ({
       competitionTitle: ticket.competitionTitle,
@@ -26,6 +34,6 @@ export default async function handler(req, res) {
     res.status(200).json(formattedTickets);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Something went wrong' });
+    res.status(500).json({ message: 'Server Error' });
   }
 }
