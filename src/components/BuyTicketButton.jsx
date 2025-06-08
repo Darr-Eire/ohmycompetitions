@@ -43,10 +43,9 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity, p
         metadata: { competitionSlug, quantity }
       };
 
-      const payment = await window.Pi.createPayment(paymentData);
+      const payment = window.Pi.createPayment(paymentData);
 
       payment.onReadyForServerApproval(async (paymentId) => {
-        console.log('Ready for server approval', paymentId);
         await fetch('/api/payments/approve', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -55,7 +54,6 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity, p
       });
 
       payment.onReadyForServerCompletion(async (paymentId, txid) => {
-        console.log('Ready for server completion', paymentId, txid);
         await fetch('/api/payments/complete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -65,7 +63,6 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity, p
       });
 
       payment.onCancelled(() => {
-        console.log('Payment cancelled');
         setProcessing(false);
       });
 
