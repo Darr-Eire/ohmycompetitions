@@ -17,6 +17,7 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity, p
       setError('Pi SDK not ready. Please wait.');
       return;
     }
+
     if (!piUser) {
       setError('Please log in with Pi first.');
       return;
@@ -26,9 +27,9 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity, p
     setError(null);
 
     try {
-      // Backend check first
-      const res = await fetch(`/api/payments/status?userUid=${piUser.uid}`);
-      const status = await res.json();
+      // 1️⃣ Server-side backend check
+      const response = await fetch(`/api/payments/status?userUid=${piUser.uid}`);
+      const status = await response.json();
 
       if (status.pending) {
         setError('You have a pending payment. Please wait or complete it.');
@@ -36,15 +37,18 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity, p
         return;
       }
 
-      // SDK side safety check
+      // 2️⃣ Client-side SDK check (this is what was missing)
       const clientPayment = await fetchCurrentPaymentSafe();
-      if (clientPayment && ['INCOMPLETE', 'PENDING'].includes(clientPayment.status)) {
-        setError('SDK still has an unresolved payment. Please wait.');
-        setProcessing(false);
-        return;
+
+      if (clientPayment) {
+        if (['INCOMPLETE', 'PENDING'].includes(clientPayment.status)) {
+          setError('You still have an unresolved payment in Pi SDK. Please wait until it expires.');
+          setProcessing(false);
+          return;
+        }
       }
 
-      // Now fully safe to create payment
+      // 3️⃣ Safe to create payment
       const paymentData = {
         amount: (entryFee * quantity).toFixed(8),
         memo: `Ticket purchase for ${competitionSlug}`,
@@ -70,7 +74,10 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity, p
         setProcessing(false);
       });
 
-      payment.onCancelled(() => setProcessing(false));
+      payment.onCancelled(() => {
+        setProcessing(false);
+      });
+
       payment.onError((err) => {
         console.error('Payment error:', err);
         setError('Payment failed.');
@@ -88,6 +95,7 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity, p
     try {
       return await window.Pi.createPayment.fetchCurrentPayment();
     } catch (err) {
+      console.warn('No current payment or SDK error:', err);
       return null;
     }
   };
@@ -101,7 +109,12 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity, p
       >
         {processing ? 'Processing...' : 'Confirm Ticket Purchase'}
       </button>
-      {error && <div className="mt-4 text-red-500 font-semibold">{error}</div>}
+
+      {error && (
+        <div className="mt-4 text-red-500 font-semibold">
+          {error}
+        </div>
+      )}
     </div>
   );
 }

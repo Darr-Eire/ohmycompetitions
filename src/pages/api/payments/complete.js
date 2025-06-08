@@ -1,3 +1,5 @@
+// pages/api/payments/complete.js
+
 import axios from 'axios';
 
 export default async function handler(req, res) {
@@ -17,6 +19,6 @@ export default async function handler(req, res) {
     res.status(200).json({ success: true });
   } catch (err) {
     console.error('Complete error:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Server error completing payment' });
   }
 }

@@ -1,24 +1,48 @@
-let sdkLoaded = false;
+// src/lib/piServer.js
 
-export function loadPiSdk(setSdkReady) {
-  if (sdkLoaded) {
-    setSdkReady(true);
-    return;
+import { Access } from 'pi-access-sdk';
+
+// Initialize Pi Access SDK with your API Key (from environment variables)
+const client = new Access({ apiKey: process.env.PI_API_KEY });
+
+/**
+ * Create a Pi Payment
+ * @param {Object} param0 
+ * @returns payment URL
+ */
+export async function createPiPayment({ amount, memo, metadata }) {
+  try {
+    const payment = await client.createPayment({
+      amount: amount.toString(),
+      memo,
+      metadata,
+    });
+
+    return payment.paymentUrl || payment.url;
+  } catch (error) {
+    console.error('Failed to create Pi payment:', error);
+    throw new Error('Payment creation failed');
   }
+}
 
-  const script = document.createElement('script');
-  script.src = 'https://sdk.minepi.com/pi-sdk.js';
-  script.async = true;
+/**
+ * Verify Pi Transaction after payment is completed
+ * @param {string} paymentId 
+ * @returns payment details if successful
+ */
+export async function verifyPiTransaction(paymentId) {
+  try {
+    const tx = await client.getPayment(paymentId);
 
-  script.onload = () => {
-    sdkLoaded = true;
-    setSdkReady(true);
-  };
+    if (!tx) throw new Error('Transaction not found');
 
-  script.onerror = () => {
-    console.error('Failed to load Pi SDK');
-    setSdkReady(false);
-  };
+    if (tx.transaction && tx.transaction.txid) {
+      return tx; // Payment successful and completed on blockchain
+    }
 
-  document.body.appendChild(script);
+    throw new Error('Transaction not completed yet');
+  } catch (err) {
+    console.error('Payment verification failed:', err);
+    throw err;
+  }
 }
