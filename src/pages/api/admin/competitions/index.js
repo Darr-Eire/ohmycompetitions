@@ -25,18 +25,6 @@ export default async function handler(req, res) {
     return res.status(201).json(competition);
   }
 
-  if (req.method === 'PUT') {
-    const { id, update } = req.body;
-    await Competition.findByIdAndUpdate(id, update);
-    return res.status(200).json({ message: 'Updated' });
-  }
-
-  if (req.method === 'DELETE') {
-    const { id } = req.body;
-    await Competition.findByIdAndDelete(id);
-    return res.status(200).json({ message: 'Deleted' });
-  }
-
-  res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
+  res.setHeader('Allow', ['GET', 'POST']);
   res.status(405).end();
 }

@@ -1,50 +1,42 @@
-import { connectToDatabase } from '@lib/dbConnect';
-import Competition from '@models/Competition';
+import { dbConnect } from 'lib/dbConnect';
+import Competition from 'models/Competition';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@lib/auth';
-
+import { authOptions } from 'lib/auth';
+import mongoose from 'mongoose';
 
 export default async function handler(req, res) {
-  await connectToDatabase();
+  await dbConnect();
   const session = await getServerSession(req, res, authOptions);
-
   if (!session || session.user?.role !== 'admin') {
-    return res.status(401).json({ error: 'Unauthorized' });
+    return res.status(401).json({ message: 'Unauthorized' });
   }
 
   const { id } = req.query;
 
-  switch (req.method) {
-    case 'GET':
-      try {
-        const competition = await Competition.findById(id);
-        if (!competition) return res.status(404).json({ error: 'Not found' });
-        res.json(competition);
-      } catch (err) {
-        res.status(500).json({ error: 'Failed to fetch' });
-      }
-      break;
-
-    case 'PUT':
-      try {
-        const updated = await Competition.findByIdAndUpdate(id, req.body, { new: true });
-        res.json(updated);
-      } catch (err) {
-        res.status(500).json({ error: 'Failed to update' });
-      }
-      break;
-
-    case 'DELETE':
-      try {
-        await Competition.findByIdAndDelete(id);
-        res.json({ message: 'Deleted successfully' });
-      } catch (err) {
-        res.status(500).json({ error: 'Failed to delete' });
-      }
-      break;
-
-    default:
-      res.setHeader('Allow', ['GET', 'PUT', 'DELETE']);
-      res.status(405).end(`Method ${req.method} Not Allowed`);
+  let objectId;
+  try {
+    objectId = new mongoose.Types.ObjectId(id);
+  } catch (err) {
+    return res.status(400).json({ message: 'Invalid competition ID' });
   }
+
+  if (req.method === 'GET') {
+    const competition = await Competition.findById(objectId);
+    if (!competition) return res.status(404).json({ message: 'Not found' });
+    return res.status(200).json(competition);
+  }
+
+  if (req.method === 'PUT') {
+    const update = req.body;
+    await Competition.findByIdAndUpdate(objectId, update);
+    return res.status(200).json({ message: 'Updated' });
+  }
+
+  if (req.method === 'DELETE') {
+    await Competition.findByIdAndDelete(objectId);
+    return res.status(200).json({ message: 'Deleted' });
+  }
+
+  res.setHeader('Allow', ['GET', 'PUT', 'DELETE']);
+  res.status(405).end();
 }

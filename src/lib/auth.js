@@ -1,24 +1,51 @@
-// lib/pi.js
-// Example NextAuth-compatible authOptions
+import CredentialsProvider from 'next-auth/providers/credentials';
+
 export const authOptions = {
-  providers: [],
-  session: {
-    strategy: 'jwt',
+  providers: [
+    CredentialsProvider({
+      name: 'Admin Login',
+      credentials: {
+        username: { label: 'Username', type: 'text' },
+        password: { label: 'Password', type: 'password' },
+      },
+      async authorize(credentials) {
+        if (
+          credentials?.username === process.env.ADMIN_USERNAME &&
+          credentials?.password === process.env.ADMIN_PASSWORD
+        ) {
+          return {
+            id: 1,
+            name: 'Admin',
+            email: process.env.ADMIN_EMAIL,
+            role: 'admin',
+          };
+        }
+        return null;
+      },
+    }),
+  ],
+
+  session: { strategy: 'jwt' },
+
+  secret: process.env.NEXTAUTH_SECRET,
+
+  pages: {
+    signIn: '/admin/login',
   },
+
   callbacks: {
-    async session({ session, token }) {
-      session.user = token.user;
-      return session;
-    },
     async jwt({ token, user }) {
-      if (user) token.user = user;
+      if (user) {
+        token.role = user.role;
+        token.email = user.email;
+      }
       return token;
+    },
+
+    async session({ session, token }) {
+      session.user.role = token.role;
+      session.user.email = token.email;
+      return session;
     },
   },
 };
-
-// Placeholder user extraction
-export function getUserFromToken(req) {
-  // Replace with real logic if you're using a custom auth system
-  return { id: 'mock-user', username: 'demo' };
-}

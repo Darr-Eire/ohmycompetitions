@@ -1,4 +1,4 @@
-import dbConnect from '../../lib/dbConnect';
+import { dbConnect } from '../../lib/dbConnect';
 import PiCashCode from '../../models/PiCashCode';
 
 

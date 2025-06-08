@@ -1,4 +1,4 @@
-import dbConnect from 'lib/dbConnect'
+import { dbConnect } from 'lib/dbConnect'
 import GameResult from 'models/GameResult';
 
 import { getServerSession } from 'next-auth'

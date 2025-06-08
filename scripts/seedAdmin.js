@@ -1,5 +1,3 @@
-// scripts/seedAdmin.js
-
 import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
@@ -13,9 +11,14 @@ async function seedAdmin() {
   try {
     await connectToDatabase();
 
-    const email = 'ohmycompetitions@gmail.com';
-    const password = 'oppsididitagain';
-    const username = 'Darren';  // <-- ✅ added username
+    const email = process.env.ADMIN_EMAIL;
+    const password = process.env.ADMIN_PASSWORD;
+    const username = process.env.ADMIN_USERNAME;
+
+    if (!email || !password || !username) {
+      console.error('❌ Missing ADMIN credentials in env file.');
+      process.exit(1);
+    }
 
     const existingUser = await User.findOne({ email });
 
@@ -31,9 +34,11 @@ async function seedAdmin() {
       username,
       password: hashedPassword,
       role: 'admin',
+      piUserId: 'admin-seed-user'
     });
 
-   console.log('✅ Admin user created:', newAdmin?.email ?? '[email not returned]');
+    const adminObject = newAdmin.toObject();
+    console.log('✅ Admin user created:', adminObject.email);
 
     process.exit(0);
   } catch (err) {

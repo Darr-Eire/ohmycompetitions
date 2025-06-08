@@ -34,6 +34,6 @@
     "**/*.js",
     "**/*.jsx",
     "scripts/**/*.js"
-  ],
+, "scripts/seedAdmin..mjs"  ],
   "exclude": ["node_modules"]
 }

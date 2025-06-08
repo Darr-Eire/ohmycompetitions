@@ -1,4 +1,4 @@
-import dbConnect from 'lib/dbConnect';
+import { dbConnect } from 'lib/dbConnect';
 import Ticket from 'models/Ticket';
 import User from 'models/User';
 

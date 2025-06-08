@@ -1,3 +1,5 @@
+// src/models/Competition.js
+
 import mongoose from 'mongoose';
 
 const CompetitionSchema = new mongoose.Schema({

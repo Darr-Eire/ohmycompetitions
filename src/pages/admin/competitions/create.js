@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';  // ✅ Pages Router, not navigation
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default function EditCompetition() {
+export default function CreateCompetition() {
   const router = useRouter();
-  const { id } = router.query;  // ✅ Correct way to access dynamic route params
 
   const [form, setForm] = useState({
     slug: '',
@@ -13,38 +12,11 @@ export default function EditCompetition() {
     totalTickets: '',
     title: '',
     prize: '',
-    theme: '',
+    theme: 'tech',
   });
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [loaded, setLoaded] = useState(false); // avoid running form update before data arrives
-
-  useEffect(() => {
-    if (!id || loaded) return;
-
-    async function loadCompetition() {
-      try {
-        const res = await fetch(`/api/admin/competitions/${id}`);
-        if (!res.ok) throw new Error('Failed to load competition');
-        const data = await res.json();
-
-        setForm({
-          slug: data.comp.slug,
-          entryFee: data.comp.entryFee,
-          totalTickets: data.comp.totalTickets,
-          title: data.title,
-          prize: data.prize,
-          theme: data.theme,
-        });
-        setLoaded(true);
-      } catch {
-        setError('Failed to load competition');
-      }
-    }
-
-    loadCompetition();
-  }, [id, loaded]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -56,20 +28,24 @@ export default function EditCompetition() {
     setError('');
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/competitions/${id}`, {
-        method: 'PUT',
+      const res = await fetch('/api/admin/competitions', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          slug: form.slug,
+          slug: form.slug.trim(),
           entryFee: parseFloat(form.entryFee),
           totalTickets: parseInt(form.totalTickets),
-          title: form.title,
-          prize: form.prize,
+          title: form.title.trim(),
+          prize: form.prize.trim(),
           theme: form.theme,
         }),
       });
 
-      if (!res.ok) throw new Error('Failed to update competition');
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || 'Failed to create competition');
+      }
+
       router.push('/admin/competitions');
     } catch (err) {
       setError(err.message);
@@ -80,7 +56,7 @@ export default function EditCompetition() {
 
   return (
     <div className="max-w-3xl mx-auto p-6 text-white">
-      <h1 className="text-3xl font-bold mb-6 text-cyan-400">Edit Competition</h1>
+      <h1 className="text-3xl font-bold mb-6 text-cyan-400">Create Competition</h1>
 
       {error && <p className="text-red-400 mb-4">{error}</p>}
 
@@ -113,7 +89,7 @@ export default function EditCompetition() {
         </select>
 
         <button type="submit" disabled={loading} className="w-full py-3 bg-cyan-400 text-black font-bold rounded">
-          {loading ? 'Updating...' : 'Update Competition'}
+          {loading ? 'Creating...' : 'Create Competition'}
         </button>
       </form>
     </div>
