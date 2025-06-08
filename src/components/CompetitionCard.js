@@ -80,7 +80,7 @@ export default function CompetitionCard({
       {/* Status Banner */}
       <div className="px-4 pt-2">
         <div className={`w-full text-center px-3 py-1 rounded-full text-xs sm:text-sm font-bold shadow 
-          ${status === 'LIVE'
+          ${status === 'LIVE NOW'
             ? 'bg-gradient-to-r from-[#00ff99] to-[#00cc66] text-black animate-pulse'
             : status === 'COMING SOON'
               ? 'bg-gradient-to-r from-orange-400 to-orange-500 text-black'
