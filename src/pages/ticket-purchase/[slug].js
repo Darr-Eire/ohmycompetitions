@@ -7,6 +7,7 @@ import BuyTicketButton from '@components/BuyTicketButton';
 import { loadPiSdk } from '@lib/pi';
 import { techItems, premiumItems, piItems, dailyItems, freeItems, cryptoGiveawaysItems } from '../../data/competitions';
 
+// Flatten all competitions for easy lookup
 const flattenCompetitions = [
   ...techItems, ...premiumItems, ...piItems, ...dailyItems, ...freeItems, ...cryptoGiveawaysItems,
 ];
@@ -38,18 +39,28 @@ export default function TicketPurchasePage() {
   const [quantity, setQuantity] = useState(1);
   const [sharedBonus, setSharedBonus] = useState(false);
 
-  useEffect(() => { loadPiSdk(setSdkReady); }, []);
+  // Load Pi SDK
+  useEffect(() => {
+    loadPiSdk(setSdkReady);
+  }, []);
 
+  // Attempt auto-login via getCurrentPioneer()
   useEffect(() => {
     if (!router.isReady || !window?.Pi?.getCurrentPioneer) {
       setLoadingUser(false);
       return;
     }
     window.Pi.getCurrentPioneer()
-      .then(user => { if (user) setPiUser(user); })
+      .then(user => {
+        if (user) setPiUser(user);
+      })
+      .catch(err => {
+        console.error('Error fetching Pi user:', err);
+      })
       .finally(() => setLoadingUser(false));
   }, [router.isReady]);
 
+  // Load free ticket claim state
   useEffect(() => {
     if (!slug || !FREE_TICKET_COMPETITIONS.includes(slug)) return;
     const saved = parseInt(localStorage.getItem(`${slug}-claimed`) || 0);
@@ -88,7 +99,9 @@ export default function TicketPurchasePage() {
     try {
       const user = await window.Pi.authenticate(['username']);
       setPiUser(user);
-    } finally { setLoadingLogin(false); }
+    } finally {
+      setLoadingLogin(false);
+    }
   };
 
   if (!router.isReady) return null;

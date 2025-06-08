@@ -7,26 +7,23 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
   const { paymentId } = req.body;
+  if (!paymentId) return res.status(400).json({ error: 'Missing paymentId' });
 
   try {
     const appAccessKey = process.env.PI_API_KEY;
     const developerSecret = process.env.PI_SECRET_KEY;
 
-    const paymentResponse = await axios.get(
+    const { data: payment } = await axios.get(
       `https://api.minepi.com/v2/payments/${paymentId}`,
       { headers: { Authorization: `Key ${appAccessKey}` } }
     );
 
-    const payment = paymentResponse.data;
     const isValid = verifyPayment(payment, developerSecret);
-
     if (!isValid) return res.status(400).json({ error: 'Invalid payment signature' });
 
     const { competitionSlug, quantity } = payment.metadata;
 
-    // Update ticket sales here (MongoDB)
     await dbConnect();
-
     await Competition.updateOne(
       { slug: competitionSlug },
       { $inc: { 'comp.ticketsSold': quantity } }
@@ -41,6 +38,6 @@ export default async function handler(req, res) {
     res.status(200).json({ success: true });
   } catch (err) {
     console.error('Approve error:', err);
-    res.status(500).json({ error: 'Server error approving payment' });
+    res.status(500).json({ error: 'Internal server error' });
   }
 }
