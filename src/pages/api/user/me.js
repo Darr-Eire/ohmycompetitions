@@ -1,14 +1,25 @@
-import dbConnect from 'lib/dbConnect'
-
-import User from 'models/User'
-import { getServerSession } from 'next-auth'
-import { authOptions } from 'lib/auth'
+import dbConnect from 'lib/dbConnect';
+import User from 'models/User';
+import { getSession } from 'next-auth/react';
 
 export default async function handler(req, res) {
-  await dbConnect()
-  const session = await getServerSession(req, res, authOptions)
-  if (!session?.user?.uid) return res.status(401).json({ error: 'Unauthorized' })
+  await dbConnect();
 
-  const user = await User.findOne({ uid: session.user.uid }).select('uid name email')
-  res.status(200).json(user)
+  const session = await getSession({ req });
+
+  if (!session) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  const user = await User.findById(session.user.id);
+
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+
+  res.status(200).json({
+    name: user.name,
+    email: user.email,
+    country: user.country || '',
+  });
 }

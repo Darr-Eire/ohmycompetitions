@@ -4,33 +4,23 @@ import mongoose from 'mongoose';
 
 const UserSchema = new mongoose.Schema(
   {
-    email: { type: String, required: true, unique: true },
-    password: { type: String },
+    piUserId: { type: String, required: true, unique: true }, // Pi Network UID
+    username: { type: String, required: true }, // Pi username
+    country: { type: String, default: '' },
+    profileImage: { type: String, default: '' },
+    role: { type: String, enum: ['user', 'admin'], default: 'user' },
 
-    // Roles (admin, user, etc.)
-    role: { type: String, default: 'user' },
-
-    // Basic profile fields
-    name: { type: String },
-    country: { type: String },
-
-    // Profile customization
-    profileImage: { type: String },  // URL for uploaded avatar
-    flag: { type: String },          // For selected flag if needed
-
-    bio: { type: String },
+    bio: { type: String, default: '' },
     birthdate: { type: Date },
 
-    // Social media handles
     social: {
-      twitter: { type: String },
-      instagram: { type: String },
-      facebook: { type: String },
-      tiktok: { type: String },
+      twitter: { type: String, default: '' },
+      instagram: { type: String, default: '' },
+      facebook: { type: String, default: '' },
+      tiktok: { type: String, default: '' },
     },
   },
   { timestamps: true }
 );
 
-// Export model (avoid model overwrite in hot reload)
 export default mongoose.models.User || mongoose.model('User', UserSchema);

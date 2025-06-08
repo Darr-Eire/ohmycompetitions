@@ -19,8 +19,8 @@ export default NextAuth({
           return {
             id: 1,
             name: 'Admin',
-            email: process.env.ADMIN_EMAIL,   // ✅ Include email here
-            role: 'admin'
+            email: process.env.ADMIN_EMAIL, // ✅ pulls from env for full control
+            role: 'admin',
           };
         }
         return null;
@@ -30,24 +30,24 @@ export default NextAuth({
 
   session: { strategy: 'jwt' },
 
-  pages: {
-    signIn: '/admin/login',
-  },
-
   secret: process.env.NEXTAUTH_SECRET,
+
+  pages: {
+    signIn: '/admin/login',  // ✅ your custom admin login page
+  },
 
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.role = user.role;
-        token.email = user.email;   // ✅ add email into token
+        token.email = user.email;
       }
       return token;
     },
 
     async session({ session, token }) {
       session.user.role = token.role;
-      session.user.email = token.email;  // ✅ attach email to session.user
+      session.user.email = token.email;
       return session;
     },
   },

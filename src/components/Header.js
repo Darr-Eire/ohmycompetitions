@@ -5,7 +5,7 @@ import { useState, useRef, useEffect } from 'react';
 
 const NAV_ITEMS = [
   ['Home', '/homepage'],
-  ['Profile', '/account/profile'],   // 🔥 replaced My Account
+  ['My Account', '/account'],
   ['All Competitions', '/competitions'],
   ['Try Your Luck', '/try-your-luck'],
   ['Forums', '/forums'],
