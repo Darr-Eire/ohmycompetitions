@@ -17,7 +17,7 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
       return;
     }
 
-    if (processing) return; // prevent double clicks
+    if (processing) return;
     setProcessing(true);
 
     const totalAmount = parseFloat((entryFee * quantity).toFixed(2));
@@ -29,7 +29,6 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
         return;
       }
 
-      // Await this call to properly catch errors (important)
       await window.Pi.createPayment(
         {
           amount: totalAmount,
@@ -44,11 +43,17 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ paymentId }),
               });
-              if (!res.ok) throw new Error(await res.text());
-              console.log('[✅] Payment approved on server');
-            } catch (e) {
-              console.error('[ERROR] Approving payment:', e);
-              alert('❌ Payment approval failed. Check console.');
+
+              if (!res.ok) {
+                const errorText = await res.text();
+                console.error('[SERVER APPROVAL FAILED]:', errorText);
+                throw new Error(errorText);
+              }
+
+              console.log('[✅] Server approved payment.');
+            } catch (err) {
+              console.error('[APPROVAL ERROR]:', err);
+              alert('❌ Payment approval failed.');
               setProcessing(false);
             }
           },
@@ -60,41 +65,48 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ paymentId, txid }),
               });
-              if (!res.ok) throw new Error(await res.text());
+
+              if (!res.ok) {
+                const errorText = await res.text();
+                console.error('[SERVER COMPLETION FAILED]:', errorText);
+                throw new Error(errorText);
+              }
+
               const data = await res.json();
 
-              // Update tickets sold after successful payment
+              // Update tickets after successful payment
               const updateRes = await fetch('/api/competitions/buy', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ slug: competitionSlug, quantity }),
               });
-              if (!updateRes.ok) throw new Error('Failed to update tickets sold');
 
-              alert(`✅ Ticket purchased successfully!\n🎟️ ID: ${data.ticketId}`);
+              if (!updateRes.ok) throw new Error('Failed to update tickets.');
+
+              alert(`✅ Ticket purchased successfully!\n🎟️ Ticket ID: ${data.ticketId}`);
             } catch (err) {
-              console.error('[ERROR] Completing payment or updating tickets:', err);
-              alert('❌ Server completion failed. See console.');
+              console.error('[COMPLETION ERROR]:', err);
+              alert('❌ Payment completion failed.');
             } finally {
               setProcessing(false);
             }
           },
 
           onCancel: (paymentId) => {
-            console.warn('[APP] Payment cancelled:', paymentId);
+            console.warn('[PAYMENT CANCELLED]:', paymentId);
             setProcessing(false);
           },
 
           onError: (error, payment) => {
-            console.error('[APP] Payment error:', error, payment);
-            alert('❌ Payment failed. See console.');
+            console.error('[SDK ERROR]:', error, payment);
+            alert('❌ Payment failed. Check console.');
             setProcessing(false);
           },
         }
       );
     } catch (err) {
-      console.error('[ERROR] Starting payment:', err);
-      alert('❌ Something went wrong during payment.');
+      console.error('[START PAYMENT ERROR]:', err);
+      alert('❌ Payment initialization failed.');
       setProcessing(false);
     }
   };

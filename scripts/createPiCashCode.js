@@ -13,7 +13,8 @@ const PiCashCodeSchema = new mongoose.Schema({
 }, { collection: 'pi_cash_codes' });
 
 // Prevent model overwrite error in dev
-const PiCashCode = mongoose.models.PiCashCode || mongoose.model('PiCashCode', PiCashCodeSchema);
+const PiCashCode = mongoose.models.PiCashCode || mongoose.model('PiCashCode', PiCashCodeSchema, 'picashcodes');
+
 
 function generateCode() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
