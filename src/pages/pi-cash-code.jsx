@@ -15,67 +15,53 @@ export default function PiCashCodePage() {
   const [timeLeft, setTimeLeft] = useState(null);
   const [liveTickets, setLiveTickets] = useState(0);
 
-useEffect(() => {
-  const fetchCode = async () => {
-    const res = await fetch('/api/pi-cash-code');
-    const data = await res.json();
-    setCodeData(data);
-    setLiveTickets(data.ticketsSold || 0);
-  };
-  fetchCode();
-}, []);
+  // Fetch code data
+  useEffect(() => {
+    const fetchCode = async () => {
+      try {
+        const res = await fetch('/api/pi-cash-code');
+        const data = await res.json();
+        setCodeData(data);
+        setLiveTickets(data.ticketsSold || 0);
+      } catch (err) {
+        console.error('Failed to fetch PiCash data:', err);
+      }
+    };
+    fetchCode();
+  }, []);
 
-useEffect(() => {
-  if (!codeData?.expiresAt) return;
+  // Countdown timer
+  useEffect(() => {
+    if (!codeData?.expiresAt) return;
 
-  const targetTime = new Date(codeData.expiresAt).getTime();
+    const targetTime = new Date(codeData.expiresAt).getTime();
 
-  const updateTimeLeft = () => {
-    const now = Date.now();
-    const diff = targetTime - now;
-    if (diff <= 0) {
-      setTimeLeft({
-        days: 0,
-        hours: 0,
-        minutes: 0,
-        seconds: 0,
-      });
-      return;
-    }
-    setTimeLeft({
-      days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-      hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-      minutes: Math.floor((diff / (1000 * 60)) % 60),
-      seconds: Math.floor((diff / 1000) % 60),
-    });
-  };
+    const updateTimeLeft = () => {
+      const now = Date.now();
+      const diff = targetTime - now;
 
-  updateTimeLeft();
-  const intervalId = setInterval(updateTimeLeft, 1000);
-  return () => clearInterval(intervalId);
-}, [codeData?.expiresAt]);
-
-
-  useEffect(() => { loadPiSdk(() => {}); }, []);
-
-  const updateTimeLeft = (expiresAt) => {
-    if (!expiresAt) return;
-    const intervalId = setInterval(() => {
-      const diff = Date.parse(expiresAt) - Date.now();
       if (diff <= 0) {
-        clearInterval(intervalId);
-        setTimeLeft(null);
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
         return;
       }
+
       setTimeLeft({
         days: Math.floor(diff / (1000 * 60 * 60 * 24)),
         hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
         minutes: Math.floor((diff / (1000 * 60)) % 60),
         seconds: Math.floor((diff / 1000) % 60),
       });
-    }, 1000);
+    };
+
+    updateTimeLeft();
+    const intervalId = setInterval(updateTimeLeft, 1000);
     return () => clearInterval(intervalId);
-  };
+  }, [codeData?.expiresAt]);
+
+  // Load Pi SDK
+  useEffect(() => {
+    loadPiSdk(() => {});
+  }, []);
 
   const handlePurchase = async () => {
     const res = await fetch('/api/pi-cash-code-purchase', {
@@ -83,6 +69,7 @@ useEffect(() => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ weekStart: codeData.weekStart, quantity }),
     });
+
     const result = await res.json();
     setLiveTickets(result.ticketsSold);
   };
@@ -92,6 +79,7 @@ useEffect(() => {
   const showCode = now >= dropTime;
 
   if (userLoading) return <div className="text-white text-center py-10">Loading...</div>;
+
   if (!user) {
     return (
       <div className="p-6 text-center text-white">
@@ -122,12 +110,12 @@ useEffect(() => {
 
         {timeLeft && (
           <div className="mt-6 flex gap-2 justify-center">
-            {[{ label: 'DAYS', value: timeLeft.days }, { label: 'HRS', value: timeLeft.hours }, { label: 'MIN', value: timeLeft.minutes }, { label: 'SEC', value: timeLeft.seconds }].map(({ label, value }, i) => (
+            {['days', 'hours', 'minutes', 'seconds'].map((label, i) => (
               <div key={i} className="flex flex-col items-center">
                 <div className="bg-black text-white text-xl font-bold px-4 py-2 rounded-md shadow w-16 text-center">
-                  {String(value).padStart(2, '0')}
+                  {String(timeLeft[label]).padStart(2, '0')}
                 </div>
-                <div className="mt-1 text-xs text-cyan-400 font-semibold tracking-wide">{label}</div>
+                <div className="mt-1 text-xs text-cyan-400 font-semibold tracking-wide">{label.toUpperCase()}</div>
               </div>
             ))}
           </div>

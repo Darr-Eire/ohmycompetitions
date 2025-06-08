@@ -1,31 +1,44 @@
-// src/pages/api/auth/[...nextauth].js
-
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import { connectToDatabase } from '../../../lib/dbConnect.js';
+import User from '../../../models/User.js';
+import bcrypt from 'bcryptjs';
 
-export default NextAuth({
+export const authOptions = {
   providers: [
     CredentialsProvider({
-      name: 'Admin Login',
+      name: 'Credentials',
       credentials: {
-        username: { label: 'Username', type: 'text' },
-        password: { label: 'Password', type: 'password' },
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' }
       },
       async authorize(credentials) {
-        // Validate against environment variables
-        if (
-          credentials?.username === process.env.ADMIN_USERNAME &&
-          credentials?.password === process.env.ADMIN_PASSWORD
-        ) {
-          return { id: 1, name: 'Admin' };
-        }
-        return null;
-      },
-    }),
+        await connectToDatabase();
+        const user = await User.findOne({ email: credentials.email });
+
+        if (!user) return null;
+
+        const isValid = await bcrypt.compare(credentials.password, user.password);
+        if (!isValid) return null;
+
+        return { id: user._id, email: user.email, role: user.role };
+      }
+    })
   ],
-  session: { strategy: 'jwt' },
-  pages: {
-    signIn: '/admin/login', // Optional: you can set your admin login page
+  callbacks: {
+    async session({ session, token }) {
+      session.user.id = token.sub;
+      session.user.role = token.role;
+      return session;
+    },
+    async jwt({ token, user }) {
+      if (user) token.role = user.role;
+      return token;
+    }
   },
-  secret: process.env.NEXTAUTH_SECRET,
-});
+  pages: {
+    signIn: '/admin/login'
+  }
+};
+
+export default NextAuth(authOptions);

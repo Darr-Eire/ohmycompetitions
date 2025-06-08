@@ -7,7 +7,7 @@ import AuditLog from 'models/AuditLog';
 
 
 export default async function handler(req, res) {
-  await dbConnect();
+  await connectToDatabase();
   if (req.method !== 'GET') return res.status(405).end();
 
   const payments = await Payment.aggregate([

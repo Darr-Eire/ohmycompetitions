@@ -1,10 +1,11 @@
 // src/pages/api/pioneer-nomination.js
 
-import dbConnect from 'lib/dbConnect';
+import { connectToDatabase } from 'lib/dbConnect';
+
 import PioneerNomination from 'models/PioneerNomination';
 
 export default async function handler(req, res) {
-  await dbConnect();
+  await connectToDatabase();
   const { method } = req;
 
   switch (method) {

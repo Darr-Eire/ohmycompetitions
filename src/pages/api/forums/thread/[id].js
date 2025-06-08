@@ -1,4 +1,5 @@
-import dbConnect from 'lib/dbConnect';
+import { connectToDatabase } from 'lib/dbConnect';
+
 import Thread from 'models/Thread';
 import Reply from 'models/Reply';
 import mongoose from 'mongoose';
@@ -9,7 +10,7 @@ export default async function handler(req, res) {
     return res.status(405).end();
   }
 
-  await dbConnect();
+  await connectToDatabase();
 
   const { id } = req.query;
 

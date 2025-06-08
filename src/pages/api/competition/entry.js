@@ -1,4 +1,5 @@
-import dbConnect from 'lib/dbConnect';
+import { connectToDatabase } from 'lib/dbConnect';
+
 import Entry from 'models/Entry';
 import { generateEntryHash } from 'utils/hash';
 import { getServerSession } from 'next-auth/next';
@@ -11,7 +12,7 @@ export default async function handler(req, res) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
-  await dbConnect();
+  await connectToDatabase();
 
   if (req.method !== 'POST') {
     return res.status(405).end();

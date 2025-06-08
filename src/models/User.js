@@ -1,19 +1,26 @@
-import mongoose from 'mongoose'
+import mongoose from 'mongoose';
 
 const UserSchema = new mongoose.Schema({
-  uid: { type: String, unique: true, required: true },
-  name: String,
-  email: String,
-  streak: { type: Number, default: 0 },
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+  role: {
+    type: String,
+    enum: ['admin', 'user'],
+    default: 'user',
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
 
-  // Daily usage tracking
-  lastSpinAt: Date,
-  lastReflexAt: Date,  // 3.14 Seconds
-  lastSlotAt: Date,    // Pi Slot Machine
-  lastVaultAt: Date,   // Hack the Vault
-
-  // Optional: Fallback/general game usage
-  lastGameAt: Date,
-})
-
-export default mongoose.models.User || mongoose.model('User', UserSchema)
+// Prevent model overwrite in dev mode
+export default mongoose.models.User || mongoose.model('User', UserSchema);

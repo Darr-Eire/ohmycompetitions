@@ -1,19 +1,19 @@
 import mongoose from 'mongoose';
 
-const competitionSchema = new mongoose.Schema({
-  slug: String,
-  title: String,
-  prize: String,
-  entryFee: Number,
-  imageUrl: String,
-  date: String,
-  time: String,
-  location: String,
-  endsAt: Date,
-  totalTickets: Number,
-  ticketsSold: Number,
+const CompetitionSchema = new mongoose.Schema({
+  comp: {
+    slug: { type: String, required: true, unique: true },
+    entryFee: { type: Number, required: true },
+    totalTickets: { type: Number, required: true },
+    ticketsSold: { type: Number, default: 0 },
+    startsAt: String,
+    endsAt: String,
+    location: String
+  },
+  title: { type: String, required: true },
+  prize: { type: String, required: true },
+  href: String,
+  theme: { type: String, required: true }
 });
 
-const Competition = mongoose.models.Competition || mongoose.model('Competition', competitionSchema);
-
-export default Competition;
+export default mongoose.models.Competition || mongoose.model('Competition', CompetitionSchema);

@@ -7,7 +7,7 @@ import PiCashCode from '../../../models/PiCashCode';
 const ADMIN_SECRET = process.env.ADMIN_SECRET || 'supersecret'; 
 
 export default async function handler(req, res) {
-  await dbConnect();
+  await connectToDatabase();
 
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 

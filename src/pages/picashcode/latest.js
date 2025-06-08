@@ -3,7 +3,7 @@ import PiCashCode from '../../models/PiCashCode';
 
 
 export default async function handler(req, res) {
-  await dbConnect();
+  await connectToDatabase();
 
   try {
     const latestCode = await PiCashCode.findOne().sort({ weekStart: -1 });

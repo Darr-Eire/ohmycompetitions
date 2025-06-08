@@ -1,6 +1,7 @@
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from 'lib/auth';
-import dbConnect from 'lib/dbConnect';
+import { connectToDatabase } from 'lib/dbConnect';
+
 import EverydayEntry from 'models/EverydayEntry'; // assuming you have a model for this
 import { verifyPiTransaction } from 'lib/piServer'; // placeholder for real Pi transaction verify
 
@@ -24,7 +25,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    await dbConnect();
+    await connectToDatabase();
 
     // ✅ Verify the Pi transaction
     const isValid = await verifyPiTransaction(transaction);

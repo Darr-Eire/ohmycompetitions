@@ -12,7 +12,7 @@ async function connectToDatabase() {
   }
 
   if (!cached.promise) {
-    const MONGO_URI = process.env.MONGO_DB_URL;
+    const MONGO_URI = process.env.MONGO_DB_URL; // ✅ keep using MONGO_DB_URL
 
     if (!MONGO_URI) {
       throw new Error('Please define the MONGO_DB_URL environment variable');
@@ -22,6 +22,8 @@ async function connectToDatabase() {
 
     cached.promise = mongoose.connect(MONGO_URI, {
       bufferCommands: false,
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
     }).then(mongoose => mongoose);
   }
 

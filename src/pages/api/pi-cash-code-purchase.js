@@ -3,7 +3,7 @@ import { dbConnect } from '../../lib/dbConnect';
 import PiCashCode from '../../models/PiCashCode';
 
 export default async function handler(req, res) {
-  await dbConnect();
+  await connectToDatabase();
 
   if (req.method === 'POST') {
     const { weekStart, quantity } = req.body;

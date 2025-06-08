@@ -1,8 +1,8 @@
-import dbConnect from '../../lib/dbConnect.js';
+import { connectToDatabase } from '../../lib/dbConnect.js';
 import PiCashCode from '../../models/PiCashCode.js';
 
 export default async function handler(req, res) {
-  await dbConnect();
+  await connectToDatabase();
 
   if (req.method === 'GET') {
     try {
@@ -10,7 +10,11 @@ export default async function handler(req, res) {
       if (!activeCode) return res.status(404).json({ message: 'No active code' });
       res.json(activeCode);
     } catch (err) {
+      console.error('Database error:', err);
       res.status(500).json({ error: 'Database error' });
     }
+  } else {
+    res.setHeader('Allow', ['GET']);
+    res.status(405).json({ message: `Method ${req.method} Not Allowed` });
   }
 }

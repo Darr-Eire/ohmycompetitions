@@ -1,10 +1,11 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from 'lib/auth';
-import dbConnect from 'lib/dbConnect';
+import { connectToDatabase } from 'lib/dbConnect';
+
 import AuditLog from 'models/AuditLog';
 
 export default async function handler(req, res) {
-  await dbConnect();
+  await connectToDatabase();
 
   const session = await getServerSession(req, res, authOptions);
   if (!session?.user?.role || session.user.role !== 'admin') {

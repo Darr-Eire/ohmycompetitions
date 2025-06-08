@@ -1,4 +1,5 @@
-import dbConnect from 'lib/dbConnect';
+import { connectToDatabase } from 'lib/dbConnect';
+
 import Nomination from 'models/Nomination';
 
 export default async function handler(req, res) {
@@ -18,7 +19,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    await dbConnect();
+    await connectToDatabase();
     const newNomination = await Nomination.create({ name, reason });
     res.status(201).json(newNomination);
   } catch (err) {

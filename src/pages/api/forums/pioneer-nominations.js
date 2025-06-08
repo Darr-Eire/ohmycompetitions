@@ -1,10 +1,11 @@
-import dbConnect from 'lib/dbConnect';
+import { connectToDatabase } from 'lib/dbConnect';
+
 import PioneerNomination from 'models/PioneerNomination';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from 'lib/auth';
 
 export default async function handler(req, res) {
-  await dbConnect();
+  await connectToDatabase();
 
   if (req.method === 'POST') {
     const { name, reason } = req.body;
