@@ -43,11 +43,13 @@ export default function Header() {
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
 
+  // Load Pi user from localStorage
   useEffect(() => {
     const savedUser = localStorage.getItem('piUser');
     if (savedUser) setUser(JSON.parse(savedUser));
   }, []);
 
+  // Load Pi SDK
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://sdk.minepi.com/pi-sdk.js';
@@ -61,9 +63,10 @@ export default function Header() {
     document.body.appendChild(script);
   }, []);
 
+  // Pi Login
   const handleLogin = async () => {
     if (!sdkReady || !window.Pi?.authenticate) {
-      alert('Pi SDK not ready.');
+      alert('⚠️ Pi SDK not ready. Please wait.');
       return;
     }
 
@@ -75,14 +78,14 @@ export default function Header() {
         body: JSON.stringify({ accessToken: result.accessToken }),
       });
 
-      if (!res.ok) throw new Error('Login failed');
+      if (!res.ok) throw new Error('Pi Login API failed');
 
       const data = await res.json();
-      setUser(data.user);
       localStorage.setItem('piUser', JSON.stringify(data.user));
+      setUser(data.user);
     } catch (err) {
       console.error('Pi login failed:', err);
-      alert('Login failed.');
+      alert('Pi login failed. Check console.');
     }
   };
 
