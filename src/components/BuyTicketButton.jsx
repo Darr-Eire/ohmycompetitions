@@ -30,7 +30,6 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
     setError(null);
 
     try {
-      // Check for pending payments
       const statusRes = await fetch(`/api/payments/status?uid=${piUser.uid}`);
       const statusJson = await statusRes.json();
       if (statusJson?.pending) {
@@ -39,12 +38,16 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
         return;
       }
 
-      // Check Pi SDK for existing session
       const existingPayment = await fetchCurrentPaymentSafe();
       if (existingPayment && ['INCOMPLETE', 'PENDING'].includes(existingPayment.status)) {
         setError('⚠️ Unresolved payment exists in Pi SDK.');
         setProcessing(false);
         return;
+      }
+
+      // ✅ Explicit check for SDK before proceeding
+      if (!window.Pi || !window.Pi.createPayment) {
+        throw new Error('Pi SDK not loaded or createPayment is missing.');
       }
 
       const amount = (entryFee * quantity).toFixed(8);
@@ -55,6 +58,7 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
       });
 
       payment.onReadyForServerApproval(async (paymentId) => {
+        console.log('🟢 onReadyForServerApproval:', paymentId);
         await fetch('/api/payments/approve', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -68,6 +72,7 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
       });
 
       payment.onReadyForServerCompletion(async (paymentId, txid) => {
+        console.log('🟢 onReadyForServerCompletion:', { paymentId, txid });
         await fetch('/api/payments/complete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -83,19 +88,20 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
       });
 
       payment.onCancelled(() => {
+        console.warn('❌ Payment cancelled by user');
         setError('❌ Payment was cancelled.');
         setProcessing(false);
       });
 
       payment.onError((err) => {
-        console.error('❌ Pi payment error:', err);
-        setError('❌ Error during payment. Please try again.');
+        console.error('❌ Pi SDK error:', err);
+        setError(`❌ SDK Error: ${err?.message || 'Unknown error'}`);
         setProcessing(false);
       });
 
     } catch (err) {
       console.error('❌ Unexpected error:', err);
-      setError('❌ Unexpected error occurred.');
+      setError(`❌ Unexpected error: ${err?.message || 'Check console logs'}`);
       setProcessing(false);
     }
   };
