@@ -1,48 +1,37 @@
-// scripts/seedThreads.js
-import dotenv from 'dotenv'
-dotenv.config()
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });  // <-- important for your case
 
-import { dbConnect } from '../src/lib/dbConnect.js'
-
-
-const threads = [
-  {
-    title: 'Welcome to General Discussion',
-    body: 'This is the place for all things Pi, prizes, and community.',
-    userUid: 'admin_general',
-  },
-  {
-    title: 'What prize should we offer next?',
-    body: 'Cast your vote or suggest something new!',
-    userUid: 'admin_vote',
-  },
-  {
-    title: 'Have an idea to improve our platform?',
-    body: 'Drop your best ideas and we might just build it.',
-    userUid: 'admin_ideas',
-  },
-  {
-    title: 'Share your win stories!',
-    body: 'Did you win a prize? Show off and inspire others.',
-    userUid: 'admin_winners',
-  }
-]
+import Thread from '../src/models/Thread.js';
 
 async function seed() {
-  try {
-    await dbConnect()
-    console.log('✅ Connected to MongoDB')
+  await mongoose.connect(process.env.MONGO_DB_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
 
-    await Thread.deleteMany({})
-    console.log('🧹 Cleared existing threads')
+  await Thread.deleteMany();
 
-    await Thread.insertMany(threads)
-    console.log(`🌱 Seeded ${threads.length} threads successfully`)
-    process.exit(0)
-  } catch (err) {
-    console.error('❌ Error seeding threads:', err)
-    process.exit(1)
-  }
+  const threads = [
+    {
+      slug: 'first-post',
+      title: '🔥 Welcome to OhMyCompetitions!',
+      body: 'Welcome pioneers, let’s start the first discussions!',
+      category: 'general',
+      author: 'admin',
+    },
+    {
+      slug: 'vote-next-prize',
+      title: '💎 Vote for the Next Big Prize',
+      body: 'Suggest and vote for what prizes you want to see!',
+      category: 'vote',
+      author: 'admin',
+    },
+  ];
+
+  await Thread.insertMany(threads);
+  console.log('✅ Seeded forum threads.');
+  process.exit();
 }
 
-seed()
+seed();

@@ -1,33 +1,49 @@
-import { connectToDatabase } from 'lib/dbConnect';
+// src/pages/api/admin/forums/[id].js
 
+import { dbConnect } from 'lib/dbConnect';
 import Thread from 'models/Thread';
-import Reply from 'models/Reply';
-import mongoose from 'mongoose';
+// import { getServerSession } from 'next-auth/next';
+// import { authOptions } from 'lib/auth';
 
 export default async function handler(req, res) {
-  if (req.method !== 'GET') {
-    res.setHeader('Allow', ['GET']);
-    return res.status(405).end();
-  }
+  await dbConnect();
 
-  await connectToDatabase();
+  // ✅ TEMPORARILY DISABLED AUTH FOR LOCAL TESTING
+  // const session = await getServerSession(req, res, authOptions);
+  // if (!session || session.user?.role !== 'admin') {
+  //   return res.status(401).json({ message: 'Unauthorized' });
+  // }
 
-  const { id } = req.query;
+  const {
+    query: { id },
+    method,
+  } = req;
 
-  // ✅ Validate ObjectId to avoid crashing if bad ID is passed
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({ error: 'Invalid thread ID' });
+  if (!id || id.length !== 24) {
+    return res.status(400).json({ message: 'Invalid thread ID' });
   }
 
   try {
-    const thread = await Thread.findById(id).lean();
-    if (!thread) return res.status(404).json({ error: 'Thread not found' });
+    switch (method) {
+      case 'DELETE':
+        await Thread.findByIdAndDelete(id);
+        return res.status(200).json({ message: 'Thread deleted successfully' });
 
-    const replies = await Reply.find({ threadId: id }).sort({ createdAt: -1 }).lean();
+      case 'PUT':
+        const { title, body, category } = req.body;
+        const updated = await Thread.findByIdAndUpdate(
+          id,
+          { title, body, category },
+          { new: true }
+        );
+        return res.status(200).json(updated);
 
-    res.status(200).json({ thread, replies });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to fetch thread' });
+      default:
+        res.setHeader('Allow', ['PUT', 'DELETE']);
+        return res.status(405).end(`Method ${method} Not Allowed`);
+    }
+  } catch (error) {
+    console.error(`[ERROR] /api/admin/forums/${id}:`, error);
+    return res.status(500).json({ message: 'Server error' });
   }
 }
