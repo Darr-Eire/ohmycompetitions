@@ -43,13 +43,11 @@ export default function Header() {
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
 
-  // Load Pi user from localStorage
   useEffect(() => {
     const savedUser = localStorage.getItem('piUser');
     if (savedUser) setUser(JSON.parse(savedUser));
   }, []);
 
-  // Load Pi SDK
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://sdk.minepi.com/pi-sdk.js';
@@ -63,15 +61,19 @@ export default function Header() {
     document.body.appendChild(script);
   }, []);
 
-  // Pi Login
   const handleLogin = async () => {
     if (!sdkReady || !window.Pi?.authenticate) {
-      alert('⚠️ Pi SDK not ready. Please wait.');
+      alert('⚠️ Pi SDK not ready.');
       return;
     }
 
     try {
+      // 🔧 Clear old session and force re-auth
+      localStorage.removeItem('piUser');
+      if (window.Pi?.logout) window.Pi.logout();
+
       const result = await window.Pi.authenticate(['username', 'payments']);
+
       const res = await fetch('/api/auth/pi-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
