@@ -54,16 +54,17 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
       }
 
       if (!window.Pi || !window.Pi.createPayment) {
-        throw new Error('Pi SDK not loaded or createPayment missing.');
+        throw new Error('Pi SDK not loaded or createPayment is missing.');
       }
 
       const amount = (entryFee * quantity).toFixed(8);
       const payment = window.Pi.createPayment({
         amount,
         memo: `Buy ${quantity} ticket(s) for ${competitionSlug}`,
-        metadata: { competitionSlug, quantity, uid: piUser.uid },
+        metadata: { competitionSlug, quantity, uid: piUser.uid }
       });
 
+      // 💥 Attach ALL callbacks BEFORE returning payment
       payment.onReadyForServerApproval(async (paymentId) => {
         console.log('🟢 onReadyForServerApproval:', paymentId);
         await fetch('/api/payments/approve', {
@@ -106,7 +107,7 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
         setProcessing(false);
       });
 
-      return payment; // ✅ This line prevents SDK callback errors
+      return payment; // ✅ Return after attaching all callbacks
 
     } catch (err) {
       console.error('❌ Unexpected error:', err);
