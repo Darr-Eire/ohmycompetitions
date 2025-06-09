@@ -22,6 +22,14 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
     }
   }, []);
 
+  const fetchCurrentPaymentSafe = async () => {
+    try {
+      return await window.Pi.createPayment.fetchCurrentPayment();
+    } catch {
+      return null;
+    }
+  };
+
   const handlePayment = async () => {
     if (!sdkReady) return setError('⚠️ Pi SDK not ready.');
     if (!piUser || !piUser.uid) return setError('⚠️ You must be logged in with Pi.');
@@ -45,16 +53,15 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
         return;
       }
 
-      // ✅ Explicit check for SDK before proceeding
       if (!window.Pi || !window.Pi.createPayment) {
-        throw new Error('Pi SDK not loaded or createPayment is missing.');
+        throw new Error('Pi SDK not loaded or createPayment missing.');
       }
 
       const amount = (entryFee * quantity).toFixed(8);
       const payment = window.Pi.createPayment({
         amount,
         memo: `Buy ${quantity} ticket(s) for ${competitionSlug}`,
-        metadata: { competitionSlug, quantity, uid: piUser.uid }
+        metadata: { competitionSlug, quantity, uid: piUser.uid },
       });
 
       payment.onReadyForServerApproval(async (paymentId) => {
@@ -99,18 +106,12 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
         setProcessing(false);
       });
 
+      return payment; // ✅ This line prevents SDK callback errors
+
     } catch (err) {
       console.error('❌ Unexpected error:', err);
       setError(`❌ Unexpected error: ${err?.message || 'Check console logs'}`);
       setProcessing(false);
-    }
-  };
-
-  const fetchCurrentPaymentSafe = async () => {
-    try {
-      return await window.Pi.createPayment.fetchCurrentPayment();
-    } catch {
-      return null;
     }
   };
 
