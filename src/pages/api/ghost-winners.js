@@ -1,6 +1,4 @@
-// src/pages/api/ghost-winners.js
-
-import { connectToDatabase } from 'lib/mongodb';
+import dbConnect from 'lib/dbConnect';
 import mongoose from 'mongoose';
 
 export default async function handler(req, res) {
@@ -9,20 +7,22 @@ export default async function handler(req, res) {
   }
 
   try {
-    await connectToDatabase();
+    await dbConnect();
+
     const db = mongoose.connection.db;
 
-    const data = await db.collection('pi_cash_codes').find({
-      winner: { $ne: null },
-      claimed: false
-    })
-    .sort({ drawAt: -1 }) // Sort by latest draws
-    .limit(100) // Limit for safety
-    .toArray();
+    const data = await db.collection('pi_cash_codes')
+      .find({
+        winner: { $ne: null },
+        claimed: false
+      })
+      .sort({ drawAt: -1 }) // Sort newest first
+      .limit(100) // Safety limit
+      .toArray();
 
     res.status(200).json(data);
   } catch (err) {
-    console.error('[ERROR] /api/ghost-winners:', err);
+    console.error('❌ [ERROR] /api/ghost-winners:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 }

@@ -1,5 +1,4 @@
-// src/pages/api/claimed-winners.js
-import { connectToDatabase } from 'lib/mongodb';
+import dbConnect from 'lib/dbConnect';
 import mongoose from 'mongoose';
 
 export default async function handler(req, res) {
@@ -8,19 +7,20 @@ export default async function handler(req, res) {
   }
 
   try {
-    await connectToDatabase();
+    await dbConnect();
+
     const db = mongoose.connection.db;
 
     const data = await db
       .collection('pi_cash_codes')
       .find({ claimed: true, winner: { $ne: null } })
-      .sort({ claimedAt: -1 }) // latest claims first (optional but nice touch)
-      .limit(100) // limit to avoid abuse / huge payloads
+      .sort({ claimedAt: -1 }) // newest claims first
+      .limit(100) // safety limit
       .toArray();
 
     res.status(200).json(data);
   } catch (err) {
-    console.error('[ERROR] /api/claimed-winners:', err);
+    console.error('❌ [ERROR] /api/claimed-winners:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 }
