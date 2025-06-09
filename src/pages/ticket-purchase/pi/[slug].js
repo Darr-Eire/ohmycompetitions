@@ -73,6 +73,13 @@ export default function PiTicketPage() {
   const handlePayment = async () => {
     if (!competition) return;
 
+    const total = competition.entryFee * quantity;
+
+    if (total <= 0) {
+      alert('Invalid ticket quantity or price.');
+      return;
+    }
+
     if (
       timeLeft.days === 0 &&
       timeLeft.hours === 0 &&
@@ -86,8 +93,6 @@ export default function PiTicketPage() {
     setProcessing(true);
 
     try {
-      const total = competition.entryFee * quantity;
-
       if (!window?.Pi?.createPayment) {
         alert('⚠️ Pi SDK not ready');
         setProcessing(false);
@@ -96,20 +101,18 @@ export default function PiTicketPage() {
 
       window.Pi.createPayment(
         {
-          amount: total,
+          amount: total.toFixed(8),
           memo: `Entry to ${competition.title}`,
           metadata: {
             type: 'pi-competition-entry',
             competitionSlug: slug,
             quantity,
           },
-        },
-        {
           onReadyForServerApproval: async (paymentId) => {
             const res = await fetch('/api/payments/approve', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ paymentId }),
+              body: JSON.stringify({ paymentId, slug, amount: total }),
             });
             if (!res.ok) throw new Error(await res.text());
             console.log('✅ Payment approved');
@@ -119,42 +122,44 @@ export default function PiTicketPage() {
               const res = await fetch('/api/payments/complete', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ paymentId, txid }),
+                body: JSON.stringify({ paymentId, txid, slug }),
               });
               if (!res.ok) throw new Error(await res.text());
               console.log('✅ Payment completed');
               alert('✅ Entry confirmed! Good luck!');
             } catch (err) {
               console.error('Error completing payment:', err);
-              alert('❌ Server completion failed. See console.');
+              alert('❌ Server completion failed.');
             } finally {
               setProcessing(false);
             }
           },
           onCancel: () => {
-            console.warn('Payment cancelled');
+            console.warn('❌ Payment cancelled');
             setProcessing(false);
           },
           onError: (err) => {
-            console.error('Payment error:', err);
-            alert('Payment failed');
+            console.error('❌ Payment error:', err);
+            alert('❌ Payment failed. See console for details.');
             setProcessing(false);
           },
         }
       );
     } catch (err) {
-      console.error(err);
+      console.error('❌ Unexpected error:', err);
       alert('❌ Something went wrong during payment.');
       setProcessing(false);
     }
   };
 
   if (!slug) return null;
-  if (!competition) return (
-    <p className="text-white text-center mt-12 font-orbitron">
-      Competition not found.
-    </p>
-  );
+  if (!competition) {
+    return (
+      <p className="text-white text-center mt-12 font-orbitron">
+        Competition not found.
+      </p>
+    );
+  }
 
   return (
     <div className="bg-[#0b1120] min-h-screen flex flex-col justify-center items-center px-6 py-10 font-orbitron text-white">

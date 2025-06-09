@@ -58,57 +58,53 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
       }
 
       const amount = (entryFee * quantity).toFixed(8);
+
+      // ✅ ALL CALLBACKS ARE PASSED INSIDE createPayment
       const payment = window.Pi.createPayment({
         amount,
         memo: `Buy ${quantity} ticket(s) for ${competitionSlug}`,
-        metadata: { competitionSlug, quantity, uid: piUser.uid }
+        metadata: { competitionSlug, quantity, uid: piUser.uid },
+        onReadyForServerApproval: async (paymentId) => {
+          console.log('🟢 onReadyForServerApproval:', paymentId);
+          await fetch('/api/payments/approve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              paymentId,
+              uid: piUser.uid,
+              competitionSlug,
+              amount: parseFloat(amount),
+            }),
+          });
+        },
+        onReadyForServerCompletion: async (paymentId, txid) => {
+          console.log('🟢 onReadyForServerCompletion:', { paymentId, txid });
+          await fetch('/api/payments/complete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              paymentId,
+              txid,
+              uid: piUser.uid,
+            }),
+          });
+
+          alert('✅ Payment successful!');
+          setProcessing(false);
+        },
+        onCancelled: () => {
+          console.warn('❌ Payment cancelled by user');
+          setError('❌ Payment was cancelled.');
+          setProcessing(false);
+        },
+        onError: (err) => {
+          console.error('❌ Pi SDK error:', err);
+          setError(`❌ SDK Error: ${err?.message || 'Unknown error'}`);
+          setProcessing(false);
+        },
       });
 
-      // 💥 Attach ALL callbacks BEFORE returning payment
-      payment.onReadyForServerApproval(async (paymentId) => {
-        console.log('🟢 onReadyForServerApproval:', paymentId);
-        await fetch('/api/payments/approve', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            paymentId,
-            uid: piUser.uid,
-            competitionSlug,
-            amount: parseFloat(amount),
-          }),
-        });
-      });
-
-      payment.onReadyForServerCompletion(async (paymentId, txid) => {
-        console.log('🟢 onReadyForServerCompletion:', { paymentId, txid });
-        await fetch('/api/payments/complete', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            paymentId,
-            txid,
-            uid: piUser.uid,
-          }),
-        });
-
-        alert('✅ Payment successful!');
-        setProcessing(false);
-      });
-
-      payment.onCancelled(() => {
-        console.warn('❌ Payment cancelled by user');
-        setError('❌ Payment was cancelled.');
-        setProcessing(false);
-      });
-
-      payment.onError((err) => {
-        console.error('❌ Pi SDK error:', err);
-        setError(`❌ SDK Error: ${err?.message || 'Unknown error'}`);
-        setProcessing(false);
-      });
-
-      return payment; // ✅ Return after attaching all callbacks
-
+      return payment;
     } catch (err) {
       console.error('❌ Unexpected error:', err);
       setError(`❌ Unexpected error: ${err?.message || 'Check console logs'}`);
