@@ -13,43 +13,40 @@ export default function AccountPage() {
   const [selectedCountry, setSelectedCountry] = useState('');
 
   useEffect(() => {
-    if (status === 'loading') return;
-    if (!session?.user?.email) return;
+    if (status !== 'authenticated') return;
+    const email = session?.user?.email;
+    if (!email) return;
 
-    fetchUser(session.user.email);
-    fetchTickets(session.user.email);
+    loadUser(email);
+    loadTickets(email);
   }, [session, status]);
 
-  const fetchUser = async (email) => {
+  const loadUser = async (email) => {
     try {
       const res = await axios.post('/api/user/me', { email });
       setUser(res.data);
       setSelectedCountry(res.data.country);
     } catch (err) {
-      console.error('Failed to load user', err);
+      console.error('Failed to load user:', err);
     }
   };
 
-  const fetchTickets = async (email) => {
+  const loadTickets = async (email) => {
     try {
       const res = await axios.post('/api/user/tickets', { email });
       setTickets(res.data);
     } catch (err) {
-      console.error('Failed to load tickets', err);
+      console.error('Failed to load tickets:', err);
     }
   };
 
   const handleCountryChange = async (e) => {
     const newCountry = e.target.value;
     setSelectedCountry(newCountry);
-
     try {
-      await axios.post('/api/user/update-country', {
-        email: session.user.email,
-        country: newCountry,
-      });
+      await axios.post('/api/user/update-country', { email: session.user.email, country: newCountry });
     } catch (err) {
-      console.error('Failed to update country', err);
+      console.error('Failed to update country:', err);
     }
   };
 
@@ -68,18 +65,14 @@ export default function AccountPage() {
 
         <div className="mt-4">
           <label className="block mb-2">Country:</label>
-          <select
-            className="p-2 rounded text-black"
-            value={selectedCountry}
-            onChange={handleCountryChange}
-          >
-            {countries.map(c => (
+          <select className="p-2 rounded text-black" value={selectedCountry} onChange={handleCountryChange}>
+            {countries.map((c) => (
               <option key={c.code} value={c.name}>{c.name}</option>
             ))}
           </select>
           {selectedCountry && (
             <div className="mt-2 flex items-center">
-              <Image src={`/flags/${selectedCountry}.png`} alt="" width={40} height={25} className="rounded shadow" />
+              <Image src={`/flags/${selectedCountry}.png`} alt={selectedCountry} width={40} height={25} className="rounded shadow" />
               <span className="ml-2">{selectedCountry}</span>
             </div>
           )}
