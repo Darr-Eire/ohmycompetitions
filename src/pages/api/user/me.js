@@ -8,20 +8,14 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
-  const { email, piUserId } = req.body;
+  const { email } = req.body;
 
-  if (!email && !piUserId) {
-    return res.status(400).json({ message: 'Missing email or piUserId' });
+  if (!email) {
+    return res.status(400).json({ message: 'Missing email' });
   }
 
   try {
-    let user;
-
-    if (email) {
-      user = await User.findOne({ email });
-    } else if (piUserId) {
-      user = await User.findOne({ piUserId });
-    }
+    const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -35,7 +29,6 @@ export default async function handler(req, res) {
       birthdate: user.birthdate,
       social: user.social,
     });
-    
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server Error' });
