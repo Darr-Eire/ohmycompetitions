@@ -1,131 +1,158 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { loadPiSdk } from 'lib/pi';
+import { useRouter } from 'next/router';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import BuyTicketButton from '@components/BuyTicketButton';
+import {
+  techItems,
+  premiumItems,
+  piItems,
+  dailyItems,
+  freeItems,
+  cryptoGiveawaysItems
+} from '../../data/competitions';
 
-export default function BuyTicketButton({ competitionSlug, entryFee, quantity }) {
-  const [sdkReady, setSdkReady] = useState(false);
-  const [processing, setProcessing] = useState(false);
-  const [error, setError] = useState(null);
-  const [piUser, setPiUser] = useState(null);
+// Flatten competitions
+const flattenCompetitions = [
+  ...techItems,
+  ...premiumItems,
+  ...piItems,
+  ...dailyItems,
+  ...freeItems,
+  ...cryptoGiveawaysItems,
+];
 
+const COMPETITIONS = {};
+flattenCompetitions.forEach(item => {
+  COMPETITIONS[item.comp.slug] = {
+    ...item.comp,
+    title: item.title,
+    prize: item.prize,
+    imageUrl: item.imageUrl,
+    location: item.location || 'Online',
+    date: item.date || 'N/A',
+    time: item.time || 'N/A',
+  };
+});
+
+const FREE_TICKET_COMPETITIONS = ['pi-to-the-moon'];
+
+export default function TicketPurchasePage() {
+  const router = useRouter();
+  const { slug } = router.query;
+  const comp = COMPETITIONS[slug];
+
+  const [quantity, setQuantity] = useState(1);
+  const [sharedBonus, setSharedBonus] = useState(false);
+
+  // Handle free ticket logic
   useEffect(() => {
-    loadPiSdk(() => setSdkReady(true));
+    if (!slug || !FREE_TICKET_COMPETITIONS.includes(slug)) return;
+    const saved = parseInt(localStorage.getItem(`${slug}-claimed`) || 0);
+    setQuantity(saved || 1);
+    setSharedBonus(localStorage.getItem(`${slug}-shared`) === 'true');
+  }, [slug]);
 
-    const storedUser = localStorage.getItem('piUser');
-    if (storedUser) {
-      try {
-        setPiUser(JSON.parse(storedUser));
-      } catch {
-        console.error('Invalid piUser in localStorage');
-      }
+  const claimFreeTicket = () => {
+    const maxTickets = sharedBonus ? 2 : 1;
+    if (quantity >= maxTickets) {
+      alert('You have claimed the maximum tickets.');
+      return;
     }
-  }, []);
-
-  const fetchCurrentPaymentSafe = async () => {
-    try {
-      return await window.Pi.createPayment.fetchCurrentPayment();
-    } catch {
-      return null;
-    }
+    const updated = quantity + 1;
+    setQuantity(updated);
+    localStorage.setItem(`${slug}-claimed`, updated);
   };
 
-  const handlePayment = async () => {
-    if (!sdkReady) return setError('⚠️ Pi SDK not ready.');
-    if (!piUser || !piUser.uid) return setError('⚠️ You must be logged in with Pi.');
-
-    setProcessing(true);
-    setError(null);
-
-    try {
-      const statusRes = await fetch(`/api/payments/status?uid=${piUser.uid}`);
-      const statusJson = await statusRes.json();
-      if (statusJson?.pending) {
-        setError('⚠️ You already have a pending payment.');
-        setProcessing(false);
-        return;
-      }
-
-      const existingPayment = await fetchCurrentPaymentSafe();
-      if (existingPayment && ['INCOMPLETE', 'PENDING'].includes(existingPayment.status)) {
-        setError('⚠️ Unresolved payment exists in Pi SDK.');
-        setProcessing(false);
-        return;
-      }
-
-      if (!window?.Pi?.createPayment) {
-        throw new Error('Pi SDK not available.');
-      }
-
-      const amount = (entryFee * quantity).toFixed(8);
-
-      window.Pi.createPayment(
-        {
-          amount,
-          memo: `Buy ${quantity} ticket(s) for ${competitionSlug}`,
-          metadata: {
-            competitionSlug,
-            quantity,
-            uid: piUser.uid,
-          },
-        },
-        {
-          onReadyForServerApproval: async (paymentId) => {
-            console.log('🟢 onReadyForServerApproval:', paymentId);
-            await fetch('/api/payments/approve', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                paymentId,
-                uid: piUser.uid,
-                competitionSlug,
-                amount: parseFloat(amount),
-              }),
-            });
-          },
-          onReadyForServerCompletion: async (paymentId, txid) => {
-            console.log('🟢 onReadyForServerCompletion:', { paymentId, txid });
-            await fetch('/api/payments/complete', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                paymentId,
-                txid,
-                uid: piUser.uid,
-              }),
-            });
-            alert('✅ Payment successful!');
-            setProcessing(false);
-          },
-          onCancel: () => {
-            console.warn('❌ Payment cancelled');
-            setError('❌ Payment was cancelled.');
-            setProcessing(false);
-          },
-          onError: (err) => {
-            console.error('❌ Pi SDK error:', err);
-            setError(`❌ SDK Error: ${err?.message || 'Unknown error'}`);
-            setProcessing(false);
-          },
-        }
-      );
-    } catch (err) {
-      console.error('❌ Unexpected error:', err);
-      setError(`❌ Unexpected error: ${err?.message || 'Check console logs'}`);
-      setProcessing(false);
+  const handleShare = () => {
+    if (sharedBonus) {
+      alert('You already received your bonus ticket.');
+      return;
     }
+    setSharedBonus(true);
+    localStorage.setItem(`${slug}-shared`, 'true');
+    claimFreeTicket();
   };
+
+  if (!router.isReady) return null;
+
+  if (!comp) {
+    return (
+      <div className="p-6 text-center text-white bg-[#0b1120] min-h-screen">
+        <h1 className="text-2xl font-bold text-red-500">Competition Not Found</h1>
+        <p className="mt-4">We couldn’t find “{slug}”.</p>
+        <Link href="/" className="mt-6 inline-block text-blue-400 underline font-semibold">← Back to Home</Link>
+      </div>
+    );
+  }
+
+  const isFree = FREE_TICKET_COMPETITIONS.includes(slug);
+  const totalPrice = comp.entryFee * quantity;
 
   return (
-    <div className="text-center mt-4">
-      <button
-        onClick={handlePayment}
-        disabled={!sdkReady || processing}
-        className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl shadow-lg transition disabled:opacity-50"
-      >
-        {processing ? 'Processing Payment…' : 'Buy Tickets with Pi'}
-      </button>
-      {error && <p className="mt-2 text-red-500">{error}</p>}
+    <div className="bg-[#0b1120] min-h-screen text-white py-6 px-4">
+      <div className="max-w-xl mx-auto border border-blue-500 rounded-xl shadow-xl bg-[#0b1120]">
+        <div className="bg-gradient-to-r from-cyan-400 to-blue-500 px-4 py-3 text-center">
+          <h1 className="text-xl sm:text-2xl font-bold text-black uppercase">{comp.title}</h1>
+        </div>
+
+        <div className="p-6 space-y-6 text-center">
+          {comp.imageUrl && (
+            <img
+              src={comp.imageUrl}
+              alt={comp.title}
+              className="w-full max-h-64 object-cover rounded-lg border border-blue-500 mx-auto"
+            />
+          )}
+          <p className="text-white text-2xl font-bold">{comp.prize}</p>
+
+          <div className="max-w-md mx-auto text-sm text-white space-y-2">
+            <div className="flex justify-between"><span className="font-semibold">Date</span><span>{new Date(comp.endsAt).toLocaleDateString('en-GB')}</span></div>
+            <div className="flex justify-between"><span className="font-semibold">Start Time</span><span>{new Date(comp.endsAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} UTC</span></div>
+            <div className="flex justify-between"><span className="font-semibold">Location</span><span>{comp.location}</span></div>
+            <div className="flex justify-between"><span className="font-semibold">Entry Fee</span><span>{comp.entryFee.toFixed(2)} π</span></div>
+            <div className="flex justify-between"><span className="font-semibold">Tickets Sold</span><span>{comp.ticketsSold} / {comp.totalTickets}</span></div>
+          </div>
+
+          {isFree ? (
+            <>
+              <p className="text-cyan-300 font-semibold text-lg">Free Ticket Claimed: {quantity}/2</p>
+              <button onClick={claimFreeTicket} disabled={quantity >= (sharedBonus ? 2 : 1)}
+                className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 px-4 rounded-xl mb-3">
+                Claim Free Ticket
+              </button>
+              {!sharedBonus && (
+                <button onClick={handleShare}
+                  className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold py-3 px-4 rounded-xl">
+                  Share for Bonus Ticket
+                </button>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="flex justify-center gap-4">
+                <button onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                  className="bg-blue-500 px-4 py-1 rounded-full disabled:opacity-50" disabled={quantity <= 1}>−</button>
+                <span className="text-lg font-semibold">{quantity}</span>
+                <button onClick={() => setQuantity(q => q + 1)}
+                  className="bg-blue-500 px-4 py-1 rounded-full">+</button>
+              </div>
+
+              <p className="text-lg font-bold mt-6">Total {totalPrice.toFixed(2)} π</p>
+              <p className="text-white text-sm mt-2">Secure your entry to win <strong>{comp.prize}</strong>.</p>
+
+              <BuyTicketButton competitionSlug={slug} entryFee={comp.entryFee} quantity={quantity} />
+            </>
+          )}
+
+          <p className="text-xs mt-2 text-gray-400">
+            <Link href="/terms" className="underline hover:text-cyan-400" target="_blank" rel="noopener noreferrer">
+              Terms & Conditions
+            </Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
