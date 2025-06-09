@@ -127,13 +127,29 @@ const handleLogin = async () => {
       </div>
 
       <div className="text-white text-sm flex items-center gap-2">
-        {user ? (
-          <span className="text-sm font-bold">
-            👋 {user.username} {user.country ? countryCodeToFlagEmoji(user.country) : ''}
-          </span>
-        ) : (
-          <button onClick={handleLogin} className="neon-button text-xs px-2 py-1">Login with Pi</button>
-        )}
+       {user ? (
+  <div className="flex items-center gap-2">
+    <span className="text-sm font-bold">
+      👋 {user.username} {user.country ? countryCodeToFlagEmoji(user.country) : ''}
+    </span>
+    <button
+      onClick={() => {
+        // 🧼 Full cleanup
+        document.cookie = "pi.accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
+        localStorage.removeItem('piUser');
+        window.Pi?.logout?.();
+        setUser(null);
+        alert('🔁 Pi session cleared. Please login again.');
+      }}
+      className="neon-button text-xs px-2 py-1 bg-red-600 hover:bg-red-700"
+    >
+      Force Logout
+    </button>
+  </div>
+) : (
+  <button onClick={handleLogin} className="neon-button text-xs px-2 py-1">Login with Pi</button>
+)}
+
       </div>
 
       {menuOpen && (
