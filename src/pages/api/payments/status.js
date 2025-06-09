@@ -1,5 +1,5 @@
-import { dbConnect } from '@/lib/dbConnect';
-import Payment from '@/models/Payment';
+import { dbConnect } from 'lib/dbConnect';
+import Payment from 'models/Payment';
 
 export default async function handler(req, res) {
   const { uid } = req.query;
