@@ -77,13 +77,20 @@ export default function AccountPage() {
               <option key={c.code} value={c.name}>{c.name}</option>
             ))}
           </select>
+{selectedCountry && selectedCountry.trim() !== '' && (
+  <div className="mt-2 flex items-center">
+    <Image 
+      src={`/flags/${selectedCountry}.png`} 
+      alt={`${selectedCountry} flag`} 
+      width={40} 
+      height={25} 
+      className="rounded shadow" 
+      onError={(e) => { e.target.style.display = 'none'; }}
+    />
+    <span className="ml-2">{selectedCountry}</span>
+  </div>
+)}
 
-          {selectedCountry && (
-            <div className="mt-2 flex items-center">
-              <Image src={`/flags/${selectedCountry}.png`} alt="" width={40} height={25} className="rounded shadow" />
-              <span className="ml-2">{selectedCountry}</span>
-            </div>
-          )}
         </div>
       </div>
 
