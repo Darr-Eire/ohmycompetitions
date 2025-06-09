@@ -1,26 +1,20 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
   const { paymentId } = req.body;
 
+  if (!paymentId) {
+    return res.status(400).json({ error: 'Missing paymentId' });
+  }
+
   try {
-    const response = await fetch('https://api.minepi.com/payments/approve', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Key ${process.env.PI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ paymentId }),
-    });
-
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.error || 'Approval failed');
-
-    res.status(200).json({ success: true, result });
-  } catch (err: any) {
-    console.error('Approval Error:', err.message);
-    res.status(500).json({ error: err.message });
+    // Here you would verify payment intent from your DB if applicable
+    // You can log or store the approval if needed
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Approve error:', error);
+    return res.status(500).json({ error: 'Server error approving payment' });
   }
 }
