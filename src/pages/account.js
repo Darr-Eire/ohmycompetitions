@@ -6,7 +6,7 @@ import { countries } from 'data/countries';
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 
-export default function AccountPage() {
+export default function Account() {
   const { data: session, status } = useSession();
   const [user, setUser] = useState(null);
   const [tickets, setTickets] = useState([]);
@@ -14,13 +14,20 @@ export default function AccountPage() {
 
   useEffect(() => {
     if (status !== 'authenticated') return;
-    if (!session?.user?.email) return;
+    if (!session?.user?.email) {
+      console.warn('Email not loaded yet');
+      return;
+    }
 
     fetchUser(session.user.email);
     fetchTickets(session.user.email);
-  }, [session, status]);
+  }, [session?.user?.email, status]);
 
   const fetchUser = async (email) => {
+    if (!email) {
+      console.warn('No email provided for fetchUser');
+      return;
+    }
     try {
       const res = await axios.post('/api/user/me', { email });
       setUser(res.data);
@@ -31,6 +38,10 @@ export default function AccountPage() {
   };
 
   const fetchTickets = async (email) => {
+    if (!email) {
+      console.warn('No email provided for fetchTickets');
+      return;
+    }
     try {
       const res = await axios.post('/api/user/tickets', { email });
       setTickets(res.data);
@@ -64,7 +75,6 @@ export default function AccountPage() {
     <div className="max-w-3xl mx-auto p-4 text-white">
       <h1 className="text-3xl mb-6 font-orbitron text-center">My Account</h1>
 
-      {/* Personal Info */}
       <div className="bg-[#111827] rounded-2xl shadow-lg p-6 mb-8 border border-cyan-400">
         <h2 className="text-xl mb-4 font-semibold">Personal Info</h2>
         <p><strong>Username:</strong> {user.username}</p>
@@ -98,13 +108,11 @@ export default function AccountPage() {
         </div>
       </div>
 
-      {/* Tickets Summary */}
       <div className="bg-[#111827] rounded-2xl shadow-lg p-6 mb-8 border border-cyan-400">
         <h2 className="text-xl mb-4 font-semibold">Tickets Summary</h2>
         <p><strong>Total Tickets Purchased:</strong> {tickets.reduce((acc, t) => acc + t.quantity, 0)}</p>
       </div>
 
-      {/* Purchase History */}
       <div className="bg-[#111827] rounded-2xl shadow-lg p-6 border border-cyan-400">
         <h2 className="text-xl mb-4 font-semibold">Purchase History</h2>
         {tickets.length === 0 ? (
