@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { countries } from 'data/countries';
+import { countries } from 'data/countries'; 
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 
@@ -14,29 +14,28 @@ export default function AccountPage() {
 
   useEffect(() => {
     if (status !== 'authenticated') return;
-    const email = session?.user?.email;
-    if (!email) return;
+    if (!session?.user?.email) return;
 
-    loadUser(email);
-    loadTickets(email);
+    fetchUser(session.user.email);
+    fetchTickets(session.user.email);
   }, [session, status]);
 
-  const loadUser = async (email) => {
+  const fetchUser = async (email) => {
     try {
       const res = await axios.post('/api/user/me', { email });
       setUser(res.data);
       setSelectedCountry(res.data.country);
     } catch (err) {
-      console.error('Failed to load user:', err);
+      console.error('Failed to load user', err);
     }
   };
 
-  const loadTickets = async (email) => {
+  const fetchTickets = async (email) => {
     try {
       const res = await axios.post('/api/user/tickets', { email });
       setTickets(res.data);
     } catch (err) {
-      console.error('Failed to load tickets:', err);
+      console.error('Failed to load tickets', err);
     }
   };
 
@@ -44,14 +43,21 @@ export default function AccountPage() {
     const newCountry = e.target.value;
     setSelectedCountry(newCountry);
     try {
-      await axios.post('/api/user/update-country', { email: session.user.email, country: newCountry });
+      await axios.post('/api/user/update-country', {
+        email: session.user.email,
+        country: newCountry,
+      });
     } catch (err) {
-      console.error('Failed to update country:', err);
+      console.error('Failed to update country', err);
     }
   };
 
-  if (status === 'loading' || !user) {
-    return <div className="text-white text-center mt-10">Loading your account...</div>;
+  if (status === 'loading') {
+    return <div className="text-white text-center mt-10">Loading session...</div>;
+  }
+
+  if (!user) {
+    return <div className="text-white text-center mt-10">Loading your account data...</div>;
   }
 
   return (
@@ -65,25 +71,29 @@ export default function AccountPage() {
 
         <div className="mt-4">
           <label className="block mb-2">Country:</label>
-          <select className="p-2 rounded text-black" value={selectedCountry} onChange={handleCountryChange}>
-            {countries.map((c) => (
+          <select
+            className="p-2 rounded text-black"
+            value={selectedCountry}
+            onChange={handleCountryChange}
+          >
+            {countries.map(c => (
               <option key={c.code} value={c.name}>{c.name}</option>
             ))}
           </select>
-         {selectedCountry && selectedCountry.trim() !== '' && (
-  <div className="mt-2 flex items-center">
-    <Image 
-      src={`/flags/${selectedCountry}.png`} 
-      alt={`${selectedCountry} flag`} 
-      width={40} 
-      height={25} 
-      className="rounded shadow" 
-      onError={(e) => { e.target.style.display = 'none'; }}
-    />
-    <span className="ml-2">{selectedCountry}</span>
-  </div>
-)}
 
+          {selectedCountry && selectedCountry.trim() !== '' && (
+            <div className="mt-2 flex items-center">
+              <Image 
+                src={`/flags/${selectedCountry}.png`} 
+                alt={`${selectedCountry} flag`} 
+                width={40} 
+                height={25} 
+                className="rounded shadow" 
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
+              <span className="ml-2">{selectedCountry}</span>
+            </div>
+          )}
         </div>
       </div>
 
