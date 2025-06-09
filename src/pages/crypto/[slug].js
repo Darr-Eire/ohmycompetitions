@@ -4,11 +4,10 @@ import BuyTicketButton from '@components/BuyTicketButton';
 import Link from 'next/link';
 
 const CRYPTO_COMPETITIONS = {
-'crypto-btc': {
+  'crypto-btc': {
     title: 'Win Bitcoin (BTC)',
     prize: '0.01 BTC',
     entryFee: 0.5,
-  
     tradingViewSymbol: 'BINANCE:BTCUSDT',
     date: 'June 2, 2025',
     time: '12:59 AM UTC',
@@ -19,7 +18,6 @@ const CRYPTO_COMPETITIONS = {
     title: 'Win Ethereum (ETH)',
     prize: '0.5 ETH',
     entryFee: 0.5,
- 
     tradingViewSymbol: 'BINANCE:ETHUSDT',
     date: 'June 3, 2025',
     time: '11:59 PM UTC',
@@ -30,7 +28,6 @@ const CRYPTO_COMPETITIONS = {
     title: 'Win Ripple (XRP)',
     prize: '1000 XRP',
     entryFee: 0.4,
-
     tradingViewSymbol: 'BINANCE:XRPUSDT',
     date: 'June 9, 2025',
     time: '11:59 PM UTC',
@@ -41,7 +38,6 @@ const CRYPTO_COMPETITIONS = {
     title: 'Win Solana (SOL)',
     prize: '10 SOL',
     entryFee: 0.4,
-
     tradingViewSymbol: 'BINANCE:SOLUSDT',
     date: 'June 5, 2025',
     time: '11:59 PM UTC',
@@ -52,7 +48,6 @@ const CRYPTO_COMPETITIONS = {
     title: 'Win Binance Coin (BNB)',
     prize: '2 BNB',
     entryFee: 0.4,
-
     tradingViewSymbol: 'BINANCE:BNBUSDT',
     date: 'June 7, 2025',
     time: '11:59 PM UTC',
@@ -63,7 +58,6 @@ const CRYPTO_COMPETITIONS = {
     title: 'Win Dogecoin (DOGE)',
     prize: '10,000 DOGE',
     entryFee: 0.3,
-
     tradingViewSymbol: 'BINANCE:DOGEUSDT',
     date: 'June 11, 2025',
     time: '11:59 PM UTC',
@@ -78,18 +72,6 @@ export default function CryptoTicketPage() {
   const comp = CRYPTO_COMPETITIONS[slug];
 
   const [quantity, setQuantity] = useState(1);
-  const [piUser, setPiUser] = useState(null);
-  const [loadingUser, setLoadingUser] = useState(true);
-
-  useEffect(() => {
-    if (!window.Pi?.getCurrentPioneer) {
-      setLoadingUser(false);
-      return;
-    }
-    window.Pi.getCurrentPioneer()
-      .then(user => user && setPiUser(user))
-      .finally(() => setLoadingUser(false));
-  }, []);
 
   useEffect(() => {
     if (!comp) return;
@@ -134,8 +116,6 @@ export default function CryptoTicketPage() {
   return (
     <div className="bg-[#0b0f1a] text-[#e5e7eb] min-h-screen py-8 px-4">
       <div className="max-w-2xl mx-auto bg-[#111827] p-6 rounded-2xl shadow-2xl">
-
-        {/* Mini TradingView Chart */}
         <div className="mb-6 rounded-xl overflow-hidden" id="tv-mini" />
 
         <h1 className="text-3xl font-bold text-center bg-gradient-to-r from-blue-500 to-cyan-400 text-transparent bg-clip-text mb-6">
@@ -171,25 +151,11 @@ export default function CryptoTicketPage() {
           Total: {totalPrice.toFixed(2)} π
         </p>
 
-        {loadingUser ? (
-          <p className="text-center">Checking session…</p>
-        ) : !piUser ? (
-          <button
-            onClick={() =>
-              window.Pi.authenticate(['username', 'payments'])
-                .then(({ user }) => setPiUser(user))
-            }
-            className="w-full bg-gradient-to-r from-blue-500 to-cyan-400 text-white font-bold py-3 rounded-xl hover:opacity-90"
-          >
-            Log in with Pi to continue
-          </button>
-        ) : (
-          <BuyTicketButton
-            competitionSlug={slug}
-            entryFee={comp.entryFee}
-            quantity={quantity}
-          />
-        )}
+        <BuyTicketButton
+          competitionSlug={slug}
+          entryFee={comp.entryFee}
+          quantity={quantity}
+        />
       </div>
     </div>
   );

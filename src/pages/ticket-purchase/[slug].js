@@ -7,7 +7,7 @@ import BuyTicketButton from '@components/BuyTicketButton';
 import { loadPiSdk } from '@lib/pi';
 import { techItems, premiumItems, piItems, dailyItems, freeItems, cryptoGiveawaysItems } from '../../data/competitions';
 
-// Flatten all competitions for easy lookup
+// Flatten all competitions
 const flattenCompetitions = [
   ...techItems, ...premiumItems, ...piItems, ...dailyItems, ...freeItems, ...cryptoGiveawaysItems,
 ];
@@ -33,9 +33,6 @@ export default function TicketPurchasePage() {
   const comp = COMPETITIONS[slug];
 
   const [sdkReady, setSdkReady] = useState(false);
-  const [piUser, setPiUser] = useState(null);
-  const [loadingUser, setLoadingUser] = useState(true);
-  const [loadingLogin, setLoadingLogin] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [sharedBonus, setSharedBonus] = useState(false);
 
@@ -44,23 +41,7 @@ export default function TicketPurchasePage() {
     loadPiSdk(setSdkReady);
   }, []);
 
-  // Attempt auto-login via getCurrentPioneer()
-  useEffect(() => {
-    if (!router.isReady || !window?.Pi?.getCurrentPioneer) {
-      setLoadingUser(false);
-      return;
-    }
-    window.Pi.getCurrentPioneer()
-      .then(user => {
-        if (user) setPiUser(user);
-      })
-      .catch(err => {
-        console.error('Error fetching Pi user:', err);
-      })
-      .finally(() => setLoadingUser(false));
-  }, [router.isReady]);
-
-  // Load free ticket claim state
+  // Load claimed/bonus status for free competitions
   useEffect(() => {
     if (!slug || !FREE_TICKET_COMPETITIONS.includes(slug)) return;
     const saved = parseInt(localStorage.getItem(`${slug}-claimed`) || 0);
@@ -87,21 +68,6 @@ export default function TicketPurchasePage() {
     setSharedBonus(true);
     localStorage.setItem(`${slug}-shared`, 'true');
     claimFreeTicket();
-  };
-
-  const handlePiLogin = async () => {
-    setLoadingLogin(true);
-    if (!window?.Pi) {
-      alert('Pi SDK not available.');
-      setLoadingLogin(false);
-      return;
-    }
-    try {
-      const user = await window.Pi.authenticate(['username']);
-      setPiUser(user);
-    } finally {
-      setLoadingLogin(false);
-    }
   };
 
   if (!router.isReady) return null;
@@ -170,25 +136,16 @@ export default function TicketPurchasePage() {
 
               <p className="text-lg font-bold mt-6">Total {totalPrice.toFixed(2)} π</p>
               <p className="text-white text-sm mt-2">Secure your entry to win <strong>{comp.prize}</strong>.</p>
+
+              <BuyTicketButton competitionSlug={slug} entryFee={comp.entryFee} quantity={quantity} />
             </>
           )}
 
-          <p className="text-xs mt-1 text-gray-400">
-            <Link href="/terms" className="underline hover:text-cyan-400" target="_blank" rel="noopener noreferrer">Terms & Conditions</Link>
+          <p className="text-xs mt-2 text-gray-400">
+            <Link href="/terms" className="underline hover:text-cyan-400" target="_blank" rel="noopener noreferrer">
+              Terms & Conditions
+            </Link>
           </p>
-
-          {!isFree && (
-            loadingUser ? (
-              <p className="text-center text-white">Checking session…</p>
-            ) : !piUser ? (
-              <button onClick={handlePiLogin} disabled={loadingLogin}
-                className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 px-4 rounded-xl">
-                {loadingLogin ? 'Logging in…' : 'Log in with Pi to continue'}
-              </button>
-            ) : (
-              <BuyTicketButton competitionSlug={slug} entryFee={comp.entryFee} quantity={quantity} piUser={piUser} />
-            )
-          )}
         </div>
       </div>
     </div>

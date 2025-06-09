@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { loadPiSdk } from 'lib/pi'; // Ensure your helper correctly loads Pi SDK
+import { loadPiSdk } from 'lib/pi';
 
 export default function BuyTicketButton({ competitionSlug, entryFee, quantity }) {
   const [sdkReady, setSdkReady] = useState(false);
@@ -10,10 +10,8 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
   const [piUser, setPiUser] = useState(null);
 
   useEffect(() => {
-    // Load Pi SDK
     loadPiSdk(() => setSdkReady(true));
 
-    // Load Pi user from localStorage
     const storedUser = localStorage.getItem('piUser');
     if (storedUser) {
       try {
@@ -32,7 +30,6 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
     setError(null);
 
     try {
-      // Check for pending payments on server
       const statusRes = await fetch(`/api/payments/status?uid=${piUser.uid}`);
       const statusJson = await statusRes.json();
       if (statusJson?.pending) {
@@ -41,7 +38,6 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
         return;
       }
 
-      // Check for incomplete payment in SDK
       const existingPayment = await fetchCurrentPaymentSafe();
       if (existingPayment && ['INCOMPLETE', 'PENDING'].includes(existingPayment.status)) {
         setError('⚠️ Unresolved payment exists in Pi SDK.');
@@ -49,7 +45,6 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
         return;
       }
 
-      // Start payment flow
       const amount = (entryFee * quantity).toFixed(8);
       const payment = window.Pi.createPayment({
         amount,
