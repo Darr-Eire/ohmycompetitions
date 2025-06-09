@@ -137,7 +137,11 @@ export default function TicketPurchasePage() {
               <p className="text-lg font-bold mt-6">Total {totalPrice.toFixed(2)} π</p>
               <p className="text-white text-sm mt-2">Secure your entry to win <strong>{comp.prize}</strong>.</p>
 
-              <BuyTicketButton competitionSlug={slug} entryFee={comp.entryFee} quantity={quantity} />
+              {sdkReady ? (
+  <BuyTicketButton competitionSlug={slug} entryFee={comp.entryFee} quantity={quantity} />
+) : (
+  <p className="text-red-500 mt-2">⚠️ Pi SDK not ready yet. Please wait…</p>
+)}
             </>
           )}
 
