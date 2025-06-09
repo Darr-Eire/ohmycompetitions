@@ -1,7 +1,10 @@
+// lib/pi.js
 export const loadPiSdk = (onReady) => {
+  if (typeof window === 'undefined') return;
+
   if (window.Pi) {
     window.Pi.init({ version: '2.0' });
-    onReady();
+    onReady?.();
     return;
   }
 
@@ -10,7 +13,7 @@ export const loadPiSdk = (onReady) => {
   script.async = true;
   script.onload = () => {
     window.Pi.init({ version: '2.0' });
-    onReady();
+    onReady?.();
   };
   document.body.appendChild(script);
 };

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { loadPiSdk } from 'lib/pi'; // Make sure this loads and initializes Pi SDK
+import { loadPiSdk } from '@/lib/pi'; // ✅ Ensure this helper is working
 
 export default function BuyTicketButton({ competitionSlug, entryFee, quantity, piUser }) {
   const [sdkReady, setSdkReady] = useState(false);
@@ -20,36 +20,33 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity, p
     setError(null);
 
     try {
-      // Check for existing backend payment
       const statusRes = await fetch(`/api/payments/status?uid=${piUser.uid}`);
       const statusJson = await statusRes.json();
-      if (statusJson.pending) {
+      if (statusJson?.pending) {
         setError('You already have a pending payment.');
         setProcessing(false);
         return;
       }
 
-      // Optional: check for current payment in SDK
       const existingPayment = await fetchCurrentPaymentSafe();
       if (existingPayment && ['INCOMPLETE', 'PENDING'].includes(existingPayment.status)) {
-        setError('An unresolved payment exists in Pi SDK.');
+        setError('Unresolved payment exists in Pi SDK.');
         setProcessing(false);
         return;
       }
 
       const amount = (entryFee * quantity).toFixed(8);
-
       const payment = window.Pi.createPayment({
         amount,
         memo: `Buy ${quantity} ticket(s) for ${competitionSlug}`,
-        metadata: { competitionSlug, quantity, userUid: piUser.uid }
+        metadata: { competitionSlug, quantity, uid: piUser.uid },
       });
 
       payment.onReadyForServerApproval(async (paymentId) => {
         await fetch('/api/payments/approve', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ paymentId, uid: piUser.uid })
+          body: JSON.stringify({ paymentId, uid: piUser.uid }),
         });
       });
 
@@ -57,7 +54,7 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity, p
         await fetch('/api/payments/complete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ paymentId, txid, uid: piUser.uid })
+          body: JSON.stringify({ paymentId, txid, uid: piUser.uid }),
         });
         alert('✅ Payment successful!');
         setProcessing(false);
@@ -70,13 +67,13 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity, p
 
       payment.onError((err) => {
         console.error('Pi payment error:', err);
-        setError('An error occurred during payment.');
+        setError('❌ Error during payment. Please try again.');
         setProcessing(false);
       });
 
     } catch (err) {
       console.error('Unexpected error:', err);
-      setError('Unexpected error occurred.');
+      setError('❌ Unexpected error occurred.');
       setProcessing(false);
     }
   };
