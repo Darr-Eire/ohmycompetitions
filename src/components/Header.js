@@ -61,35 +61,35 @@ export default function Header() {
     document.body.appendChild(script);
   }, []);
 
-  const handleLogin = async () => {
-    if (!sdkReady || !window.Pi?.authenticate) {
-      alert('⚠️ Pi SDK not ready.');
-      return;
-    }
+const handleLogin = async () => {
+  try {
+    // 🧨 Clear localStorage + SDK session
+    localStorage.removeItem('piUser');
+    if (window.Pi?.logout) await window.Pi.logout();
 
-    try {
-      // 🔧 Clear old session and force re-auth
-      localStorage.removeItem('piUser');
-      if (window.Pi?.logout) window.Pi.logout();
+    // 🧼 Clean Pi cookie/session scope
+    document.cookie = "pi.accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 
-      const result = await window.Pi.authenticate(['username', 'payments']);
+    // 🔐 Request fresh scopes
+    const result = await window.Pi.authenticate(['username', 'payments']);
 
-      const res = await fetch('/api/auth/pi-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken: result.accessToken }),
-      });
+    const res = await fetch('/api/auth/pi-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accessToken: result.accessToken }),
+    });
 
-      if (!res.ok) throw new Error('Pi Login API failed');
+    if (!res.ok) throw new Error('Pi Login API failed');
 
-      const data = await res.json();
-      localStorage.setItem('piUser', JSON.stringify(data.user));
-      setUser(data.user);
-    } catch (err) {
-      console.error('Pi login failed:', err);
-      alert('Pi login failed. Check console.');
-    }
-  };
+    const data = await res.json();
+    localStorage.setItem('piUser', JSON.stringify(data.user));
+    setUser(data.user);
+  } catch (err) {
+    console.error('Pi login failed:', err);
+    alert('Pi login failed. Check console.');
+  }
+};
+
 
   const toggleMenu = () => setMenuOpen(prev => !prev);
   const toggleCompetitions = () => setCompetitionsOpen(prev => !prev);
