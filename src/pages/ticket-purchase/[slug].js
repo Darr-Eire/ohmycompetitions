@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import BuyTicketButton from '@components/BuyTicketButton';
-import { loadPiSdk } from '@lib/pi';
+import { loadPiSdk } from 'lib/pi';
 import { techItems, premiumItems, piItems, dailyItems, freeItems, cryptoGiveawaysItems } from '../../data/competitions';
 
 // Flatten all competitions
