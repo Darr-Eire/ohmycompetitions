@@ -1,20 +1,43 @@
+import { dbConnect } from '@/lib/dbConnect';
+import Payment from '@/models/Payment';
+
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { paymentId } = req.body;
+  const { paymentId, uid, competitionSlug, amount } = req.body;
 
-  if (!paymentId) {
-    return res.status(400).json({ error: 'Missing paymentId' });
+  if (!paymentId || !uid || !competitionSlug || !amount) {
+    return res.status(400).json({ error: 'Missing required fields' });
   }
 
   try {
-    // Here you would verify payment intent from your DB if applicable
-    // You can log or store the approval if needed
-    return res.status(200).json({ success: true });
-  } catch (error) {
-    console.error('Approve error:', error);
-    return res.status(500).json({ error: 'Server error approving payment' });
+    await dbConnect();
+
+    // Store payment in MongoDB as pending
+    await Payment.create({
+      paymentId,
+      uid,
+      competitionSlug,
+      amount,
+      status: 'PENDING'
+    });
+
+    // Call Pi Network to approve the payment
+    const response = await fetch('https://api.minepi.com/payments/approve', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Key ${process.env.PI_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ paymentId })
+    });
+
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Approval failed');
+
+    return res.status(200).json({ success: true, result });
+  } catch (err) {
+    console.error('Approval error:', err.message);
+    return res.status(500).json({ error: 'Failed to approve payment' });
   }
 }

@@ -30,6 +30,7 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
     setError(null);
 
     try {
+      // Check for pending payments
       const statusRes = await fetch(`/api/payments/status?uid=${piUser.uid}`);
       const statusJson = await statusRes.json();
       if (statusJson?.pending) {
@@ -38,6 +39,7 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
         return;
       }
 
+      // Check Pi SDK for existing session
       const existingPayment = await fetchCurrentPaymentSafe();
       if (existingPayment && ['INCOMPLETE', 'PENDING'].includes(existingPayment.status)) {
         setError('⚠️ Unresolved payment exists in Pi SDK.');
@@ -56,7 +58,12 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
         await fetch('/api/payments/approve', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ paymentId, uid: piUser.uid }),
+          body: JSON.stringify({
+            paymentId,
+            uid: piUser.uid,
+            competitionSlug,
+            amount: parseFloat(amount),
+          }),
         });
       });
 
@@ -64,8 +71,13 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
         await fetch('/api/payments/complete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ paymentId, txid, uid: piUser.uid }),
+          body: JSON.stringify({
+            paymentId,
+            txid,
+            uid: piUser.uid,
+          }),
         });
+
         alert('✅ Payment successful!');
         setProcessing(false);
       });
