@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { countries } from 'data/countries'; 
+import { countries } from 'data/countries';
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 
@@ -26,7 +26,7 @@ export default function AccountPage() {
       setUser(res.data);
       setSelectedCountry(res.data.country);
     } catch (err) {
-      console.error('Failed to load user', err);
+      console.error('Failed to load user:', err);
     }
   };
 
@@ -35,7 +35,7 @@ export default function AccountPage() {
       const res = await axios.post('/api/user/tickets', { email });
       setTickets(res.data);
     } catch (err) {
-      console.error('Failed to load tickets', err);
+      console.error('Failed to load tickets:', err);
     }
   };
 
@@ -48,7 +48,7 @@ export default function AccountPage() {
         country: newCountry,
       });
     } catch (err) {
-      console.error('Failed to update country', err);
+      console.error('Failed to update country:', err);
     }
   };
 
@@ -64,6 +64,7 @@ export default function AccountPage() {
     <div className="max-w-3xl mx-auto p-4 text-white">
       <h1 className="text-3xl mb-6 font-orbitron text-center">My Account</h1>
 
+      {/* Personal Info */}
       <div className="bg-[#111827] rounded-2xl shadow-lg p-6 mb-8 border border-cyan-400">
         <h2 className="text-xl mb-4 font-semibold">Personal Info</h2>
         <p><strong>Username:</strong> {user.username}</p>
@@ -81,15 +82,15 @@ export default function AccountPage() {
             ))}
           </select>
 
-          {selectedCountry && selectedCountry.trim() !== '' && (
+          {selectedCountry && (
             <div className="mt-2 flex items-center">
               <Image 
                 src={`/flags/${selectedCountry}.png`} 
                 alt={`${selectedCountry} flag`} 
                 width={40} 
                 height={25} 
-                className="rounded shadow" 
-                onError={(e) => { e.target.style.display = 'none'; }}
+                className="rounded shadow"
+                onError={(e) => e.target.style.display = 'none'}
               />
               <span className="ml-2">{selectedCountry}</span>
             </div>
@@ -97,11 +98,13 @@ export default function AccountPage() {
         </div>
       </div>
 
+      {/* Tickets Summary */}
       <div className="bg-[#111827] rounded-2xl shadow-lg p-6 mb-8 border border-cyan-400">
         <h2 className="text-xl mb-4 font-semibold">Tickets Summary</h2>
         <p><strong>Total Tickets Purchased:</strong> {tickets.reduce((acc, t) => acc + t.quantity, 0)}</p>
       </div>
 
+      {/* Purchase History */}
       <div className="bg-[#111827] rounded-2xl shadow-lg p-6 border border-cyan-400">
         <h2 className="text-xl mb-4 font-semibold">Purchase History</h2>
         {tickets.length === 0 ? (

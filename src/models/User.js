@@ -2,10 +2,10 @@ import mongoose from 'mongoose';
 
 const UserSchema = new mongoose.Schema(
   {
-    piUserId: { type: String, required: false, unique: true, sparse: true }, // Allow Pi or non-Pi users
+    piUserId: { type: String, required: false, unique: true, sparse: true },  // Pi SDK user id
     username: { type: String, required: true },
-    email: { type: String },
-    password: { type: String }, // Admin password (for credentials provider)
+    email: { type: String, unique: true, sparse: true },  // Admin email (optional for Pi)
+    password: { type: String },  // Admin password (only for NextAuth CredentialsProvider)
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
 
     // Account info
@@ -30,5 +30,5 @@ const UserSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Prevent model overwrite errors
+// ✅ Prevent model overwrite errors
 export default mongoose.models.User || mongoose.model('User', UserSchema);
