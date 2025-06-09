@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { loadPiSdk } from '@/lib/pi'; // ✅ Ensure this helper is working
+import { loadPiSdk } from 'lib/pi'; // ✅ Ensure this helper is working
 
 export default function BuyTicketButton({ competitionSlug, entryFee, quantity, piUser }) {
   const [sdkReady, setSdkReady] = useState(false);
