@@ -16,7 +16,6 @@ const NAV_ITEMS = [
   ['Partners & Sponsors', '/partners'],
 ];
 
-
 const COMPETITION_SUB_ITEMS = [
   ['Pi Cash Code', '/pi-cash-code'],
   ['Pi Lottery', '/pi-lottery'],
@@ -27,10 +26,8 @@ const COMPETITION_SUB_ITEMS = [
   ['Free', '/ticket-purchase/pi-to-the-moon'],
   ['Pi Giveaways', '/competitions/pi'],
   ['Crypto Giveaways', '/competitions/crypto-giveaways'],
- 
 ];
 
-// Country flag helper
 function countryCodeToFlagEmoji(code) {
   return code
     .toUpperCase()
@@ -41,23 +38,27 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [competitionsOpen, setCompetitionsOpen] = useState(false);
   const [user, setUser] = useState(null);
-  const menuRef = useRef(null);
-  const buttonRef = useRef(null);
   const [sdkReady, setSdkReady] = useState(false);
 
+  const menuRef = useRef(null);
+  const buttonRef = useRef(null);
+
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const script = document.createElement('script');
-      script.src = 'https://sdk.minepi.com/pi-sdk.js';
-      script.async = true;
-      script.onload = () => {
-        if (window.Pi) {
-          window.Pi.init({ version: '2.0' });
-          setSdkReady(true);
-        }
-      };
-      document.body.appendChild(script);
-    }
+    const savedUser = localStorage.getItem('piUser');
+    if (savedUser) setUser(JSON.parse(savedUser));
+  }, []);
+
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://sdk.minepi.com/pi-sdk.js';
+    script.async = true;
+    script.onload = () => {
+      if (window.Pi) {
+        window.Pi.init({ version: '2.0' });
+        setSdkReady(true);
+      }
+    };
+    document.body.appendChild(script);
   }, []);
 
   const handleLogin = async () => {
@@ -65,9 +66,20 @@ export default function Header() {
       alert('Pi SDK not ready.');
       return;
     }
+
     try {
       const result = await window.Pi.authenticate(['username', 'payments']);
-      setUser(result.user);
+      const res = await fetch('/api/auth/pi-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessToken: result.accessToken }),
+      });
+
+      if (!res.ok) throw new Error('Login failed');
+
+      const data = await res.json();
+      setUser(data.user);
+      localStorage.setItem('piUser', JSON.stringify(data.user));
     } catch (err) {
       console.error('Pi login failed:', err);
       alert('Login failed.');
@@ -79,7 +91,11 @@ export default function Header() {
 
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target) && !buttonRef.current.contains(e.target)) {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(e.target) &&
+        !buttonRef.current.contains(e.target)
+      ) {
         setMenuOpen(false);
         setCompetitionsOpen(false);
       }
@@ -89,8 +105,7 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] border-b border-cyan-700 px-3 py-1.5 flex items-center shadow-[0_4px_30px_rgba(0,255,255,0.4)] backdrop-blur-md">
-      
+    <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] border-b border-cyan-700 px-3 py-1.5 flex items-center shadow-md backdrop-blur-md">
       <button ref={buttonRef} onClick={toggleMenu} className="neon-button text-white text-xs px-2 py-1">
         <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M4 8h16M4 16h16" />
@@ -98,25 +113,27 @@ export default function Header() {
       </button>
 
       <div className="flex-1 text-center">
-        <Link href="/homepage" className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-transparent bg-clip-text drop-shadow">
+        <Link
+          href="/homepage"
+          className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-transparent bg-clip-text drop-shadow"
+        >
           OhMyCompetitions
         </Link>
       </div>
 
       <div className="text-white text-sm flex items-center gap-2">
         {user ? (
-          <span className="text-lg">
-            {user.username} {user?.country && countryCodeToFlagEmoji(user.country)}
+          <span className="text-sm font-bold">
+            👋 {user.username} {user.country ? countryCodeToFlagEmoji(user.country) : ''}
           </span>
         ) : (
-          <button onClick={handleLogin} className="neon-button text-xs px-2 py-1">Log In with Pi</button>
+          <button onClick={handleLogin} className="neon-button text-xs px-2 py-1">Login with Pi</button>
         )}
       </div>
 
       {menuOpen && (
-        <nav ref={menuRef} className="absolute top-full left-2 mt-2 w-56 rounded-lg shadow-xl backdrop-blur-md bg-[#0f172a] border border-cyan-700 animate-fade-in">
+        <nav ref={menuRef} className="absolute top-full left-2 mt-2 w-56 rounded-lg shadow-xl backdrop-blur-md bg-[#0f172a] border border-cyan-700 animate-fade-in z-50">
           <ul className="flex flex-col font-orbitron text-xs">
-
             {NAV_ITEMS.map(([label, href]) => (
               label === 'All Competitions' ? (
                 <li key={href}>
@@ -128,7 +145,7 @@ export default function Header() {
                       {COMPETITION_SUB_ITEMS.map(([subLabel, subHref]) => (
                         <li key={subHref}>
                           <Link href={subHref} onClick={() => setMenuOpen(false)}>
-                            <div className="px-4 py-2">{subLabel}</div>
+                            <div className="px-4 py-2 text-white hover:bg-cyan-700">{subLabel}</div>
                           </Link>
                         </li>
                       ))}
