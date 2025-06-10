@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import Confetti from 'react-confetti'
 import { useWindowSize } from '@uidotdev/usehooks'
 import Link from 'next/link'
-import { loadPiSdk } from '../../lib/pi'
+
 
 const MAX_RETRIES_PER_DAY = 5
 const RETRY_PRICE = 0.50

@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { initiatePiPayment } from '../utils/piPayment';
+import { initiatePiPayment } from '../utils/initiatePiPayment';
+
 import { usePiAuth } from '../context/PiAuthContext';
 
 export default function BuyTicketButton({ competitionSlug, entryFee, quantity }) {

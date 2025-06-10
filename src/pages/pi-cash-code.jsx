@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { usePiAuth } from '../context/PiAuthContext';
 import GhostWinnerLog from '../components/GhostWinnerLog';
 import ClaimedWinnersLog from '../components/ClaimedWinnersLog';
-import { loadPiSdk } from '../lib/pi';
+
 
 export default function PiCashCodePage() {
   const { user, login, loading: userLoading } = usePiAuth();
