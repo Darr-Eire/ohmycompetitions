@@ -2,30 +2,28 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { countries } from 'data/countries';
 import Image from 'next/image';
-import { useSession } from 'next-auth/react';
+import { countries } from 'data/countries';
+import { usePiAuth } from '../context/PiAuthContext';
 
 export default function Account() {
-  const { data: session, status } = useSession();
-  const [user, setUser] = useState(null);
+  const { user, login } = usePiAuth();
   const [tickets, setTickets] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState('');
 
   useEffect(() => {
-    if (status !== 'authenticated' || !session?.user?.email) return;
-    fetchUserData(session.user.email);
-  }, [status, session?.user?.email]);
+    if (!user) return;
+    fetchUserData(user.username); // or user.uid if you're storing that
+  }, [user]);
 
-  const fetchUserData = async (email) => {
+  const fetchUserData = async (username) => {
     try {
       const [userRes, ticketsRes] = await Promise.all([
-        axios.post('/api/user/me', { email }),
-        axios.post('/api/user/tickets', { email }),
+        axios.post('/api/user/me', { username }),
+        axios.post('/api/user/tickets', { username }),
       ]);
-      setUser(userRes.data);
-      setTickets(ticketsRes.data);
-      setSelectedCountry(userRes.data.country);
+      setSelectedCountry(userRes.data.country || '');
+      setTickets(ticketsRes.data || []);
     } catch (err) {
       console.error('⚠️ Failed to fetch account data:', err);
     }
@@ -36,7 +34,7 @@ export default function Account() {
     setSelectedCountry(newCountry);
     try {
       await axios.post('/api/user/update-country', {
-        email: session.user.email,
+        username: user.username,
         country: newCountry,
       });
     } catch (err) {
@@ -44,8 +42,19 @@ export default function Account() {
     }
   };
 
-  if (status === 'loading') return <div className="text-white text-center mt-10">Loading session...</div>;
-  if (!user) return <div className="text-white text-center mt-10">Loading your account data...</div>;
+  if (!user) {
+    return (
+      <div className="text-white text-center mt-10">
+        <p className="mb-4">⚠️ You must log in to view your account.</p>
+        <button
+          onClick={login}
+          className="bg-cyan-500 px-4 py-2 rounded text-black font-semibold hover:bg-cyan-600"
+        >
+          Login with Pi
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto p-4 text-white">
@@ -55,7 +64,7 @@ export default function Account() {
       <div className="bg-[#111827] rounded-2xl shadow-lg p-6 mb-8 border border-cyan-400">
         <h2 className="text-xl mb-4 font-semibold">Personal Info</h2>
         <p><strong>Username:</strong> {user.username}</p>
-        <p><strong>Email:</strong> {session.user.email}</p>
+        {user.uid && <p><strong>User ID:</strong> {user.uid}</p>}
 
         <div className="mt-4">
           <label className="block mb-2">Country:</label>
@@ -64,6 +73,7 @@ export default function Account() {
             value={selectedCountry}
             onChange={handleCountryChange}
           >
+            <option value="">Select Country</option>
             {countries.map(c => (
               <option key={c.code} value={c.name}>{c.name}</option>
             ))}

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
+import { usePiAuth } from '../context/PiAuthContext';
 
 const NAV_ITEMS = [
   ['Home', '/homepage'],
@@ -35,67 +36,13 @@ function countryCodeToFlagEmoji(code) {
 }
 
 export default function Header() {
+  const { user, login, logout, sdkReady } = usePiAuth();
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [competitionsOpen, setCompetitionsOpen] = useState(false);
-  const [user, setUser] = useState(null);
-  const [sdkReady, setSdkReady] = useState(false);
 
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
-
-  useEffect(() => {
-    const savedUser = localStorage.getItem('piUser');
-    if (savedUser) setUser(JSON.parse(savedUser));
-  }, []);
-
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://sdk.minepi.com/pi-sdk.js';
-    script.async = true;
-    script.onload = () => {
-      if (window.Pi) {
-        window.Pi.init({ version: '2.0' });
-        setSdkReady(true);
-      }
-    };
-    script.onerror = () => console.error('❌ Failed to load Pi SDK');
-    document.body.appendChild(script);
-  }, []);
-
-  const onIncompletePaymentFound = (payment) => {
-    console.warn('⚠️ Incomplete payment found:', payment);
-  };
-
-  const handleLogin = async () => {
-    try {
-      const result = await window.Pi.authenticate(['username', 'payments'], onIncompletePaymentFound);
-      if (!result?.user) throw new Error('No user returned from Pi SDK');
-
-      const res = await fetch('/api/auth/pi-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken: result.accessToken }),
-      });
-
-      if (!res.ok) throw new Error('Pi Login API failed');
-
-      const data = await res.json();
-      localStorage.setItem('piUser', JSON.stringify(result.user));
-      setUser(result.user);
-      alert(`✅ Welcome ${result.user.username}`);
-    } catch (err) {
-      console.error('❌ Pi login failed:', err);
-      alert('Login failed. Check console.');
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('piUser');
-    document.cookie = 'pi.accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
-    window.Pi?.logout?.();
-    setUser(null);
-    alert('🟡 Logged out.');
-  };
 
   const toggleMenu = () => setMenuOpen(prev => !prev);
   const toggleCompetitions = () => setCompetitionsOpen(prev => !prev);
@@ -139,7 +86,7 @@ export default function Header() {
               👋 {user.username} {user.country ? countryCodeToFlagEmoji(user.country) : ''}
             </span>
             <button
-              onClick={handleLogout}
+              onClick={logout}
               className="neon-button text-xs px-2 py-1 bg-red-600 hover:bg-red-700"
             >
               Logout
@@ -147,7 +94,7 @@ export default function Header() {
           </div>
         ) : (
           <button
-            onClick={handleLogin}
+            onClick={login}
             disabled={!sdkReady}
             className="neon-button text-xs px-2 py-1"
           >

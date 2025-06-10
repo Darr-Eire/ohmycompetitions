@@ -5,13 +5,14 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import BuyTicketButton from '@components/BuyTicketButton';
+import { usePiAuth } from '../../context/PiAuthContext';
 import {
   techItems,
   premiumItems,
   piItems,
   dailyItems,
   freeItems,
-  cryptoGiveawaysItems
+  cryptoGiveawaysItems,
 } from '../../data/competitions';
 
 const flattenCompetitions = [
@@ -41,13 +42,16 @@ const FREE_TICKET_COMPETITIONS = ['pi-to-the-moon'];
 export default function TicketPurchasePage() {
   const router = useRouter();
   const { slug } = router.query;
+  const { user, login } = usePiAuth();
+
   const comp = typeof slug === 'string' ? COMPETITIONS[slug] : null;
+  const isFree = FREE_TICKET_COMPETITIONS.includes(slug);
 
   const [quantity, setQuantity] = useState(1);
   const [sharedBonus, setSharedBonus] = useState(false);
 
   useEffect(() => {
-    if (!slug || !FREE_TICKET_COMPETITIONS.includes(slug)) return;
+    if (!slug || !isFree) return;
     const saved = parseInt(localStorage.getItem(`${slug}-claimed`) || 0);
     setQuantity(saved || 1);
     setSharedBonus(localStorage.getItem(`${slug}-shared`) === 'true');
@@ -75,7 +79,6 @@ export default function TicketPurchasePage() {
   };
 
   if (!router.isReady) return null;
-
   if (!comp) {
     return (
       <div className="p-6 text-center text-white bg-[#0b1120] min-h-screen">
@@ -86,7 +89,6 @@ export default function TicketPurchasePage() {
     );
   }
 
-  const isFree = FREE_TICKET_COMPETITIONS.includes(slug);
   const totalPrice = (comp?.entryFee || 0) * quantity;
 
   return (
@@ -106,6 +108,7 @@ export default function TicketPurchasePage() {
               className="w-full max-h-64 object-cover rounded-lg border border-blue-500 mx-auto"
             />
           )}
+
           <p className="text-white text-2xl font-bold">{comp.prize}</p>
 
           <div className="max-w-md mx-auto text-sm text-white space-y-2">
@@ -119,31 +122,51 @@ export default function TicketPurchasePage() {
           {isFree ? (
             <>
               <p className="text-cyan-300 font-semibold text-lg">Free Ticket Claimed: {quantity}/2</p>
-              <button onClick={claimFreeTicket} disabled={quantity >= (sharedBonus ? 2 : 1)}
-                className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 px-4 rounded-xl mb-3">
+              <button
+                onClick={claimFreeTicket}
+                disabled={quantity >= (sharedBonus ? 2 : 1)}
+                className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 px-4 rounded-xl mb-3"
+              >
                 Claim Free Ticket
               </button>
               {!sharedBonus && (
-                <button onClick={handleShare}
-                  className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold py-3 px-4 rounded-xl">
+                <button
+                  onClick={handleShare}
+                  className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold py-3 px-4 rounded-xl"
+                >
                   Share for Bonus Ticket
                 </button>
               )}
             </>
           ) : (
             <>
-              <div className="flex justify-center gap-4">
-                <button onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                  className="bg-blue-500 px-4 py-1 rounded-full disabled:opacity-50" disabled={quantity <= 1}>−</button>
+              {!user && (
+                <div className="text-sm bg-red-600 p-3 rounded-lg font-semibold">
+                  Please <button onClick={login} className="underline text-cyan-200">log in</button> with Pi to buy tickets.
+                </div>
+              )}
+
+              <div className="flex justify-center gap-4 mt-4">
+                <button
+                  onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                  className="bg-blue-500 px-4 py-1 rounded-full disabled:opacity-50"
+                  disabled={quantity <= 1}
+                >−</button>
                 <span className="text-lg font-semibold">{quantity}</span>
-                <button onClick={() => setQuantity(q => q + 1)}
-                  className="bg-blue-500 px-4 py-1 rounded-full">+</button>
+                <button
+                  onClick={() => setQuantity(q => q + 1)}
+                  className="bg-blue-500 px-4 py-1 rounded-full"
+                >+</button>
               </div>
 
               <p className="text-lg font-bold mt-6">Total {totalPrice.toFixed(2)} π</p>
               <p className="text-white text-sm mt-2">Secure your entry to win <strong>{comp.prize}</strong>.</p>
 
-              <BuyTicketButton competitionSlug={slug} entryFee={comp.entryFee} quantity={quantity} />
+              <BuyTicketButton
+                competitionSlug={slug}
+                entryFee={comp.entryFee}
+                quantity={quantity}
+              />
             </>
           )}
 

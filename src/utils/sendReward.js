@@ -1,4 +1,4 @@
-// lib/sendReward.js
+// sendReward.js
 
 import axios from 'axios';
 import StellarSdk from 'stellar-sdk';
@@ -21,14 +21,6 @@ const axiosClient = axios.create({
   },
 });
 
-/**
- * Send Pi to a user (A2U)
- * @param {Object} options
- * @param {string} options.uid - Pi UID of recipient
- * @param {number|string} options.amount - amount of Pi to send
- * @param {string} options.memo - transaction memo
- * @param {Object} options.metadata - optional metadata
- */
 export async function sendPiReward({ uid, amount, memo, metadata = {} }) {
   try {
     // 1. Request payment intent from Pi backend

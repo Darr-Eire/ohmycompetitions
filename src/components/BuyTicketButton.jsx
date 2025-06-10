@@ -1,130 +1,47 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { initiatePiPayment } from '../utils/piPayment';
+import { usePiAuth } from '../context/PiAuthContext';
 
 export default function BuyTicketButton({ competitionSlug, entryFee, quantity }) {
-  const [sdkReady, setSdkReady] = useState(false);
-  const [processing, setProcessing] = useState(false);
-  const [error, setError] = useState(null);
-  const [piUser, setPiUser] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
 
-  useEffect(() => {
-    // Load Pi SDK
-    const script = document.createElement('script');
-    script.src = 'https://sdk.minepi.com/pi-sdk.js';
-    script.async = true;
-    script.onload = () => {
-      if (window.Pi) {
-        window.Pi.init({ version: '2.0' });
-        setSdkReady(true);
-      }
-    };
-    script.onerror = () => console.error('❌ Pi SDK failed to load');
-    document.body.appendChild(script);
+  const { user, login } = usePiAuth();
 
-    // Load saved user
-    const saved = localStorage.getItem('piUser');
-    if (saved) {
-      try {
-        setPiUser(JSON.parse(saved));
-      } catch {
-        console.warn('⚠️ Invalid piUser in localStorage');
-      }
-    }
-  }, []);
-
-  const onIncompletePaymentFound = (payment) => {
-    console.warn('⚠️ Incomplete payment:', payment);
-  };
-
-  const handlePayment = async () => {
-    if (!sdkReady) return setError('⚠️ Pi SDK not ready');
-
-    let user = piUser;
-
-    if (!user || !user.uid) {
-      try {
-        const result = await window.Pi.authenticate(['username', 'payments'], onIncompletePaymentFound);
-        user = result.user;
-        localStorage.setItem('piUser', JSON.stringify(user));
-        setPiUser(user);
-      } catch (err) {
-        console.error('❌ Login failed:', err);
-        return setError('⚠️ You must be logged in with Pi to continue.');
-      }
+  const handleBuy = async () => {
+    if (!user) {
+      alert('❌ Please log in with Pi to continue.');
+      await login(); // auto trigger login if not already logged in
+      return;
     }
 
-    setProcessing(true);
-    setError(null);
-
-    const amount = (entryFee * quantity).toFixed(8);
-
+    setLoading(true);
     try {
-      const payment = window.Pi.createPayment({
-        amount,
-        memo: `Buy ${quantity} ticket(s) for ${competitionSlug}`,
-        metadata: { competitionSlug, quantity, uid: user.uid },
-        onReadyForServerApproval: async (paymentId) => {
-          try {
-            const res = await fetch('/api/payments/approve', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ paymentId, uid: user.uid, competitionSlug, amount }),
-            });
-            if (!res.ok) throw new Error('Approval failed');
-          } catch (err) {
-            console.error('❌ Approval error:', err);
-            setError('❌ Failed during approval.');
-            setProcessing(false);
-          }
-        },
-        onReadyForServerCompletion: async (paymentId, txid) => {
-          try {
-            const res = await fetch('/api/payments/complete', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ paymentId, txid, uid: user.uid }),
-            });
-            if (!res.ok) throw new Error('Completion failed');
-            alert('✅ Payment successful!');
-          } catch (err) {
-            console.error('❌ Completion error:', err);
-            setError('❌ Failed to complete payment.');
-          } finally {
-            setProcessing(false);
-          }
-        },
-        onCancel: () => {
-          console.warn('❌ Payment cancelled');
-          setError('❌ Payment was cancelled.');
-          setProcessing(false);
-        },
-        onError: (err) => {
-          console.error('❌ Payment error:', err);
-          setError(`❌ SDK Error: ${err?.message || 'Unknown error'}`);
-          setProcessing(false);
-        },
-      });
+      const uid = user.uid || user.username; // fallback for Pi testnet
+      const memo = `Entry to ${competitionSlug}`;
+      const total = entryFee * quantity;
 
-      // Do not await `createPayment()` – it returns an object, not a Promise
+      const paymentResult = await initiatePiPayment(total, memo, uid);
 
+      setResult(paymentResult);
+      alert(`✅ Payment Complete!\nTX: ${paymentResult.txid}`);
     } catch (err) {
-      console.error('❌ Unexpected error:', err);
-      setError(`❌ Unexpected error: ${err?.message || 'Check console'}`);
-      setProcessing(false);
+      console.error('❌ Payment failed:', err);
+      alert(`❌ Payment Failed: ${err.message || err}`);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="text-center mt-4">
-      <button
-        onClick={handlePayment}
-        disabled={!sdkReady || processing}
-        className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl shadow-lg transition disabled:opacity-50"
-      >
-        {processing ? 'Processing Payment…' : `Buy ${quantity} Ticket(s) for ${(entryFee * quantity).toFixed(2)} π`}
-      </button>
-      {error && <p className="mt-2 text-red-500">{error}</p>}
-    </div>
+    <button
+      disabled={loading}
+      onClick={handleBuy}
+      className="w-full bg-gradient-to-r from-green-400 to-blue-600 text-black font-bold py-3 px-4 rounded-xl mt-4 disabled:opacity-50"
+    >
+      {loading ? 'Processing...' : `Pay & Enter (${(entryFee * quantity).toFixed(2)} π)`}
+    </button>
   );
 }
