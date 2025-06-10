@@ -1,6 +1,6 @@
 // pages/api/competitions/[id]/enter.js
 import { ObjectId } from 'mongodb';
-import { clientPromise } from '../lib/mongodb';
+import clientPromise from '../../../lib/mongo';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
