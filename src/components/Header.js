@@ -113,29 +113,27 @@ export default function Header() {
         </Link>
       </div>
 
-      <div className="text-white text-sm flex items-center gap-2">
-        {user ? (
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-bold">
-              👋 {user.username} {countryCodeToFlagEmoji(user.country)}
-            </span>
-            <button
-              onClick={logout}
-              className="neon-button text-xs px-2 py-1 bg-red-600 hover:bg-red-700"
-            >
-              Logout
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={handleLogin}
-            disabled={!sdkReady}
-            className="neon-button text-xs px-2 py-1"
-          >
-            Login with Pi
-          </button>
-        )}
-      </div>
+      {user ? (
+  <div className="flex items-center gap-2">
+    <span className="text-sm font-bold">
+      👋 {user.username}
+    </span>
+    <button
+      onClick={logout}
+      className="neon-button text-xs px-2 py-1 bg-red-600 hover:bg-red-700"
+    >
+      Logout
+    </button>
+  </div>
+) : (
+  <button
+    onClick={login}
+    disabled={!sdkReady}
+    className="neon-button text-xs px-2 py-1"
+  >
+    Login with Pi
+  </button>
+)}
 
       {menuOpen && (
         <nav

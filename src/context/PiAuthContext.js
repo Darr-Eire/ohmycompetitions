@@ -8,50 +8,49 @@ export const PiAuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Pi) {
-      console.log('✅ Pi SDK loaded');
       setSdkReady(true);
-    } else {
-      console.warn('❌ Pi SDK not available on window');
     }
   }, []);
 
   const login = async () => {
-    if (!window.Pi) {
-      console.error('❌ window.Pi is undefined');
-      return;
-    }
-
-    console.log('🟡 Attempting Pi login');
-
+    if (!window.Pi) return console.error('Pi SDK not available');
+    
     try {
       const scopes = ['username', 'payments'];
-      const result = await window.Pi.authenticate(scopes, onIncompletePaymentFound);
-      console.log('✅ Pi Auth Result:', result);
-      localStorage.setItem('piUser', JSON.stringify(result.user));
-      setUser(result.user);
+      window.Pi.authenticate(scopes, async function (auth) {
+        const res = await fetch('/api/verify-pi-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ accessToken: auth.accessToken }),
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          setUser(data.user);
+          localStorage.setItem('piUser', JSON.stringify(data.user));
+        } else {
+          console.error(data.error);
+        }
+      }, function (error) {
+        console.error('Pi login failed', error);
+      });
     } catch (err) {
-      console.error('❌ Pi login failed:', err);
+      console.error('Login error', err);
     }
   };
 
   const logout = () => {
-    localStorage.removeItem('piUser');
     setUser(null);
-  };
-
-  const onIncompletePaymentFound = (payment) => {
-    console.log('⚠️ Incomplete payment found:', payment);
+    localStorage.removeItem('piUser');
   };
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('piUser');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
+    const stored = localStorage.getItem('piUser');
+    if (stored) setUser(JSON.parse(stored));
   }, []);
 
   return (
-    <PiAuthContext.Provider value={{ user, login, logout, sdkReady }}>
+    <PiAuthContext.Provider value={{ user, sdkReady, login, logout }}>
       {children}
     </PiAuthContext.Provider>
   );
