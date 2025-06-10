@@ -1,12 +1,10 @@
-// lib/piServer.js
-
 /**
- * Approves a pending payment after `onReadyForServerApproval`
+ * Approves a Pi payment after `onReadyForServerApproval`
  * @param {Object} params
- * @param {string} params.paymentId
- * @param {string} params.uid
- * @param {string} params.competitionSlug
- * @param {number|string} params.amount
+ * @param {string} params.paymentId - The Pi payment ID to approve
+ * @param {string} params.uid - UID of the user making the payment
+ * @param {string} params.competitionSlug - Associated competition slug
+ * @param {number|string} params.amount - Pi amount to approve
  */
 export async function approvePiPayment({ paymentId, uid, competitionSlug, amount }) {
   try {
@@ -23,7 +21,7 @@ export async function approvePiPayment({ paymentId, uid, competitionSlug, amount
     });
 
     const result = await response.json();
-    if (!response.ok) throw new Error(result.error || 'Pi approval failed');
+    if (!response.ok) throw new Error(result.error || '❌ Pi approval failed');
 
     return result;
   } catch (error) {
@@ -33,10 +31,10 @@ export async function approvePiPayment({ paymentId, uid, competitionSlug, amount
 }
 
 /**
- * Completes a payment after `onReadyForServerCompletion`
+ * Completes a Pi payment after `onReadyForServerCompletion`
  * @param {Object} params
- * @param {string} params.paymentId
- * @param {string} params.txid
+ * @param {string} params.paymentId - The payment ID to complete
+ * @param {string} params.txid - Blockchain transaction ID
  */
 export async function completePiPayment({ paymentId, txid }) {
   try {
@@ -50,24 +48,24 @@ export async function completePiPayment({ paymentId, txid }) {
     });
 
     const result = await response.json();
-    if (!response.ok) throw new Error(result.error || 'Completion failed');
+    if (!response.ok) throw new Error(result.error || '❌ Completion failed');
 
     return result;
-  } catch (err) {
-    console.error('❌ Error completing Pi payment:', err);
-    throw err;
+  } catch (error) {
+    console.error('❌ Error completing Pi payment:', error);
+    throw error;
   }
 }
 
 /**
- * Verifies a completed transaction via your backend
+ * Verifies a completed Pi transaction using the payment ID
  * @param {Object} params
- * @param {string} params.paymentId
- * @param {string} params.txid
+ * @param {string} params.paymentId - The payment ID to verify
+ * @param {string} params.txid - The expected blockchain transaction ID
  */
 export async function verifyPiTransaction({ paymentId, txid }) {
   try {
-    const response = await fetch('https://api.minepi.com/payments/' + paymentId, {
+    const response = await fetch(`https://api.minepi.com/payments/${paymentId}`, {
       method: 'GET',
       headers: {
         Authorization: `Key ${process.env.PI_API_KEY}`,
@@ -76,8 +74,10 @@ export async function verifyPiTransaction({ paymentId, txid }) {
     });
 
     const result = await response.json();
-    if (!response.ok || result.transaction.txid !== txid) {
-      throw new Error('Transaction verification failed');
+    const valid = result?.transaction?.txid === txid;
+
+    if (!response.ok || !valid) {
+      throw new Error('❌ Transaction verification failed');
     }
 
     return result;

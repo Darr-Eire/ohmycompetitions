@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/router';
 
 export default function EditCompetitionPage() {
   const router = useRouter();
-  const { id } = useParams();
+  const { id } = router.query;
+
   const [form, setForm] = useState({
     title: '',
     prize: '',
@@ -17,19 +18,29 @@ export default function EditCompetitionPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!id) return;
+
     const fetchCompetition = async () => {
-      const res = await fetch(`/api/admin/competitions/${id}`);
-      const data = await res.json();
-      setForm({
-        title: data.title || '',
-        prize: data.prize || '',
-        slug: data.slug || '',
-        entryFee: data.entryFee || 0,
-        totalTickets: data.totalTickets || 0,
-        theme: data.theme || '',
-      });
-      setLoading(false);
+      try {
+        const res = await fetch(`/api/admin/competitions/${id}`);
+        if (!res.ok) throw new Error('Failed to fetch competition');
+        const data = await res.json();
+        setForm({
+          title: data.title || '',
+          prize: data.prize || '',
+          slug: data.slug || '',
+          entryFee: data.entryFee || 0,
+          totalTickets: data.totalTickets || 0,
+          theme: data.theme || '',
+        });
+      } catch (err) {
+        console.error(err);
+        alert('Error loading competition data.');
+      } finally {
+        setLoading(false);
+      }
     };
+
     fetchCompetition();
   }, [id]);
 
@@ -63,7 +74,7 @@ export default function EditCompetitionPage() {
       <form onSubmit={handleSubmit} className="space-y-4">
         {['title', 'prize', 'slug', 'theme'].map((field) => (
           <div key={field}>
-            <label className="block mb-1">{field}</label>
+            <label className="block mb-1 capitalize">{field}</label>
             <input
               type="text"
               name={field}
@@ -97,7 +108,10 @@ export default function EditCompetitionPage() {
           />
         </div>
 
-        <button type="submit" className="w-full py-3 bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold rounded-lg">
+        <button
+          type="submit"
+          className="w-full py-3 bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold rounded-lg"
+        >
           Save Changes
         </button>
       </form>

@@ -9,23 +9,27 @@ export const authOptions = {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        if (
+        const isValid =
           credentials?.username === process.env.ADMIN_USERNAME &&
-          credentials?.password === process.env.ADMIN_PASSWORD
-        ) {
+          credentials?.password === process.env.ADMIN_PASSWORD;
+
+        if (isValid) {
           return {
-            id: 1,
+            id: 'admin-1',
             name: 'Admin',
-            email: process.env.ADMIN_EMAIL,
+            email: process.env.ADMIN_EMAIL || 'admin@ohmycompetitions.com',
             role: 'admin',
           };
         }
+
         return null;
       },
     }),
   ],
 
-  session: { strategy: 'jwt' },
+  session: {
+    strategy: 'jwt',
+  },
 
   secret: process.env.NEXTAUTH_SECRET,
 
@@ -43,8 +47,10 @@ export const authOptions = {
     },
 
     async session({ session, token }) {
-      session.user.role = token.role;
-      session.user.email = token.email;
+      if (token) {
+        session.user.role = token.role;
+        session.user.email = token.email;
+      }
       return session;
     },
   },
