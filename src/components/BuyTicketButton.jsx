@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { initiatePiPayment } from '../utils/piPayment';
 import { usePiAuth } from '../context/PiAuthContext';
 
@@ -13,13 +13,13 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
   const handleBuy = async () => {
     if (!user) {
       alert('❌ Please log in with Pi to continue.');
-      await login(); // auto trigger login if not already logged in
+      await login();
       return;
     }
 
     setLoading(true);
     try {
-      const uid = user.uid || user.username; // fallback for Pi testnet
+      const uid = user.uid || user.username;
       const memo = `Entry to ${competitionSlug}`;
       const total = entryFee * quantity;
 

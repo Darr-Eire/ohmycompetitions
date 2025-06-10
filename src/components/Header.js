@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 import { usePiAuth } from '../context/PiAuthContext';
 
+
 const NAV_ITEMS = [
   ['Home', '/homepage'],
   ['My Account', '/account'],
@@ -30,6 +31,7 @@ const COMPETITION_SUB_ITEMS = [
 ];
 
 function countryCodeToFlagEmoji(code) {
+  if (!code || code.length !== 2) return '';
   return code.toUpperCase().replace(/./g, char =>
     String.fromCodePoint(127397 + char.charCodeAt())
   );
@@ -37,7 +39,6 @@ function countryCodeToFlagEmoji(code) {
 
 export default function Header() {
   const { user, login, logout, sdkReady } = usePiAuth();
-
   const [menuOpen, setMenuOpen] = useState(false);
   const [competitionsOpen, setCompetitionsOpen] = useState(false);
 
@@ -58,6 +59,7 @@ export default function Header() {
         setCompetitionsOpen(false);
       }
     };
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
@@ -83,7 +85,7 @@ export default function Header() {
         {user ? (
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold">
-              👋 {user.username} {user.country ? countryCodeToFlagEmoji(user.country) : ''}
+              👋 {user.username} {countryCodeToFlagEmoji(user.country)}
             </span>
             <button
               onClick={logout}

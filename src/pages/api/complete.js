@@ -1,19 +1,11 @@
-// pages/api/complete-payment.js
-
+// pages/api/complete.js
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
-  }
+  if (req.method !== 'POST') return res.status(405).end();
 
   const { paymentId, txid } = req.body;
+  console.log('Completing payment:', paymentId, 'Transaction ID:', txid);
 
-  if (!paymentId || !txid) {
-    return res.status(400).json({ error: 'Missing paymentId or txid' });
-  }
+  // Your logic here (mark user as paid, issue ticket, etc.)
 
-  console.log('🟢 Completing payment:', paymentId, txid);
-
-  // Optional: update your database to reflect a completed payment
-
-  return res.status(200).json({ success: true });
+  res.status(200).json({ success: true });
 }

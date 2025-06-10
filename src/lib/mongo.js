@@ -1,8 +1,7 @@
 // lib/mongo.js
 import { MongoClient } from "mongodb";
 
-const uri = process.env.MONGODB_URI;
-const options = {};
+const uri = process.env.MONGO_DB_URL;const options = {};
 let client;
 let clientPromise;
 

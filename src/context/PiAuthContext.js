@@ -1,6 +1,4 @@
-'use client';
-
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 const PiAuthContext = createContext();
 
@@ -9,37 +7,28 @@ export function PiAuthProvider({ children }) {
   const [sdkReady, setSdkReady] = useState(false);
 
   useEffect(() => {
-    // Check if Pi SDK is loaded
-    if (typeof window !== 'undefined' && window.Pi) {
-      setSdkReady(true);
+    const checkPiSDK = setInterval(() => {
+      if (window.Pi) {
+        clearInterval(checkPiSDK);
+        setSdkReady(true);
 
-      const storedUser = localStorage.getItem('piUser');
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
+        const storedUser = localStorage.getItem('piUser');
+        if (storedUser) setUser(JSON.parse(storedUser));
       }
-    }
+    }, 200);
+    return () => clearInterval(checkPiSDK);
   }, []);
 
   const login = async () => {
+    if (!window.Pi) return alert('Pi SDK not ready');
+
     try {
-      if (!window.Pi) {
-        console.error('Pi SDK not available.');
-        return;
-      }
-
       const scopes = ['username', 'payments'];
-      const user = await window.Pi.authenticate(scopes, (auth) => {
-        console.log('✅ Pi Auth callback:', auth);
-      });
-
-      if (user && user.uid) {
-        localStorage.setItem('piUser', JSON.stringify(user));
-        setUser(user);
-      } else {
-        console.error('❌ Pi login failed.');
-      }
-    } catch (error) {
-      console.error('❌ Login error:', error);
+      const authResult = await window.Pi.authenticate(scopes, onIncompletePaymentFound);
+      setUser(authResult.user);
+      localStorage.setItem('piUser', JSON.stringify(authResult.user));
+    } catch (err) {
+      console.error('Login failed', err);
     }
   };
 
@@ -48,8 +37,13 @@ export function PiAuthProvider({ children }) {
     setUser(null);
   };
 
+  const onIncompletePaymentFound = (payment) => {
+    console.warn('Found incomplete payment:', payment);
+    // Optional: auto resume/cancel
+  };
+
   return (
-    <PiAuthContext.Provider value={{ user, sdkReady, login, logout }}>
+    <PiAuthContext.Provider value={{ user, login, logout, sdkReady }}>
       {children}
     </PiAuthContext.Provider>
   );

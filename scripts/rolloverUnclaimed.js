@@ -4,8 +4,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const uri = process.env.MONGODB_URI;
-const client = new MongoClient(uri);
+const uri = process.env.MONGO_DB_URL;const client = new MongoClient(uri);
 const GRACE_PERIOD = 31 * 60 * 1000 + 4000; // 31 minutes 4 seconds
 
 async function rolloverUnclaimed() {
