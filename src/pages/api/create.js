@@ -2,7 +2,8 @@
 
 import nextConnect from 'next-connect';
 import { createPiPayment } from 'lib/piServer'; // Make sure this function exists in your piServer.js
-import sessionMiddleware from 'lib/session'; // Ensure you have this or remove if not needed
+import { sessionMiddleware } from 'lib/session';
+
 
 const handler = nextConnect();
 
