@@ -2,59 +2,59 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 const PiAuthContext = createContext();
 
-export function PiAuthProvider({ children }) {
+export const PiAuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [sdkReady, setSdkReady] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const check = setInterval(() => {
-        if (window.Pi) {
-          clearInterval(check);
-          setSdkReady(true);
-
-          const storedUser = localStorage.getItem('piUser');
-          if (storedUser) {
-            setUser(JSON.parse(storedUser));
-          }
-        }
-      }, 300);
-      return () => clearInterval(check);
+    if (typeof window !== 'undefined' && window.Pi) {
+      console.log('✅ Pi SDK loaded');
+      setSdkReady(true);
+    } else {
+      console.warn('❌ Pi SDK not available on window');
     }
   }, []);
 
   const login = async () => {
+    if (!window.Pi) {
+      console.error('❌ window.Pi is undefined');
+      return;
+    }
+
+    console.log('🟡 Attempting Pi login');
+
     try {
       const scopes = ['username', 'payments'];
-      const auth = await window.Pi.authenticate(scopes, onIncompletePaymentFound);
-      if (auth?.user) {
-        setUser(auth.user);
-        localStorage.setItem('piUser', JSON.stringify(auth.user));
-        console.log('✅ Pi user logged in:', auth.user);
-      } else {
-        console.warn('❌ No user returned from Pi SDK');
-      }
+      const result = await window.Pi.authenticate(scopes, onIncompletePaymentFound);
+      console.log('✅ Pi Auth Result:', result);
+      localStorage.setItem('piUser', JSON.stringify(result.user));
+      setUser(result.user);
     } catch (err) {
-      console.error('❌ Pi authentication failed:', err);
+      console.error('❌ Pi login failed:', err);
     }
   };
 
   const logout = () => {
-    setUser(null);
     localStorage.removeItem('piUser');
+    setUser(null);
   };
 
   const onIncompletePaymentFound = (payment) => {
     console.log('⚠️ Incomplete payment found:', payment);
   };
 
+  useEffect(() => {
+    const savedUser = localStorage.getItem('piUser');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+  }, []);
+
   return (
     <PiAuthContext.Provider value={{ user, login, logout, sdkReady }}>
       {children}
     </PiAuthContext.Provider>
   );
-}
+};
 
-export function usePiAuth() {
-  return useContext(PiAuthContext);
-}
+export const usePiAuth = () => useContext(PiAuthContext);

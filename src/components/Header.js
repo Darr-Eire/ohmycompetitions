@@ -96,12 +96,16 @@ export default function Header() {
           </div>
         ) : (
           <button
-            onClick={login}
-            disabled={!sdkReady}
-            className="neon-button text-xs px-2 py-1"
-          >
-            Login with Pi
-          </button>
+  onClick={() => {
+    console.log('🔘 Login button clicked');
+    login();
+  }}
+  disabled={!sdkReady}
+  className="neon-button text-xs px-2 py-1"
+>
+  Login with Pi
+</button>
+
         )}
       </div>
 
