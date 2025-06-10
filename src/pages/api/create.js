@@ -2,12 +2,12 @@
 
 import nextConnect from 'next-connect';
 import { createPiPayment } from 'lib/piServer'; // Make sure this function exists in your piServer.js
-import { sessionMiddleware } from 'lib/session';
+
 
 
 const handler = nextConnect();
 
-handler.use(sessionMiddleware); // Optional — comment out if you don’t use session auth
+// Optional — comment out if you don’t use session auth
 
 handler.post(async (req, res) => {
   try {
