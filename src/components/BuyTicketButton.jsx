@@ -14,9 +14,11 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
 
     try {
       // If not logged in, trigger login first
-      if (!user) {
-        if (!sdkReady) throw new Error('Pi SDK not ready.');
-        await login();
+   if (!user) {
+  alert('❌ Please log in with Pi to continue.');
+  await login();  // now properly returns a promise
+  return;
+}
 
         // Wait for login to complete (check again)
         const storedUser = localStorage.getItem('piUser');
