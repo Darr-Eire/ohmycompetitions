@@ -13,40 +13,21 @@ export default function Account() {
   const [selectedCountry, setSelectedCountry] = useState('');
 
   useEffect(() => {
-    if (status !== 'authenticated') return;
-    if (!session?.user?.email) {
-      console.warn('Email not loaded yet');
-      return;
-    }
+    if (status !== 'authenticated' || !session?.user?.email) return;
+    fetchUserData(session.user.email);
+  }, [status, session?.user?.email]);
 
-    fetchUser(session.user.email);
-    fetchTickets(session.user.email);
-  }, [session?.user?.email, status]);
-
-  const fetchUser = async (email) => {
-    if (!email) {
-      console.warn('No email provided for fetchUser');
-      return;
-    }
+  const fetchUserData = async (email) => {
     try {
-      const res = await axios.post('/api/user/me', { email });
-      setUser(res.data);
-      setSelectedCountry(res.data.country);
+      const [userRes, ticketsRes] = await Promise.all([
+        axios.post('/api/user/me', { email }),
+        axios.post('/api/user/tickets', { email }),
+      ]);
+      setUser(userRes.data);
+      setTickets(ticketsRes.data);
+      setSelectedCountry(userRes.data.country);
     } catch (err) {
-      console.error('Failed to load user:', err);
-    }
-  };
-
-  const fetchTickets = async (email) => {
-    if (!email) {
-      console.warn('No email provided for fetchTickets');
-      return;
-    }
-    try {
-      const res = await axios.post('/api/user/tickets', { email });
-      setTickets(res.data);
-    } catch (err) {
-      console.error('Failed to load tickets:', err);
+      console.error('⚠️ Failed to fetch account data:', err);
     }
   };
 
@@ -59,22 +40,18 @@ export default function Account() {
         country: newCountry,
       });
     } catch (err) {
-      console.error('Failed to update country:', err);
+      console.error('⚠️ Failed to update country:', err);
     }
   };
 
-  if (status === 'loading') {
-    return <div className="text-white text-center mt-10">Loading session...</div>;
-  }
-
-  if (!user) {
-    return <div className="text-white text-center mt-10">Loading your account data...</div>;
-  }
+  if (status === 'loading') return <div className="text-white text-center mt-10">Loading session...</div>;
+  if (!user) return <div className="text-white text-center mt-10">Loading your account data...</div>;
 
   return (
     <div className="max-w-3xl mx-auto p-4 text-white">
       <h1 className="text-3xl mb-6 font-orbitron text-center">My Account</h1>
 
+      {/* Personal Info */}
       <div className="bg-[#111827] rounded-2xl shadow-lg p-6 mb-8 border border-cyan-400">
         <h2 className="text-xl mb-4 font-semibold">Personal Info</h2>
         <p><strong>Username:</strong> {user.username}</p>
@@ -100,7 +77,7 @@ export default function Account() {
                 width={40} 
                 height={25} 
                 className="rounded shadow"
-                onError={(e) => e.target.style.display = 'none'}
+                onError={(e) => (e.target.style.display = 'none')}
               />
               <span className="ml-2">{selectedCountry}</span>
             </div>
@@ -108,11 +85,13 @@ export default function Account() {
         </div>
       </div>
 
+      {/* Ticket Summary */}
       <div className="bg-[#111827] rounded-2xl shadow-lg p-6 mb-8 border border-cyan-400">
         <h2 className="text-xl mb-4 font-semibold">Tickets Summary</h2>
         <p><strong>Total Tickets Purchased:</strong> {tickets.reduce((acc, t) => acc + t.quantity, 0)}</p>
       </div>
 
+      {/* Purchase History */}
       <div className="bg-[#111827] rounded-2xl shadow-lg p-6 border border-cyan-400">
         <h2 className="text-xl mb-4 font-semibold">Purchase History</h2>
         {tickets.length === 0 ? (

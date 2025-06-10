@@ -58,16 +58,17 @@ export default function Header() {
         setSdkReady(true);
       }
     };
+    script.onerror = () => {
+      console.error('Failed to load Pi SDK');
+    };
     document.body.appendChild(script);
   }, []);
 
   const handleLogin = async () => {
     try {
-      localStorage.removeItem('piUser');
-      if (window.Pi?.logout) await window.Pi.logout();
-      document.cookie = 'pi.accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
+      if (!window.Pi) throw new Error('Pi SDK not available');
 
-      const result = await window.Pi.authenticate(['username', 'payments']);
+      const result = await window.Pi.authenticate(['username', 'payments'], onIncompletePaymentFound);
       const res = await fetch('/api/auth/pi-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -75,22 +76,27 @@ export default function Header() {
       });
 
       if (!res.ok) throw new Error('Pi Login API failed');
-
       const data = await res.json();
+
       localStorage.setItem('piUser', JSON.stringify(data.user));
       setUser(data.user);
     } catch (err) {
-      console.error('Pi login failed:', err);
-      alert('Pi login failed. Check console.');
+      console.error('❌ Pi login failed:', err);
+      alert('Login error. Check console.');
     }
+  };
+
+  const onIncompletePaymentFound = (payment) => {
+    console.warn('⚠️ Incomplete payment found on login:', payment);
+    // Optional: auto-completion or alert user
   };
 
   const handleLogout = () => {
     localStorage.removeItem('piUser');
     document.cookie = 'pi.accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
-    window.Pi?.logout?.();
+    if (window.Pi?.logout) window.Pi.logout();
     setUser(null);
-    alert('🔁 Pi session cleared. Please login again.');
+    alert('Logged out successfully.');
   };
 
   const toggleMenu = () => setMenuOpen(prev => !prev);

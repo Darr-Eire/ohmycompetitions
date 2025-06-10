@@ -3,6 +3,7 @@
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import BuyTicketButton from '@components/BuyTicketButton';
 import {
   techItems,
@@ -13,7 +14,6 @@ import {
   cryptoGiveawaysItems
 } from '../../data/competitions';
 
-// Flatten competitions
 const flattenCompetitions = [
   ...techItems,
   ...premiumItems,
@@ -41,12 +41,11 @@ const FREE_TICKET_COMPETITIONS = ['pi-to-the-moon'];
 export default function TicketPurchasePage() {
   const router = useRouter();
   const { slug } = router.query;
-  const comp = COMPETITIONS[slug];
+  const comp = typeof slug === 'string' ? COMPETITIONS[slug] : null;
 
   const [quantity, setQuantity] = useState(1);
   const [sharedBonus, setSharedBonus] = useState(false);
 
-  // Handle free ticket logic
   useEffect(() => {
     if (!slug || !FREE_TICKET_COMPETITIONS.includes(slug)) return;
     const saved = parseInt(localStorage.getItem(`${slug}-claimed`) || 0);
@@ -88,7 +87,7 @@ export default function TicketPurchasePage() {
   }
 
   const isFree = FREE_TICKET_COMPETITIONS.includes(slug);
-  const totalPrice = comp.entryFee * quantity;
+  const totalPrice = (comp?.entryFee || 0) * quantity;
 
   return (
     <div className="bg-[#0b1120] min-h-screen text-white py-6 px-4">
@@ -99,9 +98,11 @@ export default function TicketPurchasePage() {
 
         <div className="p-6 space-y-6 text-center">
           {comp.imageUrl && (
-            <img
+            <Image
               src={comp.imageUrl}
               alt={comp.title}
+              width={600}
+              height={300}
               className="w-full max-h-64 object-cover rounded-lg border border-blue-500 mx-auto"
             />
           )}

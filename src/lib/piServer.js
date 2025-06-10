@@ -1,72 +1,109 @@
+// lib/pi.js
+
+export async function loadPiSdk() {
+  if (typeof window === 'undefined') return;
+
+  return new Promise((resolve, reject) => {
+    if (window.Pi) {
+      window.Pi.init({ version: '2.0' });
+      return resolve();
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://sdk.minepi.com/pi-sdk.js';
+    script.async = true;
+    script.onload = () => {
+      window.Pi.init({ version: '2.0' });
+      resolve();
+    };
+    script.onerror = () => reject(new Error('Failed to load Pi SDK'));
+    document.body.appendChild(script);
+  });
+}
+
 export async function loginWithPi() {
   try {
     const scopes = ['username', 'payments'];
-    const authResult = await Pi.authenticate(scopes, onIncompletePaymentFound);
-    console.log('Authenticated:', authResult);
+    const authResult = await window.Pi.authenticate(scopes, onIncompletePaymentFound);
+    console.log('✅ Authenticated:', authResult);
     return authResult;
   } catch (error) {
-    console.error('Login failed:', error);
+    console.error('❌ Login failed:', error);
+    throw error;
   }
 }
 
 function onIncompletePaymentFound(payment) {
-  console.log('Incomplete payment found at login:', payment);
-  // Optional: handle incomplete payments if you want auto recovery here.
+  console.warn('⚠️ Incomplete payment found:', payment);
+  // Optional: complete it here if needed
+  if (payment?.identifier && payment?.transaction?.txid) {
+    fetch('/api/payments/complete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        paymentId: payment.identifier,
+        txid: payment.transaction.txid,
+      }),
+    });
+  }
 }
 
-export async function makePiPayment(entryFee, competitionSlug, quantity) {
+export async function makePiPayment({ entryFee, competitionSlug, quantity, uid }) {
   try {
-    // Always check if any pending payment exists first
-    const currentPayment = await fetchCurrentPaymentSafe();
-    if (currentPayment) {
-      if (['INCOMPLETE', 'PENDING'].includes(currentPayment.status)) {
-        console.warn('Pending payment exists. Please resolve before making a new payment.');
-        return;
-      }
+    const current = await fetchCurrentPaymentSafe();
+    if (current && ['INCOMPLETE', 'PENDING'].includes(current.status)) {
+      console.warn('⚠️ Existing unresolved payment.');
+      return;
     }
 
-    const paymentData = {
-      amount: (entryFee * quantity).toFixed(8),
+    const amount = (entryFee * quantity).toFixed(8);
+
+    const payment = window.Pi.createPayment({
+      amount,
       memo: `Ticket purchase for ${competitionSlug}`,
-      metadata: { competitionSlug, quantity },
-    };
+      metadata: { competitionSlug, quantity, uid },
 
-    const payment = Pi.createPayment(paymentData);  // NO await here
+      onReadyForServerApproval: async (paymentId) => {
+        console.log('🟢 Approving payment:', paymentId);
+        await fetch('/api/payments/approve', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ paymentId, uid, competitionSlug, amount: parseFloat(amount) }),
+        });
+      },
 
-    payment.onReadyForServerApproval(async (paymentId) => {
-      await fetch(`/api/payments/approve`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentId }),
-      });
+      onReadyForServerCompletion: async (paymentId, txid) => {
+        console.log('🟢 Completing payment:', paymentId, txid);
+        await fetch('/api/payments/complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ paymentId, txid, uid }),
+        });
+        alert('✅ Payment successful!');
+      },
+
+      onCancelled: () => {
+        console.warn('❌ Payment cancelled');
+        alert('Payment was cancelled.');
+      },
+
+      onError: (err) => {
+        console.error('❌ Payment error:', err);
+        alert(`Payment error: ${err?.message || 'Unknown error'}`);
+      },
     });
 
-    payment.onReadyForServerCompletion(async (paymentId, txid) => {
-      await fetch(`/api/payments/complete`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentId, txid }),
-      });
-    });
-
-    payment.onCancelled(() => {
-      console.log('Payment cancelled');
-    });
-
-    payment.onError((err) => {
-      console.error('Payment error:', err);
-    });
-
+    return payment;
   } catch (err) {
-    console.error('Unexpected error occurred:', err);
+    console.error('❌ Unexpected error in makePiPayment:', err);
+    alert('Unexpected error. Check console.');
   }
 }
 
 async function fetchCurrentPaymentSafe() {
   try {
-    return await Pi.createPayment.fetchCurrentPayment();
+    return await window.Pi.createPayment.fetchCurrentPayment();
   } catch (err) {
-    console.warn('No current payment or SDK error:', err);
     return null;
   }
 }
