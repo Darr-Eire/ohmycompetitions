@@ -1,12 +1,13 @@
+import '../../styles/globals.css'; // ✅ keep path relative to project root
 import { PiAuthProvider } from '../context/PiAuthContext';
 import Layout from '../components/Layout';
-import '../../styles/globals.css';
 
 export default function App({ Component, pageProps }) {
+  const getLayout = Component.getLayout || ((page) => <Layout>{page}</Layout>);
+
   return (
     <PiAuthProvider>
-      <Component {...pageProps} />
+      {getLayout(<Component {...pageProps} />)}
     </PiAuthProvider>
   );
 }
-
