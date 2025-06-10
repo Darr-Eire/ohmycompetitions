@@ -1,58 +1,51 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 
 const PiAuthContext = createContext();
 
-export const PiAuthProvider = ({ children }) => {
+export function PiAuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [sdkReady, setSdkReady] = useState(false);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('piUser');
-    if (savedUser) setUser(JSON.parse(savedUser));
-  }, []);
+    // Check if Pi SDK is loaded
+    if (typeof window !== 'undefined' && window.Pi) {
+      setSdkReady(true);
 
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://sdk.minepi.com/pi-sdk.js';
-    script.async = true;
-    script.onload = () => {
-      if (window.Pi) {
-        window.Pi.init({ version: '2.0' });
-        setSdkReady(true);
+      const storedUser = localStorage.getItem('piUser');
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
       }
-    };
-    document.body.appendChild(script);
+    }
   }, []);
 
   const login = async () => {
     try {
-      const result = await window.Pi.authenticate(['username', 'payments'], payment => {
-        console.warn('⚠️ Incomplete payment found', payment);
+      if (!window.Pi) {
+        console.error('Pi SDK not available.');
+        return;
+      }
+
+      const scopes = ['username', 'payments'];
+      const user = await window.Pi.authenticate(scopes, (auth) => {
+        console.log('✅ Pi Auth callback:', auth);
       });
 
-      const res = await fetch('/api/auth/pi-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken: result.accessToken }),
-      });
-
-      if (!res.ok) throw new Error('Server login failed');
-
-      setUser(result.user);
-      localStorage.setItem('piUser', JSON.stringify(result.user));
-    } catch (err) {
-      console.error('❌ Pi login failed:', err);
-      throw err;
+      if (user && user.uid) {
+        localStorage.setItem('piUser', JSON.stringify(user));
+        setUser(user);
+      } else {
+        console.error('❌ Pi login failed.');
+      }
+    } catch (error) {
+      console.error('❌ Login error:', error);
     }
   };
 
   const logout = () => {
-    setUser(null);
     localStorage.removeItem('piUser');
-    document.cookie = 'pi.accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
-    window.Pi?.logout?.();
+    setUser(null);
   };
 
   return (
@@ -60,6 +53,8 @@ export const PiAuthProvider = ({ children }) => {
       {children}
     </PiAuthContext.Provider>
   );
-};
+}
 
-export const usePiAuth = () => useContext(PiAuthContext);
+export function usePiAuth() {
+  return useContext(PiAuthContext);
+}

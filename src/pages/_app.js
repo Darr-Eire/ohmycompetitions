@@ -7,9 +7,8 @@ import '@fontsource/orbitron';
 import '../../styles/globals.css';
 
 export default function App({ Component, pageProps }) {
-
   useEffect(() => {
-    // ✅ Capture referral once per session if exists in URL
+    // 🔗 Capture referral once per session
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const ref = params.get('ref');
@@ -18,9 +17,18 @@ export default function App({ Component, pageProps }) {
         console.log('🔗 Referral captured:', ref);
       }
     }
+
+    // 🧠 Inject Pi SDK if not already available
+    if (typeof window !== 'undefined' && !window.Pi) {
+      const script = document.createElement('script');
+      script.src = 'https://sdk.minepi.com/pi-sdk.js';
+      script.async = true;
+      document.head.appendChild(script);
+      script.onload = () => console.log('✅ Pi SDK loaded');
+    }
   }, []);
 
-  // Allow pages to define custom layouts
+  // Optional custom layouts
   const getLayout = Component.getLayout || ((page) => <Layout>{page}</Layout>);
 
   return (
