@@ -43,13 +43,11 @@ export default function Header() {
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
 
-  // Load saved user if available
   useEffect(() => {
     const savedUser = localStorage.getItem('piUser');
     if (savedUser) setUser(JSON.parse(savedUser));
   }, []);
 
-  // Load Pi SDK on first render
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://sdk.minepi.com/pi-sdk.js';
@@ -67,10 +65,9 @@ export default function Header() {
     try {
       localStorage.removeItem('piUser');
       if (window.Pi?.logout) await window.Pi.logout();
-      document.cookie = "pi.accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
+      document.cookie = 'pi.accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
 
       const result = await window.Pi.authenticate(['username', 'payments']);
-
       const res = await fetch('/api/auth/pi-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -78,8 +75,8 @@ export default function Header() {
       });
 
       if (!res.ok) throw new Error('Pi Login API failed');
-      const data = await res.json();
 
+      const data = await res.json();
       localStorage.setItem('piUser', JSON.stringify(data.user));
       setUser(data.user);
     } catch (err) {
@@ -90,7 +87,7 @@ export default function Header() {
 
   const handleLogout = () => {
     localStorage.removeItem('piUser');
-    document.cookie = "pi.accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
+    document.cookie = 'pi.accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
     window.Pi?.logout?.();
     setUser(null);
     alert('🔁 Pi session cleared. Please login again.');
@@ -123,10 +120,7 @@ export default function Header() {
       </button>
 
       <div className="flex-1 text-center">
-        <Link
-          href="/homepage"
-          className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-transparent bg-clip-text drop-shadow"
-        >
+        <Link href="/homepage" className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-transparent bg-clip-text drop-shadow">
           OhMyCompetitions
         </Link>
       </div>
@@ -135,21 +129,14 @@ export default function Header() {
         {user ? (
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold">
-               {user.username} {user.country ? countryCodeToFlagEmoji(user.country) : ''}
+              👋 {user.username} {user.country ? countryCodeToFlagEmoji(user.country) : ''}
             </span>
-            <button
-              onClick={handleLogout}
-              className="neon-button text-xs px-2 py-1 bg-red-600 hover:bg-red-700"
-            >
+            <button onClick={handleLogout} className="neon-button text-xs px-2 py-1 bg-red-600 hover:bg-red-700">
               Logout
             </button>
           </div>
         ) : (
-          <button
-            onClick={handleLogin}
-            disabled={!sdkReady}
-            className="neon-button text-xs px-2 py-1"
-          >
+          <button onClick={handleLogin} disabled={!sdkReady} className="neon-button text-xs px-2 py-1">
             Login with Pi
           </button>
         )}
