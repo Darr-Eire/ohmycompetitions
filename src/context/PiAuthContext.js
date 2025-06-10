@@ -7,39 +7,45 @@ export function PiAuthProvider({ children }) {
   const [sdkReady, setSdkReady] = useState(false);
 
   useEffect(() => {
-    const checkPiSDK = setInterval(() => {
-      if (window.Pi) {
-        clearInterval(checkPiSDK);
-        setSdkReady(true);
+    if (typeof window !== 'undefined') {
+      const check = setInterval(() => {
+        if (window.Pi) {
+          clearInterval(check);
+          setSdkReady(true);
 
-        const storedUser = localStorage.getItem('piUser');
-        if (storedUser) setUser(JSON.parse(storedUser));
-      }
-    }, 200);
-    return () => clearInterval(checkPiSDK);
+          const storedUser = localStorage.getItem('piUser');
+          if (storedUser) {
+            setUser(JSON.parse(storedUser));
+          }
+        }
+      }, 300);
+      return () => clearInterval(check);
+    }
   }, []);
 
   const login = async () => {
-    if (!window.Pi) return alert('Pi SDK not ready');
-
     try {
       const scopes = ['username', 'payments'];
-      const authResult = await window.Pi.authenticate(scopes, onIncompletePaymentFound);
-      setUser(authResult.user);
-      localStorage.setItem('piUser', JSON.stringify(authResult.user));
+      const auth = await window.Pi.authenticate(scopes, onIncompletePaymentFound);
+      if (auth?.user) {
+        setUser(auth.user);
+        localStorage.setItem('piUser', JSON.stringify(auth.user));
+        console.log('✅ Pi user logged in:', auth.user);
+      } else {
+        console.warn('❌ No user returned from Pi SDK');
+      }
     } catch (err) {
-      console.error('Login failed', err);
+      console.error('❌ Pi authentication failed:', err);
     }
   };
 
   const logout = () => {
-    localStorage.removeItem('piUser');
     setUser(null);
+    localStorage.removeItem('piUser');
   };
 
   const onIncompletePaymentFound = (payment) => {
-    console.warn('Found incomplete payment:', payment);
-    // Optional: auto resume/cancel
+    console.log('⚠️ Incomplete payment found:', payment);
   };
 
   return (
