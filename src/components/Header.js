@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 import { usePiAuth } from '../context/PiAuthContext';
 
-
 const NAV_ITEMS = [
   ['Home', '/homepage'],
   ['My Account', '/account'],
@@ -64,6 +63,39 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const handleLogin = async () => {
+    try {
+      if (!window.Pi) {
+        console.error('Pi SDK not loaded');
+        return;
+      }
+
+      window.Pi.authenticate(['username', 'payments'], async function (authData, authError) {
+        if (authError) {
+          console.error('Authentication error:', authError);
+          return;
+        }
+
+        const res = await fetch('/api/verify-pi-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ accessToken: authData.accessToken })
+        });
+
+        if (!res.ok) {
+          console.error('Failed to verify Pi user');
+          return;
+        }
+
+        const { user } = await res.json();
+        localStorage.setItem('piUser', JSON.stringify(user));
+        window.location.reload();
+      });
+    } catch (err) {
+      console.error('Login error:', err);
+    }
+  };
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] border-b border-cyan-700 px-3 py-1.5 flex items-center shadow-md backdrop-blur-md">
       <button ref={buttonRef} onClick={toggleMenu} className="neon-button text-white text-xs px-2 py-1">
@@ -96,16 +128,12 @@ export default function Header() {
           </div>
         ) : (
           <button
-  onClick={() => {
-    console.log('🔘 Login button clicked');
-    login();
-  }}
-  disabled={!sdkReady}
-  className="neon-button text-xs px-2 py-1"
->
-  Login with Pi
-</button>
-
+            onClick={handleLogin}
+            disabled={!sdkReady}
+            className="neon-button text-xs px-2 py-1"
+          >
+            Login with Pi
+          </button>
         )}
       </div>
 
