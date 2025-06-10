@@ -6,18 +6,28 @@ export const PiAuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [sdkReady, setSdkReady] = useState(false);
 
+  // Wait for Pi SDK to be available
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.Pi) {
-      setSdkReady(true);
-    }
+    const interval = setInterval(() => {
+      if (typeof window !== 'undefined' && window.Pi) {
+        setSdkReady(true);
+        clearInterval(interval);
+      }
+    }, 200);
+
+    return () => clearInterval(interval);
   }, []);
 
   const login = async () => {
-    if (!window.Pi) return console.error('Pi SDK not available');
-    
-    try {
-      const scopes = ['username', 'payments'];
-      window.Pi.authenticate(scopes, async function (auth) {
+    if (!window.Pi) return console.error('Pi SDK not loaded');
+
+    window.Pi.authenticate(['username', 'payments'], async function (auth) {
+      if (!auth || !auth.accessToken) {
+        console.error('No access token received');
+        return;
+      }
+
+      try {
         const res = await fetch('/api/verify-pi-user', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -29,14 +39,14 @@ export const PiAuthProvider = ({ children }) => {
           setUser(data.user);
           localStorage.setItem('piUser', JSON.stringify(data.user));
         } else {
-          console.error(data.error);
+          console.error('Login failed:', data.error);
         }
-      }, function (error) {
-        console.error('Pi login failed', error);
-      });
-    } catch (err) {
-      console.error('Login error', err);
-    }
+      } catch (err) {
+        console.error('Request error:', err);
+      }
+    }, function (err) {
+      console.error('Pi authentication error:', err);
+    });
   };
 
   const logout = () => {
@@ -45,8 +55,14 @@ export const PiAuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const stored = localStorage.getItem('piUser');
-    if (stored) setUser(JSON.parse(stored));
+    const storedUser = localStorage.getItem('piUser');
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (err) {
+        console.error('Failed to parse stored user:', err);
+      }
+    }
   }, []);
 
   return (
