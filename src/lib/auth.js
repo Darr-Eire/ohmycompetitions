@@ -1,57 +1,111 @@
-import CredentialsProvider from 'next-auth/providers/credentials';
-
-export const authOptions = {
-  providers: [
-    CredentialsProvider({
-      name: 'Admin Login',
-      credentials: {
-        username: { label: 'Username', type: 'text' },
-        password: { label: 'Password', type: 'password' },
+/**
+ * Creates a new Pi payment via the Pi SDK
+ * @param {Object} params
+ * @param {string} params.uid - UID of the user making the payment
+ * @param {string} params.amount - Amount of Pi to charge
+ * @param {string} params.memo - Optional memo for the payment
+ * @param {Object} params.metadata - Any metadata to attach
+ */
+export async function createPiPayment({ uid, amount, memo = '', metadata = {} }) {
+  try {
+    const response = await fetch('https://api.minepi.com/payments', {
+      method: 'POST',
+      headers: {
+        Authorization: `Key ${process.env.PI_API_KEY}`,
+        'Content-Type': 'application/json',
       },
-      async authorize(credentials) {
-        const isValid =
-          credentials?.username === process.env.ADMIN_USERNAME &&
-          credentials?.password === process.env.ADMIN_PASSWORD;
+      body: JSON.stringify({
+        amount: amount.toString(),
+        memo,
+        metadata,
+        uid,
+      }),
+    });
 
-        if (isValid) {
-          return {
-            id: 'admin-1',
-            name: 'Admin',
-            email: process.env.ADMIN_EMAIL || 'admin@ohmycompetitions.com',
-            role: 'admin',
-          };
-        }
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || '❌ Failed to create Pi payment');
 
-        return null;
+    return result;
+  } catch (error) {
+    console.error('❌ Error creating Pi payment:', error);
+    throw error;
+  }
+}
+
+/**
+ * Approves a Pi payment after `onReadyForServerApproval`
+ */
+export async function approvePiPayment({ paymentId, uid, competitionSlug, amount }) {
+  try {
+    const response = await fetch('https://api.minepi.com/payments/approve', {
+      method: 'POST',
+      headers: {
+        Authorization: `Key ${process.env.PI_API_KEY}`,
+        'Content-Type': 'application/json',
       },
-    }),
-  ],
+      body: JSON.stringify({
+        paymentId,
+        metadata: { uid, competitionSlug, amount },
+      }),
+    });
 
-  session: {
-    strategy: 'jwt',
-  },
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || '❌ Pi approval failed');
 
-  secret: process.env.NEXTAUTH_SECRET,
+    return result;
+  } catch (error) {
+    console.error('❌ Error approving Pi payment:', error);
+    throw error;
+  }
+}
 
-  pages: {
-    signIn: '/admin/login',
-  },
+/**
+ * Completes a Pi payment after `onReadyForServerCompletion`
+ */
+export async function completePiPayment({ paymentId, txid }) {
+  try {
+    const response = await fetch('https://api.minepi.com/payments/complete', {
+      method: 'POST',
+      headers: {
+        Authorization: `Key ${process.env.PI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ paymentId, txid }),
+    });
 
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.role = user.role;
-        token.email = user.email;
-      }
-      return token;
-    },
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || '❌ Completion failed');
 
-    async session({ session, token }) {
-      if (token) {
-        session.user.role = token.role;
-        session.user.email = token.email;
-      }
-      return session;
-    },
-  },
-};
+    return result;
+  } catch (error) {
+    console.error('❌ Error completing Pi payment:', error);
+    throw error;
+  }
+}
+
+/**
+ * Verifies a completed Pi transaction using the payment ID
+ */
+export async function verifyPiTransaction({ paymentId, txid }) {
+  try {
+    const response = await fetch(`https://api.minepi.com/payments/${paymentId}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Key ${process.env.PI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const result = await response.json();
+    const valid = result?.transaction?.txid === txid;
+
+    if (!response.ok || !valid) {
+      throw new Error('❌ Transaction verification failed');
+    }
+
+    return result;
+  } catch (error) {
+    console.error('❌ Transaction verification error:', error);
+    throw error;
+  }
+}

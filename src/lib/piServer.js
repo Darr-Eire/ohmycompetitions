@@ -1,10 +1,39 @@
 /**
- * Approves a Pi payment after `onReadyForServerApproval`
+ * Creates a new Pi payment via the Pi SDK
  * @param {Object} params
- * @param {string} params.paymentId - The Pi payment ID to approve
  * @param {string} params.uid - UID of the user making the payment
- * @param {string} params.competitionSlug - Associated competition slug
- * @param {number|string} params.amount - Pi amount to approve
+ * @param {string} params.amount - Amount of Pi to charge
+ * @param {string} params.memo - Optional memo for the payment
+ * @param {Object} params.metadata - Any metadata to attach
+ */
+export async function createPiPayment({ uid, amount, memo = '', metadata = {} }) {
+  try {
+    const response = await fetch('https://api.minepi.com/payments', {
+      method: 'POST',
+      headers: {
+        Authorization: `Key ${process.env.PI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        amount: amount.toString(),
+        memo,
+        metadata,
+        uid,
+      }),
+    });
+
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || '❌ Failed to create Pi payment');
+
+    return result;
+  } catch (error) {
+    console.error('❌ Error creating Pi payment:', error);
+    throw error;
+  }
+}
+
+/**
+ * Approves a Pi payment after `onReadyForServerApproval`
  */
 export async function approvePiPayment({ paymentId, uid, competitionSlug, amount }) {
   try {
@@ -32,9 +61,6 @@ export async function approvePiPayment({ paymentId, uid, competitionSlug, amount
 
 /**
  * Completes a Pi payment after `onReadyForServerCompletion`
- * @param {Object} params
- * @param {string} params.paymentId - The payment ID to complete
- * @param {string} params.txid - Blockchain transaction ID
  */
 export async function completePiPayment({ paymentId, txid }) {
   try {
@@ -59,9 +85,6 @@ export async function completePiPayment({ paymentId, txid }) {
 
 /**
  * Verifies a completed Pi transaction using the payment ID
- * @param {Object} params
- * @param {string} params.paymentId - The payment ID to verify
- * @param {string} params.txid - The expected blockchain transaction ID
  */
 export async function verifyPiTransaction({ paymentId, txid }) {
   try {
