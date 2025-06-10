@@ -25,9 +25,13 @@ export async function loginWithPi() {
   try {
     const scopes = ['username', 'payments'];
     const authResult = await window.Pi.authenticate(scopes, onIncompletePaymentFound);
-    console.log('✅ Authenticated:', authResult);
-    return authResult;
-  } catch (error) {
+   console.log('✅ Authenticated:', authResult);
+
+// ✅ Save user for reuse in payment
+localStorage.setItem('piUser', JSON.stringify(authResult.user));
+
+return authResult;
+
     console.error('❌ Login failed:', error);
     throw error;
   }

@@ -22,14 +22,16 @@ const COMPETITION_SUB_ITEMS = [
   ['Pi Battles', '/battles'],
   ['Featured', '/competitions/featured'],
   ['Travel', '/competitions/travel'],
-  ['Daily ', '/competitions/daily'],
+  ['Daily', '/competitions/daily'],
   ['Free', '/ticket-purchase/pi-to-the-moon'],
   ['Pi Giveaways', '/competitions/pi'],
   ['Crypto Giveaways', '/competitions/crypto-giveaways'],
 ];
 
 function countryCodeToFlagEmoji(code) {
-  return code.toUpperCase().replace(/./g, char => String.fromCodePoint(127397 + char.charCodeAt()));
+  return code.toUpperCase().replace(/./g, char =>
+    String.fromCodePoint(127397 + char.charCodeAt())
+  );
 }
 
 export default function Header() {
@@ -56,19 +58,18 @@ export default function Header() {
         setSdkReady(true);
       }
     };
-    script.onerror = () => console.error('Failed to load Pi SDK');
+    script.onerror = () => console.error('❌ Failed to load Pi SDK');
     document.body.appendChild(script);
   }, []);
 
+  const onIncompletePaymentFound = (payment) => {
+    console.warn('⚠️ Incomplete payment found:', payment);
+  };
+
   const handleLogin = async () => {
     try {
-      // Full logout cleanup
-      localStorage.removeItem('piUser');
-      document.cookie = 'pi.accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
-      if (window.Pi?.logout) await window.Pi.logout();
-
       const result = await window.Pi.authenticate(['username', 'payments'], onIncompletePaymentFound);
-      if (!result || !result.user) throw new Error('No user returned');
+      if (!result?.user) throw new Error('No user returned from Pi SDK');
 
       const res = await fetch('/api/auth/pi-login', {
         method: 'POST',
@@ -81,24 +82,19 @@ export default function Header() {
       const data = await res.json();
       localStorage.setItem('piUser', JSON.stringify(result.user));
       setUser(result.user);
-
       alert(`✅ Welcome ${result.user.username}`);
     } catch (err) {
       console.error('❌ Pi login failed:', err);
-      alert('Login error. Check console.');
+      alert('Login failed. Check console.');
     }
   };
 
   const handleLogout = () => {
     localStorage.removeItem('piUser');
     document.cookie = 'pi.accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
-    if (window.Pi?.logout) window.Pi.logout();
+    window.Pi?.logout?.();
     setUser(null);
-    alert('🟡 Logged out. Please login again.');
-  };
-
-  const onIncompletePaymentFound = (payment) => {
-    console.warn('⚠️ Incomplete payment found:', payment);
+    alert('🟡 Logged out.');
   };
 
   const toggleMenu = () => setMenuOpen(prev => !prev);
@@ -128,7 +124,10 @@ export default function Header() {
       </button>
 
       <div className="flex-1 text-center">
-        <Link href="/homepage" className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-transparent bg-clip-text drop-shadow">
+        <Link
+          href="/homepage"
+          className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-transparent bg-clip-text drop-shadow"
+        >
           OhMyCompetitions
         </Link>
       </div>
@@ -139,24 +138,37 @@ export default function Header() {
             <span className="text-sm font-bold">
               👋 {user.username} {user.country ? countryCodeToFlagEmoji(user.country) : ''}
             </span>
-            <button onClick={handleLogout} className="neon-button text-xs px-2 py-1 bg-red-600 hover:bg-red-700">
+            <button
+              onClick={handleLogout}
+              className="neon-button text-xs px-2 py-1 bg-red-600 hover:bg-red-700"
+            >
               Logout
             </button>
           </div>
         ) : (
-          <button onClick={handleLogin} disabled={!sdkReady} className="neon-button text-xs px-2 py-1">
+          <button
+            onClick={handleLogin}
+            disabled={!sdkReady}
+            className="neon-button text-xs px-2 py-1"
+          >
             Login with Pi
           </button>
         )}
       </div>
 
       {menuOpen && (
-        <nav ref={menuRef} className="absolute top-full left-2 mt-2 w-56 rounded-lg shadow-xl backdrop-blur-md bg-[#0f172a] border border-cyan-700 animate-fade-in z-50">
+        <nav
+          ref={menuRef}
+          className="absolute top-full left-2 mt-2 w-56 rounded-lg shadow-xl backdrop-blur-md bg-[#0f172a] border border-cyan-700 animate-fade-in z-50"
+        >
           <ul className="flex flex-col font-orbitron text-xs">
             {NAV_ITEMS.map(([label, href]) => (
               label === 'All Competitions' ? (
                 <li key={href}>
-                  <button onClick={toggleCompetitions} className="block w-full text-left px-4 py-2 text-white hover:bg-cyan-600 hover:text-black transition">
+                  <button
+                    onClick={toggleCompetitions}
+                    className="block w-full text-left px-4 py-2 text-white hover:bg-cyan-600 hover:text-black transition"
+                  >
                     All Competitions ▾
                   </button>
                   {competitionsOpen && (
@@ -173,7 +185,11 @@ export default function Header() {
                 </li>
               ) : (
                 <li key={href}>
-                  <Link href={href} onClick={() => setMenuOpen(false)} className="block w-full px-4 py-2 text-white hover:bg-cyan-600 hover:text-black transition">
+                  <Link
+                    href={href}
+                    onClick={() => setMenuOpen(false)}
+                    className="block w-full px-4 py-2 text-white hover:bg-cyan-600 hover:text-black transition"
+                  >
                     {label}
                   </Link>
                 </li>

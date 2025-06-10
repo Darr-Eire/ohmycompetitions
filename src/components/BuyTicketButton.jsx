@@ -9,7 +9,7 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
   const [piUser, setPiUser] = useState(null);
 
   useEffect(() => {
-    // Load Pi SDK dynamically
+    // Load Pi SDK
     const script = document.createElement('script');
     script.src = 'https://sdk.minepi.com/pi-sdk.js';
     script.async = true;
@@ -22,28 +22,32 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
     script.onerror = () => console.error('❌ Pi SDK failed to load');
     document.body.appendChild(script);
 
-    // Try to restore logged in user
-    const stored = localStorage.getItem('piUser');
-    if (stored) {
+    // Load saved user
+    const saved = localStorage.getItem('piUser');
+    if (saved) {
       try {
-        setPiUser(JSON.parse(stored));
+        setPiUser(JSON.parse(saved));
       } catch {
-        console.warn('Invalid piUser in localStorage');
+        console.warn('⚠️ Invalid piUser in localStorage');
       }
     }
   }, []);
 
-  const handlePayment = async () => {
-    if (!sdkReady) return setError('⚠️ Pi SDK not ready.');
+  const onIncompletePaymentFound = (payment) => {
+    console.warn('⚠️ Incomplete payment:', payment);
+  };
 
-    // Authenticate if needed
+  const handlePayment = async () => {
+    if (!sdkReady) return setError('⚠️ Pi SDK not ready');
+
     let user = piUser;
+
     if (!user || !user.uid) {
       try {
         const result = await window.Pi.authenticate(['username', 'payments'], onIncompletePaymentFound);
         user = result.user;
-        localStorage.setItem('piUser', JSON.stringify(result.user));
-        setPiUser(result.user);
+        localStorage.setItem('piUser', JSON.stringify(user));
+        setPiUser(user);
       } catch (err) {
         console.error('❌ Login failed:', err);
         return setError('⚠️ You must be logged in with Pi to continue.');
@@ -56,63 +60,59 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
     const amount = (entryFee * quantity).toFixed(8);
 
     try {
-      const payment = await window.Pi.createPayment({
+      const payment = window.Pi.createPayment({
         amount,
         memo: `Buy ${quantity} ticket(s) for ${competitionSlug}`,
         metadata: { competitionSlug, quantity, uid: user.uid },
-        callbacks: {
-          onReadyForServerApproval: async (paymentId) => {
-            try {
-              const res = await fetch('/api/payments/approve', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ paymentId, uid: user.uid, competitionSlug, amount }),
-              });
-              if (!res.ok) throw new Error('Approval failed');
-            } catch (err) {
-              console.error('❌ Approval error:', err);
-              setError('❌ Failed during approval.');
-              setProcessing(false);
-            }
-          },
-          onReadyForServerCompletion: async (paymentId, txid) => {
-            try {
-              const res = await fetch('/api/payments/complete', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ paymentId, txid, uid: user.uid }),
-              });
-              if (!res.ok) throw new Error('Completion failed');
-              alert('✅ Payment successful!');
-            } catch (err) {
-              console.error('❌ Completion error:', err);
-              setError('❌ Failed to complete payment.');
-            } finally {
-              setProcessing(false);
-            }
-          },
-          onCancel: () => {
-            console.warn('❌ Payment cancelled');
-            setError('❌ Payment was cancelled.');
+        onReadyForServerApproval: async (paymentId) => {
+          try {
+            const res = await fetch('/api/payments/approve', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ paymentId, uid: user.uid, competitionSlug, amount }),
+            });
+            if (!res.ok) throw new Error('Approval failed');
+          } catch (err) {
+            console.error('❌ Approval error:', err);
+            setError('❌ Failed during approval.');
             setProcessing(false);
-          },
-          onError: (err) => {
-            console.error('❌ Payment error:', err);
-            setError(`❌ SDK Error: ${err?.message || 'Unknown error'}`);
+          }
+        },
+        onReadyForServerCompletion: async (paymentId, txid) => {
+          try {
+            const res = await fetch('/api/payments/complete', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ paymentId, txid, uid: user.uid }),
+            });
+            if (!res.ok) throw new Error('Completion failed');
+            alert('✅ Payment successful!');
+          } catch (err) {
+            console.error('❌ Completion error:', err);
+            setError('❌ Failed to complete payment.');
+          } finally {
             setProcessing(false);
-          },
-        }
+          }
+        },
+        onCancel: () => {
+          console.warn('❌ Payment cancelled');
+          setError('❌ Payment was cancelled.');
+          setProcessing(false);
+        },
+        onError: (err) => {
+          console.error('❌ Payment error:', err);
+          setError(`❌ SDK Error: ${err?.message || 'Unknown error'}`);
+          setProcessing(false);
+        },
       });
+
+      // Do not await `createPayment()` – it returns an object, not a Promise
 
     } catch (err) {
       console.error('❌ Unexpected error:', err);
       setError(`❌ Unexpected error: ${err?.message || 'Check console'}`);
       setProcessing(false);
     }
-  };
-
-  const onIncompletePaymentFound = (payment) => {
-    console.warn('⚠️ Incomplete payment:', payment);
   };
 
   return (
