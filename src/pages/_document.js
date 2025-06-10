@@ -5,7 +5,8 @@ export default function Document() {
   return (
     <Html>
       <Head>
-        <script src="https://sdk.minepi.com/pi-sdk.js" defer></script>
+      <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+
       </Head>
       <body>
         <Main />

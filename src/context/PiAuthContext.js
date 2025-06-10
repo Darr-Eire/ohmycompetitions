@@ -18,36 +18,46 @@ export const PiAuthProvider = ({ children }) => {
     return () => clearInterval(interval);
   }, []);
 
-  const login = async () => {
-    if (!window.Pi) return console.error('Pi SDK not loaded');
+const login = () => {
+  return new Promise((resolve, reject) => {
+    if (!window.Pi) {
+      console.error('Pi SDK not available');
+      return reject('Pi SDK not loaded');
+    }
 
-    window.Pi.authenticate(['username', 'payments'], async function (auth) {
-      if (!auth || !auth.accessToken) {
-        console.error('No access token received');
-        return;
-      }
+    const scopes = ['username', 'payments'];
+    window.Pi.authenticate(
+      scopes,
+      async function (auth) {
+        try {
+          const res = await fetch('/api/verify-pi-user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ accessToken: auth.accessToken }),
+          });
 
-      try {
-        const res = await fetch('/api/verify-pi-user', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ accessToken: auth.accessToken }),
-        });
-
-        const data = await res.json();
-        if (res.ok) {
-          setUser(data.user);
-          localStorage.setItem('piUser', JSON.stringify(data.user));
-        } else {
-          console.error('Login failed:', data.error);
+          const data = await res.json();
+          if (res.ok) {
+            setUser(data.user);
+            localStorage.setItem('piUser', JSON.stringify(data.user));
+            resolve(data.user);
+          } else {
+            console.error(data.error);
+            reject(data.error);
+          }
+        } catch (err) {
+          console.error('Verify error', err);
+          reject(err.message || 'Server error');
         }
-      } catch (err) {
-        console.error('Request error:', err);
+      },
+      function (error) {
+        console.error('Pi login failed', error);
+        reject(error.message || 'Cancelled');
       }
-    }, function (err) {
-      console.error('Pi authentication error:', err);
-    });
-  };
+    );
+  });
+};
+
 
   const logout = () => {
     setUser(null);
