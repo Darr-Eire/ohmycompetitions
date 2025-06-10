@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { loadPiSdk } from 'lib/pi'; // Must load Pi SDK
+import { loadPiSdk } from 'lib/pi';
 
 export default function BuyTicketButton({ competitionSlug, entryFee, quantity }) {
   const [sdkReady, setSdkReady] = useState(false);
@@ -17,14 +17,37 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
       try {
         setPiUser(JSON.parse(storedUser));
       } catch (err) {
-        console.error('Invalid piUser JSON:', err);
+        console.error('Invalid piUser in localStorage:', err);
       }
     }
   }, []);
 
+  const loginWithPi = async () => {
+    try {
+      const result = await window.Pi.authenticate(['username', 'payments'], onIncompletePaymentFound);
+      localStorage.setItem('piUser', JSON.stringify(result.user));
+      setPiUser(result.user);
+      return result.user;
+    } catch (err) {
+      console.error('❌ Pi login failed:', err);
+      setError('❌ Login with Pi failed.');
+      return null;
+    }
+  };
+
+  const onIncompletePaymentFound = (payment) => {
+    console.warn('⚠️ Incomplete payment found at login:', payment);
+    // Optional: auto-resume or alert
+  };
+
   const handlePayment = async () => {
     if (!sdkReady) return setError('⚠️ Pi SDK not ready.');
-    if (!piUser?.uid) return setError('⚠️ You must be logged in with Pi.');
+
+    let user = piUser;
+    if (!user || !user.uid) {
+      user = await loginWithPi();
+      if (!user) return; // login failed
+    }
 
     setProcessing(true);
     setError(null);
@@ -35,51 +58,43 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
       const payment = await window.Pi.createPayment({
         amount,
         memo: `Buy ${quantity} ticket(s) for ${competitionSlug}`,
-        metadata: { competitionSlug, quantity, uid: piUser.uid },
+        metadata: { competitionSlug, quantity, uid: user.uid },
         callbacks: {
           onReadyForServerApproval: async (paymentId) => {
-            console.log('🟢 Approving payment on server:', paymentId);
             try {
               const res = await fetch('/api/payments/approve', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ paymentId, uid: piUser.uid, competitionSlug, amount }),
+                body: JSON.stringify({ paymentId, uid: user.uid, competitionSlug, amount }),
               });
-              if (!res.ok) throw new Error('Server approval failed');
+              if (!res.ok) throw new Error('Approval failed');
             } catch (err) {
               console.error('❌ Approval error:', err);
-              setError('❌ Failed during approval step.');
+              setError('❌ Failed during server approval.');
               setProcessing(false);
             }
           },
-
           onReadyForServerCompletion: async (paymentId, txid) => {
-            console.log('🟢 Completing payment:', paymentId, txid);
             try {
               const res = await fetch('/api/payments/complete', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ paymentId, txid, uid: piUser.uid }),
+                body: JSON.stringify({ paymentId, txid, uid: user.uid }),
               });
-              if (!res.ok) throw new Error('Server completion failed');
-
-              alert('✅ Payment completed successfully!');
+              if (!res.ok) throw new Error('Completion failed');
+              alert('✅ Payment successful!');
             } catch (err) {
               console.error('❌ Completion error:', err);
-              setError('❌ Payment finalization failed.');
+              setError('❌ Failed to finalize payment.');
             } finally {
               setProcessing(false);
             }
           },
-
           onCancel: () => {
-            console.warn('⚠️ Payment cancelled by user');
             setError('❌ Payment was cancelled.');
             setProcessing(false);
           },
-
           onError: (err) => {
-            console.error('❌ Payment error:', err);
             setError(`❌ SDK Error: ${err?.message || 'Unknown error'}`);
             setProcessing(false);
           },
@@ -88,7 +103,7 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
 
       return payment;
     } catch (err) {
-      console.error('❌ createPayment error:', err);
+      console.error('❌ Payment error:', err);
       setError(`❌ Could not create payment: ${err?.message || 'Unknown error'}`);
       setProcessing(false);
     }
