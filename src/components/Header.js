@@ -43,11 +43,13 @@ export default function Header() {
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
 
+  // Load saved user if available
   useEffect(() => {
     const savedUser = localStorage.getItem('piUser');
     if (savedUser) setUser(JSON.parse(savedUser));
   }, []);
 
+  // Load Pi SDK on first render
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://sdk.minepi.com/pi-sdk.js';
@@ -61,35 +63,38 @@ export default function Header() {
     document.body.appendChild(script);
   }, []);
 
-const handleLogin = async () => {
-  try {
-    // 🧨 Clear localStorage + SDK session
+  const handleLogin = async () => {
+    try {
+      localStorage.removeItem('piUser');
+      if (window.Pi?.logout) await window.Pi.logout();
+      document.cookie = "pi.accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
+
+      const result = await window.Pi.authenticate(['username', 'payments']);
+
+      const res = await fetch('/api/auth/pi-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessToken: result.accessToken }),
+      });
+
+      if (!res.ok) throw new Error('Pi Login API failed');
+      const data = await res.json();
+
+      localStorage.setItem('piUser', JSON.stringify(data.user));
+      setUser(data.user);
+    } catch (err) {
+      console.error('Pi login failed:', err);
+      alert('Pi login failed. Check console.');
+    }
+  };
+
+  const handleLogout = () => {
     localStorage.removeItem('piUser');
-    if (window.Pi?.logout) await window.Pi.logout();
-
-    // 🧼 Clean Pi cookie/session scope
-    document.cookie = "pi.accessToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-
-    // 🔐 Request fresh scopes
-    const result = await window.Pi.authenticate(['username', 'payments']);
-
-    const res = await fetch('/api/auth/pi-login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ accessToken: result.accessToken }),
-    });
-
-    if (!res.ok) throw new Error('Pi Login API failed');
-
-    const data = await res.json();
-    localStorage.setItem('piUser', JSON.stringify(data.user));
-    setUser(data.user);
-  } catch (err) {
-    console.error('Pi login failed:', err);
-    alert('Pi login failed. Check console.');
-  }
-};
-
+    document.cookie = "pi.accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
+    window.Pi?.logout?.();
+    setUser(null);
+    alert('🔁 Pi session cleared. Please login again.');
+  };
 
   const toggleMenu = () => setMenuOpen(prev => !prev);
   const toggleCompetitions = () => setCompetitionsOpen(prev => !prev);
@@ -127,29 +132,27 @@ const handleLogin = async () => {
       </div>
 
       <div className="text-white text-sm flex items-center gap-2">
-       {user ? (
-  <div className="flex items-center gap-2">
-    <span className="text-sm font-bold">
-      👋 {user.username} {user.country ? countryCodeToFlagEmoji(user.country) : ''}
-    </span>
-    <button
-      onClick={() => {
-        // 🧼 Full cleanup
-        document.cookie = "pi.accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;";
-        localStorage.removeItem('piUser');
-        window.Pi?.logout?.();
-        setUser(null);
-        alert('🔁 Pi session cleared. Please login again.');
-      }}
-      className="neon-button text-xs px-2 py-1 bg-red-600 hover:bg-red-700"
-    >
-      Force Logout
-    </button>
-  </div>
-) : (
-  <button onClick={handleLogin} className="neon-button text-xs px-2 py-1">Login with Pi</button>
-)}
-
+        {user ? (
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold">
+               {user.username} {user.country ? countryCodeToFlagEmoji(user.country) : ''}
+            </span>
+            <button
+              onClick={handleLogout}
+              className="neon-button text-xs px-2 py-1 bg-red-600 hover:bg-red-700"
+            >
+              Logout
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={handleLogin}
+            disabled={!sdkReady}
+            className="neon-button text-xs px-2 py-1"
+          >
+            Login with Pi
+          </button>
+        )}
       </div>
 
       {menuOpen && (
