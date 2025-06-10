@@ -2,36 +2,41 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-// Create context
+// Context setup
 const PiAuthContext = createContext();
-
-// Export custom hook to access context
 export function usePiAuth() {
   return useContext(PiAuthContext);
 }
 
-// Helper to load Pi SDK
+// Helper to load the SDK if Pi Browser doesn't auto-load it
 function loadPiSdk(setSdkReady) {
   if (typeof window === 'undefined') return;
 
   if (window.Pi) {
+    console.log('✅ Pi SDK already loaded');
     setSdkReady(true);
     return;
   }
 
   const script = document.createElement('script');
   script.src = 'https://sdk.minepi.com/pi-sdk.js';
+  script.defer = true;
   script.onload = () => {
-    window.Pi.init({ version: '2.0' }); // ✅ Required for v2
-    setSdkReady(true);
+    if (window.Pi) {
+      console.log('✅ Pi SDK loaded from fallback script');
+      window.Pi.init({ version: '2.0' }); // Required for v2 SDK
+      setSdkReady(true);
+    } else {
+      console.error('❌ Pi SDK script loaded but window.Pi not available');
+    }
   };
   script.onerror = () => {
-    console.error('❌ Failed to load Pi SDK');
+    console.error('❌ Failed to load Pi SDK script');
   };
+
   document.body.appendChild(script);
 }
 
-// Auth Provider component
 export function PiAuthProvider({ children }) {
   const [sdkReady, setSdkReady] = useState(false);
   const [user, setUser] = useState(null);
@@ -51,8 +56,11 @@ export function PiAuthProvider({ children }) {
   }, []);
 
   async function login() {
+    console.log('🧪 login() called');
+
     if (!sdkReady || typeof window === 'undefined' || !window.Pi) {
       alert('⚠️ Pi SDK not ready. Use the Pi Browser.');
+      console.warn('🧪 SDK Ready:', sdkReady, 'window.Pi:', window.Pi);
       return;
     }
 
@@ -72,6 +80,7 @@ export function PiAuthProvider({ children }) {
         }
       });
 
+      console.log('✅ Pi Login Success:', result.user);
       setUser(result.user);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(result.user));
     } catch (err) {
@@ -81,9 +90,10 @@ export function PiAuthProvider({ children }) {
   }
 
   function logout() {
+    console.log('👋 Logging out user:', user?.username);
     setUser(null);
     localStorage.removeItem(STORAGE_KEY);
-    if (window.Pi?.logout) window.Pi.logout(); // Optional: also clear Pi SDK session
+    if (window.Pi?.logout) window.Pi.logout(); // Optional
   }
 
   const value = { user, login, logout, loading, sdkReady };
