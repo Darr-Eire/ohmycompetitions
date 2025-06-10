@@ -62,4 +62,5 @@ const transaction = new StellarSdk.TransactionBuilder(account, {
   )
   .addMemo(StellarSdk.Memo.text(paymentId))
   .build();
-
+ }
+}
