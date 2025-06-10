@@ -3,7 +3,6 @@ import { authOptions } from 'lib/auth';
 import { dbConnect } from 'lib/dbConnect';
 
 import EverydayEntry from 'models/EverydayEntry'; // assuming you have a model for this
-import { verifyPiTransaction } from 'lib/piServer'; // placeholder for real Pi transaction verify
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {

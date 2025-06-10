@@ -1,7 +1,6 @@
 // pages/api/payments/create.js
 
 import nextConnect from 'next-connect';
-import { createPiPayment } from 'lib/piServer'; // Make sure this function exists in your piServer.js
 
 
 
