@@ -13,14 +13,14 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
     setLoading(true);
 
     try {
-      // If not logged in, trigger login first
+  
    if (!user) {
   alert('❌ Please log in with Pi to continue.');
-  await login();  // now properly returns a promise
+  await login(); 
   return;
 }
 
-        // Wait for login to complete (check again)
+      
         const storedUser = localStorage.getItem('piUser');
         if (!storedUser) throw new Error('Login failed or cancelled.');
       }
