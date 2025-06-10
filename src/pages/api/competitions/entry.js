@@ -1,6 +1,6 @@
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from 'lib/auth';
-import { connectToDatabase } from 'lib/dbConnect';
+import dbConnect from 'lib/dbConnect';
 
 import EverydayEntry from 'models/EverydayEntry'; // assuming you have a model for this
 import { verifyPiTransaction } from 'lib/piServer'; // placeholder for real Pi transaction verify

@@ -1,4 +1,4 @@
-import { connectToDatabase } from 'lib/dbConnect';
+import dbConnect from 'lib/dbConnect';
 
 import Entry from 'models/Entry';
 import User from 'models/User';

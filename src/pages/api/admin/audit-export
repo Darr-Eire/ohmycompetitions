@@ -1,6 +1,6 @@
 // src/pages/api/admin/export-audits.js
 
-import { connectToDatabase } from 'lib/dbConnect';
+import dbConnect from 'lib/dbConnect';
 
 import AuditLog from '@models/AuditLog';
 import { Parser } from 'json2csv';

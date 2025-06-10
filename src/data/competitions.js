@@ -412,7 +412,7 @@ export const cryptoGiveawaysItems = [
   },
 ];
 
-export const competitions = [
+export const allComps = [
   ...techItems,
   ...premiumItems,
   ...piItems,
@@ -420,4 +420,3 @@ export const competitions = [
   ...freeItems,
   ...cryptoGiveawaysItems,
 ];
-
