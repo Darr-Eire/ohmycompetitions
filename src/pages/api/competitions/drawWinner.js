@@ -1,18 +1,16 @@
-// /src/pages/api/draw-winner.js
-
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
   try {
-    // This is where you'd query your DB to get the actual winner
+    // Example placeholder logic for selecting winner (replace this)
     const winner = {
-      uid: 'REPLACE_WITH_REAL_UID', // Replace with real user Pi UID
-      competitionSlug: 'REPLACE_WITH_SLUG', // Replace with actual comp slug
+      uid: 'replace_with_real_uid', // You must provide a real UID
+      competitionSlug: 'replace_with_real_slug', // e.g., 'nintendo-switch'
     };
 
-    const payoutRes = await fetch(
+    const response = await fetch(
       `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/rewards/send`,
       {
         method: 'POST',
@@ -30,16 +28,16 @@ export default async function handler(req, res) {
       }
     );
 
-    const payoutResult = await payoutRes.json();
+    const result = await response.json();
 
-    if (!payoutRes.ok) {
-      console.error('❌ Failed to send Pi:', payoutResult.error);
-      return res.status(500).json({ error: payoutResult.error });
+    if (!response.ok) {
+      console.error('❌ Failed to send Pi:', result.error);
+      return res.status(500).json({ error: result.error });
     }
 
-    return res.status(200).json({ success: true, reward: payoutResult });
-  } catch (err) {
-    console.error('❌ Error in draw-winner:', err);
-    return res.status(500).json({ error: err.message || 'Unknown error' });
+    return res.status(200).json({ success: true, payout: result });
+  } catch (error) {
+    console.error('❌ Server error:', error);
+    return res.status(500).json({ error: error.message });
   }
 }
