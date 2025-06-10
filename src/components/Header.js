@@ -29,9 +29,7 @@ const COMPETITION_SUB_ITEMS = [
 ];
 
 function countryCodeToFlagEmoji(code) {
-  return code
-    .toUpperCase()
-    .replace(/./g, char => String.fromCodePoint(127397 + char.charCodeAt()));
+  return code.toUpperCase().replace(/./g, char => String.fromCodePoint(127397 + char.charCodeAt()));
 }
 
 export default function Header() {
@@ -58,17 +56,20 @@ export default function Header() {
         setSdkReady(true);
       }
     };
-    script.onerror = () => {
-      console.error('Failed to load Pi SDK');
-    };
+    script.onerror = () => console.error('Failed to load Pi SDK');
     document.body.appendChild(script);
   }, []);
 
   const handleLogin = async () => {
     try {
-      if (!window.Pi) throw new Error('Pi SDK not available');
+      // Full logout cleanup
+      localStorage.removeItem('piUser');
+      document.cookie = 'pi.accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
+      if (window.Pi?.logout) await window.Pi.logout();
 
       const result = await window.Pi.authenticate(['username', 'payments'], onIncompletePaymentFound);
+      if (!result || !result.user) throw new Error('No user returned');
+
       const res = await fetch('/api/auth/pi-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -76,19 +77,16 @@ export default function Header() {
       });
 
       if (!res.ok) throw new Error('Pi Login API failed');
-      const data = await res.json();
 
-      localStorage.setItem('piUser', JSON.stringify(data.user));
-      setUser(data.user);
+      const data = await res.json();
+      localStorage.setItem('piUser', JSON.stringify(result.user));
+      setUser(result.user);
+
+      alert(`✅ Welcome ${result.user.username}`);
     } catch (err) {
       console.error('❌ Pi login failed:', err);
       alert('Login error. Check console.');
     }
-  };
-
-  const onIncompletePaymentFound = (payment) => {
-    console.warn('⚠️ Incomplete payment found on login:', payment);
-    // Optional: auto-completion or alert user
   };
 
   const handleLogout = () => {
@@ -96,7 +94,11 @@ export default function Header() {
     document.cookie = 'pi.accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
     if (window.Pi?.logout) window.Pi.logout();
     setUser(null);
-    alert('Logged out successfully.');
+    alert('🟡 Logged out. Please login again.');
+  };
+
+  const onIncompletePaymentFound = (payment) => {
+    console.warn('⚠️ Incomplete payment found:', payment);
   };
 
   const toggleMenu = () => setMenuOpen(prev => !prev);

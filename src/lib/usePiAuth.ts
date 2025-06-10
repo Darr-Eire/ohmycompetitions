@@ -23,8 +23,9 @@ export function usePiAuth() {
       }
 
       try {
-        const scopes = ['username', 'payments'];
-        const result = await window.Pi.authenticate(scopes);
+    const scopes = ['username', 'payments'];
+const result = await window.Pi.authenticate(scopes);
+
 
         await fetch('/api/auth/pi-login', {
           method: 'POST',

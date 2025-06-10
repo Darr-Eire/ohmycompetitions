@@ -35,7 +35,8 @@ export default function PiLoginButton() {
 
       if (!loginRes.ok) throw new Error('Pi login failed')
 
-      localStorage.setItem('piUser', JSON.stringify(result.user))
+    localStorage.setItem('piUser', JSON.stringify(result.user)); // ✅
+
 
       // ✅ Redirect after login
       window.location.href = '/account'
