@@ -7,10 +7,9 @@ export default function Document() {
     <Html lang="en">
       <Head>
         {/* Pi Network SDK */}
-        <script
-          src="https://sdk.minepi.com/pi-sdk.js"
-          strategy="beforeInteractive"
-        />
+       <script src="https://sdk.minepi.com/pi-sdk.js" defer></script>
+
+    
       </Head>
       <body className="bg-black text-white font-orbitron">
         <Main />
