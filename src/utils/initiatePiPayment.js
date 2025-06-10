@@ -13,10 +13,20 @@ export const initiatePiPayment = async (amount, memo, uid) => {
       {
         onReadyForServerApproval: (paymentId) => {
           console.log('🔁 Ready for server approval:', paymentId);
-          // OPTIONAL: hit your backend here to log/verify the tx if needed
         },
         onReadyForServerCompletion: (paymentId, txid) => {
           console.log('✅ Ready for server completion:', paymentId, txid);
           resolve({ paymentId, txid });
         },
         onCancel: (reason) => {
+          console.warn('❌ Payment cancelled:', reason);
+          reject(new Error('Payment cancelled'));
+        },
+        onError: (error) => {
+          console.error('❌ Payment error:', error);
+          reject(error);
+        }
+      }
+    );
+  });
+};
