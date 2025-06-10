@@ -46,5 +46,20 @@ export async function sendPiReward({ uid, amount, memo, metadata = {} }) {
     const fee = await server.fetchBaseFee();
     const timebounds = await server.fetchTimebounds(180); // 3-minute expiry window
 
-    // 3. Build Stellar transaction
-    const transaction = new StellarSd
+  
+ // 3. Build Stellar transaction
+const transaction = new StellarSdk.TransactionBuilder(account, {
+  fee,
+  timebounds,
+  networkPassphrase,
+})
+  .addOperation(
+    StellarSdk.Operation.payment({
+      destination: recipientAddress,
+      asset: StellarSdk.Asset.native(),
+      amount: amount.toString(),
+    })
+  )
+  .addMemo(StellarSdk.Memo.text(paymentId))
+  .build();
+
