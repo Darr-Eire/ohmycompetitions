@@ -1,5 +1,4 @@
-import { dbConnect } from 'lib/dbConnect';
-import Ticket from 'models/Ticket';
+import { connectToDatabase } from 'lib/dbConnect';import Ticket from 'models/Ticket';
 import User from 'models/User';
 
 export default async function handler(req, res) {

@@ -1,86 +1,88 @@
-// lib/sendReward.js
-
-import axios from 'axios';
-import StellarSdk from 'stellar-sdk';
-import dotenv from 'dotenv';
-dotenv.config();
-
-const PI_API_KEY = process.env.PI_API_KEY;
-const STELLAR_SECRET = process.env.STELLAR_SECRET;
-const STELLAR_PUBLIC = process.env.STELLAR_PUBLIC;
-
-const server = new StellarSdk.Server('https://api.testnet.minepi.com'); // Use testnet
-const networkPassphrase = 'Pi Testnet'; // Use "Pi Network" for mainnet
-
-const axiosClient = axios.create({
-  baseURL: 'https://api.minepi.com/v2',
-  timeout: 10000,
-  headers: {
-    Authorization: `Key ${PI_API_KEY}`,
-    'Content-Type': 'application/json',
-  },
-});
+// lib/piServer.js
 
 /**
- * Send Pi to a user (A2U)
- * @param {Object} options
- * @param {string} options.uid - Pi UID of recipient
- * @param {number|string} options.amount - amount of Pi to send
- * @param {string} options.memo - transaction memo
- * @param {Object} options.metadata - optional metadata
+ * Approves a pending payment after `onReadyForServerApproval`
+ * @param {Object} params
+ * @param {string} params.paymentId
+ * @param {string} params.uid
+ * @param {string} params.competitionSlug
+ * @param {number|string} params.amount
  */
-export async function sendPiReward({ uid, amount, memo, metadata = {} }) {
+export async function approvePiPayment({ paymentId, uid, competitionSlug, amount }) {
   try {
-    // 1. Request payment intent from Pi backend
-    const createRes = await axiosClient.post(`/payments`, {
-      amount,
-      memo,
-      metadata,
-      uid,
+    const response = await fetch('https://api.minepi.com/payments/approve', {
+      method: 'POST',
+      headers: {
+        Authorization: `Key ${process.env.PI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        paymentId,
+        metadata: { uid, competitionSlug, amount },
+      }),
     });
 
-    const paymentId = createRes.data.identifier;
-    const recipientAddress = createRes.data.recipient;
-    if (!paymentId || !recipientAddress) throw new Error('Missing recipient info');
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Pi approval failed');
 
-    // 2. Load developer account and fee
-    const account = await server.loadAccount(STELLAR_PUBLIC);
-    const fee = await server.fetchBaseFee();
-    const timebounds = await server.fetchTimebounds(180); // 3 min expiry
+    return result;
+  } catch (error) {
+    console.error('❌ Error approving Pi payment:', error);
+    throw error;
+  }
+}
 
-    // 3. Build transaction
-    const transaction = new StellarSdk.TransactionBuilder(account, {
-      fee,
-      timebounds,
-      networkPassphrase,
-    })
-      .addOperation(
-        StellarSdk.Operation.payment({
-          destination: recipientAddress,
-          asset: StellarSdk.Asset.native(),
-          amount: amount.toString(),
-        })
-      )
-      .addMemo(StellarSdk.Memo.text(paymentId))
-      .build();
-
-    // 4. Sign transaction
-    const keypair = StellarSdk.Keypair.fromSecret(STELLAR_SECRET);
-    transaction.sign(keypair);
-
-    // 5. Submit transaction to Pi blockchain
-    const submitResult = await server.submitTransaction(transaction);
-    const txid = submitResult.id;
-
-    // 6. Notify Pi server of completion
-    const completeRes = await axiosClient.post(`/payments/${paymentId}/complete`, {
-      txid,
+/**
+ * Completes a payment after `onReadyForServerCompletion`
+ * @param {Object} params
+ * @param {string} params.paymentId
+ * @param {string} params.txid
+ */
+export async function completePiPayment({ paymentId, txid }) {
+  try {
+    const response = await fetch('https://api.minepi.com/payments/complete', {
+      method: 'POST',
+      headers: {
+        Authorization: `Key ${process.env.PI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ paymentId, txid }),
     });
 
-    console.log('✅ Pi sent successfully:', { paymentId, txid });
-    return { success: true, paymentId, txid };
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Completion failed');
+
+    return result;
   } catch (err) {
-    console.error('❌ A2U Payment failed:', err.response?.data || err.message || err);
-    return { success: false, error: err };
+    console.error('❌ Error completing Pi payment:', err);
+    throw err;
+  }
+}
+
+/**
+ * Verifies a completed transaction via your backend
+ * @param {Object} params
+ * @param {string} params.paymentId
+ * @param {string} params.txid
+ */
+export async function verifyPiTransaction({ paymentId, txid }) {
+  try {
+    const response = await fetch('https://api.minepi.com/payments/' + paymentId, {
+      method: 'GET',
+      headers: {
+        Authorization: `Key ${process.env.PI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const result = await response.json();
+    if (!response.ok || result.transaction.txid !== txid) {
+      throw new Error('Transaction verification failed');
+    }
+
+    return result;
+  } catch (error) {
+    console.error('❌ Transaction verification error:', error);
+    throw error;
   }
 }

@@ -1,5 +1,3 @@
-// sendReward.js
-
 import axios from 'axios';
 import StellarSdk from 'stellar-sdk';
 import dotenv from 'dotenv';
@@ -9,8 +7,8 @@ const PI_API_KEY = process.env.PI_API_KEY;
 const STELLAR_SECRET = process.env.STELLAR_SECRET;
 const STELLAR_PUBLIC = process.env.STELLAR_PUBLIC;
 
-const server = new StellarSdk.Server('https://api.testnet.minepi.com'); // Use testnet
-const networkPassphrase = 'Pi Testnet'; // Use "Pi Network" for mainnet
+const server = new StellarSdk.Server('https://api.testnet.minepi.com'); // Switch to mainnet if needed
+const networkPassphrase = 'Pi Testnet'; // Use 'Pi Network' for mainnet
 
 const axiosClient = axios.create({
   baseURL: 'https://api.minepi.com/v2',
@@ -21,58 +19,32 @@ const axiosClient = axios.create({
   },
 });
 
+/**
+ * Sends Pi to a user (A2U Payment Flow)
+ * @param {Object} options
+ * @param {string} options.uid - UID of the recipient in Pi Network
+ * @param {string|number} options.amount - Amount of Pi to send
+ * @param {string} options.memo - Memo for the transaction (also acts as paymentId)
+ * @param {Object} [options.metadata={}] - Optional metadata to attach
+ * @returns {Object} Result { success: boolean, txid?, paymentId?, error? }
+ */
 export async function sendPiReward({ uid, amount, memo, metadata = {} }) {
   try {
-    // 1. Request payment intent from Pi backend
+    // 1. Create A2U payment intent
     const createRes = await axiosClient.post(`/payments`, {
+      uid,
       amount,
       memo,
       metadata,
-      uid,
     });
 
-    const paymentId = createRes.data.identifier;
-    const recipientAddress = createRes.data.recipient;
-    if (!paymentId || !recipientAddress) throw new Error('Missing recipient info');
+    const { identifier: paymentId, recipient: recipientAddress } = createRes.data;
+    if (!paymentId || !recipientAddress) throw new Error('Missing recipient info from Pi API');
 
-    // 2. Load developer account and fee
+    // 2. Load developer account and set transaction parameters
     const account = await server.loadAccount(STELLAR_PUBLIC);
     const fee = await server.fetchBaseFee();
-    const timebounds = await server.fetchTimebounds(180); // 3 min expiry
+    const timebounds = await server.fetchTimebounds(180); // 3-minute expiry window
 
-    // 3. Build transaction
-    const transaction = new StellarSdk.TransactionBuilder(account, {
-      fee,
-      timebounds,
-      networkPassphrase,
-    })
-      .addOperation(
-        StellarSdk.Operation.payment({
-          destination: recipientAddress,
-          asset: StellarSdk.Asset.native(),
-          amount: amount.toString(),
-        })
-      )
-      .addMemo(StellarSdk.Memo.text(paymentId))
-      .build();
-
-    // 4. Sign transaction
-    const keypair = StellarSdk.Keypair.fromSecret(STELLAR_SECRET);
-    transaction.sign(keypair);
-
-    // 5. Submit transaction to Pi blockchain
-    const submitResult = await server.submitTransaction(transaction);
-    const txid = submitResult.id;
-
-    // 6. Notify Pi server of completion
-    const completeRes = await axiosClient.post(`/payments/${paymentId}/complete`, {
-      txid,
-    });
-
-    console.log('✅ Pi sent successfully:', { paymentId, txid });
-    return { success: true, paymentId, txid };
-  } catch (err) {
-    console.error('❌ A2U Payment failed:', err.response?.data || err.message || err);
-    return { success: false, error: err };
-  }
-}
+    // 3. Build Stellar transaction
+    const transaction = new StellarSd

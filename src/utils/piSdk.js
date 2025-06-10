@@ -1,21 +1,32 @@
-export async function loginWithPi() {
-  try {
-    const scopes = ['username', 'payments'];
-    const authResult = await window.Pi.authenticate(scopes, onIncompletePaymentFound);
+export const loadPiSdk = (onLoaded) => {
+  if (typeof window === 'undefined') return; // Guard for SSR
 
-    console.log('✅ Authenticated:', authResult);
-
-    // ✅ Critical fix: Save full user with .uid
-    localStorage.setItem('piUser', JSON.stringify(authResult.user));
-
-    await fetch('/api/auth/pi-login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ accessToken: authResult.accessToken }),
-    });
-
-    return authResult;
-  } catch (error) {
-    console.error('❌ Login failed:', error);
+  if (window.Pi) {
+    window.Pi.init({ version: '2.0' });
+    onLoaded();
+    return;
   }
-}
+
+  const existingScript = document.querySelector('script[src="https://sdk.minepi.com/pi-sdk.js"]');
+  if (existingScript) {
+    existingScript.onload = () => {
+      if (window.Pi) {
+        window.Pi.init({ version: '2.0' });
+        onLoaded();
+      }
+    };
+    return;
+  }
+
+  const script = document.createElement('script');
+  script.src = 'https://sdk.minepi.com/pi-sdk.js';
+  script.async = true;
+  script.onload = () => {
+    if (window.Pi) {
+      window.Pi.init({ version: '2.0' });
+      onLoaded();
+    }
+  };
+  script.onerror = () => console.error('❌ Failed to load Pi SDK.');
+  document.body.appendChild(script);
+};

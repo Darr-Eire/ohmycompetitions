@@ -1,4 +1,4 @@
-import dbConnect from 'lib/dbConnect';
+import { dbConnect } from 'lib/dbConnect';
 import Entry from 'models/Entry';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from 'lib/auth';

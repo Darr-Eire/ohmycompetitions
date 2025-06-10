@@ -1,6 +1,6 @@
 // src/pages/api/pioneer-nomination.js
 
-import dbConnect from 'lib/dbConnect';
+import { dbConnect } from 'lib/dbConnect';
 
 import PioneerNomination from 'models/PioneerNomination';
 

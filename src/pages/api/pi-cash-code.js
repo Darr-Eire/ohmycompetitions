@@ -1,5 +1,4 @@
-import { dbConnect } from 'lib/dbConnect';
-import mongoose from 'mongoose';
+import { connectToDatabase } from 'lib/dbConnect';import mongoose from 'mongoose';
 
 const PiCashCodeSchema = new mongoose.Schema({
   code: { type: String, required: true },

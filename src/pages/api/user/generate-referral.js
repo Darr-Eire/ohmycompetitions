@@ -1,7 +1,6 @@
 // src/pages/api/user/generate-referral.js
 
-import { dbConnect } from 'lib/dbConnect';
-import User from 'models/User';
+import { connectToDatabase } from 'lib/dbConnect';import User from 'models/User';
 import { generateReferralCode } from 'lib/generateReferralCode';
 
 export default async function handler(req, res) {
