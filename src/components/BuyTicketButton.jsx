@@ -10,37 +10,31 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
   const { user, login, sdkReady } = usePiAuth();
 
   const handleBuy = async () => {
-    setLoading(true);
+  if (!user) {
+    alert('❌ Please log in with Pi to continue.');
+    await login();
+    return;
+  }
 
-    try {
-  
-   if (!user) {
-  alert('❌ Please log in with Pi to continue.');
-  await login(); 
-  return;
-}
+  setLoading(true);
+  try {
+    const currentUser = JSON.parse(localStorage.getItem('piUser'));
+    const uid = currentUser.uid || currentUser.username;
+    const memo = `Entry to ${competitionSlug}`;
+    const total = entryFee * quantity;
 
-      
-        const storedUser = localStorage.getItem('piUser');
-        if (!storedUser) throw new Error('Login failed or cancelled.');
-      }
+    const paymentResult = await initiatePiPayment(total, memo, uid);
 
-      const currentUser = JSON.parse(localStorage.getItem('piUser'));
-      const uid = currentUser.uid || currentUser.username;
-      const memo = `Entry to ${competitionSlug}`;
-      const total = entryFee * quantity;
+    setResult(paymentResult);
+    alert(`✅ Payment Complete!\nTX: ${paymentResult.txid}`);
+  } catch (err) {
+    console.error('❌ Payment failed:', err);
+    alert(`❌ Payment Failed: ${err.message || err}`);
+  } finally {
+    setLoading(false);
+  }
+};
 
-      const paymentResult = await initiatePiPayment(total, memo, uid);
-      setResult(paymentResult);
-
-      alert(`✅ Payment Complete!\nTX: ${paymentResult.txid}`);
-    } catch (err) {
-      console.error('❌ Payment/Login failed:', err);
-      alert(`❌ ${err.message || err}`);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <button
