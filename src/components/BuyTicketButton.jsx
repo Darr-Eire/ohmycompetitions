@@ -1,52 +1,103 @@
 'use client';
 
-import { useState } from 'react';
-import { initiatePiPayment } from '../utils/initiatePiPayment';
-import { usePiAuth } from '../context/PiAuthContext';
+import React, { useState, useEffect } from 'react';
+import { loadPiSdk } from 'lib/pi';
 
 export default function BuyTicketButton({ competitionSlug, entryFee, quantity }) {
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const { user, login, sdkReady } = usePiAuth();
+  const [sdkReady, setSdkReady] = useState(false);
 
-  const handleBuy = async () => {
-  if (!user) {
-    alert('❌ Please log in with Pi to continue.');
-    await login();
-    return;
-  }
+  // Load Pi SDK on mount
+  useEffect(() => {
+    loadPiSdk(setSdkReady);
+  }, []);
 
-  setLoading(true);
-  try {
-    const currentUser = JSON.parse(localStorage.getItem('piUser'));
-    const uid = currentUser.uid || currentUser.username;
-    const memo = `Entry to ${competitionSlug}`;
-    const total = entryFee * quantity;
+  // Debug logs
+  useEffect(() => {
+    console.log('[DEBUG] sdkReady:', sdkReady);
+    console.log('[DEBUG] window.Pi:', typeof window !== 'undefined' && window.Pi);
+  }, [sdkReady]);
 
-    const paymentResult = await initiatePiPayment(total, memo, uid);
+  // Handle payment
+  const handlePayment = async () => {
+    if (
+      typeof window === 'undefined' ||
+      !window.Pi ||
+      typeof window.Pi.createPayment !== 'function'
+    ) {
+      alert('⚠️ Pi SDK not ready. Make sure you are in the Pi Browser.');
+      return;
+    }
 
-    setResult(paymentResult);
-    alert(`✅ Payment Complete!\nTX: ${paymentResult.txid}`);
-  } catch (err) {
-    console.error('❌ Payment failed:', err);
-    alert(`❌ Payment Failed: ${err.message || err}`);
-  } finally {
-    setLoading(false);
-  }
-};
+    console.log('🚀 Starting Pi.createPayment...');
 
+    const total = (entryFee * quantity).toFixed(2);
+
+    window.Pi.createPayment(
+      {
+        amount: parseFloat(total),
+        memo: `Entry for ${competitionSlug}`,
+        metadata: { competitionSlug, quantity },
+      },
+      {
+        onReadyForServerApproval: async (paymentId) => {
+          try {
+            const res = await fetch('/api/payments/approve', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ paymentId }),
+            });
+
+            if (!res.ok) {
+              throw new Error(await res.text());
+            }
+
+            console.log('[✅] Payment approved on server');
+          } catch (err) {
+            console.error('[ERROR] Approving payment:', err);
+            alert('❌ Server approval failed. See console.');
+          }
+        },
+
+        onReadyForServerCompletion: async (paymentId, txid) => {
+          try {
+            console.log('🧾 Completing with txid:', txid);
+            const res = await fetch('/api/payments/complete', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ paymentId, txid }),
+            });
+
+            if (!res.ok) {
+              throw new Error(await res.text());
+            }
+
+            const data = await res.json();
+            console.log('[🎟️] Ticket issued:', data);
+            alert(`✅ Ticket purchased successfully!\n🎟️ ID: ${data.ticketId}`);
+          } catch (err) {
+            console.error('[ERROR] Completing payment:', err);
+            alert('❌ Server completion failed. See console.');
+          }
+        },
+
+        onCancel: (paymentId) => {
+          console.warn('[APP] Payment cancelled:', paymentId);
+        },
+
+        onError: (error, payment) => {
+          console.error('[APP] Payment error:', error, payment);
+        },
+      }
+    );
+  }; // ✅ Close handlePayment function here
 
   return (
     <button
-      disabled={loading}
-      onClick={handleBuy}
-      className="w-full bg-gradient-to-r from-green-400 to-blue-600 text-black font-bold py-3 px-4 rounded-xl mt-4 disabled:opacity-50"
+      onClick={handlePayment}
+      className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-xl shadow transition"
     >
-      {loading
-        ? 'Processing...'
-        : user
-        ? `Pay & Enter (${(entryFee * quantity).toFixed(2)} π)`
-        : 'Login with Pi to Continue'}
+      Confirm Ticket Purchase
     </button>
   );
-}
+} // ✅ Close component function
+
