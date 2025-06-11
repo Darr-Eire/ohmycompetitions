@@ -74,7 +74,12 @@ export default function Header() {
 ) : (
   <div className="text-white text-xs flex items-center gap-2">
     <span>👋 {user.username}</span>
-    <button onClick={logout} className="neon-button text-xs px-2 py-1">
+    <button
+      onClick={() => {
+        if (typeof logout === 'function') logout();
+      }}
+      className="neon-button text-xs px-2 py-1"
+    >
       Log Out
     </button>
   </div>
@@ -99,10 +104,13 @@ export default function Header() {
             {user && (
               <li>
                 <button
-                  onClick={() => {
-                    logout();
-                    setMenuOpen(false);
-                  }}
+                onClick={() => {
+  if (typeof logout === 'function') {
+    logout();
+  }
+  setMenuOpen(false);
+}}
+
                   className="w-full text-left text-xs px-4 py-2 text-white hover:bg-cyan-600 hover:text-black transition"
                 >
                   Log Out
