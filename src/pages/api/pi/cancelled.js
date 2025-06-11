@@ -14,16 +14,17 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await axios.post(
-      `https://api.minepi.com/testnet/v2/payments/${paymentId}/cancel`, // 👈 use testnet here
-      {}, // no body required
-      {
-        headers: {
-          Authorization: `Key ${process.env.PI_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+  const response = await axios.post(
+  `https://api.minepi.com/testnet/v2/payments/${paymentId}/cancel`,
+  {},
+  {
+    headers: {
+      Authorization: `Key ${process.env.PI_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+  }
+);
+
 
     return res.status(200).json({
       success: true,
