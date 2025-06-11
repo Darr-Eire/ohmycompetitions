@@ -1,5 +1,4 @@
-// /src/pages/api/pi/approve.js
-
+// /pages/api/pi/approve.js
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
@@ -7,37 +6,31 @@ export default async function handler(req, res) {
 
   const { paymentId, uid, competitionSlug, amount } = req.body;
 
-  if (!paymentId || !uid || !competitionSlug || !amount) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-
   try {
-    const response = await fetch(`https://api.minepi.com/payments/approve`, {
+    const response = await fetch('https://api.minepi.com/payments/approve', {
       method: 'POST',
       headers: {
-        Authorization: `Key ${process.env.PI_API_KEY}`, // must be set in .env.local
+        Authorization: `Key ${process.env.PI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         paymentId,
-        metadata: {
-          uid,
-          competitionSlug,
-          amount,
-        },
+        metadata: { uid, competitionSlug, amount },
       }),
     });
 
-    const data = await response.json();
+    const raw = await response.text(); // capture full response, even if not JSON
+    console.log('🔍 Raw Pi API response:', raw);
+
+    const data = JSON.parse(raw);
 
     if (!response.ok) {
-      console.error('❌ Approval failed:', data);
-      return res.status(500).json({ error: 'Approval failed', raw: data });
+      return res.status(response.status).json({ error: 'Approval failed', details: data });
     }
 
-    return res.status(200).json(data);
-  } catch (error) {
-    console.error('❌ Server error during approval:', error);
-    return res.status(500).json({ error: 'Server error', details: error.message });
+    return res.status(200).json({ success: true, data });
+  } catch (err) {
+    console.error('❌ Server error:', err.message);
+    return res.status(500).json({ error: 'Server error', details: err.message });
   }
 }
