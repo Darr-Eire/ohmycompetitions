@@ -11,6 +11,7 @@ export function usePiAuth() {
 export function PiAuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [sdkReady, setSdkReady] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -29,10 +30,11 @@ export function PiAuthProvider({ children }) {
           window.Pi.init({ version: '2.0' });
           setSdkReady(true);
         } catch (err) {
+          alert('❌ Pi.init failed: ' + err.message);
           console.error('❌ Pi.init() failed:', err);
         }
       };
-      script.onerror = () => console.error('❌ Failed to load Pi SDK');
+      script.onerror = () => alert('❌ Failed to load Pi SDK');
       document.body.appendChild(script);
     };
 
@@ -40,24 +42,21 @@ export function PiAuthProvider({ children }) {
   }, []);
 
   const login = async () => {
-    if (!sdkReady || !window.Pi) throw new Error('Pi SDK not ready');
-
-    // Force fresh login by clearing cached state
-    localStorage.removeItem('piUser');
-    sessionStorage.clear();
-    if (indexedDB?.databases) {
-      const dbs = await indexedDB.databases();
-      for (const db of dbs) {
-        await indexedDB.deleteDatabase(db.name);
-      }
-    }
-
-    const onIncompletePaymentFound = async (payment) => {
-      console.warn('⚠️ Incomplete payment:', payment);
-      return false; // Tell SDK to clear and continue
-    };
-
     try {
+      if (!sdkReady || !window.Pi) throw new Error('Pi SDK not ready');
+
+      localStorage.removeItem('piUser');
+      sessionStorage.clear();
+      if (indexedDB?.databases) {
+        const dbs = await indexedDB.databases();
+        for (const db of dbs) await indexedDB.deleteDatabase(db.name);
+      }
+
+      const onIncompletePaymentFound = async (payment) => {
+        alert('⚠️ Found stuck payment: ' + payment.identifier);
+        return false; // ✅ Clear it
+      };
+
       const scopes = ['username', 'payments'];
       const auth = await window.Pi.authenticate(scopes, onIncompletePaymentFound);
 
@@ -78,20 +77,22 @@ export function PiAuthProvider({ children }) {
 
       setUser(data);
       localStorage.setItem('piUser', JSON.stringify(data));
+      alert('✅ Logged in as ' + data.username);
       return data;
     } catch (err) {
-      console.error('❌ Pi login failed:', err);
-      throw err;
+      alert('❌ Login error: ' + err.message);
+      setError(err.message);
     }
   };
 
   const logout = () => {
     localStorage.removeItem('piUser');
     setUser(null);
+    alert('👋 Logged out');
   };
 
   return (
-    <PiAuthContext.Provider value={{ user, login, logout }}>
+    <PiAuthContext.Provider value={{ user, login, logout, error }}>
       {children}
     </PiAuthContext.Provider>
   );

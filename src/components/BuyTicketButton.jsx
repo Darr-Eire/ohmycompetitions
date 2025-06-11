@@ -3,32 +3,23 @@
 import React, { useState, useEffect } from 'react';
 import { loadPiSdk } from 'lib/pi';
 
-export default function BuyTicketButton({ competitionSlug, entryFee, quantity }) {
+export default function BuyTicketButton({ competitionSlug, entryFee, quantity, piUser }) {
   const [sdkReady, setSdkReady] = useState(false);
 
-  // Load Pi SDK on mount
   useEffect(() => {
     loadPiSdk(setSdkReady);
   }, []);
 
-  // Debug logs
-  useEffect(() => {
-    console.log('[DEBUG] sdkReady:', sdkReady);
-    console.log('[DEBUG] window.Pi:', typeof window !== 'undefined' && window.Pi);
-  }, [sdkReady]);
-
-  // Handle payment
   const handlePayment = async () => {
-    if (
-      typeof window === 'undefined' ||
-      !window.Pi ||
-      typeof window.Pi.createPayment !== 'function'
-    ) {
-      alert('⚠️ Pi SDK not ready. Make sure you are in the Pi Browser.');
+    if (!sdkReady || typeof window === 'undefined' || !window.Pi) {
+      alert('⚠️ Pi SDK not ready. Use Pi Browser.');
       return;
     }
 
-    console.log('🚀 Starting Pi.createPayment...');
+    if (!piUser || !piUser.uid) {
+      alert('⚠️ You must be logged in with Pi.');
+      return;
+    }
 
     const total = (entryFee * quantity).toFixed(2);
 
@@ -44,52 +35,52 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
             const res = await fetch('/api/payments/approve', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ paymentId }),
+              body: JSON.stringify({
+                paymentId,
+                uid: piUser.uid,
+                competitionSlug,
+                amount: parseFloat(total),
+              }),
             });
 
-            if (!res.ok) {
-              throw new Error(await res.text());
-            }
+            if (!res.ok) throw new Error(await res.text());
 
-            console.log('[✅] Payment approved on server');
+            console.log('[✅] Payment approved');
           } catch (err) {
-            console.error('[ERROR] Approving payment:', err);
-            alert('❌ Server approval failed. See console.');
+            console.error('[❌] Approving payment:', err);
+            alert('❌ Approval failed. See console.');
           }
         },
 
         onReadyForServerCompletion: async (paymentId, txid) => {
           try {
-            console.log('🧾 Completing with txid:', txid);
             const res = await fetch('/api/payments/complete', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ paymentId, txid }),
             });
 
-            if (!res.ok) {
-              throw new Error(await res.text());
-            }
+            if (!res.ok) throw new Error(await res.text());
 
             const data = await res.json();
-            console.log('[🎟️] Ticket issued:', data);
-            alert(`✅ Ticket purchased successfully!\n🎟️ ID: ${data.ticketId}`);
+            alert(`✅ Ticket purchased!\n🎟️ ID: ${data.ticketId}`);
           } catch (err) {
-            console.error('[ERROR] Completing payment:', err);
-            alert('❌ Server completion failed. See console.');
+            console.error('[❌] Completing payment:', err);
+            alert('❌ Completion failed. See console.');
           }
         },
 
         onCancel: (paymentId) => {
-          console.warn('[APP] Payment cancelled:', paymentId);
+          console.warn('[⛔] Payment cancelled:', paymentId);
         },
 
         onError: (error, payment) => {
-          console.error('[APP] Payment error:', error, payment);
+          console.error('[❌] Payment error:', error, payment);
+          alert('❌ Payment failed. See console.');
         },
       }
     );
-  }; // ✅ Close handlePayment function here
+  };
 
   return (
     <button
@@ -99,5 +90,4 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity })
       Confirm Ticket Purchase
     </button>
   );
-} // ✅ Close component function
-
+}

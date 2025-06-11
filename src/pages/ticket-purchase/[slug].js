@@ -166,6 +166,7 @@ export default function TicketPurchasePage() {
                 competitionSlug={slug}
                 entryFee={comp.entryFee}
                 quantity={quantity}
+                piUser={user}
               />
             </>
           )}
