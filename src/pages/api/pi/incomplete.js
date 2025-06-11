@@ -4,13 +4,13 @@ export default async function handler(req, res) {
   const { payment } = req.body;
 
   try {
-    console.log('🔁 Handling stale/incomplete payment:', payment);
-    // Optionally cancel it, or approve/complete if valid
-    // You can also log it in MongoDB for manual inspection
+    console.log('🪵 Logging incomplete payment:', payment);
 
-    res.status(200).json({ success: true });
+    // Optionally store to DB or track stuck ones here
+
+    res.status(200).json({ logged: true });
   } catch (err) {
-    console.error('❌ Failed to handle incomplete payment:', err);
-    res.status(500).json({ error: 'Failed to handle payment' });
+    console.error('❌ Logging error:', err);
+    res.status(500).json({ error: 'Could not handle incomplete payment' });
   }
 }

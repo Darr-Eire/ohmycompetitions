@@ -50,6 +50,9 @@ export default function PiLoginButton() {
 
   const onIncompletePaymentFound = async (payment) => {
     try {
+      console.warn('⚠️ Incomplete payment found:', payment);
+
+      // Log or handle the payment server-side
       const res = await fetch('/api/pi/incomplete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -57,10 +60,13 @@ export default function PiLoginButton() {
       });
 
       const data = await res.json();
-      console.log('🔁 Incomplete payment resolved:', data);
+      console.log('🔁 Incomplete payment handled:', data);
     } catch (err) {
       console.error('❌ Failed to handle incomplete payment:', err);
     }
+
+    // 👇 Returning false tells the SDK to clear it client-side and continue login
+    return false;
   };
 
   const verifyToken = async (accessToken) => {
