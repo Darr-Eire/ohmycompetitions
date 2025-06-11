@@ -1,3 +1,5 @@
+// /src/pages/api/pi/cancelled.js
+
 import axios from 'axios';
 
 export default async function handler(req, res) {
@@ -12,14 +14,16 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await axios.post('https://api.minepi.com/payments/cancel', {
-      paymentId,
-    }, {
-      headers: {
-        Authorization: `Key ${process.env.PI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-    });
+    const response = await axios.post(
+      'https://api.minepi.com/payments/cancel',
+      { paymentId },
+      {
+        headers: {
+          Authorization: `Key ${process.env.PI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
 
     if (response.data?.status === 'cancelled') {
       return res.status(200).json({ cancelled: true });
