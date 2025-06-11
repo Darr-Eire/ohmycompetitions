@@ -62,24 +62,29 @@ export default function Header() {
         </Link>
       </div>
 
-      {!user ? (
-        <div className="ml-auto">
-          <PiLoginButton />
-        </div>
-      ) : (
-        <div className="ml-auto text-white text-xs flex items-center gap-2">
-          <span>👋 {user.username}</span>
-          <button
-            onClick={logout}
-            className="neon-button text-xs px-2 py-1"
-          >
-            Log Out
-          </button>
-        </div>
-      )}
+      <div className="ml-auto flex items-center">
+        {!user ? (
+          <div className="text-xs">
+            <PiLoginButton />
+          </div>
+        ) : (
+          <div className="text-white text-xs flex items-center gap-2">
+            <span>👋 {user.username}</span>
+            <button
+              onClick={logout}
+              className="neon-button text-xs px-2 py-1"
+            >
+              Log Out
+            </button>
+          </div>
+        )}
+      </div>
 
       {menuOpen && (
-        <nav ref={menuRef} className="absolute top-full left-2 mt-2 w-48 rounded-lg shadow-xl backdrop-blur-md bg-[#0f172acc] border border-cyan-700 animate-fade-in">
+        <nav
+          ref={menuRef}
+          className="absolute top-full left-2 mt-2 w-48 rounded-lg shadow-xl backdrop-blur-md bg-[#0f172acc] border border-cyan-700 animate-fade-in"
+        >
           <ul className="flex flex-col font-orbitron text-xs">
             {navItems.map(([label, href]) => (
               <li key={href}>

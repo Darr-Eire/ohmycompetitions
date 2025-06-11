@@ -15,8 +15,12 @@ export default function PiLoginButton() {
       const script = document.createElement('script');
       script.src = 'https://sdk.minepi.com/pi-sdk.js';
       script.onload = () => {
-        window.Pi.init({ version: '2.0' });
-        setSdkReady(true);
+        try {
+          window.Pi.init({ version: '2.0' });
+          setSdkReady(true);
+        } catch (e) {
+          console.error('❌ Pi.init() failed:', e);
+        }
       };
       script.onerror = () => {
         console.error('❌ Failed to load Pi SDK');
@@ -24,7 +28,12 @@ export default function PiLoginButton() {
       };
       document.body.appendChild(script);
     } else {
-      setSdkReady(true);
+      try {
+        window.Pi.init({ version: '2.0' });
+        setSdkReady(true);
+      } catch (e) {
+        console.error('❌ Pi.init() failed on existing Pi:', e);
+      }
     }
   }, []);
 
@@ -38,39 +47,45 @@ export default function PiLoginButton() {
     setError(null);
 
     try {
-   window.Pi.authenticate(['username', 'payments'], async function (auth) {
-  if (!auth.accessToken) {
-    setError('Missing access token from Pi');
-    console.error('❌ No accessToken in auth:', auth);
-    return;
-  }
+      window.Pi.authenticate(['username', 'payments'], async function (auth) {
+        console.log('📦 Full auth response:', auth);
 
-  try {
-    const res = await fetch('/api/pi/verify', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ accessToken: auth.accessToken }),
-    });
+        if (!auth?.accessToken) {
+          setError('Missing access token from Pi');
+          console.error('❌ No accessToken in auth:', auth);
+          setProcessing(false);
+          return;
+        }
 
-    const data = await res.json();
-    if (res.ok) {
-      console.log('✅ Pi login successful:', data);
-      localStorage.setItem('piUser', JSON.stringify(data));
-    } else {
-      console.error('❌ Server rejected Pi login:', data.error);
-      setError(data.error);
-    }
-  } catch (err) {
-    console.error('❌ Failed to send accessToken:', err);
-    setError('Failed to verify Pi login');
-  }
-}, function onError(error) {
-  console.error('❌ Pi authentication error:', error);
-  setError(error.message || 'Pi login failed');
-});
+        try {
+          const res = await fetch('/api/pi/verify', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ accessToken: auth.accessToken }),
+          });
 
+          const data = await res.json();
+          if (res.ok) {
+            console.log('✅ Pi login successful:', data);
+            localStorage.setItem('piUser', JSON.stringify(data));
+            setUser(data); // ← ✅ FIX: update state
+          } else {
+            console.error('❌ Server rejected Pi login:', data.error);
+            setError(data.error);
+          }
+        } catch (err) {
+          console.error('❌ Failed to send accessToken:', err);
+          setError('Failed to verify Pi login');
+        }
+
+        setProcessing(false);
+      }, function onError(error) {
+        console.error('❌ Pi authentication error:', error);
+        setError(error.message || 'Pi login failed');
+        setProcessing(false);
+      });
     } catch (err) {
       console.error('❌ Unexpected login error:', err);
       setError('Unexpected error occurred');
