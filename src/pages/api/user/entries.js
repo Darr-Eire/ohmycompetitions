@@ -3,8 +3,7 @@
 import { dbConnect } from 'lib/dbConnect'
 import Entry from 'models/Entry'
 
-import { getServerSession } from 'next-auth'
-import { authOptions } from 'lib/auth'
+
 
 export default async function handler(req, res) {
   try {

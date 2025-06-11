@@ -2,7 +2,7 @@ import { dbConnect } from 'lib/dbConnect';
 
 import Entry from 'models/Entry';
 import User from 'models/User';
-import { getServerSession } from 'next-auth';
+
 
 
 export default async function handler(req, res) {
