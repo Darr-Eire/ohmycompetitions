@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 const PiAuthContext = createContext();
 
@@ -10,23 +10,67 @@ export function usePiAuth() {
 
 export function PiAuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [sdkReady, setSdkReady] = useState(false);
 
+  // Load SDK and restore session
   useEffect(() => {
-    // Optional: Load from localStorage if you want persistent login
+    if (typeof window === 'undefined') return;
+
     const saved = localStorage.getItem('piUser');
     if (saved) {
       setUser(JSON.parse(saved));
     }
+
+    const loadSdk = () => {
+      if (!window.Pi) {
+        const script = document.createElement('script');
+        script.src = 'https://sdk.minepi.com/pi-sdk.js';
+        script.onload = () => {
+          try {
+            window.Pi.init({ version: '2.0' });
+            setSdkReady(true);
+          } catch (err) {
+            console.error('❌ Pi.init() failed:', err);
+          }
+        };
+        script.onerror = () => console.error('❌ Failed to load Pi SDK');
+        document.body.appendChild(script);
+      } else {
+        try {
+          window.Pi.init({ version: '2.0' });
+          setSdkReady(true);
+        } catch (err) {
+          console.error('❌ Pi.init() failed:', err);
+        }
+      }
+    };
+
+    loadSdk();
   }, []);
 
   const login = async () => {
-    if (!window.Pi) throw new Error('Pi SDK not loaded');
+    if (!sdkReady || !window.Pi) throw new Error('Pi SDK not ready');
 
-    const scopes = ['username', 'payments'];
-    const authResult = await window.Pi.authenticate(scopes, () => {});
-    setUser(authResult.user);
-    localStorage.setItem('piUser', JSON.stringify(authResult.user));
-    return authResult.user;
+    // Clear previous session to force re-auth
+    localStorage.removeItem('piUser');
+    sessionStorage.clear();
+    if (indexedDB?.databases) {
+      const dbs = await indexedDB.databases();
+      dbs.forEach((db) => indexedDB.deleteDatabase(db.name));
+    }
+
+    try {
+      const scopes = ['username', 'payments'];
+      const auth = await window.Pi.authenticate(scopes, () => {});
+      if (!auth?.user) throw new Error('Login failed: No user returned');
+
+      setUser(auth.user);
+      localStorage.setItem('piUser', JSON.stringify(auth.user));
+      return auth.user;
+    } catch (err) {
+      console.error('❌ Pi login failed:', err);
+      throw err;
+    }
   };
 
   const logout = () => {
