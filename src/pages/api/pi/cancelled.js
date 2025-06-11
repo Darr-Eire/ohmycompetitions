@@ -1,4 +1,5 @@
-// /pages/api/pi/cancelled.js
+// src/pages/api/pi/cancelled.js
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
@@ -20,14 +21,15 @@ export default async function handler(req, res) {
       body: JSON.stringify({ paymentId }),
     });
 
+    const data = await response.json();
+
     if (!response.ok) {
-      const details = await response.text();
-      return res.status(500).json({ error: 'Pi cancel failed', details });
+      return res.status(500).json({ error: 'Pi cancel failed', details: data });
     }
 
-    return res.status(200).json({ cancelled: true });
+    return res.status(200).json({ cancelled: true, result: data });
   } catch (err) {
-    console.error('❌ Pi cancel failed:', err);
-    return res.status(500).json({ error: 'Internal error', details: err.message });
+    console.error('❌ Cancel payment error:', err);
+    return res.status(500).json({ error: 'Internal Server Error', details: err.message });
   }
 }
