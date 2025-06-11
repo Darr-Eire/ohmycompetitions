@@ -1,33 +1,32 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI;
+let cached = global.mongoose || { conn: null, promise: null };
 
-if (!MONGODB_URI) {
-  throw new Error('❌ Please define the MONGODB_URI inside .env.local');
+if (!global.mongoose) {
+  global.mongoose = cached;
 }
 
-let cached = global.mongoose;
+export async function dbConnect() {
+  if (cached.conn) return cached.conn;
 
-if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
-}
-
-export async function connectToDatabase() {
-  if (cached.conn) {
-    return cached.conn;
+  const MONGO_DB_URL = process.env.MONGO_DB_URL;
+  if (!MONGO_DB_URL) {
+    throw new Error('❌ MONGO_DB_URL is missing in .env.local');
   }
 
   if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI, {
+    mongoose.set('strictQuery', true); // Optional: align with upcoming defaults
+    cached.promise = mongoose.connect(MONGO_DB_URL, {
       bufferCommands: false,
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+    }).then((mongoose) => {
+      console.log('✅ MongoDB connected');
+      return mongoose;
+    }).catch((error) => {
+      console.error('❌ MongoDB connection error:', error);
+      throw error;
     });
   }
 
   cached.conn = await cached.promise;
   return cached.conn;
 }
-
-// This gives you compatible "clientPromise" for old code that imports it
-export const clientPromise = connectToDatabase;
