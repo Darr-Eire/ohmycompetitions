@@ -9,6 +9,9 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing paymentId' });
   }
 
-  console.log('⛔ Cancelled paymentId:', paymentId);
+  console.log('⛔ Cancelling paymentId:', paymentId);
+
+  // Optional: Add cleanup logic here (e.g., DB update or logs)
+
   return res.status(200).json({ cancelled: true });
 }
