@@ -25,6 +25,7 @@ export default async function handler(req, res) {
       return res.status(response.status).json({ error: 'Pi complete failed', details: result });
     }
 
+    console.log('✅ Payment complete result:', result);
     return res.status(200).json({ completed: true, result });
   } catch (error) {
     console.error('❌ Pi complete error:', error);
