@@ -14,11 +14,9 @@ export default async function handler(req, res) {
   try {
     const response = await fetch(`https://api.minepi.com/payments/${paymentId}/cancel`, {
       method: 'POST',
-    headers: {
-  Authorization: `Key ${process.env.PI_API_KEY}`,
-  'Content-Type': 'application/json',
-},
-
+      headers: {
+        Authorization: `Key ${process.env.PI_API_KEY}`,
+      },
     });
 
     const text = await response.text();
