@@ -27,61 +27,41 @@ useEffect(() => {
 }, []);
 
 
-  const login = () => {
-    return new Promise((resolve, reject) => {
-      if (!window.Pi) {
-        console.error('❌ Pi SDK not available');
-        return reject('Pi SDK not loaded');
-      }
-
-      const scopes = ['username', 'payments'];
-      window.Pi.authenticate(
-        scopes,
-        async (auth) => {
-          try {
-            const res = await fetch('/api/pi/verify', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ accessToken: auth.accessToken }),
-            });
-
-            const data = await res.json();
-            if (res.ok) {
-              setUser(data);
-              localStorage.setItem('piUser', JSON.stringify(data));
-              resolve(data);
-            } else {
-              console.error('❌ Verify failed:', data.error);
-              reject(data.error);
-            }
-          } catch (err) {
-            console.error('❌ Server error during verify:', err);
-            reject(err.message || 'Server error');
-          }
-        },
-        (error) => {
-          console.error('❌ Pi login failed:', error);
-          reject(error.message || 'Cancelled');
-        }
-      );
-    });
-  };
-
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('piUser');
-  };
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem('piUser');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (err) {
-        console.error('❌ Failed to parse stored user:', err);
-      }
+ const login = () => {
+  return new Promise((resolve, reject) => {
+    if (!window?.Pi) {
+      console.error('❌ Pi SDK not available');
+      return reject('Pi SDK not loaded');
     }
-  }, []);
+
+    window.Pi.authenticate(['username', 'payments'], async function (auth) {
+      console.log('AUTH CALLBACK:', auth); // ← important
+      if (auth.accessToken) {
+        const res = await fetch('/api/pi/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ accessToken: auth.accessToken }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          setUser(data);
+          localStorage.setItem('piUser', JSON.stringify(data));
+          resolve(data);
+        } else {
+          console.error('❌ Backend rejected Pi login:', data.error);
+          reject(data.error);
+        }
+      } else {
+        console.error('❌ No access token from Pi login');
+        reject('Missing access token');
+      }
+    }, function (error) {
+      console.error('❌ Pi login error callback:', error);
+      reject(error.message || 'Cancelled');
+    });
+  });
+};
+
 
   return (
     <PiAuthContext.Provider value={{ user, sdkReady, login, logout }}>

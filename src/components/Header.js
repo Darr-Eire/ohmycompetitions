@@ -60,12 +60,20 @@ export default function Header() {
           OhMyCompetitions
         </Link>
       </div>
+{!user ? (
+  <button
+    onClick={() => {
+      console.log('🔁 Trying to log in...'); // TEMP DEBUG
+      login().then(() => console.log('✅ Logged in')).catch((err) => console.error('❌ Login failed', err));
+    }}
+    className="neon-button text-xs px-2 py-1"
+  >
+    Login with Pi
+  </button>
+) : (
+  // logged-in user section...
+)}
 
-      {!user ? (
-        <button onClick={login} className="neon-button text-xs px-2 py-1">
-          Login with Pi
-        </button>
-      ) : (
         <div className="text-white text-xs flex items-center gap-2">
           <span>👋 {user.username}</span>
           <button onClick={logout} className="neon-button text-xs px-2 py-1">
