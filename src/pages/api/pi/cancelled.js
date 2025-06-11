@@ -1,27 +1,22 @@
+// /pages/api/pi/cancelled.js
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const { paymentId, uid, reason } = req.body;
+  const { paymentId } = req.body;
 
-  if (!paymentId || !uid) {
-    return res.status(400).json({ error: 'Missing required fields' });
+  if (!paymentId) {
+    return res.status(400).json({ error: 'Missing paymentId' });
   }
 
   try {
-    const response = await fetch(`https://api.minepi.com/v2/payments/${paymentId}/cancel`, {
+    const response = await fetch(`https://api.minepi.com/payments/${paymentId}/cancel`, {
       method: 'POST',
       headers: {
         Authorization: `Key ${process.env.PI_API_KEY}`,
-        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        metadata: {
-          uid,
-          reason: reason || 'User requested cancellation',
-        },
-      }),
     });
 
     const text = await response.text();
@@ -40,3 +35,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Server error', details: err.message });
   }
 }
+
