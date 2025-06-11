@@ -38,34 +38,39 @@ export default function PiLoginButton() {
     setError(null);
 
     try {
-      window.Pi.authenticate(['username', 'payments'], async (auth) => {
-        if (!auth.accessToken) {
-          setError('Missing access token');
-          setProcessing(false);
-          return;
-        }
+   window.Pi.authenticate(['username', 'payments'], async function (auth) {
+  if (!auth.accessToken) {
+    setError('Missing access token from Pi');
+    console.error('❌ No accessToken in auth:', auth);
+    return;
+  }
 
-        const res = await fetch('/api/pi/verify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ accessToken: auth.accessToken }),
-        });
+  try {
+    const res = await fetch('/api/pi/verify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ accessToken: auth.accessToken }),
+    });
 
-        const data = await res.json();
-        if (res.ok) {
-          console.log('✅ Pi login successful:', data);
-          setUser(data);
-          localStorage.setItem('piUser', JSON.stringify(data));
-        } else {
-          console.error('❌ Server rejected Pi login:', data.error);
-          setError(data.error || 'Login failed');
-        }
-        setProcessing(false);
-      }, (err) => {
-        console.error('❌ Pi login cancelled or failed:', err);
-        setError(err.message || 'Login cancelled');
-        setProcessing(false);
-      });
+    const data = await res.json();
+    if (res.ok) {
+      console.log('✅ Pi login successful:', data);
+      localStorage.setItem('piUser', JSON.stringify(data));
+    } else {
+      console.error('❌ Server rejected Pi login:', data.error);
+      setError(data.error);
+    }
+  } catch (err) {
+    console.error('❌ Failed to send accessToken:', err);
+    setError('Failed to verify Pi login');
+  }
+}, function onError(error) {
+  console.error('❌ Pi authentication error:', error);
+  setError(error.message || 'Pi login failed');
+});
+
     } catch (err) {
       console.error('❌ Unexpected login error:', err);
       setError('Unexpected error occurred');
