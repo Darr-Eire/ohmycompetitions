@@ -3,9 +3,10 @@
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 import { usePiAuth } from 'context/PiAuthContext';
+import PiLoginButton from '@components/PiLoginButton';
 
 export default function Header() {
-  const { user, login, logout } = usePiAuth();
+  const { user, logout } = usePiAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
@@ -60,26 +61,22 @@ export default function Header() {
           OhMyCompetitions
         </Link>
       </div>
-{!user ? (
-  <button
-    onClick={() => login().catch((err) => console.error('❌ Login failed:', err))}
-    className="neon-button text-xs px-2 py-1"
-  >
-    Login with Pi
-  </button>
-) : (
-  <div className="text-white text-xs flex items-center gap-2">
-    <span>👋 {user.username}</span>
-    <button
-      onClick={logout}
-      className="neon-button text-xs px-2 py-1"
-    >
-      Log Out
-    </button>
-  </div>
-)}
 
-
+      {!user ? (
+        <div className="ml-auto">
+          <PiLoginButton />
+        </div>
+      ) : (
+        <div className="ml-auto text-white text-xs flex items-center gap-2">
+          <span>👋 {user.username}</span>
+          <button
+            onClick={logout}
+            className="neon-button text-xs px-2 py-1"
+          >
+            Log Out
+          </button>
+        </div>
+      )}
 
       {menuOpen && (
         <nav ref={menuRef} className="absolute top-full left-2 mt-2 w-48 rounded-lg shadow-xl backdrop-blur-md bg-[#0f172acc] border border-cyan-700 animate-fade-in">
@@ -99,13 +96,12 @@ export default function Header() {
             {user && (
               <li>
                 <button
-                onClick={() => {
-  if (typeof logout === 'function') {
-    logout();
-  }
-  setMenuOpen(false);
-}}
-
+                  onClick={() => {
+                    if (typeof logout === 'function') {
+                      logout();
+                    }
+                    setMenuOpen(false);
+                  }}
                   className="w-full text-left text-xs px-4 py-2 text-white hover:bg-cyan-600 hover:text-black transition"
                 >
                   Log Out

@@ -10,7 +10,6 @@ import PiCompetitionCard from '@components/PiCompetitionCard';
 import CryptoGiveawayCard from '@components/CryptoGiveawayCard';
 import CompetitionCard from '@components/CompetitionCard';
 import PiCashHeroBanner from '@components/PiCashHeroBanner';
-import { usePiAuth } from '@context/PiAuthContext';
 
 import {
   techItems,
@@ -22,22 +21,10 @@ import {
 } from '@data/competitions';
 
 export default function HomePage() {
-  const { login, user, sdkReady } = usePiAuth();
-
   return (
     <>
       <div className="mt-0 mb-2 flex justify-center">
         <PiCashHeroBanner />
-      </div>
-
-      <div className="flex justify-center mt-4">
-        <button
-          onClick={() => login()}
-          disabled={!sdkReady}
-          className="bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold py-2 px-6 rounded-xl shadow hover:opacity-90 transition"
-        >
-          {user ? `👋 Welcome, ${user.username}` : 'Login with Pi'}
-        </button>
       </div>
 
       <main className="space-y-16">
@@ -109,6 +96,7 @@ function Section({ title, items = [], viewMoreHref, viewMoreText = 'View More', 
   );
 }
 
+
 function renderCard(item, i, { isDaily, isFree, isPi, isCrypto }) {
   const key = item?.comp?.slug || i;
   if (!item?.comp) return null;
@@ -118,18 +106,23 @@ function renderCard(item, i, { isDaily, isFree, isPi, isCrypto }) {
   if (isPi) return <PiCompetitionCard key={key} {...item} />;
   if (isCrypto) return <CryptoGiveawayCard key={key} {...item} />;
 
-  return (
-    <CompetitionCard
-      key={key}
-      comp={{ ...item.comp, comingSoon: item.comp.comingSoon ?? false }}
-      title={item.title}
-      prize={item.prize}
-      fee={`${(item.comp.entryFee ?? 0).toFixed(2)} π`}
-      imageUrl={item.imageUrl}
-      endsAt={item.comp.endsAt}
-    />
-  );
+
+return (
+  <CompetitionCard
+    key={key}
+    comp={{ ...item.comp, comingSoon: item.comp.comingSoon ?? false }}
+    title={item.title}
+    prize={item.prize}
+    fee={`${(item.comp.entryFee ?? 0).toFixed(2)} π`}
+    imageUrl={item.imageUrl}
+    endsAt={item.comp.endsAt}
+  />
+);
+
+
+ 
 }
+
 
 function TopWinnersCarousel() {
   const winners = [
