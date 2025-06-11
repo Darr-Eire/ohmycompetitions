@@ -12,9 +12,7 @@ export default function PiLoginButton() {
     if (typeof window === 'undefined') return;
 
     const saved = localStorage.getItem('piUser');
-    if (saved) {
-      setUser(JSON.parse(saved));
-    }
+    if (saved) setUser(JSON.parse(saved));
 
     const loadSdk = () => {
       if (!window.Pi) {
@@ -49,24 +47,26 @@ export default function PiLoginButton() {
   }, []);
 
   const onIncompletePaymentFound = async (payment) => {
-    try {
-      console.warn('⚠️ Incomplete payment found:', payment);
+    console.warn('⚠️ Incomplete payment found:', payment);
 
-      // Log or handle the payment server-side
-      const res = await fetch('/api/pi/incomplete', {
+    try {
+      // Force complete or cancel from backend if needed
+      const res = await fetch('/api/pi/complete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ payment }),
+        body: JSON.stringify({
+          paymentId: payment.identifier,
+          txid: 'sandbox-completed-txid' // Replace with real txid in production
+        }),
       });
 
       const data = await res.json();
-      console.log('🔁 Incomplete payment handled:', data);
+      console.log('✅ Forced completion of stuck payment:', data);
     } catch (err) {
-      console.error('❌ Failed to handle incomplete payment:', err);
+      console.error('❌ Failed to complete stuck payment:', err);
     }
 
-    // 👇 Returning false tells the SDK to clear it client-side and continue login
-    return false;
+    return false; // allow SDK to continue
   };
 
   const verifyToken = async (accessToken) => {
