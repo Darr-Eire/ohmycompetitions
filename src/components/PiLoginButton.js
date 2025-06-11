@@ -55,17 +55,17 @@ export default function PiLoginButton() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           paymentId: payment.identifier,
-          txid: 'sandbox-completed-txid', // Replace with real txid in production
+          txid: 'sandbox-completed-txid', // Replace with real txid if needed
         }),
       });
 
       const data = await res.json();
-      console.log('✅ Forced completion of stuck payment:', data);
+      console.log('✅ Stuck payment completed:', data);
     } catch (err) {
-      console.error('❌ Failed to complete stuck payment:', err);
+      console.error('❌ Failed to resolve stuck payment:', err);
     }
 
-    return false; // SDK should clear it client-side and proceed
+    return false; // Tell SDK to clear and continue
   };
 
   const verifyToken = async (accessToken) => {
@@ -77,18 +77,14 @@ export default function PiLoginButton() {
       });
 
       const data = await res.json();
-      if (res.ok) {
-        localStorage.setItem('piUser', JSON.stringify(data));
-        setUser(data);
-        return true;
-      } else {
-        console.error('❌ Pi verify failed:', data.error);
-        setError(data.error || 'Verify failed');
-        return false;
-      }
+      if (!res.ok) throw new Error(data.error || 'Verification failed');
+
+      localStorage.setItem('piUser', JSON.stringify(data));
+      setUser(data);
+      return true;
     } catch (err) {
-      console.error('❌ Verify error:', err);
-      setError('Verification failed');
+      console.error('❌ Token verification failed:', err);
+      setError(err.message || 'Verification failed');
       return false;
     }
   };
@@ -103,18 +99,16 @@ export default function PiLoginButton() {
     setError(null);
 
     try {
-      // Blow away local state to force re-auth
       localStorage.removeItem('piUser');
       sessionStorage.clear();
       if (indexedDB?.databases) {
         const dbs = await indexedDB.databases();
         for (const db of dbs) await indexedDB.deleteDatabase(db.name);
-        console.log('✅ IndexedDB cleared.');
+        console.log('✅ Cleared IndexedDB');
       }
 
       const auth = await window.Pi.authenticate(['username', 'payments'], onIncompletePaymentFound);
       if (!auth?.accessToken) throw new Error('Missing access token');
-
       await verifyToken(auth.accessToken);
     } catch (err) {
       console.error('❌ Login error:', err);
