@@ -6,45 +6,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>My Pi App</title>
 
-  <!-- 1) Load the Pi SDK -->
+  <!-- Load Pi SDK -->
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 
-  <!-- 2) Initialize it right after -->
   <script>
     Pi.init({
       version: "2.0",
-      sandbox: true   // switch to false when you go live
+      sandbox: true // ✅ Change to false for production
     });
   </script>
 </head>
-<body>
-  <h1>Welcome to Pi!</h1>
-  <button id="pi-login">Log in with Pi</button>
+<body style="font-family: sans-serif; padding: 2rem; background-color: #111; color: #0f0;">
+  <h1>Login to Pi</h1>
+  <button id="pi-login" style="padding: 1rem; font-size: 1.2rem;">Log in with Pi</button>
 
-  <!-- 3) Authenticate the user on button click -->
+  <!-- Where we'll show the token -->
+  <pre id="output" style="margin-top: 2rem; white-space: pre-wrap;"></pre>
+
   <script>
     const Pi = window.Pi;
-    const scopes = ['username', 'payments'];  // add/remove scopes as needed
+    const scopes = ['username', 'payments'];
 
     function onIncompletePaymentFound(payment) {
-      console.warn('Resuming incomplete payment:', payment);
-      // optionally resume or cancel here
+      document.getElementById('output').textContent = '⚠️ Incomplete payment found:\n' + JSON.stringify(payment, null, 2);
     }
 
     document.getElementById('pi-login').addEventListener('click', () => {
       Pi.authenticate(scopes, onIncompletePaymentFound)
         .then(({ accessToken, user }) => {
-          console.log('✅ Pioneer logged in:', user.uid, user.username);
-          // ← send accessToken to your backend for verification:
-          // fetch('/api/pi/verify', {
-          //   method: 'POST',
-          //   headers: { 'Content-Type': 'application/json' },
-          //   body: JSON.stringify({ accessToken })
-          // });
+          document.getElementById('output').textContent =
+            '✅ Logged in!\n\nAccess Token:\n' + accessToken + '\n\nUser:\n' + JSON.stringify(user, null, 2);
         })
         .catch(err => {
-          console.error('❌ Pi.authenticate failed:', err);
-          // show an error message to the user if you want
+          document.getElementById('output').textContent = '❌ Login failed:\n' + err.message;
         });
     });
   </script>
