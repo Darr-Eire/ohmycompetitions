@@ -51,10 +51,10 @@ export default function HomePage() {
 
         <div className="flex justify-center mt-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 w-full max-w-md px-6 py-6 bg-gradient-to-r from-cyan-300 to-blue-500 rounded-xl shadow-lg text-black text-center text-base">
-            <div><div className="text-xl font-bold">44,000+</div><div>Winners</div></div>
-            <div><div className="text-xl font-bold">106,400 π</div><div>Total Pi Won</div></div>
-            <div><div className="text-xl font-bold">15,000 π</div><div>Donated to Charity</div></div>
-            <div><div className="text-xl font-bold">5★</div><div>User Rated</div></div>
+            <Stat label="Winners" value="44,000+" />
+            <Stat label="Total Pi Won" value="106,400 π" />
+            <Stat label="Donated to Charity" value="15,000 π" />
+            <Stat label="User Rated" value="5★" />
           </div>
         </div>
       </main>
@@ -63,10 +63,11 @@ export default function HomePage() {
 }
 
 function Section({ title, items = [], viewMoreHref, viewMoreText = 'View More', extraClass = '' }) {
-  const isDaily = title.toLowerCase().includes('daily');
-  const isFree = title.toLowerCase().includes('free');
-  const isPi = title.toLowerCase().includes('pi');
-  const isCrypto = title.toLowerCase().includes('crypto');
+  const lower = title.toLowerCase();
+  const isDaily = lower.includes('daily');
+  const isFree = lower.includes('free');
+  const isPi = lower.includes('pi');
+  const isCrypto = lower.includes('crypto');
 
   return (
     <section className={`mb-12 ${extraClass}`}>
@@ -77,11 +78,11 @@ function Section({ title, items = [], viewMoreHref, viewMoreText = 'View More', 
       </div>
 
       <div className="centered-carousel lg:hidden">
-        {Array.isArray(items) && items.map((item, i) => renderCard(item, i, { isDaily, isFree, isPi, isCrypto }))}
+        {items.map((item, i) => renderCard(item, i, { isDaily, isFree, isPi, isCrypto }))}
       </div>
 
       <div className="hidden lg:grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-        {Array.isArray(items) && items.map((item, i) => renderCard(item, i, { isDaily, isFree, isPi, isCrypto }))}
+        {items.map((item, i) => renderCard(item, i, { isDaily, isFree, isPi, isCrypto }))}
       </div>
 
       <div className="text-center mt-4">
@@ -96,9 +97,8 @@ function Section({ title, items = [], viewMoreHref, viewMoreText = 'View More', 
   );
 }
 
-
 function renderCard(item, i, { isDaily, isFree, isPi, isCrypto }) {
-  const key = item?.comp?.slug || i;
+  const key = item?.comp?.slug || `item-${i}`;
   if (!item?.comp) return null;
 
   if (isDaily) return <DailyCompetitionCard key={key} {...item} />;
@@ -106,23 +106,18 @@ function renderCard(item, i, { isDaily, isFree, isPi, isCrypto }) {
   if (isPi) return <PiCompetitionCard key={key} {...item} />;
   if (isCrypto) return <CryptoGiveawayCard key={key} {...item} />;
 
-
-return (
-  <CompetitionCard
-    key={key}
-    comp={{ ...item.comp, comingSoon: item.comp.comingSoon ?? false }}
-    title={item.title}
-    prize={item.prize}
-    fee={`${(item.comp.entryFee ?? 0).toFixed(2)} π`}
-    imageUrl={item.imageUrl}
-    endsAt={item.comp.endsAt}
-  />
-);
-
-
- 
+  return (
+    <CompetitionCard
+      key={key}
+      comp={{ ...item.comp, comingSoon: item.comp.comingSoon ?? false }}
+      title={item.title}
+      prize={item.prize}
+      fee={`${(item.comp.entryFee ?? 0).toFixed(2)} π`}
+      imageUrl={item.imageUrl}
+      endsAt={item.comp.endsAt}
+    />
+  );
 }
-
 
 function TopWinnersCarousel() {
   const winners = [
@@ -134,13 +129,16 @@ function TopWinnersCarousel() {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => setIndex((prev) => (prev + 1) % winners.length), 5000);
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % winners.length);
+    }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [winners.length]);
 
   const current = winners[index];
+
   return (
-    <div className="max-w-md mx-auto mt-12 bg-white bg-opacity-10 backdrop-blur-lg rounded-xl shadow-lg p-6 text-white text-center">
+    <div className="max-w-md mx-auto mt-12 bg-white/10 backdrop-blur-lg rounded-xl shadow-lg p-6 text-white text-center">
       <h2 className="text-2xl font-bold mb-4">🏆 Top Winner</h2>
       <div className="flex justify-center items-center mb-4">
         <Image src={current.image} alt={current.name} width={120} height={120} className="rounded-full border-4 border-blue-500" />
@@ -148,6 +146,15 @@ function TopWinnersCarousel() {
       <h3 className="text-xl font-semibold">{current.name}</h3>
       <p className="text-blue-300">{current.prize}</p>
       <p className="text-sm text-white/70">{current.date}</p>
+    </div>
+  );
+}
+
+function Stat({ label, value }) {
+  return (
+    <div>
+      <div className="text-xl font-bold">{value}</div>
+      <div>{label}</div>
     </div>
   );
 }

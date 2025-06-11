@@ -9,23 +9,27 @@ export default async function handler(req, res) {
 
   const { accessToken } = req.body;
 
-  if (!accessToken) {
-    return res.status(400).json({ error: 'Missing access token' });
+  if (!accessToken || typeof accessToken !== 'string') {
+    return res.status(400).json({ error: 'Missing or invalid access token' });
   }
 
   try {
-    const response = await axios.get('https://api.minepi.com/v2/me', {
+    const piResponse = await axios.get('https://api.minepi.com/v2/me', {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
       },
     });
 
-    const { uid, username } = response.data;
+    const { uid, username } = piResponse.data;
+
+    if (!uid || !username) {
+      throw new Error('Missing uid or username in Pi response');
+    }
 
     return res.status(200).json({ uid, username });
   } catch (err) {
-    console.error('❌ Pi verification failed:', err?.response?.data || err.message);
+    console.error('❌ Pi verification failed:', err?.response?.data || err.message || err);
     return res.status(401).json({ error: 'Invalid or expired Pi token' });
   }
 }

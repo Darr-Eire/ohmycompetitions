@@ -47,12 +47,11 @@ export default function PiLoginButton() {
     setError(null);
 
     try {
-      window.Pi.authenticate(['username', 'payments'], async function (auth) {
+      window.Pi.authenticate(['username', 'payments'], async (auth) => {
         console.log('📦 Full auth response:', auth);
 
         if (!auth?.accessToken) {
           setError('Missing access token from Pi');
-          console.error('❌ No accessToken in auth:', auth);
           setProcessing(false);
           return;
         }
@@ -60,9 +59,7 @@ export default function PiLoginButton() {
         try {
           const res = await fetch('/api/pi/verify', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ accessToken: auth.accessToken }),
           });
 
@@ -70,7 +67,7 @@ export default function PiLoginButton() {
           if (res.ok) {
             console.log('✅ Pi login successful:', data);
             localStorage.setItem('piUser', JSON.stringify(data));
-            setUser(data); // ← ✅ FIX: update state
+            setUser(data);
           } else {
             console.error('❌ Server rejected Pi login:', data.error);
             setError(data.error);
@@ -81,7 +78,7 @@ export default function PiLoginButton() {
         }
 
         setProcessing(false);
-      }, function onError(error) {
+      }, (error) => {
         console.error('❌ Pi authentication error:', error);
         setError(error.message || 'Pi login failed');
         setProcessing(false);
@@ -103,9 +100,7 @@ export default function PiLoginButton() {
         {processing ? 'Logging in...' : 'Login with Pi'}
       </button>
       {error && <p className="text-red-500 text-xs">{error}</p>}
-      {user && (
-        <p className="text-green-500 text-xs">Welcome, {user.username}!</p>
-      )}
+      {user && <p className="text-green-500 text-xs">Welcome, {user.username}!</p>}
     </div>
   );
 }

@@ -3,10 +3,9 @@
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 import { usePiAuth } from 'context/PiAuthContext';
-import PiLoginButton from '@components/PiLoginButton';
 
 export default function Header() {
-  const { user, logout } = usePiAuth();
+  const { user, login, logout } = usePiAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
@@ -47,7 +46,11 @@ export default function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] border-b border-cyan-700 px-3 py-1.5 flex items-center shadow-md backdrop-blur-md">
-      <button ref={buttonRef} onClick={toggleMenu} className="neon-button text-white text-xs px-2 py-1">
+      <button
+        ref={buttonRef}
+        onClick={toggleMenu}
+        className="neon-button text-white text-xs px-2 py-1"
+      >
         <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M4 8h16M4 16h16" />
         </svg>
@@ -64,9 +67,12 @@ export default function Header() {
 
       <div className="ml-auto flex items-center">
         {!user ? (
-          <div className="text-xs">
-            <PiLoginButton />
-          </div>
+          <button
+            onClick={() => login().catch(err => console.error('❌ Login failed:', err))}
+            className="neon-button text-xs px-4 py-2"
+          >
+            Login with Pi
+          </button>
         ) : (
           <div className="text-white text-xs flex items-center gap-2">
             <span>👋 {user.username}</span>
@@ -102,9 +108,7 @@ export default function Header() {
               <li>
                 <button
                   onClick={() => {
-                    if (typeof logout === 'function') {
-                      logout();
-                    }
+                    logout();
                     setMenuOpen(false);
                   }}
                   className="w-full text-left text-xs px-4 py-2 text-white hover:bg-cyan-600 hover:text-black transition"
