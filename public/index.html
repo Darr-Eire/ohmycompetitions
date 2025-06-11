@@ -1,30 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="description" content="Pi Network Web App" />
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pi Auth Test</title>
 
-    <script>
-      window._ENV = {
-        backendURL: "%REACT_APP_BACKEND_URL%",
-        sandbox: "%REACT_APP_SANDBOX_SDK%"  // must be "true" or "false" string
-      };
-    </script>
+  <!-- Pi SDK -->
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const Pi = window.Pi;
+      Pi.init({ version: "2.0", sandbox: true }); // sandbox:true for testing
 
-    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-    <script>
-      const runSandbox = window._ENV.sandbox === "true";
-      window.Pi.init({ version: "2.0", sandbox: runSandbox });
-    </script>
+      const loginBtn = document.getElementById('pi-login');
+      const logBox = document.getElementById('log');
 
-    <title>OhMyCompetitions</title>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-  </body>
+      loginBtn.addEventListener('click', () => {
+        logBox.innerText = "⚡ Starting Pi.authenticate...";
+
+        const scopes = ['username', 'payments'];
+        function onIncompletePaymentFound(payment) {
+          console.warn('⚠️ Incomplete payment found:', payment);
+        }
+
+        Pi.authenticate(scopes, onIncompletePaymentFound)
+          .then(({ accessToken, user }) => {
+            logBox.innerText = `✅ Logged in as @${user.username}\nAccessToken: ${accessToken}`;
+            console.log({ accessToken, user });
+          })
+          .catch(err => {
+            logBox.innerText = `❌ Auth failed: ${err.message || err}`;
+            console.error(err);
+          });
+      });
+    });
+  </script>
+</head>
+<body style="font-family: sans-serif; text-align: center; padding: 2rem;">
+  <h1>🧪 Pi Login Test</h1>
+  <button id="pi-login" style="padding: 1rem; font-size: 1.2rem;">Login with Pi</button>
+  <pre id="log" style="margin-top: 2rem; background: #111; color: #0f0; padding: 1rem;"></pre>
+</body>
 </html>
