@@ -7,15 +7,25 @@ export const PiAuthProvider = ({ children }) => {
   const [sdkReady, setSdkReady] = useState(false);
 
   // Load Pi SDK
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (typeof window !== 'undefined' && window.Pi) {
-        setSdkReady(true);
-        clearInterval(interval);
-      }
-    }, 200);
-    return () => clearInterval(interval);
-  }, []);
+useEffect(() => {
+  if (typeof window === 'undefined') return;
+
+  if (!window.Pi) {
+    const script = document.createElement('script');
+    script.src = 'https://sdk.minepi.com/pi-sdk.js';
+    script.onload = () => {
+      window.Pi.init({ version: '2.0' });
+      setSdkReady(true);
+    };
+    script.onerror = () => {
+      console.error('❌ Failed to load Pi SDK');
+    };
+    document.body.appendChild(script);
+  } else {
+    setSdkReady(true);
+  }
+}, []);
+
 
   const login = () => {
     return new Promise((resolve, reject) => {
