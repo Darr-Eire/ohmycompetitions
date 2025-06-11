@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useSession } from 'next-auth/react'
 
 export default function PiPaymentButton({ amount, memo, metadata }) {
-  const { data: session } = useSession()
+const { user } = usePiAuth();
   const [busy, setBusy] = useState(false)
 
   const uid = session?.user?.uid

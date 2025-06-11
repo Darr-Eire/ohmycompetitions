@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { usePiAuth } from '@/context/PiAuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 

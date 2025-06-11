@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
-import { useSession, signOut } from 'next-auth/react';
+import { usePiAuth } from 'context/PiAuthContext';
 
 export default function Header() {
-  const { data: session, status } = useSession();
+  const { user, login, logout } = usePiAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
@@ -30,7 +30,7 @@ export default function Header() {
 
   const navItems = [
     ['Home', '/homepage'],
-    ['Pi Lottery', '/lottery'],          
+    ['Pi Lottery', '/lottery'],
     ['All Competitions', '/competitions'],
     ['Try Your Luck', '/try-your-luck'],
     ['Forums', '/forums'],
@@ -40,7 +40,7 @@ export default function Header() {
     ['Partners & Sponsors', '/partners'],
   ];
 
-  if (session) {
+  if (user) {
     navItems.push(['Pi Code', '/competition']);
   }
 
@@ -53,31 +53,25 @@ export default function Header() {
       </button>
 
       <div className="flex-1 text-center">
-   <Link
-  href="/homepage"
-  className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 text-transparent bg-clip-text drop-shadow"
->
-  OhMyCompetitions
-</Link>
-
-
+        <Link
+          href="/homepage"
+          className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 text-transparent bg-clip-text drop-shadow"
+        >
+          OhMyCompetitions
+        </Link>
       </div>
 
-      {status === 'loading' ? (
-        <p className="text-white text-xs">Checking session…</p>
-      ) : session ? (
+      {!user ? (
+        <button onClick={login} className="neon-button text-xs px-2 py-1">
+          Login with Pi
+        </button>
+      ) : (
         <div className="text-white text-xs flex items-center gap-2">
-          <span>👋 {session.user?.username}</span>
-          <button onClick={() => signOut()} className="neon-button text-xs px-2 py-1">
+          <span>👋 {user.username}</span>
+          <button onClick={logout} className="neon-button text-xs px-2 py-1">
             Log Out
           </button>
         </div>
-      ) : (
-        <Link href="/login">
-          <button className="neon-button text-xs px-2 py-1">
-            Log in
-          </button>
-        </Link>
       )}
 
       {menuOpen && (
@@ -95,12 +89,12 @@ export default function Header() {
               </li>
             ))}
             <li><hr className="border-cyan-700 my-1" /></li>
-            {session && (
+            {user && (
               <li>
                 <button
                   onClick={() => {
+                    logout();
                     setMenuOpen(false);
-                    signOut();
                   }}
                   className="w-full text-left text-xs px-4 py-2 text-white hover:bg-cyan-600 hover:text-black transition"
                 >
