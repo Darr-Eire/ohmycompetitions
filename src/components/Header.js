@@ -63,24 +63,23 @@ export default function Header() {
 {!user ? (
   <button
     onClick={() => {
-      console.log('🔁 Trying to log in...'); // TEMP DEBUG
-      login().then(() => console.log('✅ Logged in')).catch((err) => console.error('❌ Login failed', err));
+      login()
+        .then(() => console.log('✅ Logged in'))
+        .catch((err) => console.error('❌ Login failed', err));
     }}
     className="neon-button text-xs px-2 py-1"
   >
     Login with Pi
   </button>
 ) : (
-  // logged-in user section...
+  <div className="text-white text-xs flex items-center gap-2">
+    <span>👋 {user.username}</span>
+    <button onClick={logout} className="neon-button text-xs px-2 py-1">
+      Log Out
+    </button>
+  </div>
 )}
 
-        <div className="text-white text-xs flex items-center gap-2">
-          <span>👋 {user.username}</span>
-          <button onClick={logout} className="neon-button text-xs px-2 py-1">
-            Log Out
-          </button>
-        </div>
-      )}
 
       {menuOpen && (
         <nav ref={menuRef} className="absolute top-full left-2 mt-2 w-48 rounded-lg shadow-xl backdrop-blur-md bg-[#0f172acc] border border-cyan-700 animate-fade-in">
