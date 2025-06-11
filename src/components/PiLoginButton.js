@@ -50,13 +50,12 @@ export default function PiLoginButton() {
     console.warn('⚠️ Incomplete payment found:', payment);
 
     try {
-      // Force complete or cancel from backend if needed
       const res = await fetch('/api/pi/complete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           paymentId: payment.identifier,
-          txid: 'sandbox-completed-txid' // Replace with real txid in production
+          txid: 'sandbox-completed-txid', // Replace with real txid in production
         }),
       });
 
@@ -66,7 +65,7 @@ export default function PiLoginButton() {
       console.error('❌ Failed to complete stuck payment:', err);
     }
 
-    return false; // allow SDK to continue
+    return false; // SDK should clear it client-side and proceed
   };
 
   const verifyToken = async (accessToken) => {
@@ -94,39 +93,36 @@ export default function PiLoginButton() {
     }
   };
 
- const handleLogin = async () => {
-  if (!sdkReady || !window.Pi) {
-    setError('Pi SDK not ready');
-    return;
-  }
+  const handleLogin = async () => {
+    if (!sdkReady || !window.Pi) {
+      setError('Pi SDK not ready');
+      return;
+    }
 
-  setProcessing(true);
-  setError(null);
+    setProcessing(true);
+    setError(null);
 
-  try {
-    // Force clear previous session
-    await new Promise((resolve) => {
-      localStorage.removeItem('piUser'); // Clear cached user
-      sessionStorage.clear();            // Clear session storage
-      indexedDB?.databases?.().then((dbs) => {
-        dbs.forEach((db) => indexedDB.deleteDatabase(db.name));
+    try {
+      // Blow away local state to force re-auth
+      localStorage.removeItem('piUser');
+      sessionStorage.clear();
+      if (indexedDB?.databases) {
+        const dbs = await indexedDB.databases();
+        for (const db of dbs) await indexedDB.deleteDatabase(db.name);
         console.log('✅ IndexedDB cleared.');
-        resolve();
-      }).catch(resolve);
-    });
+      }
 
-    // Call authenticate with onIncompletePaymentFound
-    const auth = await window.Pi.authenticate(['username', 'payments'], onIncompletePaymentFound);
-    if (!auth?.accessToken) throw new Error('Missing access token');
-    await verifyToken(auth.accessToken);
-  } catch (err) {
-    console.error('❌ Login error:', err);
-    setError(err.message || 'Login failed');
-  } finally {
-    setProcessing(false);
-  }
-};
+      const auth = await window.Pi.authenticate(['username', 'payments'], onIncompletePaymentFound);
+      if (!auth?.accessToken) throw new Error('Missing access token');
 
+      await verifyToken(auth.accessToken);
+    } catch (err) {
+      console.error('❌ Login error:', err);
+      setError(err.message || 'Login failed');
+    } finally {
+      setProcessing(false);
+    }
+  };
 
   return (
     <div className="flex flex-col items-center">

@@ -14,7 +14,7 @@ export default function AdminLoginPage() {
     setError('');
 
     try {
-      const res = await fetch('/api/auth/login', {   // <-- Corrected API endpoint here
+      const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -23,7 +23,7 @@ export default function AdminLoginPage() {
       const data = await res.json();
 
       if (res.ok) {
-        router.push('/admin/competitions');  // redirect to admin dashboard
+        router.push('/admin/competitions');
       } else {
         setError(data.error || 'Invalid credentials');
       }
@@ -57,7 +57,10 @@ export default function AdminLoginPage() {
             required
             className="w-full p-3 rounded-xl bg-black border border-cyan-400 text-white placeholder-cyan-400"
           />
-          <button type="submit" className="w-full py-3 bg-cyan-400 hover:bg-cyan-300 text-black font-bold rounded-xl transition">
+          <button
+            type="submit"
+            className="w-full py-3 bg-cyan-400 hover:bg-cyan-300 text-black font-bold rounded-xl transition"
+          >
             Login
           </button>
         </form>

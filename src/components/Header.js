@@ -1,9 +1,8 @@
-// components/Header.js
 'use client';
 
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
-import { usePiAuth } from 'context/PiAuthContext';
+import { usePiAuth } from '../context/PiAuthContext';
 
 export default function Header() {
   const { user, login, logout } = usePiAuth();
@@ -11,10 +10,8 @@ export default function Header() {
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
 
-  const toggleMenu = () => setMenuOpen(open => !open);
-
   useEffect(() => {
-    function handleClickOutside(e) {
+    const handleClickOutside = (e) => {
       if (
         menuRef.current &&
         !menuRef.current.contains(e.target) &&
@@ -23,7 +20,7 @@ export default function Header() {
       ) {
         setMenuOpen(false);
       }
-    }
+    };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -41,15 +38,13 @@ export default function Header() {
     ['Partners & Sponsors', '/partners'],
   ];
 
-  if (user) {
-    navItems.push(['Pi Code', '/competition']);
-  }
+  if (user) navItems.push(['Pi Code', '/competition']);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] border-b border-cyan-700 px-3 py-1.5 flex items-center shadow-md backdrop-blur-md">
       <button
         ref={buttonRef}
-        onClick={toggleMenu}
+        onClick={() => setMenuOpen((open) => !open)}
         className="neon-button text-white text-xs px-2 py-1"
       >
         <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -70,13 +65,13 @@ export default function Header() {
         {!user ? (
           <button
             onClick={async () => {
-  try {
-    await login();
-  } catch (err) {
-    console.error('❌ Pi Login failed:', err);
-    alert('Pi login failed. Try again.');
-  }
-}}
+              try {
+                await login();
+              } catch (err) {
+                console.error('❌ Pi Login failed:', err);
+                alert('Pi login failed. Try again.');
+              }
+            }}
             className="neon-button text-xs px-4 py-2"
           >
             Login with Pi
