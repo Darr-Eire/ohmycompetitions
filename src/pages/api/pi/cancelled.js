@@ -1,4 +1,4 @@
-// /pages/api/pi/cancelled.js
+import axios from 'axios';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -12,24 +12,25 @@ export default async function handler(req, res) {
   }
 
   try {
-    const piRes = await fetch('https://api.minepi.com/payments/cancel', {
-      method: 'POST',
+    const response = await axios.post('https://api.minepi.com/payments/cancel', {
+      paymentId,
+    }, {
       headers: {
         Authorization: `Key ${process.env.PI_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ paymentId }),
     });
 
-    const result = await piRes.json();
-
-    if (!piRes.ok) {
-      return res.status(500).json({ error: 'Pi cancel failed', details: result });
+    if (response.data?.status === 'cancelled') {
+      return res.status(200).json({ cancelled: true });
+    } else {
+      return res.status(500).json({ error: 'Cancel failed', details: response.data });
     }
-
-    return res.status(200).json({ cancelled: true, result });
   } catch (err) {
-    console.error('❌ Cancel error:', err);
-    return res.status(500).json({ error: 'Cancel failed', details: err.message });
+    console.error('❌ Cancel error:', err?.response?.data || err.message);
+    return res.status(500).json({
+      error: 'Cancel failed',
+      details: err?.response?.data || err.message,
+    });
   }
 }
