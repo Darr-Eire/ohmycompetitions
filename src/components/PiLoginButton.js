@@ -11,13 +11,11 @@ export default function PiLoginButton() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Load existing user from localStorage
     const saved = localStorage.getItem('piUser');
     if (saved) {
       setUser(JSON.parse(saved));
     }
 
-    // Load and init Pi SDK
     const loadSdk = () => {
       if (!window.Pi) {
         const script = document.createElement('script');
@@ -42,12 +40,28 @@ export default function PiLoginButton() {
           setSdkReady(true);
         } catch (e) {
           console.error('❌ Pi.init() failed:', e);
+          setError('SDK init error');
         }
       }
     };
 
     loadSdk();
   }, []);
+
+  const onIncompletePaymentFound = async (payment) => {
+    try {
+      const res = await fetch('/api/pi/incomplete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ payment }),
+      });
+
+      const data = await res.json();
+      console.log('🔁 Incomplete payment resolved:', data);
+    } catch (err) {
+      console.error('❌ Failed to handle incomplete payment:', err);
+    }
+  };
 
   const verifyToken = async (accessToken) => {
     try {
@@ -84,7 +98,7 @@ export default function PiLoginButton() {
     setError(null);
 
     try {
-      const auth = await window.Pi.authenticate(['username', 'payments']);
+      const auth = await window.Pi.authenticate(['username', 'payments'], onIncompletePaymentFound);
       if (!auth?.accessToken) throw new Error('Missing access token');
       await verifyToken(auth.accessToken);
     } catch (err) {
