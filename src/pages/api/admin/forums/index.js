@@ -1,6 +1,6 @@
 import { connectToDatabase } from 'lib/dbConnect';import Thread from 'models/Thread';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from 'lib/auth';
+
+
 
 export default async function handler(req, res) {
   await dbConnect();

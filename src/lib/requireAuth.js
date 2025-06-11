@@ -1,5 +1,5 @@
 // src/lib/requireAuth.js
-import { getServerSession } from 'next-auth/next';
+
 import { authOptions } from './auth';
 
 export async function requireAuth(req, res) {

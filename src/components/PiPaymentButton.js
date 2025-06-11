@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useSession } from 'next-auth/react'
+
 
 export default function PiPaymentButton({ amount, memo, metadata }) {
 const { user } = usePiAuth();

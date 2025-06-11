@@ -1,5 +1,5 @@
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from 'lib/auth';
+
+
 import { dbConnect } from 'lib/dbConnect';
 
 import EverydayEntry from 'models/EverydayEntry'; // assuming you have a model for this

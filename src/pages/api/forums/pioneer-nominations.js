@@ -1,8 +1,8 @@
 import { dbConnect } from 'lib/dbConnect';
 
 import PioneerNomination from 'models/PioneerNomination';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from 'lib/auth';
+
+
 
 export default async function handler(req, res) {
   await connectToDatabase();

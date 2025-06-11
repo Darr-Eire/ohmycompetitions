@@ -1,6 +1,6 @@
 import { MongoClient } from 'mongodb';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from 'lib/auth';
+
+
 
 const uri = process.env.MONGO_DB_URL;if (!uri) throw new Error('Missing MONGODB_URI in environment');
 const client = new MongoClient(uri);

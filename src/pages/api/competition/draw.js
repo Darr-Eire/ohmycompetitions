@@ -2,8 +2,8 @@ import { dbConnect } from 'lib/dbConnect';
 import Entry from 'models/Entry';
 import AuditLog from 'models/AuditLog';
 import { getRandomNumber } from 'utils/randomness';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from 'lib/auth';
+
+
 
 export default async function handler(req, res) {
   const session = await getServerSession(req, res, authOptions);
