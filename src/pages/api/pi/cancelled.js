@@ -1,4 +1,4 @@
-// /src/pages/api/pi/cancelled.js
+// /pages/api/pi/cancelled.js
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -12,13 +12,24 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Log or mark this payment as cancelled in your DB if you track them
-    console.log('❌ Cancelled Pi paymentId:', paymentId);
+    const piRes = await fetch('https://api.minepi.com/payments/cancel', {
+      method: 'POST',
+      headers: {
+        Authorization: `Key ${process.env.PI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ paymentId }),
+    });
 
-    // Return confirmation (you can extend this to actually update DB if needed)
-    return res.status(200).json({ cancelled: true });
+    const result = await piRes.json();
+
+    if (!piRes.ok) {
+      return res.status(500).json({ error: 'Pi cancel failed', details: result });
+    }
+
+    return res.status(200).json({ cancelled: true, result });
   } catch (err) {
-    console.error('❌ Pi cancel failed:', err);
-    return res.status(500).json({ error: 'Internal Server Error', details: err.message });
+    console.error('❌ Cancel error:', err);
+    return res.status(500).json({ error: 'Cancel failed', details: err.message });
   }
 }
