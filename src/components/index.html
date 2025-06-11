@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>OhMyCompetitions – Pi Login & Payment</title>
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+  <style>
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background: #0f172a;
+      color: #fff;
+      text-align: center;
+      padding: 2rem;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 1rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(to right, #00ffd5, #0077ff);
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .status { margin-top: 1rem; font-size: 0.9rem; color: #00ff99; }
+  </style>
+</head>
+<body>
+  <h1>🟡 OhMyCompetitions</h1>
+  <h2>Login & Pay with Pi Network</h2>
+
+  <button onclick="loginWithPi()">Login with Pi</button>
+  <div id="userInfo" class="status"></div>
+
+  <button onclick="startPayment()">Pay 0.01 π</button>
+  <div id="status" class="status"></div>
+
+  <script>
+    window.addEventListener('load', () => {
+      Pi.init({ version: '2.0', sandbox: true }); // set sandbox: false for production
+    });
+
+    function loginWithPi() {
+      Pi.authenticate(['username', 'payments'], async (auth) => {
+        if (!auth || !auth.accessToken) {
+          return alert('❌ Login failed');
+        }
+
+        const response = await fetch('https://api.minepi.com/v2/me', {
+          headers: { Authorization: `Bearer ${auth.accessToken}` }
+        });
+
+        const user = await response.json();
+        document.getElementById('userInfo').innerText = `✅ Logged in as: ${user.username}`;
+        localStorage.setItem('piUser', JSON.stringify(user));
+      }, (err) => {
+        alert('❌ Login error: ' + (err?.message || 'Cancelled'));
+      });
+    }
+
+    function startPayment() {
+      const metadata = { comp: 'lottery-test' };
+
+      Pi.createPayment({
+        amount: 0.01,
+        memo: 'Entry to Pi Lottery',
+        metadata,
+        to: 'darreire220' // replace with your Pi username
+      }, {
+        onReadyForServerApproval: async (paymentId) => {
+          document.getElementById('status').innerText = '✅ Payment approved on server.';
+        },
+        onReadyForServerCompletion: async (paymentId, txid) => {
+          document.getElementById('status').innerText = `🎉 Payment complete (txid: ${txid})`;
+        },
+        onCancel: () => {
+          document.getElementById('status').innerText = '❌ Payment cancelled';
+        },
+        onError: (err) => {
+          document.getElementById('status').innerText = '❌ Error: ' + err.message;
+        }
+      });
+    }
+  </script>
+</body>
+</html>

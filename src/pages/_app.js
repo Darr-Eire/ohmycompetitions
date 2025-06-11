@@ -1,5 +1,4 @@
-// src/pages/_app.js
-import '../../styles/globals.css'; // ✅ keep path relative to project root
+import '../../styles/globals.css'; // Keep path relative if this works in your current setup
 import { PiAuthProvider } from '../context/PiAuthContext';
 import Layout from '../components/Layout';
 

@@ -1,4 +1,3 @@
-// components/PiLoginButton.js
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -12,31 +11,68 @@ export default function PiLoginButton() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    if (!window.Pi) {
-      const script = document.createElement('script');
-      script.src = 'https://sdk.minepi.com/pi-sdk.js';
-      script.onload = () => {
+    // Load existing user from localStorage
+    const saved = localStorage.getItem('piUser');
+    if (saved) {
+      setUser(JSON.parse(saved));
+    }
+
+    // Load and init Pi SDK
+    const loadSdk = () => {
+      if (!window.Pi) {
+        const script = document.createElement('script');
+        script.src = 'https://sdk.minepi.com/pi-sdk.js';
+        script.onload = () => {
+          try {
+            window.Pi.init({ version: '2.0' });
+            setSdkReady(true);
+          } catch (e) {
+            console.error('❌ Pi.init() failed:', e);
+            setError('SDK init error');
+          }
+        };
+        script.onerror = () => {
+          console.error('❌ Failed to load Pi SDK');
+          setError('Failed to load Pi SDK');
+        };
+        document.body.appendChild(script);
+      } else {
         try {
           window.Pi.init({ version: '2.0' });
           setSdkReady(true);
         } catch (e) {
           console.error('❌ Pi.init() failed:', e);
         }
-      };
-      script.onerror = () => {
-        console.error('❌ Failed to load Pi SDK');
-        setError('Failed to load Pi SDK');
-      };
-      document.body.appendChild(script);
-    } else {
-      try {
-        window.Pi.init({ version: '2.0' });
-        setSdkReady(true);
-      } catch (e) {
-        console.error('❌ Pi.init() failed on existing Pi:', e);
       }
-    }
+    };
+
+    loadSdk();
   }, []);
+
+  const verifyToken = async (accessToken) => {
+    try {
+      const res = await fetch('/api/pi/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessToken }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        localStorage.setItem('piUser', JSON.stringify(data));
+        setUser(data);
+        return true;
+      } else {
+        console.error('❌ Pi verify failed:', data.error);
+        setError(data.error || 'Verify failed');
+        return false;
+      }
+    } catch (err) {
+      console.error('❌ Verify error:', err);
+      setError('Verification failed');
+      return false;
+    }
+  };
 
   const handleLogin = async () => {
     if (!sdkReady || !window.Pi) {
@@ -48,45 +84,13 @@ export default function PiLoginButton() {
     setError(null);
 
     try {
-      window.Pi.authenticate(['username', 'payments'], async (auth) => {
-        console.log('📦 Full auth response:', auth);
-
-        if (!auth?.accessToken) {
-          setError('Missing access token from Pi');
-          setProcessing(false);
-          return;
-        }
-
-        try {
-          const res = await fetch('/api/pi/verify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ accessToken: auth.accessToken }),
-          });
-
-          const data = await res.json();
-          if (res.ok) {
-            console.log('✅ Pi login successful:', data);
-            localStorage.setItem('piUser', JSON.stringify(data));
-            setUser(data);
-          } else {
-            console.error('❌ Server rejected Pi login:', data.error);
-            setError(data.error);
-          }
-        } catch (err) {
-          console.error('❌ Failed to send accessToken:', err);
-          setError('Failed to verify Pi login');
-        }
-
-        setProcessing(false);
-      }, (error) => {
-        console.error('❌ Pi authentication error:', error);
-        setError(error.message || 'Pi login failed');
-        setProcessing(false);
-      });
+      const auth = await window.Pi.authenticate(['username', 'payments']);
+      if (!auth?.accessToken) throw new Error('Missing access token');
+      await verifyToken(auth.accessToken);
     } catch (err) {
-      console.error('❌ Unexpected login error:', err);
-      setError('Unexpected error occurred');
+      console.error('❌ Login error:', err);
+      setError(err.message || 'Login failed');
+    } finally {
       setProcessing(false);
     }
   };

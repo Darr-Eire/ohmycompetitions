@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="Pi Network Web App" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+    <script>
+      window._ENV = {
+        backendURL: "%REACT_APP_BACKEND_URL%",
+        sandbox: "%REACT_APP_SANDBOX_SDK%"  // must be "true" or "false" string
+      };
+    </script>
+
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script>
+      const runSandbox = window._ENV.sandbox === "true";
+      window.Pi.init({ version: "2.0", sandbox: runSandbox });
+    </script>
+
+    <title>OhMyCompetitions</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>

@@ -69,7 +69,14 @@ export default function Header() {
       <div className="ml-auto flex items-center">
         {!user ? (
           <button
-            onClick={() => login().catch(err => console.error('❌ Login failed:', err))}
+            onClick={async () => {
+  try {
+    await login();
+  } catch (err) {
+    console.error('❌ Pi Login failed:', err);
+    alert('Pi login failed. Try again.');
+  }
+}}
             className="neon-button text-xs px-4 py-2"
           >
             Login with Pi
