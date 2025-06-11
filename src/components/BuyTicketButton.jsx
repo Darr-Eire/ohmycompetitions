@@ -1,25 +1,17 @@
-'use client';
+const handlePayment = async () => {
+  if (!sdkReady || typeof window === 'undefined' || !window.Pi) {
+    alert('⚠️ Pi SDK not ready. Use Pi Browser.');
+    return;
+  }
 
-import React, { useState, useEffect } from 'react';
-import { loadPiSdk } from 'lib/pi';
-
-export default function BuyTicketButton({ competitionSlug, entryFee, quantity, piUser }) {
-  const [sdkReady, setSdkReady] = useState(false);
-
-  useEffect(() => {
-    loadPiSdk(setSdkReady);
-  }, []);
-
-  const handlePayment = async () => {
-    if (!sdkReady || typeof window === 'undefined' || !window.Pi) {
-      alert('⚠️ Pi SDK not ready. Use Pi Browser.');
+  // 🔐 Force Pi authentication before payment
+  window.Pi.authenticate([], async (authResult) => {
+    if (!authResult || !authResult.accessToken) {
+      alert('❌ Pi authentication failed.');
       return;
     }
 
-    if (!piUser || !piUser.uid) {
-      alert('⚠️ You must be logged in with Pi.');
-      return;
-    }
+    console.log('🔓 Pi authenticated:', authResult);
 
     const total = (entryFee * quantity).toFixed(2);
 
@@ -37,14 +29,13 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity, p
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 paymentId,
-                uid: piUser.uid,
+                uid: piUser?.uid,
                 competitionSlug,
                 amount: parseFloat(total),
               }),
             });
 
             if (!res.ok) throw new Error(await res.text());
-
             console.log('[✅] Payment approved');
           } catch (err) {
             console.error('[❌] Approving payment:', err);
@@ -80,14 +71,5 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity, p
         },
       }
     );
-  };
-
-  return (
-    <button
-      onClick={handlePayment}
-      className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-xl shadow transition"
-    >
-      Confirm Ticket Purchase
-    </button>
-  );
-}
+  });
+};
