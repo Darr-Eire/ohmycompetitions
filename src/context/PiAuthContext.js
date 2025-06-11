@@ -6,63 +6,44 @@ export const PiAuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [sdkReady, setSdkReady] = useState(false);
 
-  // Load Pi SDK
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    if (!window.Pi) {
-      const script = document.createElement('script');
-      script.src = 'https://sdk.minepi.com/pi-sdk.js';
-      script.onload = () => {
-        window.Pi.init({ version: '2.0' });
-        setSdkReady(true);
-      };
-      script.onerror = () => {
-        console.error('❌ Failed to load Pi SDK');
-      };
-      document.body.appendChild(script);
-    } else {
+    const script = document.createElement('script');
+    script.src = 'https://sdk.minepi.com/pi-sdk.js';
+    script.onload = () => {
+      window.Pi.init({ version: '2.0' });
       setSdkReady(true);
-    }
+    };
+    script.onerror = () => console.error('❌ Failed to load Pi SDK');
+    document.body.appendChild(script);
   }, []);
 
   const login = () => {
     return new Promise((resolve, reject) => {
-      if (!window?.Pi) {
-        console.error('❌ Pi SDK not available');
-        return reject('Pi SDK not loaded');
-      }
+      if (!window?.Pi) return reject('Pi SDK not loaded');
 
-      window.Pi.authenticate(['username', 'payments'], async function (auth) {
-        console.log('AUTH CALLBACK:', auth);
-        if (auth.accessToken) {
-          try {
-            const res = await fetch('/api/pi/verify', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ accessToken: auth.accessToken }),
-            });
+      window.Pi.authenticate(['username', 'payments'], async (auth) => {
+        if (!auth?.accessToken) return reject('No access token');
 
-            const data = await res.json();
-            if (res.ok) {
-              setUser(data);
-              localStorage.setItem('piUser', JSON.stringify(data));
-              resolve(data);
-            } else {
-              console.error('❌ Backend rejected Pi login:', data.error);
-              reject(data.error);
-            }
-          } catch (err) {
-            console.error('❌ Network/server error:', err);
-            reject(err.message || 'Server error');
-          }
-        } else {
-          console.error('❌ No access token from Pi login');
-          reject('Missing access token');
+        try {
+          const res = await fetch('/api/pi/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ accessToken: auth.accessToken }),
+          });
+
+          const userData = await res.json();
+          if (!res.ok) return reject(userData.error);
+
+          setUser(userData);
+          localStorage.setItem('piUser', JSON.stringify(userData));
+          resolve(userData);
+        } catch (err) {
+          reject(err.message || 'Verification failed');
         }
-      }, function (error) {
-        console.error('❌ Pi login error callback:', error);
-        reject(error.message || 'Cancelled');
+      }, (error) => {
+        reject(error?.message || 'Login cancelled');
       });
     });
   };
@@ -73,14 +54,8 @@ export const PiAuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('piUser');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (err) {
-        console.error('❌ Failed to parse stored user:', err);
-      }
-    }
+    const stored = localStorage.getItem('piUser');
+    if (stored) setUser(JSON.parse(stored));
   }, []);
 
   return (

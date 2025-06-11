@@ -62,11 +62,7 @@ export default function Header() {
       </div>
 {!user ? (
   <button
-    onClick={() => {
-      login()
-        .then(() => console.log('✅ Logged in'))
-        .catch((err) => console.error('❌ Login failed', err));
-    }}
+    onClick={() => login().catch((err) => console.error('❌ Login failed:', err))}
     className="neon-button text-xs px-2 py-1"
   >
     Login with Pi
@@ -75,15 +71,14 @@ export default function Header() {
   <div className="text-white text-xs flex items-center gap-2">
     <span>👋 {user.username}</span>
     <button
-      onClick={() => {
-        if (typeof logout === 'function') logout();
-      }}
+      onClick={logout}
       className="neon-button text-xs px-2 py-1"
     >
       Log Out
     </button>
   </div>
 )}
+
 
 
       {menuOpen && (
