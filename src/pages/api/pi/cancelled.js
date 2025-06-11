@@ -15,8 +15,8 @@ export default async function handler(req, res) {
 
   try {
     const response = await axios.post(
-      `https://api.minepi.com/v2/payments/${paymentId}/cancel`,
-      {}, // Pi API expects no body for cancel
+      `https://api.minepi.com/testnet/v2/payments/${paymentId}/cancel`, // 👈 use testnet here
+      {}, // no body required
       {
         headers: {
           Authorization: `Key ${process.env.PI_API_KEY}`,
