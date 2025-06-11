@@ -1,4 +1,5 @@
-// /api/pi/payment-status.js
+
+
 export default async function handler(req, res) {
   const { paymentId, accessToken } = req.query;
 
@@ -15,15 +16,28 @@ export default async function handler(req, res) {
       },
     });
 
-    const data = await response.json();
+    const text = await response.text();
 
-    if (!response.ok) {
-      return res.status(response.status).json({ error: 'Failed to fetch payment status', details: data });
+    // Try parsing JSON, catch if it’s HTML or malformed
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (err) {
+      console.error('❌ Invalid JSON from Pi API:', text);
+      return res.status(502).json({ error: 'Bad response from Pi API', raw: text });
     }
 
+    if (!response.ok) {
+      return res.status(response.status).json({
+        error: 'Failed to fetch payment status',
+        details: data,
+      });
+    }
+
+    console.log('✅ Payment status:', data);
     return res.status(200).json(data);
   } catch (err) {
     console.error('❌ Error fetching payment status:', err);
-    return res.status(500).json({ error: 'Internal error', details: err.message });
+    return res.status(500).json({ error: 'Internal server error', details: err.message });
   }
 }
