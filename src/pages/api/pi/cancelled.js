@@ -1,5 +1,3 @@
-// /pages/api/pi/cancelled.js
-
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
@@ -12,22 +10,21 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await fetch('https://api.minepi.com/payments/cancel', {
+    const response = await fetch(`https://api.minepi.com/v2/payments/${paymentId}/cancel`, {
       method: 'POST',
       headers: {
         Authorization: `Key ${process.env.PI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        paymentId,
         metadata: {
           uid,
-          reason: reason || 'Cancelled by user',
+          reason: reason || 'User requested cancellation',
         },
       }),
     });
 
-    const text = await response.text(); // Use .text() to catch bad HTML responses
+    const text = await response.text();
     try {
       const data = JSON.parse(text);
       if (!response.ok) {
