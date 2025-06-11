@@ -1,4 +1,6 @@
-import { connectToDatabase } from 'lib/dbConnect';import Payment from 'models/Payment';
+// /pages/api/pi/complete.js
+import { connectToDatabase } from '@/lib/dbConnect';
+import Payment from '@/models/Payment';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -10,22 +12,20 @@ export default async function handler(req, res) {
   }
 
   try {
-    await dbConnect();
+    await connectToDatabase();
 
-    // Call Pi API to complete the payment
-    const response = await fetch('https://api.minepi.com/payments/complete', {
+    const response = await fetch(`https://api.minepi.com/v2/payments/${paymentId}/complete`, {
       method: 'POST',
       headers: {
         'Authorization': `Key ${process.env.PI_API_KEY}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ paymentId, txid })
+      body: JSON.stringify({ txid }),
     });
 
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'Completion failed');
 
-    // Update payment record in MongoDB
     await Payment.findOneAndUpdate(
       { paymentId, uid },
       { txid, status: 'COMPLETED' },
