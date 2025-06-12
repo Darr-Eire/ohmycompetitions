@@ -1,6 +1,6 @@
 'use client';
 
-import { usePiAuth } from '../lib/PiAuthContext';
+import { usePiAuth } from '@/lib/PiAuthContext';
 
 import BuyTicketButton from 'components/BuyTicketButton';
 
