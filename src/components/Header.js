@@ -5,7 +5,7 @@ import { useState, useRef, useEffect } from 'react';
 import { usePiAuth } from '../context/PiAuthContext';
 
 export default function Header() {
-  const { user, login, logout } = usePiAuth();
+  const { user, loginWithPi, logout } = usePiAuth(); // ✅ Fix: use loginWithPi instead of login
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
@@ -66,7 +66,7 @@ export default function Header() {
           <button
             onClick={async () => {
               try {
-                await login();
+                await loginWithPi(); // ✅ Fix: call correct method
               } catch (err) {
                 console.error('❌ Pi Login failed:', err);
                 alert('Pi login failed. Try again.');

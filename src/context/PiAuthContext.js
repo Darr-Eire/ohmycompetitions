@@ -13,25 +13,31 @@ export function PiAuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [sdkReady, setSdkReady] = useState(false);
 
-  // Load Pi SDK
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    if (window.Pi) {
-      window.Pi.init({ version: '2.0', sandbox: true });
-      setSdkReady(true);
-    } else {
-      const script = document.createElement('script');
-      script.src = 'https://sdk.minepi.com/pi-sdk.js';
-      script.onload = () => {
+    const loadPiSDK = () => {
+      if (window.Pi) {
         window.Pi.init({ version: '2.0', sandbox: true });
         setSdkReady(true);
-      };
-      document.body.appendChild(script);
-    }
+      } else {
+        const script = document.createElement('script');
+        script.src = 'https://sdk.minepi.com/pi-sdk.js';
+        script.onload = () => {
+          window.Pi.init({ version: '2.0', sandbox: true });
+          setSdkReady(true);
+        };
+        script.onerror = () => {
+          console.error('❌ Failed to load Pi SDK');
+        };
+        document.body.appendChild(script);
+      }
+    };
+
+    loadPiSDK();
   }, []);
 
-  const login = async () => {
+  const loginWithPi = async () => {
     if (!sdkReady || !window.Pi) {
       alert('⚠️ Pi SDK not ready');
       return;
@@ -50,10 +56,10 @@ export function PiAuthProvider({ children }) {
         }
       };
 
-      const { accessToken, user } = await window.Pi.authenticate(scopes, onIncompletePaymentFound);
+      const { accessToken } = await window.Pi.authenticate(scopes, onIncompletePaymentFound);
       const res = await axios.post('/api/pi/verify', { accessToken });
 
-      if (res.ok) {
+      if (res.status === 200) {
         setUser(res.data);
         console.log('✅ Logged in:', res.data);
       } else {
@@ -64,8 +70,12 @@ export function PiAuthProvider({ children }) {
     }
   };
 
+  const logout = () => {
+    setUser(null);
+  };
+
   return (
-    <PiAuthContext.Provider value={{ user, login, sdkReady }}>
+    <PiAuthContext.Provider value={{ user, loginWithPi, logout, sdkReady }}>
       {children}
     </PiAuthContext.Provider>
   );

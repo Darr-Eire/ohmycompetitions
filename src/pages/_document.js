@@ -4,7 +4,7 @@ export default function Document() {
   return (
     <Html lang="en">
       <Head>
-        {/* Pi ENV config for browser access */}
+        {/* Expose ENV config to browser */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -15,16 +15,22 @@ export default function Document() {
             `,
           }}
         />
-        {/* Load Pi SDK */}
+
+        {/* Pi SDK script */}
         <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 
-        {/* Initialize Pi SDK */}
+        {/* Pi SDK initialization script */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function () {
-                const sandboxMode = window._ENV?.sandbox === "true";
-                window.Pi?.init({ version: "2.0", sandbox: sandboxMode });
+                const sandbox = window._ENV?.sandbox === "true";
+                if (window.Pi) {
+                  window.Pi.init({ version: "2.0", sandbox });
+                  console.log("✅ Pi SDK initialized");
+                } else {
+                  console.warn("⚠️ Pi SDK not loaded");
+                }
               })();
             `,
           }}
