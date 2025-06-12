@@ -5,40 +5,70 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pi Auth Test</title>
 
-  <!-- Pi SDK -->
+  <!-- Load Pi SDK -->
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
   <script>
     window.addEventListener('DOMContentLoaded', () => {
-      const Pi = window.Pi;
-      Pi.init({ version: "2.0", sandbox: true }); // sandbox:true for testing
+      if (!window.Pi) {
+        console.error('❌ Pi SDK not loaded');
+        return;
+      }
+
+      window.Pi.init({ version: "2.0", sandbox: true }); // ✅ Sandbox for dev
 
       const loginBtn = document.getElementById('pi-login');
       const logBox = document.getElementById('log');
 
       loginBtn.addEventListener('click', () => {
-        logBox.innerText = "⚡ Starting Pi.authenticate...";
+        logBox.textContent = "⚡ Starting Pi.authenticate...";
 
         const scopes = ['username', 'payments'];
-        function onIncompletePaymentFound(payment) {
+        const onIncompletePaymentFound = (payment) => {
           console.warn('⚠️ Incomplete payment found:', payment);
-        }
+        };
 
         Pi.authenticate(scopes, onIncompletePaymentFound)
           .then(({ accessToken, user }) => {
-            logBox.innerText = `✅ Logged in as @${user.username}\nAccessToken: ${accessToken}`;
-            console.log({ accessToken, user });
+            logBox.textContent =
+              `✅ Logged in as @${user.username}\n\n🔐 Access Token:\n${accessToken}`;
+            console.log('✅ Login success:', { accessToken, user });
           })
           .catch(err => {
-            logBox.innerText = `❌ Auth failed: ${err.message || err}`;
-            console.error(err);
+            logBox.textContent = `❌ Auth failed: ${err.message || err}`;
+            console.error('❌ Pi.authenticate error:', err);
           });
       });
     });
   </script>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 2rem;
+      background-color: #0f0f0f;
+      color: #0ff;
+    }
+    button {
+      padding: 1rem 2rem;
+      font-size: 1.2rem;
+      background-color: #0ff;
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    pre {
+      margin-top: 2rem;
+      background: #111;
+      color: #0f0;
+      padding: 1rem;
+      white-space: pre-wrap;
+    }
+  </style>
 </head>
-<body style="font-family: sans-serif; text-align: center; padding: 2rem;">
+<body>
   <h1>🧪 Pi Login Test</h1>
-  <button id="pi-login" style="padding: 1rem; font-size: 1.2rem;">Login with Pi</button>
-  <pre id="log" style="margin-top: 2rem; background: #111; color: #0f0; padding: 1rem;"></pre>
+  <button id="pi-login">Login with Pi</button>
+  <pre id="log">Waiting for user action...</pre>
 </body>
 </html>
