@@ -1,6 +1,7 @@
 'use client';
 
-import { usePiAuth } from 'lib/PiAuthContext';
+import { usePiAuth } from '../lib/PiAuthContext';
+
 import BuyTicketButton from 'components/BuyTicketButton';
 
 export default function TicketsPage() {
