@@ -1,76 +1,91 @@
 'use client';
-import { useEffect, useState } from 'react';
 
-export default function PiPaymentButton() {
+import React, { useEffect, useState } from 'react';
+
+export default function PiLoginButton() {
   const [sdkReady, setSdkReady] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState(null);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const loadSdk = () => {
+    if (typeof window === 'undefined') return;
+
+    if (!window.Pi) {
       const script = document.createElement('script');
       script.src = 'https://sdk.minepi.com/pi-sdk.js';
       script.onload = () => {
         window.Pi.init({ version: '2.0' });
         setSdkReady(true);
       };
+      script.onerror = () => {
+        console.error('❌ Failed to load Pi SDK');
+        setError('Failed to load Pi SDK');
+      };
       document.body.appendChild(script);
-    };
-
-    if (!window.Pi) loadSdk();
-    else {
-      window.Pi.init({ version: '2.0' });
+    } else {
       setSdkReady(true);
     }
   }, []);
 
-const startPayment = () => {
-  if (!window.Pi) return alert('Pi SDK not loaded');
-
-  // 🔐 Step 1: Authenticate first to trigger the "Allow" prompt
-  window.Pi.authenticate([], async (authResult) => {
-    if (!authResult || !authResult.accessToken) {
-      alert('❌ Pi authentication failed.');
+  const handleLogin = async () => {
+    if (!sdkReady || !window.Pi) {
+      setError('Pi SDK not ready');
       return;
     }
 
-    console.log('🔓 Pi authenticated:', authResult);
+    setProcessing(true);
+    setError(null);
 
-    // ✅ Step 2: Now it's safe to trigger the payment
-    window.Pi.createPayment({
-      amount: 1,
-      memo: "Test",
-      metadata: {},
-      onReadyForServerApproval: async (paymentId) => {
-        console.log("✅ paymentId from SDK:", paymentId);
+    try {
+      window.Pi.authenticate(['username', 'payments'], async (auth) => {
+        if (!auth.accessToken) {
+          setError('Missing access token');
+          setProcessing(false);
+          return;
+        }
 
-        await fetch('/api/pi/approve', {
+        const res = await fetch('/api/pi/verify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ paymentId }),
+          body: JSON.stringify({ accessToken: auth.accessToken }),
         });
-      },
-      onReadyForServerCompletion: async (paymentId, txid) => {
-        console.log("🟢 Completing:", paymentId, txid);
-        await fetch('/api/pi/complete', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ paymentId, txid }),
-        });
-      },
-      onCancel: (paymentId) => {
-        console.log("❌ Cancelled by user:", paymentId);
-      },
-      onError: (error, payment) => {
-        console.error("❌ Payment error:", error, payment);
-      },
-    });
-  });
-};
 
-
+        const data = await res.json();
+        if (res.ok) {
+          console.log('✅ Pi login successful:', data);
+          setUser(data);
+          localStorage.setItem('piUser', JSON.stringify(data));
+        } else {
+          console.error('❌ Server rejected Pi login:', data.error);
+          setError(data.error || 'Login failed');
+        }
+        setProcessing(false);
+      }, (err) => {
+        console.error('❌ Pi login cancelled or failed:', err);
+        setError(err.message || 'Login cancelled');
+        setProcessing(false);
+      });
+    } catch (err) {
+      console.error('❌ Unexpected login error:', err);
+      setError('Unexpected error occurred');
+      setProcessing(false);
+    }
+  };
 
   return (
-    <button onClick={startPayment} disabled={!sdkReady} className="p-2 bg-purple-700 text-white rounded">
-      Pay 1π
-    </button>
+    <div className="flex flex-col items-center">
+      <button
+        onClick={handleLogin}
+        disabled={processing || !sdkReady}
+        className="neon-button text-xs px-4 py-2 mb-2 disabled:opacity-50"
+      >
+        {processing ? 'Logging in...' : 'Login with Pi'}
+      </button>
+      {error && <p className="text-red-500 text-xs">{error}</p>}
+      {user && (
+        <p className="text-green-500 text-xs">Welcome, {user.username}!</p>
+      )}
+    </div>
   );
 }
