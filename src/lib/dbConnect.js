@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 let isConnected = false;
 
-export async function dbConnect() {
+async function dbConnect() {
   if (isConnected) return;
 
   const uri = process.env.MONGO_DB_URL;
@@ -20,3 +20,5 @@ export async function dbConnect() {
     throw error;
   }
 }
+
+export default dbConnect;
