@@ -1,3 +1,4 @@
+// pages/api/pi/verify.js
 import axios from 'axios';
 
 export default async function handler(req, res) {
@@ -11,9 +12,9 @@ export default async function handler(req, res) {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
 
-    return res.status(200).json(data);
+    res.status(200).json(data);
   } catch (e) {
     console.error('❌ Token verification failed:', e?.response?.data || e.message);
-    return res.status(401).json({ error: 'Invalid or expired token' });
+    res.status(401).json({ error: 'Invalid or expired token' });
   }
 }

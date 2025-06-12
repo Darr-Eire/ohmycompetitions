@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
 const PiAuthContext = createContext();
@@ -12,53 +12,60 @@ export function usePiAuth() {
 export function PiAuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [sdkReady, setSdkReady] = useState(false);
-  const [loading, setLoading] = useState(true);
 
-  // Load SDK
+  // Load Pi SDK
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     if (window.Pi) {
+      window.Pi.init({ version: '2.0', sandbox: true });
       setSdkReady(true);
-      return;
+    } else {
+      const script = document.createElement('script');
+      script.src = 'https://sdk.minepi.com/pi-sdk.js';
+      script.onload = () => {
+        window.Pi.init({ version: '2.0', sandbox: true });
+        setSdkReady(true);
+      };
+      document.body.appendChild(script);
     }
-
-    const script = document.createElement('script');
-    script.src = 'https://sdk.minepi.com/pi-sdk.js';
-    script.onload = () => {
-      window.Pi.init({ version: '2.0' });
-      setSdkReady(true);
-    };
-    script.onerror = () => {
-      console.error('❌ Failed to load Pi SDK');
-    };
-    document.body.appendChild(script);
   }, []);
 
-  const loginWithPi = async () => {
+  const login = async () => {
     if (!sdkReady || !window.Pi) {
-      console.error('❌ Pi SDK not ready');
+      alert('⚠️ Pi SDK not ready');
       return;
     }
 
     try {
       const scopes = ['username', 'payments'];
-      const onIncompletePaymentFound = (payment) => {
-        console.log('⚠️ Incomplete payment:', payment);
+      const onIncompletePaymentFound = async (payment) => {
+        console.warn('⚠️ Incomplete payment:', payment);
+
+        if (payment.transaction?.txid) {
+          await axios.post('/api/pi/complete-payment', {
+            paymentId: payment.identifier,
+            txid: payment.transaction.txid,
+          });
+        }
       };
 
-      const authResult = await window.Pi.authenticate(scopes, onIncompletePaymentFound);
-      const accessToken = authResult.accessToken;
-
+      const { accessToken, user } = await window.Pi.authenticate(scopes, onIncompletePaymentFound);
       const res = await axios.post('/api/pi/verify', { accessToken });
-      setUser(res.data);
-    } catch (error) {
-      console.error('❌ Pi login error:', error);
+
+      if (res.ok) {
+        setUser(res.data);
+        console.log('✅ Logged in:', res.data);
+      } else {
+        console.warn('❌ Backend verification failed');
+      }
+    } catch (err) {
+      console.error('❌ Login failed:', err.message);
     }
   };
 
   return (
-    <PiAuthContext.Provider value={{ user, loginWithPi, sdkReady, loading }}>
+    <PiAuthContext.Provider value={{ user, login, sdkReady }}>
       {children}
     </PiAuthContext.Provider>
   );

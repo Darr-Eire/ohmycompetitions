@@ -1,103 +1,56 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { loadPiSdk } from 'lib/pi';
+import { usePiAuth } from '@/context/PiAuthContext';
 
-export default function BuyTicketButton({ competitionSlug, entryFee, quantity }) {
-  const [sdkReady, setSdkReady] = useState(false);
+export default function BuyWithPiButton({ amount, competitionSlug }) {
+  const { user } = usePiAuth();
 
-  // Load Pi SDK on mount
-  useEffect(() => {
-    loadPiSdk(setSdkReady);
-  }, []);
-
-  // Debug logs
-  useEffect(() => {
-    console.log('[DEBUG] sdkReady:', sdkReady);
-    console.log('[DEBUG] window.Pi:', typeof window !== 'undefined' && window.Pi);
-  }, [sdkReady]);
-
-  // Handle payment
   const handlePayment = async () => {
-    if (
-      typeof window === 'undefined' ||
-      !window.Pi ||
-      typeof window.Pi.createPayment !== 'function'
-    ) {
-      alert('⚠️ Pi SDK not ready. Make sure you are in the Pi Browser.');
+    if (!window.Pi || !user) {
+      alert('Please log in with Pi first.');
       return;
     }
 
-    console.log('🚀 Starting Pi.createPayment...');
-
-    const total = (entryFee * quantity).toFixed(2);
-
     window.Pi.createPayment(
       {
-        amount: parseFloat(total),
+        amount,
         memo: `Entry for ${competitionSlug}`,
-        metadata: { competitionSlug, quantity },
+        metadata: { competitionSlug },
       },
       {
         onReadyForServerApproval: async (paymentId) => {
-          try {
-            const res = await fetch('/api/payments/approve', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ paymentId }),
-            });
-
-            if (!res.ok) {
-              throw new Error(await res.text());
-            }
-
-            console.log('[✅] Payment approved on server');
-          } catch (err) {
-            console.error('[ERROR] Approving payment:', err);
-            alert('❌ Server approval failed. See console.');
-          }
+          await fetch('/api/pi/approve-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId, uid: user.uid, competitionSlug, amount }),
+          });
         },
-
         onReadyForServerCompletion: async (paymentId, txid) => {
-          try {
-            console.log('🧾 Completing with txid:', txid);
-            const res = await fetch('/api/payments/complete', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ paymentId, txid }),
-            });
+          await fetch('/api/pi/complete-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId, txid }),
+          });
 
-            if (!res.ok) {
-              throw new Error(await res.text());
-            }
-
-            const data = await res.json();
-            console.log('[🎟️] Ticket issued:', data);
-            alert(`✅ Ticket purchased successfully!\n🎟️ ID: ${data.ticketId}`);
-          } catch (err) {
-            console.error('[ERROR] Completing payment:', err);
-            alert('❌ Server completion failed. See console.');
-          }
+          alert('✅ Payment successful! 🎉');
         },
-
-        onCancel: (paymentId) => {
-          console.warn('[APP] Payment cancelled:', paymentId);
+        onCancel: () => {
+          alert('❌ Payment cancelled');
         },
-
-        onError: (error, payment) => {
-          console.error('[APP] Payment error:', error, payment);
+        onError: (error) => {
+          console.error('Payment error:', error);
+          alert('❌ Payment failed');
         },
       }
     );
-  }; // ✅ Close handlePayment function here
+  };
 
   return (
     <button
       onClick={handlePayment}
-      className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-xl shadow transition"
+      className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded font-bold"
     >
-      Confirm Ticket Purchase
+      Pay {amount} π to Enter
     </button>
   );
-} // ✅ Close component function
-
+}
