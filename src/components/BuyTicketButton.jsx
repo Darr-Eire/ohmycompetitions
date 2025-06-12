@@ -1,6 +1,6 @@
 'use client';
 
-import { usePiAuth } from '@/context/PiAuthContext';
+import { usePiAuth } from 'context/PiAuthContext';
 
 export default function BuyWithPiButton({ amount, competitionSlug }) {
   const { user } = usePiAuth();
