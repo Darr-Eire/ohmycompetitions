@@ -1,4 +1,4 @@
-import { dbConnect } from '@/lib/dbConnect';
+import { dbConnect } from 'lib/dbConnect';
 
 import mongoose from 'mongoose'; // required if you're using types or ObjectId later
 import PiCashCode from '../../models/PiCashCode'; // ✅ Already defined schema

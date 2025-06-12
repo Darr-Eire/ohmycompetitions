@@ -1,4 +1,14 @@
-import { loadPiSdk } from '../lib/loadPiSdk'; // adjust path if needed
+'use client';
+
+import { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
+import { loadPiSdk } from '../lib/loadPiSdk';
+
+const PiAuthContext = createContext();
+
+export function usePiAuth() {
+  return useContext(PiAuthContext);
+}
 
 export function PiAuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -17,9 +27,10 @@ export function PiAuthProvider({ children }) {
 
     try {
       const scopes = ['username', 'payments'];
+
       const onIncompletePaymentFound = async (payment) => {
         console.warn('⚠️ Incomplete Pi payment:', payment);
-        // You can auto-complete this here if needed
+        // Handle retry/complete here if needed
       };
 
       const { accessToken, user: piUser } = await window.Pi.authenticate(scopes, onIncompletePaymentFound);
@@ -33,7 +44,7 @@ export function PiAuthProvider({ children }) {
         alert('❌ Login verification failed');
       }
     } catch (err) {
-      console.error('❌ Pi Login failed:', err.message);
+      console.error('❌ Pi Login failed:', err.message || err);
       alert('Pi Login failed');
     }
   };
