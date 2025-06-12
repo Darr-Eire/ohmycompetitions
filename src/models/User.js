@@ -2,19 +2,24 @@ import mongoose from 'mongoose';
 
 const UserSchema = new mongoose.Schema(
   {
-    piUserId: { type: String, required: false, unique: true, sparse: true },  // Pi SDK user id
+    // Pi Network
+    piUserId: { type: String, required: false, unique: true, sparse: true }, // Pi SDK user id
     username: { type: String, required: true },
-    email: { type: String, unique: true, sparse: true },  // Admin email (optional for Pi)
-    password: { type: String },  // Admin password (only for NextAuth CredentialsProvider)
+
+    // Optional email/password for admin or email-based login
+    email: { type: String, unique: true, sparse: true },
+    password: { type: String },
+
+    // Role-based access
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
 
-    // Account info
+    // Optional profile info
     country: { type: String, default: '' },
     profileImage: { type: String, default: '' },
     bio: { type: String, default: '' },
     birthdate: { type: Date },
 
-    // Social links
+    // Socials
     social: {
       twitter: { type: String, default: '' },
       instagram: { type: String, default: '' },
@@ -22,7 +27,7 @@ const UserSchema = new mongoose.Schema(
       tiktok: { type: String, default: '' },
     },
 
-    // Referral system
+    // Referrals
     referralCode: { type: String, unique: true, sparse: true },
     referredBy: { type: String, default: '' },
     bonusTickets: { type: Number, default: 0 },
@@ -30,5 +35,5 @@ const UserSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ✅ Prevent model overwrite errors
+// ✅ Prevents model recompile on hot reload
 export default mongoose.models.User || mongoose.model('User', UserSchema);

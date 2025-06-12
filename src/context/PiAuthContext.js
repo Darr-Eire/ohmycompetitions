@@ -30,8 +30,8 @@ export function PiAuthProvider({ children }) {
           window.Pi.init({ version: '2.0' });
           setSdkReady(true);
         } catch (err) {
-          alert('❌ Pi.init failed: ' + err.message);
           console.error('❌ Pi.init() failed:', err);
+          alert('❌ Pi.init failed: ' + err.message);
         }
       };
       script.onerror = () => alert('❌ Failed to load Pi SDK');
@@ -45,6 +45,7 @@ export function PiAuthProvider({ children }) {
     try {
       if (!sdkReady || !window.Pi) throw new Error('Pi SDK not ready');
 
+      // 💣 Full session cleanup to avoid stale auth/cache
       localStorage.removeItem('piUser');
       sessionStorage.clear();
       if (indexedDB?.databases) {
@@ -52,17 +53,12 @@ export function PiAuthProvider({ children }) {
         for (const db of dbs) await indexedDB.deleteDatabase(db.name);
       }
 
-      const onIncompletePaymentFound = async (payment) => {
+      const auth = await window.Pi.authenticate(['username', 'payments'], async (payment) => {
         alert('⚠️ Found stuck payment: ' + payment.identifier);
-        return false; // ✅ Clear it
-      };
+        return false; // clear it
+      });
 
-      const scopes = ['username', 'payments'];
-      const auth = await window.Pi.authenticate(scopes, onIncompletePaymentFound);
-
-      if (!auth?.accessToken || !auth.user) {
-        throw new Error('Invalid Pi auth response');
-      }
+      if (!auth?.accessToken || !auth.user) throw new Error('Invalid Pi auth response');
 
       const res = await fetch('/api/pi/verify', {
         method: 'POST',
@@ -71,15 +67,14 @@ export function PiAuthProvider({ children }) {
       });
 
       const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Token verification failed');
-      }
+      if (!res.ok) throw new Error(data.error || 'Token verification failed');
 
       setUser(data);
       localStorage.setItem('piUser', JSON.stringify(data));
       alert('✅ Logged in as ' + data.username);
       return data;
     } catch (err) {
+      console.error('❌ Login error:', err);
       alert('❌ Login error: ' + err.message);
       setError(err.message);
     }
