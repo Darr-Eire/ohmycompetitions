@@ -3,15 +3,27 @@
 import Link from 'next/link'
 import { useState } from 'react'
 
-export default function StartDiscussionPage() {
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
+export default function CelebratePage() {
+  const [name, setName] = useState('')
+  const [story, setStory] = useState('')
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    alert('✅ Post created!\nTitle: ' + title + '\nContent: ' + content)
-    setTitle('')
-    setContent('')
+
+    const res = await fetch('/api/submit/celebration', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, story }),
+    })
+
+    const result = await res.json()
+    if (res.ok) {
+      alert('🎉 Celebration submitted!')
+      setName('')
+      setStory('')
+    } else {
+      alert('❌ Error: ' + result.error)
+    }
   }
 
   return (
@@ -20,33 +32,33 @@ export default function StartDiscussionPage() {
 
         {/* Header Title */}
         <div className="text-center py-4">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-600 text-[#0f172a] py-3 px-6 rounded-2xl inline-block shadow-md">
-            Start a Discussion
+          <h1 className="text-2xl font-bold text-[#0f172a] bg-gradient-to-r from-cyan-400 to-blue-600 py-3 px-6 rounded-2xl inline-block shadow-md">
+            Share Your Win!
           </h1>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block font-semibold mb-1">Title</label>
+            <label className="block font-semibold mb-1">Your Name</label>
             <input
               type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               required
               className="w-full px-4 py-2 text-black bg-white rounded border border-blue-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500"
-              placeholder="What's the topic?"
+              placeholder="e.g. @PiUser123"
             />
           </div>
 
           <div>
-            <label className="block font-semibold mb-1">Message</label>
+            <label className="block font-semibold mb-1">Winning Story</label>
             <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
+              value={story}
+              onChange={(e) => setStory(e.target.value)}
               required
               className="w-full px-4 py-2 text-black bg-white rounded border border-blue-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500"
               rows={5}
-              placeholder="Share your thoughts or ask something..."
+              placeholder="Tell us how you won, what it meant to you, or shout out someone else!"
             />
           </div>
 
@@ -55,7 +67,7 @@ export default function StartDiscussionPage() {
               type="submit"
               className="bg-gradient-to-r from-cyan-400 to-blue-600 text-[#0f172a] font-semibold px-6 py-2 rounded-2xl shadow-md hover:brightness-110 transition"
             >
-              Post
+              Submit Celebration
             </button>
           </div>
         </form>

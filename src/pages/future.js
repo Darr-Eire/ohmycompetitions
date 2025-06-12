@@ -3,19 +3,47 @@
 
 import Link from 'next/link'
 
+const roadmap = [
+  {
+    phase: 'Q3 2025',
+    features: [
+      'Launch VIP Competitions',
+      'Release Loyalty Program',
+      'Mobile Push Notifications',
+      'Global Country Lottery System'
+    ]
+  },
+  {
+    phase: 'Q4 2025',
+    features: [
+      'DAO Voting System',
+      'Prize Vaults with Smart Contract Payouts',
+      'NFT Badges for Winners',
+      'Official App Store & Google Play Launch'
+    ]
+  },
+  {
+    phase: 'Q1 2026',
+    features: [
+      'Full Decentralized Draw Mechanism',
+      'User-Generated Competitions',
+      'Global Leaderboards and Player Stats',
+      'Multilingual Localization for Global Access'
+    ]
+  }
+]
+
 export default function FuturePage() {
   return (
     <main className="app-background min-h-screen flex justify-center px-4 text-white">
       <div className="competition-card max-w-3xl w-full bg-white bg-opacity-10 rounded-2xl shadow-lg">
         {/* Banner */}
-        <div className="competition-top-banner title-gradient">
-          The Future
-        </div>
+        <div className="competition-top-banner title-gradient">The Future</div>
 
         {/* Body */}
         <div className="p-6 space-y-8">
           <p className="text-lg">
-             Here’s a glimpse at the amazing new features and ideas we’re building for our players!
+            Here’s a glimpse at the amazing new features and ideas we’re building for our players!
           </p>
 
           {/* Section: Competitions */}
@@ -72,12 +100,12 @@ export default function FuturePage() {
 
         
 
+ 
+
           {/* Call to Action */}
           <div className="text-center mt-8">
             <Link href="/forums/general">
-              <button className="btn-gradient">
-                Join the Conversation
-              </button>
+              <button className="btn-gradient">Join the Conversation</button>
             </Link>
           </div>
         </div>

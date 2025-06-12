@@ -54,7 +54,7 @@ export default function HowWeGotStarted() {
             <section>
               <h2 className="text-xl font-bold gradient-text mt-6">The Birth of OhMyCompetitions</h2>
               <p className="text-white">
-                We wanted to create a place where Pi wasn’t just sitting — it was moving, winning, exciting! Giveaways, mini‑games, live competitions — and a way to make Pi valuable through community and fun. That's how <em>OhMyCompetitions</em> was born — built <strong>by Pioneers, for Pioneers.</strong> 🚀
+                We wanted to create a place where Pi wasn’t just sitting — it was moving, winning, exciting! Giveaways, mini‑games, live competitions — and a way to make Pi valuable through community and fun. That's how <em>OhMyCompetitions</em> was born — built <strong>by Pioneers, for Pioneers.</strong> 
               </p>
             </section>
 
