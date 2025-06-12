@@ -1,9 +1,12 @@
 import jwt from 'jsonwebtoken';
+import cookie from 'cookie';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-dev-secret-key';
 
 export default function handler(req, res) {
-  const token = req.cookies.pi_token;
+  // Parse cookies from request
+  const cookies = cookie.parse(req.headers.cookie || '');
+  const token = cookies.pi_token;
 
   if (!token) {
     return res.status(401).json({ error: 'Not logged in' });
@@ -13,6 +16,7 @@ export default function handler(req, res) {
     const decoded = jwt.verify(token, JWT_SECRET);
     return res.status(200).json({ user: decoded });
   } catch (err) {
-    return res.status(401).json({ error: 'Invalid session token' });
+    console.error('Session token error:', err);
+    return res.status(401).json({ error: 'Invalid or expired session token' });
   }
 }

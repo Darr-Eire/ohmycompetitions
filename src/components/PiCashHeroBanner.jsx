@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function PiCashHeroBanner() {
@@ -17,7 +17,7 @@ export default function PiCashHeroBanner() {
         const json = await res.json();
         setData(json);
       } catch (err) {
-        console.error('Failed to fetch PiCash data:', err);
+        console.error('❌ Failed to fetch PiCash data:', err);
         setError(true);
       }
     };
@@ -29,7 +29,7 @@ export default function PiCashHeroBanner() {
 
     const target = new Date(data.expiresAt).getTime();
 
-    const calculate = () => {
+    const update = () => {
       const now = Date.now();
       const diff = target - now;
 
@@ -46,19 +46,17 @@ export default function PiCashHeroBanner() {
       });
     };
 
-    calculate();
-    const timer = setInterval(calculate, 1000);
+    update();
+    const timer = setInterval(update, 1000);
     return () => clearInterval(timer);
   }, [data?.expiresAt]);
 
-  // ✅ if fetch failed, show error message
   if (error) {
-    return <div className="text-center text-red-500">Failed to load Pi Cash Code data.</div>;
+    return <div className="text-center text-red-500">❌ Failed to load Pi Cash Code data.</div>;
   }
 
-  // ✅ if loading still, show a loading skeleton
   if (!data) {
-    return <div className="text-center text-cyan-300">Loading...</div>;
+    return <div className="text-center text-cyan-300">Loading Pi Cash Code...</div>;
   }
 
   return (
@@ -108,10 +106,10 @@ export default function PiCashHeroBanner() {
 
       <div className="mt-4 sm:mt-6 text-center text-xs sm:text-sm">
         <ul className="list-disc list-inside space-y-1 text-white/80 text-left max-w-xs mx-auto">
-          <li>The code drops every Monday at <span className="font-bold text-white">3:14 PM UTC</span></li>
-          <li>Stays active for <span className="font-bold text-white">31h 4m</span></li>
-          <li>Draw is every Friday at <span className="font-bold text-white">3:14 PM UTC</span></li>
-          <li>Winner has <span className="font-bold text-white">31m 4s</span> to submit the code</li>
+          <li>The code drops every <strong className="text-white">Monday @ 3:14 PM UTC</strong></li>
+          <li>Stays active for <strong className="text-white">31h 4m</strong></li>
+          <li>Draw is every <strong className="text-white">Friday @ 3:14 PM UTC</strong></li>
+          <li>Winner has <strong className="text-white">31m 4s</strong> to claim or it rolls over</li>
         </ul>
       </div>
     </div>
