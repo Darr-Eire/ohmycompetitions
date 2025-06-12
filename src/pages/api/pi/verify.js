@@ -7,17 +7,13 @@ export default async function handler(req, res) {
   if (!accessToken) return res.status(400).json({ error: 'Missing access token' });
 
   try {
-    const response = await axios.get('https://api.minepi.com/v2/me', {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
+    const { data } = await axios.get('https://api.minepi.com/v2/me', {
+      headers: { Authorization: `Bearer ${accessToken}` },
     });
 
-    const { uid, username } = response.data;
-    return res.status(200).json({ uid, username });
-  } catch (err) {
-    console.error('❌ Pi verification failed:', err?.response?.data || err.message);
-    return res.status(401).json({ error: 'Invalid or expired Pi token' });
+    return res.status(200).json(data);
+  } catch (e) {
+    console.error('❌ Token verification failed:', e?.response?.data || e.message);
+    return res.status(401).json({ error: 'Invalid or expired token' });
   }
 }

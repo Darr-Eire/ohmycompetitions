@@ -1,4 +1,3 @@
-// components/CompetitionCard.js
 'use client';
 
 import Image from 'next/image';
@@ -66,16 +65,19 @@ export default function CompetitionCard({
   return (
     <div className="flex flex-col w-full max-w-xs mx-auto h-full bg-[#0f172a] border border-cyan-600 rounded-xl shadow-lg text-white font-orbitron overflow-hidden transition-all duration-300 hover:scale-[1.03]">
 
+      {/* Title */}
       <div className="card-header-gradient px-4 py-2 flex justify-center items-center">
         <span className="text-sm sm:text-base font-semibold text-black">
           {title}
         </span>
       </div>
 
+      {/* Image */}
       <div className="relative w-full aspect-[16/9] bg-black overflow-hidden">
         <Image src={imageUrl || '/pi.jpeg'} alt={title} fill className="object-cover" priority />
       </div>
 
+      {/* Status Banner */}
       <div className="px-4 pt-2">
         <div className={`w-full text-center px-3 py-1 rounded-full text-xs sm:text-sm font-bold shadow 
           ${status === 'LIVE NOW'
@@ -87,6 +89,7 @@ export default function CompetitionCard({
         </div>
       </div>
 
+      {/* LIVE timer */}
       {status === 'LIVE' && (
         <div className="flex justify-center items-center gap-3 px-4 pt-3">
           <div className="bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-3 py-1 rounded-lg">
@@ -95,6 +98,7 @@ export default function CompetitionCard({
         </div>
       )}
 
+      {/* Info */}
       <div className="p-4 text-xs sm:text-sm text-center space-y-3">
 
         <div className="flex justify-between">
@@ -128,6 +132,7 @@ export default function CompetitionCard({
         <p className="text-gray-300 text-xs">Sold: {sold.toLocaleString()} ({percent}%)</p>
       </div>
 
+      {/* Button */}
       {children ? children : !hideButton && (
         <div className="p-4 pt-0 mt-auto">
           <Link href={`/ticket-purchase/${comp?.slug}`}>

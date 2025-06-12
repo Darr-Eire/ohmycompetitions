@@ -6,35 +6,36 @@
   <title>Pi Login Test</title>
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
   <script>
-    window.Pi.init({ version: '2.0', sandbox: true });
+    Pi.init({ version: "2.0", sandbox: true }); // ← set to false in production
   </script>
 </head>
-<body>
-  <h1>Login with Pi</h1>
-  <button id="login">Log In</button>
-  <pre id="output" style="white-space: pre-wrap;"></pre>
+<body style="font-family:sans-serif; text-align:center; padding:2rem;">
+
+  <h1>Test Pi Login</h1>
+  <button onclick="loginWithPi()">Login with Pi</button>
 
   <script>
-    const scopes = ['username', 'payments'];
-
-    function onIncompletePaymentFound(payment) {
-      document.getElementById('output').textContent =
-        '⚠️ Incomplete Payment Found:\n' + JSON.stringify(payment, null, 2);
-    }
-
-    document.getElementById('login').addEventListener('click', () => {
-      document.getElementById('output').textContent = 'Starting Pi.authenticate...';
-      Pi.authenticate(scopes, onIncompletePaymentFound)
-        .then(({ accessToken, user }) => {
-          document.getElementById('output').textContent =
-            '✅ Login successful!\n\nUser:\n' + JSON.stringify(user, null, 2) +
-            '\n\nAccessToken:\n' + accessToken;
-        })
-        .catch(err => {
-          document.getElementById('output').textContent =
-            '❌ Login failed:\n' + err.message;
+    function loginWithPi() {
+      Pi.authenticate(['username', 'payments'], function (payment) {
+        console.log('⚠️ Found unfinished payment', payment);
+      }).then(({ accessToken, user }) => {
+        alert(`✅ Logged in as ${user.username}`);
+        return fetch('/api/pi/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ accessToken }),
         });
-    });
+      }).then(res => {
+        if (!res.ok) throw new Error('Backend verification failed');
+        return res.json();
+      }).then(data => {
+        alert(`✅ Backend verified user: ${data.username}`);
+      }).catch(err => {
+        alert('❌ Login failed: ' + err.message);
+        console.error('Login error:', err);
+      });
+    }
   </script>
+
 </body>
 </html>
