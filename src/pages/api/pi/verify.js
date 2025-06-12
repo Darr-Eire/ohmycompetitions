@@ -1,5 +1,3 @@
-// /pages/api/pi/verify.js
-
 import axios from 'axios';
 
 export default async function handler(req, res) {
@@ -18,18 +16,24 @@ export default async function handler(req, res) {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
     });
 
-    const { uid, username } = piResponse.data;
+    const { uid, username, wallet } = piResponse.data;
 
     if (!uid || !username) {
       throw new Error('Missing uid or username in Pi response');
     }
 
-    return res.status(200).json({ uid, username });
+    return res.status(200).json({ uid, username, wallet });
   } catch (err) {
-    console.error('❌ Pi verification failed:', err?.response?.data || err.message || err);
+    console.error('❌ Pi verification failed:', {
+      status: err?.response?.status,
+      data: err?.response?.data,
+      message: err.message,
+    });
+
     return res.status(401).json({ error: 'Invalid or expired Pi token' });
   }
 }

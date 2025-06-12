@@ -6,26 +6,24 @@ export const PiAuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [sdkReady, setSdkReady] = useState(false);
 
-  // Load Pi SDK
-useEffect(() => {
-  if (typeof window === 'undefined') return;
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
 
-  if (!window.Pi) {
-    const script = document.createElement('script');
-    script.src = 'https://sdk.minepi.com/pi-sdk.js';
-    script.onload = () => {
-      window.Pi.init({ version: '2.0' });
+    if (!window.Pi) {
+      const script = document.createElement('script');
+      script.src = 'https://sdk.minepi.com/pi-sdk.js';
+      script.onload = () => {
+        window.Pi.init({ version: '2.0' });
+        setSdkReady(true);
+      };
+      script.onerror = () => {
+        console.error('❌ Failed to load Pi SDK');
+      };
+      document.body.appendChild(script);
+    } else {
       setSdkReady(true);
-    };
-    script.onerror = () => {
-      console.error('❌ Failed to load Pi SDK');
-    };
-    document.body.appendChild(script);
-  } else {
-    setSdkReady(true);
-  }
-}, []);
-
+    }
+  }, []);
 
   const login = () => {
     return new Promise((resolve, reject) => {
@@ -34,9 +32,8 @@ useEffect(() => {
         return reject('Pi SDK not loaded');
       }
 
-      const scopes = ['username', 'payments'];
       window.Pi.authenticate(
-        scopes,
+        ['username', 'payments'],
         async (auth) => {
           try {
             const res = await fetch('/api/pi/verify', {
@@ -51,17 +48,14 @@ useEffect(() => {
               localStorage.setItem('piUser', JSON.stringify(data));
               resolve(data);
             } else {
-              console.error('❌ Verify failed:', data.error);
               reject(data.error);
             }
           } catch (err) {
-            console.error('❌ Server error during verify:', err);
-            reject(err.message || 'Server error');
+            reject(err.message || 'Verification failed');
           }
         },
-        (error) => {
-          console.error('❌ Pi login failed:', error);
-          reject(error.message || 'Cancelled');
+        (err) => {
+          reject(err.message || 'Cancelled');
         }
       );
     });
@@ -73,14 +67,8 @@ useEffect(() => {
   };
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('piUser');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (err) {
-        console.error('❌ Failed to parse stored user:', err);
-      }
-    }
+    const stored = localStorage.getItem('piUser');
+    if (stored) setUser(JSON.parse(stored));
   }, []);
 
   return (
