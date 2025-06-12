@@ -1,15 +1,10 @@
 import axios from 'axios';
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
-  }
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
   const { accessToken } = req.body;
-
-  if (!accessToken || typeof accessToken !== 'string') {
-    return res.status(400).json({ error: 'Missing or invalid access token' });
-  }
+  if (!accessToken) return res.status(400).json({ error: 'Missing access token' });
 
   try {
     const response = await axios.get('https://api.minepi.com/v2/me', {
@@ -20,11 +15,6 @@ export default async function handler(req, res) {
     });
 
     const { uid, username } = response.data;
-
-    if (!uid || !username) {
-      throw new Error('Missing uid or username in Pi response');
-    }
-
     return res.status(200).json({ uid, username });
   } catch (err) {
     console.error('❌ Pi verification failed:', err?.response?.data || err.message);

@@ -1,83 +1,65 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+'use client';
+
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
 
 const PiAuthContext = createContext();
 
-export const PiAuthProvider = ({ children }) => {
+export function usePiAuth() {
+  return useContext(PiAuthContext);
+}
+
+export function PiAuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [sdkReady, setSdkReady] = useState(false);
+  const [loading, setLoading] = useState(true);
 
+  // Load SDK
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    if (!window.Pi) {
-      const script = document.createElement('script');
-      script.src = 'https://sdk.minepi.com/pi-sdk.js';
-      script.onload = () => {
-        window.Pi.init({ version: '2.0' });
-        setSdkReady(true);
-      };
-      script.onerror = () => {
-        console.error('❌ Failed to load Pi SDK');
-      };
-      document.body.appendChild(script);
-    } else {
+    if (window.Pi) {
       setSdkReady(true);
+      return;
     }
+
+    const script = document.createElement('script');
+    script.src = 'https://sdk.minepi.com/pi-sdk.js';
+    script.onload = () => {
+      window.Pi.init({ version: '2.0' });
+      setSdkReady(true);
+    };
+    script.onerror = () => {
+      console.error('❌ Failed to load Pi SDK');
+    };
+    document.body.appendChild(script);
   }, []);
 
-  const login = () => {
-    return new Promise((resolve, reject) => {
-      if (!window.Pi) return reject('Pi SDK not available');
-
-      window.Pi.authenticate(['username', 'payments'], async (auth) => {
-        try {
-          const res = await fetch('/api/pi/verify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ accessToken: auth.accessToken }),
-          });
-
-          const data = await res.json();
-          if (res.ok) {
-            setUser(data);
-            localStorage.setItem('piUser', JSON.stringify(data));
-            resolve(data);
-          } else {
-            console.error('❌ Verify failed:', data.error);
-            reject(data.error);
-          }
-        } catch (err) {
-          console.error('❌ Server error during verify:', err);
-          reject(err.message || 'Server error');
-        }
-      }, (err) => {
-        console.error('❌ Pi login failed:', err);
-        reject(err.message || 'Cancelled');
-      });
-    });
-  };
-
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('piUser');
-  };
-
-  useEffect(() => {
-    const stored = localStorage.getItem('piUser');
-    if (stored) {
-      try {
-        setUser(JSON.parse(stored));
-      } catch (err) {
-        console.error('❌ Failed to parse local user:', err);
-      }
+  const loginWithPi = async () => {
+    if (!sdkReady || !window.Pi) {
+      console.error('❌ Pi SDK not ready');
+      return;
     }
-  }, []);
+
+    try {
+      const scopes = ['username', 'payments'];
+      const onIncompletePaymentFound = (payment) => {
+        console.log('⚠️ Incomplete payment:', payment);
+      };
+
+      const authResult = await window.Pi.authenticate(scopes, onIncompletePaymentFound);
+      const accessToken = authResult.accessToken;
+
+      const res = await axios.post('/api/pi/verify', { accessToken });
+      setUser(res.data);
+    } catch (error) {
+      console.error('❌ Pi login error:', error);
+    }
+  };
 
   return (
-    <PiAuthContext.Provider value={{ user, sdkReady, login, logout }}>
+    <PiAuthContext.Provider value={{ user, loginWithPi, sdkReady, loading }}>
       {children}
     </PiAuthContext.Provider>
   );
-};
-
-export const usePiAuth = () => useContext(PiAuthContext);
+}
