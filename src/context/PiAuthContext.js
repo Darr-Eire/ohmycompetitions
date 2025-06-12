@@ -1,81 +1,45 @@
-'use client';
-
-import { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
-
-const PiAuthContext = createContext();
-
-export function usePiAuth() {
-  return useContext(PiAuthContext);
-}
+import { loadPiSdk } from '../lib/loadPiSdk'; // adjust path if needed
 
 export function PiAuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [sdkReady, setSdkReady] = useState(false);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const loadPiSDK = () => {
-      if (window.Pi) {
-        window.Pi.init({ version: '2.0', sandbox: true });
-        setSdkReady(true);
-      } else {
-        const script = document.createElement('script');
-        script.src = 'https://sdk.minepi.com/pi-sdk.js';
-        script.onload = () => {
-          window.Pi.init({ version: '2.0', sandbox: true });
-          setSdkReady(true);
-        };
-        script.onerror = () => {
-          console.error('❌ Failed to load Pi SDK');
-        };
-        document.body.appendChild(script);
-      }
-    };
-
-    loadPiSDK();
+    loadPiSdk(setSdkReady);
   }, []);
 
-  const loginWithPi = async () => {
-    if (!sdkReady || !window.Pi) {
-      alert('⚠️ Pi SDK not ready');
+  const login = async () => {
+    if (!sdkReady || typeof window.Pi?.authenticate !== 'function') {
+      console.warn('❌ Pi SDK not ready');
+      alert('Pi SDK not ready yet');
       return;
     }
 
     try {
       const scopes = ['username', 'payments'];
       const onIncompletePaymentFound = async (payment) => {
-        console.warn('⚠️ Incomplete payment:', payment);
-
-        if (payment.transaction?.txid) {
-          await axios.post('/api/pi/complete-payment', {
-            paymentId: payment.identifier,
-            txid: payment.transaction.txid,
-          });
-        }
+        console.warn('⚠️ Incomplete Pi payment:', payment);
+        // You can auto-complete this here if needed
       };
 
-      const { accessToken } = await window.Pi.authenticate(scopes, onIncompletePaymentFound);
+      const { accessToken, user: piUser } = await window.Pi.authenticate(scopes, onIncompletePaymentFound);
+
       const res = await axios.post('/api/pi/verify', { accessToken });
 
       if (res.status === 200) {
         setUser(res.data);
-        console.log('✅ Logged in:', res.data);
+        console.log('✅ Login verified:', res.data);
       } else {
-        console.warn('❌ Backend verification failed');
+        alert('❌ Login verification failed');
       }
     } catch (err) {
-      console.error('❌ Login failed:', err.message);
+      console.error('❌ Pi Login failed:', err.message);
+      alert('Pi Login failed');
     }
   };
 
-  const logout = () => {
-    setUser(null);
-  };
-
   return (
-    <PiAuthContext.Provider value={{ user, loginWithPi, logout, sdkReady }}>
+    <PiAuthContext.Provider value={{ user, login }}>
       {children}
     </PiAuthContext.Provider>
   );
