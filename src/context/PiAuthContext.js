@@ -1,94 +1,93 @@
-'use client';
-
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 const PiAuthContext = createContext();
 
-export function usePiAuth() {
-  return useContext(PiAuthContext);
-}
-
-export function PiAuthProvider({ children }) {
+export const PiAuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [sdkReady, setSdkReady] = useState(false);
-  const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
+  // Load Pi SDK
+useEffect(() => {
+  if (typeof window === 'undefined') return;
 
-    const loadPiSdk = () => {
-      if (window.Pi) {
-        window.Pi.init({ version: '2.0' });
-        setSdkReady(true);
-        return;
-      }
-
-      const script = document.createElement('script');
-      script.src = 'https://sdk.minepi.com/pi-sdk.js';
-      script.onload = () => {
-        try {
-          window.Pi.init({ version: '2.0' });
-          setSdkReady(true);
-        } catch (err) {
-          console.error('❌ Pi.init() failed:', err);
-          alert('❌ Pi.init failed: ' + err.message);
-        }
-      };
-      script.onerror = () => alert('❌ Failed to load Pi SDK');
-      document.body.appendChild(script);
+  if (!window.Pi) {
+    const script = document.createElement('script');
+    script.src = 'https://sdk.minepi.com/pi-sdk.js';
+    script.onload = () => {
+      window.Pi.init({ version: '2.0' });
+      setSdkReady(true);
     };
+    script.onerror = () => {
+      console.error('❌ Failed to load Pi SDK');
+    };
+    document.body.appendChild(script);
+  } else {
+    setSdkReady(true);
+  }
+}, []);
 
-    loadPiSdk();
-  }, []);
 
-  const login = async () => {
-    try {
-      if (!sdkReady || !window.Pi) throw new Error('Pi SDK not ready');
-
-      // 💣 Full session cleanup to avoid stale auth/cache
-      localStorage.removeItem('piUser');
-      sessionStorage.clear();
-      if (indexedDB?.databases) {
-        const dbs = await indexedDB.databases();
-        for (const db of dbs) await indexedDB.deleteDatabase(db.name);
+  const login = () => {
+    return new Promise((resolve, reject) => {
+      if (!window.Pi) {
+        console.error('❌ Pi SDK not available');
+        return reject('Pi SDK not loaded');
       }
 
-      const auth = await window.Pi.authenticate(['username', 'payments'], async (payment) => {
-        alert('⚠️ Found stuck payment: ' + payment.identifier);
-        return false; // clear it
-      });
+      const scopes = ['username', 'payments'];
+      window.Pi.authenticate(
+        scopes,
+        async (auth) => {
+          try {
+            const res = await fetch('/api/pi/verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ accessToken: auth.accessToken }),
+            });
 
-      if (!auth?.accessToken || !auth.user) throw new Error('Invalid Pi auth response');
-
-      const res = await fetch('/api/pi/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken: auth.accessToken }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Token verification failed');
-
-      setUser(data);
-      localStorage.setItem('piUser', JSON.stringify(data));
-      alert('✅ Logged in as ' + data.username);
-      return data;
-    } catch (err) {
-      console.error('❌ Login error:', err);
-      alert('❌ Login error: ' + err.message);
-      setError(err.message);
-    }
+            const data = await res.json();
+            if (res.ok) {
+              setUser(data);
+              localStorage.setItem('piUser', JSON.stringify(data));
+              resolve(data);
+            } else {
+              console.error('❌ Verify failed:', data.error);
+              reject(data.error);
+            }
+          } catch (err) {
+            console.error('❌ Server error during verify:', err);
+            reject(err.message || 'Server error');
+          }
+        },
+        (error) => {
+          console.error('❌ Pi login failed:', error);
+          reject(error.message || 'Cancelled');
+        }
+      );
+    });
   };
 
   const logout = () => {
-    localStorage.removeItem('piUser');
     setUser(null);
-    alert('👋 Logged out');
+    localStorage.removeItem('piUser');
   };
 
+  useEffect(() => {
+    const storedUser = localStorage.getItem('piUser');
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (err) {
+        console.error('❌ Failed to parse stored user:', err);
+      }
+    }
+  }, []);
+
   return (
-    <PiAuthContext.Provider value={{ user, login, logout, error }}>
+    <PiAuthContext.Provider value={{ user, sdkReady, login, logout }}>
       {children}
     </PiAuthContext.Provider>
   );
-}
+};
+
+export const usePiAuth = () => useContext(PiAuthContext);
