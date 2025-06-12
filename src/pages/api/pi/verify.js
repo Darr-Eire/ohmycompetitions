@@ -12,28 +12,22 @@ export default async function handler(req, res) {
   }
 
   try {
-    const piResponse = await axios.get('https://api.minepi.com/v2/me', {
+    const response = await axios.get('https://api.minepi.com/v2/me', {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
       },
     });
 
-    const { uid, username, wallet } = piResponse.data;
+    const { uid, username } = response.data;
 
     if (!uid || !username) {
       throw new Error('Missing uid or username in Pi response');
     }
 
-    return res.status(200).json({ uid, username, wallet });
+    return res.status(200).json({ uid, username });
   } catch (err) {
-    console.error('❌ Pi verification failed:', {
-      status: err?.response?.status,
-      data: err?.response?.data,
-      message: err.message,
-    });
-
+    console.error('❌ Pi verification failed:', err?.response?.data || err.message);
     return res.status(401).json({ error: 'Invalid or expired Pi token' });
   }
 }

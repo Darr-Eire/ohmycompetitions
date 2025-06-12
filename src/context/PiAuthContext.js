@@ -27,37 +27,33 @@ export const PiAuthProvider = ({ children }) => {
 
   const login = () => {
     return new Promise((resolve, reject) => {
-      if (!window.Pi) {
-        console.error('❌ Pi SDK not available');
-        return reject('Pi SDK not loaded');
-      }
+      if (!window.Pi) return reject('Pi SDK not available');
 
-      window.Pi.authenticate(
-        ['username', 'payments'],
-        async (auth) => {
-          try {
-            const res = await fetch('/api/pi/verify', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ accessToken: auth.accessToken }),
-            });
+      window.Pi.authenticate(['username', 'payments'], async (auth) => {
+        try {
+          const res = await fetch('/api/pi/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ accessToken: auth.accessToken }),
+          });
 
-            const data = await res.json();
-            if (res.ok) {
-              setUser(data);
-              localStorage.setItem('piUser', JSON.stringify(data));
-              resolve(data);
-            } else {
-              reject(data.error);
-            }
-          } catch (err) {
-            reject(err.message || 'Verification failed');
+          const data = await res.json();
+          if (res.ok) {
+            setUser(data);
+            localStorage.setItem('piUser', JSON.stringify(data));
+            resolve(data);
+          } else {
+            console.error('❌ Verify failed:', data.error);
+            reject(data.error);
           }
-        },
-        (err) => {
-          reject(err.message || 'Cancelled');
+        } catch (err) {
+          console.error('❌ Server error during verify:', err);
+          reject(err.message || 'Server error');
         }
-      );
+      }, (err) => {
+        console.error('❌ Pi login failed:', err);
+        reject(err.message || 'Cancelled');
+      });
     });
   };
 
@@ -68,7 +64,13 @@ export const PiAuthProvider = ({ children }) => {
 
   useEffect(() => {
     const stored = localStorage.getItem('piUser');
-    if (stored) setUser(JSON.parse(stored));
+    if (stored) {
+      try {
+        setUser(JSON.parse(stored));
+      } catch (err) {
+        console.error('❌ Failed to parse local user:', err);
+      }
+    }
   }, []);
 
   return (

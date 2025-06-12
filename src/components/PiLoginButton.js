@@ -38,12 +38,15 @@ export default function PiLoginButton() {
     setError(null);
 
     try {
+      console.log('🔄 Starting Pi.authenticate...');
       window.Pi.authenticate(['username', 'payments'], async (auth) => {
         if (!auth.accessToken) {
           setError('Missing access token');
           setProcessing(false);
           return;
         }
+
+        console.log('🔐 Got access token:', auth.accessToken);
 
         const res = await fetch('/api/pi/verify', {
           method: 'POST',
@@ -57,7 +60,7 @@ export default function PiLoginButton() {
           setUser(data);
           localStorage.setItem('piUser', JSON.stringify(data));
         } else {
-          console.error('❌ Server rejected Pi login:', data.error);
+          console.error('❌ Server rejected login:', data.error);
           setError(data.error || 'Login failed');
         }
         setProcessing(false);
