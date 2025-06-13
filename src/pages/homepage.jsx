@@ -10,6 +10,7 @@ import PiCompetitionCard from '@components/PiCompetitionCard';
 import CryptoGiveawayCard from '@components/CryptoGiveawayCard';
 import CompetitionCard from '@components/CompetitionCard';
 import PiCashHeroBanner from '@components/PiCashHeroBanner';
+import MiniPrizeCarousel from '@components/MiniPrizeCarousel';
 
 import {
   techItems,
@@ -17,15 +18,28 @@ import {
   piItems,
   freeItems,
   cryptoGiveawaysItems,
-  dailyItems
+  dailyItems,
 } from '@data/competitions';
+
 
 export default function HomePage() {
   return (
     <>
+      {/* Hero Banner */}
       <div className="mt-0 mb-2 flex justify-center">
         <PiCashHeroBanner />
       </div>
+<MiniPrizeCarousel
+  items={[
+    ...techItems,
+    ...premiumItems,
+    ...piItems,
+    ...dailyItems,
+    ...freeItems,
+    ...cryptoGiveawaysItems,
+  ]}
+/>
+
 
       <main className="space-y-16">
         <Section title="Featured Competitions" items={techItems} viewMoreHref="/competitions/featured" />
@@ -71,12 +85,11 @@ function Section({ title, items = [], viewMoreHref, viewMoreText = 'View More', 
 
   return (
     <section className={`mb-12 ${extraClass}`}>
-   <div className="text-center mb-12">
-  <h2 className="w-full text-base font-bold text-center text-cyan-300 px-4 py-3 rounded-xl font-orbitron shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
-    {title}
-  </h2>
-</div>
-
+      <div className="text-center mb-12">
+        <h2 className="w-full text-base font-bold text-center text-cyan-300 px-4 py-3 rounded-xl font-orbitron shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
+          {title}
+        </h2>
+      </div>
 
       <div className="centered-carousel lg:hidden">
         {items.map((item, i) => renderCard(item, i, { isDaily, isFree, isPi, isCrypto }))}
