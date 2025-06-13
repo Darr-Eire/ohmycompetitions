@@ -76,7 +76,7 @@ export default function PiLotteryTermsPage() {
           <div className="mt-6 text-center">
             <Link href="/lottery">
               <span className="inline-block px-6 py-2 bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold text-sm rounded-md shadow hover:brightness-110 transition">
-                ← Back to Lottery
+                 Back to Lottery
               </span>
             </Link>
           </div>

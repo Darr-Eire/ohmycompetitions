@@ -2,29 +2,45 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { FaComments } from 'react-icons/fa'
 
 export default function StartDiscussionPage() {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    alert('✅ Post created!\nTitle: ' + title + '\nContent: ' + content)
-    setTitle('')
-    setContent('')
+    const res = await fetch('/api/submit/discussion', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, content }),
+    })
+
+    const result = await res.json()
+    if (res.ok) {
+      alert('✅ Post created!')
+      setTitle('')
+      setContent('')
+    } else {
+      alert('❌ Error: ' + result.error)
+    }
   }
 
   return (
-    <main className="min-h-screen px-4 py-10 bg-[#0b1120] text-white font-orbitron">
-      <div className="max-w-3xl mx-auto border border-cyan-400 rounded-2xl p-6 sm:p-8 backdrop-blur-md shadow-[0_0_30px_#00fff055]">
+    <main className="min-h-screen px-4 py-10 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-orbitron">
+      <div className="max-w-3xl mx-auto border border-cyan-700 rounded-2xl p-6 sm:p-8 backdrop-blur-md shadow-[0_0_30px_#00fff055]">
 
         {/* Header Title */}
-        <div className="text-center py-4">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-600 text-[#0f172a] py-3 px-6 rounded-2xl inline-block shadow-md">
-            Start a Discussion
+        <div className="text-center mb-8">
+          <h1 className="w-full text-lg sm:text-xl font-bold text-white px-4 py-3 rounded-xl font-orbitron shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
+            <div className="flex justify-center items-center gap-2">
+              <FaComments />
+              Start a Discussion
+            </div>
           </h1>
         </div>
 
+        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block font-semibold mb-1">Title</label>
@@ -33,7 +49,7 @@ export default function StartDiscussionPage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
-              className="w-full px-4 py-2 text-black bg-white rounded border border-blue-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500"
+              className="w-full px-4 py-2 bg-white bg-opacity-20 text-white rounded placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-cyan-400"
               placeholder="What's the topic?"
             />
           </div>
@@ -44,27 +60,28 @@ export default function StartDiscussionPage() {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               required
-              className="w-full px-4 py-2 text-black bg-white rounded border border-blue-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500"
+              className="w-full px-4 py-2 bg-white bg-opacity-20 text-white rounded placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-cyan-400"
               rows={5}
               placeholder="Share your thoughts or ask something..."
             />
           </div>
 
-          <div className="flex justify-center">
+          {/* CTA Button */}
+          <div className="text-center mt-6">
             <button
               type="submit"
-              className="bg-gradient-to-r from-cyan-400 to-blue-600 text-[#0f172a] font-semibold px-6 py-2 rounded-2xl shadow-md hover:brightness-110 transition"
-            >
+   className="inline-block bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-semibold px-6 py-2 rounded-md shadow hover:brightness-110 transition border border-cyan-700">
               Post
             </button>
           </div>
         </form>
 
-        <div className="text-center mt-6">
+        {/* Back Button */}
+        <div className="text-center mt-4">
           <Link href="/forums">
-            <button className="bg-gradient-to-r from-cyan-400 to-blue-600 text-[#0f172a] font-semibold px-6 py-2 rounded-2xl shadow-md hover:brightness-110 transition">
+            <span className="inline-block bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-semibold px-6 py-2 rounded-md shadow hover:brightness-110 transition border border-cyan-700">
               Back to Forums
-            </button>
+            </span>
           </Link>
         </div>
       </div>

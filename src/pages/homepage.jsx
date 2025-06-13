@@ -71,11 +71,12 @@ function Section({ title, items = [], viewMoreHref, viewMoreText = 'View More', 
 
   return (
     <section className={`mb-12 ${extraClass}`}>
-      <div className="text-center mb-12">
-        <h2 className="w-full text-base font-bold text-center text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-4 py-2 rounded-xl shadow font-orbitron">
-          {title}
-        </h2>
-      </div>
+   <div className="text-center mb-12">
+  <h2 className="w-full text-base font-bold text-center text-cyan-300 px-4 py-3 rounded-xl font-orbitron shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
+    {title}
+  </h2>
+</div>
+
 
       <div className="centered-carousel lg:hidden">
         {items.map((item, i) => renderCard(item, i, { isDaily, isFree, isPi, isCrypto }))}

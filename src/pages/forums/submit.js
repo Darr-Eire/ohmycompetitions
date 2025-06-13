@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { FaPoll, FaThumbsUp } from 'react-icons/fa'
+
 
 export default function SubmitVotePage() {
   const [choice, setChoice] = useState('')
@@ -13,7 +15,7 @@ export default function SubmitVotePage() {
     const res = await fetch('/api/submit/vote', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ choice, reason }),
+      body: JSON.stringify({ voteOption: choice, reason }),
     })
 
     const result = await res.json()
@@ -27,16 +29,20 @@ export default function SubmitVotePage() {
   }
 
   return (
-    <main className="min-h-screen px-4 py-10 bg-[#0b1120] text-white font-orbitron">
-      <div className="max-w-3xl mx-auto border border-cyan-400 rounded-2xl p-6 sm:p-8 backdrop-blur-md shadow-[0_0_30px_#00fff055]">
+    <main className="min-h-screen px-4 py-10 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-orbitron">
+      <div className="max-w-3xl mx-auto border border-cyan-700 rounded-2xl p-6 sm:p-8 backdrop-blur-md shadow-[0_0_30px_#00fff055]">
 
         {/* Header Title */}
-        <div className="text-center py-4">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-600 text-[#0f172a] py-3 px-6 rounded-2xl inline-block shadow-md">
-            Submit Your Vote
+        <div className="text-center mb-8">
+          <h1 className="w-full text-lg sm:text-xl font-bold text-white px-4 py-3 rounded-xl font-orbitron shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
+            <div className="flex justify-center items-center gap-2">
+              <FaThumbsUp />
+              Submit Your Vote
+            </div>
           </h1>
         </div>
 
+        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block font-semibold mb-1">Your Vote</label>
@@ -45,7 +51,7 @@ export default function SubmitVotePage() {
               value={choice}
               onChange={(e) => setChoice(e.target.value)}
               required
-              className="w-full px-4 py-2 text-black bg-white rounded border border-blue-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500"
+              className="w-full px-4 py-2 bg-white bg-opacity-20 text-white rounded placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-cyan-400"
               placeholder="Enter your preferred prize or feature"
             />
           </div>
@@ -56,7 +62,7 @@ export default function SubmitVotePage() {
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               required
-              className="w-full px-4 py-2 text-black bg-white rounded border border-blue-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500"
+              className="w-full px-4 py-2 bg-white bg-opacity-20 text-white rounded placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-cyan-400"
               rows={5}
               placeholder="Tell us why you want this to win!"
             />
@@ -65,18 +71,19 @@ export default function SubmitVotePage() {
           <div className="flex justify-center">
             <button
               type="submit"
-              className="bg-gradient-to-r from-cyan-400 to-blue-600 text-[#0f172a] font-semibold px-6 py-2 rounded-2xl shadow-md hover:brightness-110 transition"
+              className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-semibold px-6 py-2 rounded-md shadow hover:brightness-110 transition border border-cyan-700"
             >
               Submit Vote
             </button>
           </div>
         </form>
 
+        {/* Back Button */}
         <div className="text-center mt-6">
           <Link href="/forums">
-            <button className="bg-gradient-to-r from-cyan-400 to-blue-600 text-[#0f172a] font-semibold px-6 py-2 rounded-2xl shadow-md hover:brightness-110 transition">
+            <span className="inline-block bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-semibold px-6 py-2 rounded-md shadow hover:brightness-110 transition border border-cyan-700">
               Back to Forums
-            </button>
+            </span>
           </Link>
         </div>
       </div>

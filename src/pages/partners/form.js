@@ -37,7 +37,7 @@ export default function PartnerFormPage() {
           </p>
           <div className="text-center mt-6">
             <Link href="/">
-              <a className="view-more-button px-6 py-2">← Back to Home</a>
+              <a className="view-more-button px-6 py-2"> Back to Home</a>
             </Link>
           </div>
         </div>

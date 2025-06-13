@@ -87,7 +87,7 @@ export default function FreeCompTerms() {
         </section>
 
         <Link href="/" className="text-sm text-cyan-300 underline mt-4 mx-auto block text-center">
-          ← Back to Home
+           Back to Home
         </Link>
 
       </div>

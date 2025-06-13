@@ -84,7 +84,7 @@ export default function TicketPurchasePage() {
       <div className="p-6 text-center text-white bg-[#0b1120] min-h-screen">
         <h1 className="text-2xl font-bold text-red-500">Competition Not Found</h1>
         <p className="mt-4">We couldn’t find “{slug}”.</p>
-        <Link href="/" className="mt-6 inline-block text-blue-400 underline font-semibold">← Back to Home</Link>
+        <Link href="/" className="mt-6 inline-block text-blue-400 underline font-semibold"> Back to Home</Link>
       </div>
     );
   }

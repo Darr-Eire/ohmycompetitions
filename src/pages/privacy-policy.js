@@ -88,7 +88,7 @@ export default function PrivacyPolicy() {
           <div className="text-center mt-8">
             <Link href="/">
               <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded">
-                ← Back to Home
+                 Back to Home
               </button>
             </Link>
           </div>

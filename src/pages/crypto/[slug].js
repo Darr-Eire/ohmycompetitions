@@ -106,7 +106,7 @@ export default function CryptoTicketPage() {
     return (
       <div className="text-white text-center py-10 bg-[#0b0f1a] min-h-screen">
         <h1 className="text-2xl font-bold text-red-500">Crypto Giveaway Not Found</h1>
-        <Link href="/" className="text-blue-400 underline mt-4 inline-block">← Go Back</Link>
+        <Link href="/" className="text-blue-400 underline mt-4 inline-block"> Go Back</Link>
       </div>
     );
   }

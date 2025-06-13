@@ -67,7 +67,7 @@ export default function ForumTypeAllPage() {
         <div className="text-center mt-6">
           <Link href="/forums">
             <button className="bg-gradient-to-r from-cyan-400 to-blue-600 text-[#0f172a] font-semibold px-6 py-2 rounded-2xl shadow-md hover:brightness-110 transition">
-              ← Back to Forums
+               Back to Forums
             </button>
           </Link>
         </div>

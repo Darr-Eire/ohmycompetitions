@@ -36,10 +36,10 @@ const roadmap = [
 export default function FuturePage() {
   return (
     <main className="app-background min-h-screen flex justify-center px-4 text-white">
-      <div className="competition-card max-w-3xl w-full bg-white bg-opacity-10 rounded-2xl shadow-lg">
+    
+  <div className="competition-card max-w-3xl w-full bg-white bg-opacity-10 rounded-2xl shadow-lg">
         {/* Banner */}
         <div className="competition-top-banner title-gradient">The Future</div>
-
         {/* Body */}
         <div className="p-6 space-y-8">
           <p className="text-lg">

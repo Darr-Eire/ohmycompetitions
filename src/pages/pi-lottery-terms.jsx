@@ -69,7 +69,7 @@ export default function PiLotteryTerms() {
     href="/lottery"
     className="inline-block bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-2 px-6 rounded-lg hover:from-blue-500 hover:to-cyan-400 transition"
   >
-    ← Back to Pi Lottery
+     Back to Pi Lottery
   </a>
 </div>
 

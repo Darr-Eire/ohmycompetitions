@@ -1,11 +1,10 @@
-// src/models/PioneerNomination.js
-
-import mongoose from 'mongoose'
+import mongoose from 'mongoose';
 
 const PioneerNominationSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  reason: { type: String, required: true },
-  votes: { type: Number, default: 0 },
-}, { timestamps: true })
+  name: String,
+  reason: String,
+  createdAt: { type: Date, default: Date.now },
+});
 
-export default mongoose.models.PioneerNomination || mongoose.model('PioneerNomination', PioneerNominationSchema)
+export default mongoose.models.PioneerNomination ||
+  mongoose.model('PioneerNomination', PioneerNominationSchema);
