@@ -79,12 +79,13 @@ export default function TicketPurchasePage() {
   };
 
   if (!router.isReady) return null;
+
   if (!comp) {
     return (
-      <div className="p-6 text-center text-white bg-[#0b1120] min-h-screen">
+      <div className="p-6 text-center text-white bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] min-h-screen">
         <h1 className="text-2xl font-bold text-red-500">Competition Not Found</h1>
         <p className="mt-4">We couldn’t find “{slug}”.</p>
-        <Link href="/" className="mt-6 inline-block text-blue-400 underline font-semibold"> Back to Home</Link>
+        <Link href="/" className="mt-6 inline-block text-blue-400 underline font-semibold">Back to Home</Link>
       </div>
     );
   }
@@ -92,13 +93,14 @@ export default function TicketPurchasePage() {
   const totalPrice = (comp?.entryFee || 0) * quantity;
 
   return (
-    <div className="bg-[#0b1120] min-h-screen text-white py-6 px-4">
-      <div className="max-w-xl mx-auto border border-blue-500 rounded-xl shadow-xl bg-[#0b1120]">
-        <div className="bg-gradient-to-r from-cyan-400 to-blue-500 px-4 py-3 text-center">
+    <main className="min-h-screen px-4 py-10 text-white bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] font-orbitron">
+      <div className="max-w-xl mx-auto bg-white/5 backdrop-blur-lg border border-cyan-400 rounded-2xl shadow-[0_0_60px_#00ffd577] p-6">
+        
+        <div className="bg-gradient-to-r from-cyan-400 to-blue-500 px-4 py-3 text-center rounded-xl mb-4">
           <h1 className="text-xl sm:text-2xl font-bold text-black uppercase">{comp.title}</h1>
         </div>
 
-        <div className="p-6 space-y-6 text-center">
+        <div className="space-y-6 text-center">
           {comp.imageUrl && (
             <Image
               src={comp.imageUrl}
@@ -178,6 +180,6 @@ export default function TicketPurchasePage() {
           </p>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
