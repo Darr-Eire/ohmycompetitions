@@ -71,7 +71,7 @@ const competitionCategories = [
       <div className="flex-1 text-center">
         <Link
           href="/homepage"
-          className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 text-transparent bg-clip-text drop-shadow"
+          className="text-lg sm:text-xl font-semi-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 text-transparent bg-clip-text drop-shadow"
         >
           OhMyCompetitions
         </Link>
