@@ -118,7 +118,7 @@ export default function TicketPurchasePage() {
             <div className="flex justify-between"><span className="font-semibold">Start Time</span><span>{new Date(comp.endsAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} UTC</span></div>
             <div className="flex justify-between"><span className="font-semibold">Location</span><span>{comp.location}</span></div>
             <div className="flex justify-between"><span className="font-semibold">Entry Fee</span><span>{comp.entryFee.toFixed(2)} π</span></div>
-            <div className="flex justify-between"><span className="font-semibold">Tickets Sold</span><span>{comp.ticketsSold} / {comp.totalTickets}</span></div>
+            <div className="flex justify-between"><span className="font-semibold">Tickets Sold</span><span>{comp.ticketsSold}</span></div>
           </div>
 
           {isFree ? (

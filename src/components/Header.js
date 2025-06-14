@@ -5,8 +5,10 @@ import { useState, useRef, useEffect } from 'react';
 import { usePiAuth } from '../context/PiAuthContext';
 
 export default function Header() {
-  const { user, loginWithPi, logout } = usePiAuth(); // ✅ Fix: use loginWithPi instead of login
+  const { user, loginWithPi, logout } = usePiAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [compDropdownOpen, setCompDropdownOpen] = useState(false);
+
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
 
@@ -19,17 +21,31 @@ export default function Header() {
         !buttonRef.current.contains(e.target)
       ) {
         setMenuOpen(false);
+        setCompDropdownOpen(false);
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+const competitionCategories = [
+  ['Pi Cash Code', '/pi-cash-code'],
+  ['Pi Battles', '/competitions/pi-battles'],
+  ['Featured', '/competitions/featured'],
+  ['Travel', '/competitions/travel'],
+  ['Pi Giveaways', '/competitions/pi'],
+  ['Crypto', '/competitions/crypto-giveaways'],
+  ['Daily', '/competitions/daily'],
+
+];
+
 
   const navItems = [
     ['Home', '/homepage'],
     ['Pi Lottery', '/lottery'],
-    ['All Competitions', '/competitions'],
+  ];
+
+  const navExtras = [
     ['Try Your Luck', '/try-your-luck'],
     ['Forums', '/forums'],
     ['The Future', '/future'],
@@ -38,13 +54,13 @@ export default function Header() {
     ['Partners & Sponsors', '/partners'],
   ];
 
-  if (user) navItems.push(['Pi Code', '/competition']);
+  if (user) navExtras.push(['Pi Code', '/competition']);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] border-b border-cyan-700 px-3 py-1.5 flex items-center shadow-md backdrop-blur-md">
       <button
         ref={buttonRef}
-        onClick={() => setMenuOpen((open) => !open)}
+        onClick={() => setMenuOpen(open => !open)}
         className="neon-button text-white text-xs px-2 py-1"
       >
         <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -66,7 +82,7 @@ export default function Header() {
           <button
             onClick={async () => {
               try {
-                await loginWithPi(); // ✅ Fix: call correct method
+                await loginWithPi();
               } catch (err) {
                 console.error('❌ Pi Login failed:', err);
                 alert('Pi login failed. Try again.');
@@ -79,10 +95,7 @@ export default function Header() {
         ) : (
           <div className="text-white text-xs flex items-center gap-2">
             <span>👋 {user.username}</span>
-            <button
-              onClick={logout}
-              className="neon-button text-xs px-2 py-1"
-            >
+            <button onClick={logout} className="neon-button text-xs px-2 py-1">
               Log Out
             </button>
           </div>
@@ -92,7 +105,7 @@ export default function Header() {
       {menuOpen && (
         <nav
           ref={menuRef}
-          className="absolute top-full left-2 mt-2 w-48 rounded-lg shadow-xl backdrop-blur-md bg-[#0f172acc] border border-cyan-700 animate-fade-in"
+          className="absolute top-full left-2 mt-2 w-60 rounded-lg shadow-xl backdrop-blur-md bg-[#0f172acc] border border-cyan-700 animate-fade-in max-h-[80vh] overflow-y-auto"
         >
           <ul className="flex flex-col font-orbitron text-xs">
             {navItems.map(([label, href]) => (
@@ -106,13 +119,54 @@ export default function Header() {
                 </Link>
               </li>
             ))}
+
+            {/* Dropdown under Pi Lottery */}
+            <li>
+              <button
+                onClick={() => setCompDropdownOpen(prev => !prev)}
+                className="w-full text-left px-4 py-2 text-white hover:bg-cyan-600 hover:text-black transition"
+              >
+                All Competitions ▾
+              </button>
+            </li>
+
+            {compDropdownOpen &&
+              competitionCategories.map(([label, href]) => (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    className="block w-full pl-6 pr-4 py-2 text-white hover:bg-cyan-700 hover:text-black transition"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      setCompDropdownOpen(false);
+                    }}
+                  >
+                    {label}
+                  </Link>
+                </li>
+              ))}
+
+            {navExtras.map(([label, href]) => (
+              <li key={href}>
+                <Link
+                  href={href}
+                  className="block w-full px-4 py-2 text-white hover:bg-cyan-600 hover:text-black transition"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {label}
+                </Link>
+              </li>
+            ))}
+
             <li><hr className="border-cyan-700 my-1" /></li>
+
             {user && (
               <li>
                 <button
                   onClick={() => {
                     logout();
                     setMenuOpen(false);
+                    setCompDropdownOpen(false);
                   }}
                   className="w-full text-left text-xs px-4 py-2 text-white hover:bg-cyan-600 hover:text-black transition"
                 >

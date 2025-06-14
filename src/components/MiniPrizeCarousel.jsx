@@ -8,7 +8,7 @@ import {
   freeItems,
   cryptoGiveawaysItems,
   dailyItems,
-} from 'data/competitions';
+} from '../data/competitions'; // Use relative path
 
 const allCompetitions = [
   ...techItems,
@@ -21,21 +21,29 @@ const allCompetitions = [
 
 export default function MiniPrizeCarousel() {
   const [index, setIndex] = useState(0);
-  const visibleCount = 5;
-  const items = allCompetitions;
+  const [visibleCount, setVisibleCount] = useState(5);
+
+  useEffect(() => {
+    const updateVisibleCount = () => {
+      setVisibleCount(window.innerWidth < 640 ? 3 : 5); // sm breakpoint
+    };
+
+    updateVisibleCount();
+    window.addEventListener('resize', updateVisibleCount);
+    return () => window.removeEventListener('resize', updateVisibleCount);
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setIndex((prevIndex) =>
-        (prevIndex + visibleCount) % items.length
+        (prevIndex + visibleCount) % allCompetitions.length
       );
     }, 4000);
-
     return () => clearInterval(interval);
-  }, [items.length]);
+  }, [visibleCount]);
 
   const visibleItems = Array.from({ length: visibleCount }, (_, i) => {
-    return items[(index + i) % items.length];
+    return allCompetitions[(index + i) % allCompetitions.length];
   });
 
   return (
@@ -44,7 +52,7 @@ export default function MiniPrizeCarousel() {
         {visibleItems.map((item, i) => (
           <div
             key={item.comp?.slug || `info-${i}`}
-            className="w-[140px] bg-[#0f172a] border border-cyan-400 rounded-xl shadow-lg text-white text-center font-orbitron px-3 py-3 text-[11px] leading-tight space-y-1"
+            className="w-[120px] bg-[#0f172a] border border-cyan-400 rounded-xl shadow-lg text-white text-center font-orbitron px-3 py-3 text-[11px] leading-tight space-y-1"
           >
             <div className="font-bold text-[12px] text-cyan-300 truncate">
               {item.title}
@@ -62,7 +70,6 @@ export default function MiniPrizeCarousel() {
   );
 }
 
-// Helper to format draw date
 function formatDate(dateStr) {
   if (!dateStr) return 'TBA';
   const date = new Date(dateStr);

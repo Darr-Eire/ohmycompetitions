@@ -1,13 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { usePiAuth } from '../context/PiAuthContext';
 import GhostWinnerLog from '../components/GhostWinnerLog';
 import ClaimedWinnersLog from '../components/ClaimedWinnersLog';
 
-
 export default function PiCashCodePage() {
-  const { user, login, loading: userLoading } = usePiAuth();
   const [codeData, setCodeData] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const ticketPrice = 1.25;
@@ -60,7 +57,12 @@ export default function PiCashCodePage() {
 
   // Load Pi SDK
   useEffect(() => {
-    loadPiSdk(() => {});
+    const script = document.createElement('script');
+    script.src = 'https://sdk.minepi.com/pi-sdk.js';
+    script.onload = () => {
+      window.Pi.init({ version: '2.0', sandbox: process.env.NEXT_PUBLIC_SANDBOX_SDK === 'true' });
+    };
+    document.head.appendChild(script);
   }, []);
 
   const handlePurchase = async () => {
@@ -77,19 +79,6 @@ export default function PiCashCodePage() {
   const now = new Date();
   const dropTime = new Date(codeData?.dropAt);
   const showCode = now >= dropTime;
-
-  if (userLoading) return <div className="text-white text-center py-10">Loading...</div>;
-
-  if (!user) {
-    return (
-      <div className="p-6 text-center text-white">
-        <p className="mb-4">🔐 Please log in with Pi to access this page.</p>
-        <button onClick={login} className="btn-gradient px-6 py-3 rounded-full font-bold">
-          Log In
-        </button>
-      </div>
-    );
-  }
 
   return (
     <main className="flex justify-center items-start min-h-screen bg-transparent font-orbitron pt-6">
