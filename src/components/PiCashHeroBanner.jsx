@@ -8,6 +8,7 @@ export default function PiCashHeroBanner() {
   const [data, setData] = useState(null);
   const [timeLeft, setTimeLeft] = useState(null);
   const [error, setError] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -60,7 +61,7 @@ export default function PiCashHeroBanner() {
   }
 
   return (
-    <div className="relative w-full max-w-md sm:max-w-xl mx-auto mt-2 sm:mt-4 px-2 sm:px-4 py-4 sm:py-6 border border-cyan-500 rounded-2xl text-white text-center font-orbitron overflow-hidden shadow-[0_0_60px_#00fff055] bg-[#0b1120]/30">
+    <div className="relative w-full max-w-md sm:max-w-xl mx-auto mt-2 sm:mt-4 px-2 sm:px-4 py-4 sm:py-6 border border-cyan-500 rounded-2xl text-white text-center font-orbitron overflow-hidden shadow-[0_0_60px_#00fff055] bg-[#0b1120]/30 transition-all duration-500 ease-in-out">
       <div className="absolute inset-0 -z-10 animate-pulse bg-[radial-gradient(circle_at_center,_#00fff033,_transparent)]" />
 
       <h1 className="text-xl sm:text-2xl font-bold text-cyan-300 mb-2 sm:mb-3 flex items-center justify-center gap-2 animate-glow-float">
@@ -105,12 +106,25 @@ export default function PiCashHeroBanner() {
       </div>
 
       <div className="mt-4 sm:mt-6 text-center text-xs sm:text-sm">
-        <ul className="list-disc list-inside space-y-1 text-white/80 text-left max-w-xs mx-auto">
-          <li>The code drops every <strong className="text-white">Monday @ 3:14 PM UTC</strong></li>
-          <li>Stays active for <strong className="text-white">31h 4m</strong></li>
-          <li>Draw is every <strong className="text-white">Friday @ 3:14 PM UTC</strong></li>
-          <li>Winner has <strong className="text-white">31m 4s</strong> to claim or it rolls over</li>
-        </ul>
+        <button
+          onClick={() => setShowDetails(prev => !prev)}
+          className="text-cyan-300 underline font-semibold hover:text-cyan-200 transition"
+        >
+          {showDetails ? 'Hide Details' : 'How it Works'}
+        </button>
+
+        <div
+          className={`overflow-hidden transition-all duration-500 ${
+            showDetails ? 'max-h-60 mt-4' : 'max-h-0'
+          }`}
+        >
+          <ul className="list-disc list-inside space-y-1 text-white/80 text-left max-w-xs mx-auto">
+            <li>The code drops every <strong className="text-white">Monday @ 3:14 PM UTC</strong></li>
+            <li>Stays active for <strong className="text-white">31h 4m</strong></li>
+            <li>Draw is every <strong className="text-white">Friday @ 3:14 PM UTC</strong></li>
+            <li>Winner has <strong className="text-white">31m 4s</strong> to claim or it rolls over</li>
+          </ul>
+        </div>
       </div>
     </div>
   );

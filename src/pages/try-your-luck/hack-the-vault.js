@@ -4,27 +4,18 @@ import { useState, useEffect } from 'react';
 import Confetti from 'react-confetti';
 import { useWindowSize } from '@uidotdev/usehooks';
 import Link from 'next/link';
-import { loadPiSdk } from '../../lib/pi'
-
-
 
 const PRIZE_POOL = 50;
-const RETRY_FEE = 1;
 const NUM_DIGITS = 4;
 
 export default function VaultPro() {
   const { width, height } = useWindowSize();
-  const [sdkReady, setSdkReady] = useState(false);
   const [code, setCode] = useState([]);
   const [digits, setDigits] = useState(Array(NUM_DIGITS).fill(0));
   const [status, setStatus] = useState('idle');
   const [correctIndexes, setCorrectIndexes] = useState([]);
   const [retryUsed, setRetryUsed] = useState(false);
   const [dailyUsed, setDailyUsed] = useState(false);
-
-  useEffect(() => {
-    loadPiSdk(setSdkReady);
-  }, []);
 
   useEffect(() => {
     if (status === 'playing') {
@@ -64,69 +55,22 @@ export default function VaultPro() {
     }
   };
 
-  const handleRetryPayment = () => {
-    if (!sdkReady || typeof window === 'undefined' || !window.Pi) {
-      alert('⚠️ Pi SDK not ready.');
-      return;
-    }
-
-    window.Pi.createPayment(
-      {
-        amount: RETRY_FEE,
-        memo: 'Vault Pro Retry',
-        metadata: { type: 'vault-pro-retry' },
-      },
-      {
-        onReadyForServerApproval: async (paymentId) => {
-          try {
-            await fetch('/api/payments/approve', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ paymentId }),
-            });
-            console.log('[✅] Retry approved');
-          } catch (err) {
-            console.error('[ERROR] Approving retry:', err);
-            alert('❌ Server approval failed.');
-          }
-        },
-
-        onReadyForServerCompletion: async (paymentId, txid) => {
-          try {
-            await fetch('/api/payments/complete', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ paymentId, txid }),
-            });
-            console.log('[✅] Retry completed');
-            setRetryUsed(true);
-            setStatus('playing');
-          } catch (err) {
-            console.error('[ERROR] Completing retry:', err);
-            alert('❌ Server completion failed.');
-          }
-        },
-
-        onCancel: () => {
-          console.warn('Payment cancelled');
-        },
-
-        onError: (err) => {
-          console.error('Payment error:', err);
-          alert('Payment failed');
-        },
-      }
-    );
+  const handleRetry = () => {
+    setRetryUsed(true);
+    setDigits(Array(NUM_DIGITS).fill(0));
+    setStatus('playing');
   };
 
   const reset = () => setStatus('idle');
 
   return (
-    <main className="app-background min-h-screen flex flex-col items-center px-4 py-12 text-white">
-      <div className="max-w-md w-full space-y-4">
+    <main className="min-h-screen px-4 py-12 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-orbitron flex flex-col items-center">
+      <div className="max-w-md w-full space-y-4 border border-cyan-700 rounded-2xl p-6 sm:p-8 backdrop-blur-md shadow-[0_0_30px_#00fff055]">
 
         <div className="text-center mb-2">
-          <h1 className="title-gradient text-2xl font-bold text-white">Pi Vault</h1>
+          <h1 className="bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 border border-cyan-700 shadow-[0_0_30px_#00fff055] w-full max-w-md text-center px-4 py-3 rounded-3xl text-cyan-300">
+            Hack The Vault
+          </h1>
         </div>
 
         <p className="text-center text-white text-lg mb-2">
@@ -137,7 +81,7 @@ export default function VaultPro() {
 
           {status === 'idle' && (
             <button onClick={startGame} disabled={dailyUsed}
-              className={`w-full py-3 rounded-full text-lg font-semibold text-white ${dailyUsed ? 'bg-gray-500 cursor-not-allowed' : 'btn-gradient'}`}>
+              className={`w-full py-3 rounded-full text-lg font-semibold text-white ${dailyUsed ? 'bg-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] hover:brightness-110 shadow-[0_0_30px_#00fff055] border border-cyan-700'}`}>
               Free Daily Attempt
             </button>
           )}
@@ -148,13 +92,13 @@ export default function VaultPro() {
               <div className="flex justify-center gap-4 mb-6">
                 {digits.map((digit, i) => (
                   <div key={i} className="flex flex-col items-center space-y-2">
-                    <button onClick={() => adjustDigit(i, 1)} className="btn-gradient w-10 h-10 rounded-full text-lg">▲</button>
+                    <button onClick={() => adjustDigit(i, 1)} className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-semibold w-10 h-10 rounded-full text-lg shadow-[0_0_30px_#00fff055] border border-cyan-700">▲</button>
                     <div className="text-3xl font-mono">{digit}</div>
-                    <button onClick={() => adjustDigit(i, -1)} className="btn-gradient w-10 h-10 rounded-full text-lg">▼</button>
+                    <button onClick={() => adjustDigit(i, -1)} className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-semibold w-10 h-10 rounded-full text-lg shadow-[0_0_30px_#00fff055] border border-cyan-700">▼</button>
                   </div>
                 ))}
               </div>
-              <button onClick={enterCode} className="btn-gradient w-full py-3 text-lg rounded-full shadow-lg">Crack Code</button>
+              <button onClick={enterCode} className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-semibold w-full py-3 text-lg rounded-full shadow-[0_0_30px_#00fff055] border border-cyan-700 hover:brightness-110 transition">Crack Code</button>
             </>
           )}
 
@@ -163,20 +107,18 @@ export default function VaultPro() {
               <p className="text-yellow-300 font-semibold text-lg mb-3">Close Pioneer! Correct digits:</p>
               <div className="flex justify-center gap-4 mb-4">
                 {digits.map((d, i) => (
-                  <div key={i} className={`w-14 h-14 flex justify-center items-center rounded-full text-2xl font-bold ${correctIndexes[i] ? 'bg-green-400 text-black' : 'bg-red-400 text-black'}`}>
-                    {d}
-                  </div>
+                  <div key={i} className={`w-14 h-14 flex justify-center items-center rounded-full text-2xl font-bold ${correctIndexes[i] ? 'bg-green-400 text-black' : 'bg-red-400 text-black'}`}>{d}</div>
                 ))}
               </div>
 
               {!retryUsed ? (
-                <button onClick={handleRetryPayment} className="btn-gradient w-full py-3 text-lg rounded-full shadow-lg">
-                  Pay {RETRY_FEE} π for Retry
+                <button onClick={handleRetry} className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-semibold w-full py-3 text-lg rounded-full shadow-[0_0_30px_#00fff055] border border-cyan-700 hover:brightness-110 transition">
+                  Retry Attempt
                 </button>
               ) : (
                 <>
                   <p className="text-red-400 font-semibold mb-2">The Vault stays locked... See you tomorrow 🚀</p>
-                  <button onClick={reset} className="btn-gradient w-full py-3">Back to Menu</button>
+                  <button onClick={reset} className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-semibold w-full py-3 rounded-full shadow-[0_0_30px_#00fff055] border border-cyan-700 hover:brightness-110 transition">Back to Menu</button>
                 </>
               )}
             </>
@@ -186,14 +128,14 @@ export default function VaultPro() {
             <>
               <Confetti width={width} height={height} />
               <p className="text-green-400 font-bold text-xl mb-4">🎉 You cracked the Vault & won {PRIZE_POOL} π!</p>
-              <button onClick={reset} className="btn-gradient w-full py-3">Play Again Tomorrow</button>
+              <button onClick={reset} className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-semibold w-full py-3 rounded-full shadow-[0_0_30px_#00fff055] border border-cyan-700 hover:brightness-110 transition">Play Again Tomorrow</button>
             </>
           )}
 
         </div>
 
         <div className="text-center mt-6">
-          <Link href="/terms/vault-pro-plus" className="text-sm text-cyan-300 underline">Pi Vault Terms & Conditions</Link>
+          <Link href="/terms/vault-pro-plus" className="text-sm text-cyan-300 underline">Vault Pro Terms & Conditions</Link>
         </div>
 
         <Link href="/try-your-luck" className="text-sm text-cyan-300 underline block text-center mt-2">
