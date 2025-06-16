@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FaBomb } from 'react-icons/fa';
-import { usePiAuth } from '../../context/PiAuthContext';
+import { usePiAuth } from 'context/PiAuthContext';
 import Link from 'next/link';
 
 export default function PiBombRoyaleLobby() {
