@@ -1,5 +1,5 @@
-import dbConnect from '@/lib/dbConnect';
-import FriendsOnlyBattle from '@/models/FriendsOnlyBattle';
+import dbConnect from 'lib/dbConnect';
+import FriendsOnlyBattle from 'models/FriendsOnlyBattle';
 
 export default async function handler(req, res) {
   await dbConnect();
