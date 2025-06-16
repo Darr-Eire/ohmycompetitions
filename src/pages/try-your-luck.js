@@ -9,33 +9,33 @@ export default function TryYourLuckPage() {
   const [streak, setStreak] = useState(0)
   const [playedMap, setPlayedMap] = useState({})
   const [resetCountdown, setResetCountdown] = useState('')
+   const games = [
+  {
+    title: 'Match The Pi Code',
+    href: '/try-your-luck/match-code',
+    icon: '🕒',
+    desc: 'Stop the timer at exactly 3.14s to win!',
+    reward: ' You won 0.5π yesterday!',
+    storageKey: 'threeFourteenPlayed',
+  },
+  {
+    title: 'Hack the Vault',
+    href: '/try-your-luck/hack-the-vault',
+    icon: '🔓',
+    desc: 'Guess today’s vault code!',
+    reward: ' You unlocked 1 retry token!',
+    storageKey: 'hackVaultPlayed',
+  },
+  {
+    title: 'Pi Bomb Pass',
+    href: '/battles/mode/pi-bomb-pass',
+    icon: '💣',
+    desc: 'Pass the bomb before it explodes! Eliminate rivals and survive each round.',
+    reward: ' Stay alive to earn big π!',
+    storageKey: 'piBombPassPlayed',
+  },
+];
 
-  const games = [
-    {
-      title: 'Match The Pi Code',
-      href: '/try-your-luck/match-code',
-      icon: '🕒',
-      desc: 'Stop the timer at exactly 3.14s to win!',
-      reward: ' You won 0.5π yesterday!',
-      storageKey: 'threeFourteenPlayed',
-    },
-    {
-      title: 'Hack the Vault',
-      href: '/try-your-luck/hack-the-vault',
-      icon: '🔓',
-      desc: 'Guess today’s vault code!',
-      reward: ' You unlocked 1 retry token!',
-      storageKey: 'hackVaultPlayed',
-    },
-    {
-      title: 'Spin the Wheel',
-      href: '/try-your-luck/spin-the-pi-wheel',
-      icon: '🎡',
-      desc: 'Spin for rewards — retry tokens, π, jackpots!',
-      reward: ' You won 1π yesterday!',
-      storageKey: 'spinWheelPlayed',
-    },
-  ]
 
   useEffect(() => {
     setStreak(getStreak())
@@ -99,11 +99,11 @@ export default function TryYourLuckPage() {
               Win free tickets, unlock daily rewards, spin for mystery prizes,<br />
               and rack up piles of <span className="font-bold">π</span> every day!
             </p>
-            <p className="text-lg font-bold text-yellow-300 mb-1">
+            <p className="text-lg font-bold text-cyan-300 mb-1">
               Daily Streak: {streak} days 
             </p>
             <p className="text-sm text-gray-300 mb-4">
-               Next reset in: <span className="text-white font-semibold">{resetCountdown}</span>
+              Next reset in: <span className="text-white font-semibold">{resetCountdown}</span>
             </p>
           </div>
 
@@ -137,8 +137,31 @@ export default function TryYourLuckPage() {
               )
             })}
           </div>
+
+          <div className="mt-10 p-6 text-center border border-cyan-700 rounded-2xl bg-gradient-to-br from-[#0f172a]/70 to-[#1e293b]/70 shadow-[0_0_20px_#00fff055]">
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">Got an Idea for a New Mini-Game?</h2>
+            <p className="text-sm text-gray-300 mb-4">
+              We're building more games! Got a fun idea or a cultural favourite from your country?
+              Reach out anytime:
+            </p>
+            <div className="space-y-2">
+    
+              <p className="text-sm text-white">
+                X <a href="https://X.com/OhMyComps" target="_blank" className="underline text-cyan-300">@OM_Compitions</a>
+              </p>
+              <p className="text-sm text-white">
+                Instagram: <a href="https://instagram.com/ohmycompetitions" target="_blank" className="underline text-cyan-300">@ohmycompetitions</a>
+              </p>
+            </div>
+          </div>
         </div>
       </main>
+           {/* Terms & Conditions Link */}
+          <div className="mt-14 text-center">
+            <a href="/terms-conditions" className="text-xs text-cyan-400 underline hover:text-cyan-300 transition">
+              View full Terms & Conditions
+            </a>
+          </div>
     </>
   )
 }

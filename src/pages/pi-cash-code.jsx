@@ -135,7 +135,7 @@ export default function PiCashCodePage() {
               <li>The winner must return the code within <strong>31 minutes and 4 seconds</strong>.</li>
             </ul>
             <div className="text-center mt-3">
-              <a href="/terms" className="text-xs text-cyan-400 underline hover:text-cyan-300 transition">
+              <a href="/terms-conditions" className="text-xs text-cyan-400 underline hover:text-cyan-300 transition">
                 View full Terms & Conditions
               </a>
             </div>

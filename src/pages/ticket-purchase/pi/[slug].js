@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 const piCompetitions = {
   'pi-giveaway-10k': {
@@ -99,52 +100,50 @@ export default function PiTicketPage() {
         return;
       }
 
-      window.Pi.createPayment(
-        {
-          amount: total.toFixed(8),
-          memo: `Entry to ${competition.title}`,
-          metadata: {
-            type: 'pi-competition-entry',
-            competitionSlug: slug,
-            quantity,
-          },
-          onReadyForServerApproval: async (paymentId) => {
-            const res = await fetch('/api/payments/approve', {
+      window.Pi.createPayment({
+        amount: total.toFixed(8),
+        memo: `Entry to ${competition.title}`,
+        metadata: {
+          type: 'pi-competition-entry',
+          competitionSlug: slug,
+          quantity,
+        },
+        onReadyForServerApproval: async (paymentId) => {
+          const res = await fetch('/api/payments/approve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentId, slug, amount: total }),
+          });
+          if (!res.ok) throw new Error(await res.text());
+          console.log('✅ Payment approved');
+        },
+        onReadyForServerCompletion: async (paymentId, txid) => {
+          try {
+            const res = await fetch('/api/payments/complete', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ paymentId, slug, amount: total }),
+              body: JSON.stringify({ paymentId, txid, slug }),
             });
             if (!res.ok) throw new Error(await res.text());
-            console.log('✅ Payment approved');
-          },
-          onReadyForServerCompletion: async (paymentId, txid) => {
-            try {
-              const res = await fetch('/api/payments/complete', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ paymentId, txid, slug }),
-              });
-              if (!res.ok) throw new Error(await res.text());
-              console.log('✅ Payment completed');
-              alert('✅ Entry confirmed! Good luck!');
-            } catch (err) {
-              console.error('Error completing payment:', err);
-              alert('❌ Server completion failed.');
-            } finally {
-              setProcessing(false);
-            }
-          },
-          onCancel: () => {
-            console.warn('❌ Payment cancelled');
+            console.log('✅ Payment completed');
+            alert('✅ Entry confirmed! Good luck!');
+          } catch (err) {
+            console.error('Error completing payment:', err);
+            alert('❌ Server completion failed.');
+          } finally {
             setProcessing(false);
-          },
-          onError: (err) => {
-            console.error('❌ Payment error:', err);
-            alert('❌ Payment failed. See console for details.');
-            setProcessing(false);
-          },
-        }
-      );
+          }
+        },
+        onCancel: () => {
+          console.warn('❌ Payment cancelled');
+          setProcessing(false);
+        },
+        onError: (err) => {
+          console.error('❌ Payment error:', err);
+          alert('❌ Payment failed. See console for details.');
+          setProcessing(false);
+        },
+      });
     } catch (err) {
       console.error('❌ Unexpected error:', err);
       alert('❌ Something went wrong during payment.');
@@ -177,7 +176,10 @@ export default function PiTicketPage() {
             ['Location', competition.location],
             ['Date', competition.date],
             ['Time', competition.time],
-            ['Time Left', `${timeLeft.days}d ${timeLeft.hours}h ${timeLeft.minutes}m ${timeLeft.seconds}s`],
+            [
+              'Time Left',
+              `${timeLeft.days}d ${timeLeft.hours}h ${timeLeft.minutes}m ${timeLeft.seconds}s`,
+            ],
           ].map(([label, value]) => (
             <div key={label} className="flex justify-between">
               <span className="font-semibold">{label}</span>
@@ -188,7 +190,7 @@ export default function PiTicketPage() {
 
         <div className="flex justify-center items-center gap-4 mt-6">
           <button
-            onClick={() => setQuantity(q => Math.max(1, q - 1))}
+            onClick={() => setQuantity((q) => Math.max(1, q - 1))}
             disabled={quantity <= 1}
             className="bg-blue-600 text-white px-5 py-2 rounded-full font-bold disabled:opacity-50 select-none"
             aria-label="Decrease quantity"
@@ -197,7 +199,7 @@ export default function PiTicketPage() {
           </button>
           <span className="text-xl font-bold min-w-[3rem] text-center">{quantity}</span>
           <button
-            onClick={() => setQuantity(q => q + 1)}
+            onClick={() => setQuantity((q) => q + 1)}
             className="bg-blue-600 text-white px-5 py-2 rounded-full font-bold select-none"
             aria-label="Increase quantity"
           >
@@ -222,6 +224,18 @@ export default function PiTicketPage() {
         <p className="mt-4 text-center text-white font-semibold">
           Pioneers, this is your chance to win big and help grow the Pi ecosystem!
         </p>
+
+        <div className="text-center mt-4">
+          <p className="text-sm text-white">
+            By entering, you agree to our{' '}
+            <Link href="/terms-conditions" legacyBehavior>
+              <a className="text-cyan-400 underline hover:text-cyan-300 transition-colors">
+                Terms &amp; Conditions
+              </a>
+            </Link>
+            .
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -29,11 +29,12 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 const competitionCategories = [
+   ['Pi Giveaways', '/competitions/pi'],
   ['Pi Cash Code', '/pi-cash-code'],
-  ['Pi Battles', '/competitions/pi-battles'],
+   ['Pi Lottery', '/lottery'],
+  ['Pi Battles', '/competitions/pibattles'],
   ['Featured', '/competitions/featured'],
   ['Travel', '/competitions/travel'],
-  ['Pi Giveaways', '/competitions/pi'],
   ['Crypto', '/competitions/crypto-giveaways'],
   ['Daily', '/competitions/daily'],
 
@@ -42,7 +43,7 @@ const competitionCategories = [
 
   const navItems = [
     ['Home', '/homepage'],
-    ['Pi Lottery', '/lottery'],
+   
   ];
 
   const navExtras = [

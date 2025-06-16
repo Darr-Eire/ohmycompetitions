@@ -174,7 +174,7 @@ export default function TicketPurchasePage() {
           )}
 
           <p className="text-xs mt-2 text-gray-400">
-            <Link href="/terms" className="underline hover:text-cyan-400" target="_blank" rel="noopener noreferrer">
+            <Link href="/terms-conditions" className="underline hover:text-cyan-400" target="_blank" rel="noopener noreferrer">
               Terms & Conditions
             </Link>
           </p>

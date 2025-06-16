@@ -192,7 +192,7 @@ export default function PiLotteryPage() {
 
           {/* Terms & Conditions Link */}
           <div className="mt-6 text-center">
-            <a href="/terms" className="text-xs text-cyan-400 underline hover:text-cyan-300 transition">
+            <a href="/terms-conditions" className="text-xs text-cyan-400 underline hover:text-cyan-300 transition">
               View full Terms & Conditions
             </a>
           </div>

@@ -4,18 +4,18 @@ import Head from 'next/head'
 import DailyCompetitionCard from '@components/DailyCompetitionCard'
 
 const dailyComps = [
-    {
+  {
     comp: { 
       slug: 'daily-jackpot', 
       entryFee: 0.45, 
       totalTickets: 1820, 
       ticketsSold: 0, 
       endsAt: '2025-06-30T23:59:59Z',
-      comingSoon: true
+      comingSoon: true,
     },
     title: 'Daily Jackpot',
     prize: '750 π',
-    href: '/competitions/daily-jackpot',
+    href: 'ticket-purchase/daily',
     imageUrl: '/images/jackpot.png',
     theme: 'daily',
   },
@@ -26,7 +26,7 @@ const dailyComps = [
       totalTickets: 1900, 
       ticketsSold: 0, 
       endsAt: '2025-06-30T15:14:00Z',
-      comingSoon: true
+      comingSoon: true,
     },
     title: 'Everyday Pioneer',
     prize: '1,000 π',
@@ -41,7 +41,7 @@ const dailyComps = [
       totalTickets: 1500, 
       ticketsSold: 0, 
       endsAt: '2025-06-25T15:14:00Z',
-      comingSoon: true
+      comingSoon: true,
     },
     title: 'Daily Pi Slice',
     prize: '500 π',
@@ -50,6 +50,7 @@ const dailyComps = [
     theme: 'daily',
   },
 ]
+
 
 export default function DailyCompetitionsPage() {
   return (

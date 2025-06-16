@@ -11,7 +11,7 @@ export const techItems = [
       endsAt: '2025-07-26T14:00:00Z',
     },
     title: 'PS5 Bundle',
-    prize: 'PlayStation 5',
+    prize: 'PlayStation 5 + Controller',
     href: '/competitions/ps5-bundle-giveaway',
     imageUrl: '/images/playstation.jpeg',
     theme: 'tech',
@@ -311,7 +311,7 @@ export const dailyItems = [
     title: 'Daily Jackpot',
     prize: '750 π',
     href: '/competitions/daily-jackpot',
-    imageUrl: '/images/jackpot.png',
+    imageUrl: '',  // Removed the image
     theme: 'daily',
   },
   {
@@ -326,7 +326,7 @@ export const dailyItems = [
     title: 'Everyday Pioneer',
     prize: '1,000 π',
     href: '/competitions/everyday-pioneer',
-    imageUrl: '/images/everyday.png',
+    imageUrl: '',  // Removed the image
     theme: 'daily',
   },
   {
@@ -341,10 +341,11 @@ export const dailyItems = [
     title: 'Daily Pi Slice',
     prize: '500 π',
     href: '/competitions/daily-pi-slice',
-    imageUrl: '/images/daily.png',
+    imageUrl: '',  // Removed the image
     theme: 'daily',
   },
 ];
+
 
 
 export const freeItems = [
