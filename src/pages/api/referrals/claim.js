@@ -1,7 +1,7 @@
 // /pages/api/referrals/claim.js
 import dbConnect from 'lib/dbConnect';
 import Referral from 'models/Referral';
-import { getPiUserFromSession } from 'lib/piAuth'; // your auth util
+
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
