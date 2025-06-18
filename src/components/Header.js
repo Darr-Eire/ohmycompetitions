@@ -43,6 +43,7 @@ const competitionCategories = [
 
   const navItems = [
     ['Home', '/homepage'],
+     ['My Account', '/account'],
    
   ];
 

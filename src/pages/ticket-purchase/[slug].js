@@ -107,7 +107,7 @@ export default function TicketPurchasePage() {
               alt={comp.title}
               width={600}
               height={300}
-              className="w-full max-h-64 object-cover rounded-lg border border-blue-500 mx-auto"
+              className="w-fit max-h-64 object-fit rounded-lg border border-blue-500 mx-auto"
             />
           )}
 

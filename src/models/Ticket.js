@@ -1,11 +1,16 @@
+// /models/Ticket.js
 import mongoose from 'mongoose';
 
 const TicketSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  username: { type: String, required: true },               // Recipient of the ticket
+  competitionSlug: { type: String, required: true },
   competitionTitle: { type: String, required: true },
-  quantity: { type: Number, required: true },
+  imageUrl: { type: String },
+  quantity: { type: Number, default: 1 },
+  ticketNumbers: { type: [String], default: [] },
   purchasedAt: { type: Date, default: Date.now },
-  ticketNumbers: [{ type: String }],
+  gifted: { type: Boolean, default: false },
+  giftedBy: { type: String, default: null },                // Optional: who gifted it
 });
 
 export default mongoose.models.Ticket || mongoose.model('Ticket', TicketSchema);

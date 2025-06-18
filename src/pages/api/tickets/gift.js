@@ -1,50 +1,56 @@
-import { dbConnect } from 'lib/dbConnect';
+// /pages/api/tickets/gift.js
+import dbConnect from 'lib/dbConnect';
+import Ticket from 'models/Ticket';
 
-import Entry from 'models/Entry';
-import User from 'models/User';
-
-
+const recentGifts = new Map(); // Basic IP rate limiting
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  await connectToDatabase();
-  const session = await getServerSession(req, res, authOptions);
-  const fromUid = session?.user?.uid;
-  if (!fromUid) return res.status(401).json({ error: 'Unauthorized' });
+  const { recipient, slug, title, imageUrl, quantity = 1 } = req.body;
+  const sender = req.headers['x-sender'] || 'guest';
 
-  const { toUid, competitionId, quantity } = req.body;
-  if (!toUid || !competitionId || quantity < 1)
-    return res.status(400).json({ error: 'Missing fields' });
+  if (!recipient || !slug || !title) {
+    return res.status(400).json({ error: 'Missing required fields.' });
+  }
 
-  // Count sender's available tickets
-  const owned = await Entry.aggregate([
-    { $match: { userUid: fromUid, competitionId } },
-    { $group: { _id: null, total: { $sum: '$quantity' } } },
-  ]);
+  if (sender === recipient) {
+    return res.status(400).json({ error: '❌ You cannot gift a ticket to yourself.' });
+  }
 
-  const gifted = await Entry.aggregate([
-    { $match: { giftedByUid: fromUid, competitionId } },
-    { $group: { _id: null, total: { $sum: '$quantity' } } },
-  ]);
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+  const now = Date.now();
 
-  const available = (owned[0]?.total || 0) - (gifted[0]?.total || 0);
-  if (available < quantity)
-    return res.status(400).json({ error: 'Not enough available tickets' });
+  // ⏱️ 1 gift per 15s per IP
+  if (recentGifts.has(ip) && now - recentGifts.get(ip) < 15000) {
+    return res.status(429).json({ error: '⏳ Slow down — try gifting again in a few seconds.' });
+  }
+  recentGifts.set(ip, now);
 
-  const competitionName = (
-    await Entry.findOne({ userUid: fromUid, competitionId }).select('competitionName')
-  )?.competitionName || 'Unknown';
+  try {
+    await dbConnect();
 
-  await Entry.create({
-    userUid: toUid,
-    competitionId,
-    competitionName,
-    quantity,
-    status: 'Pending',
-    giftedByUid: fromUid,
-    createdAt: new Date(),
-  });
+    const ticketNumbers = Array.from({ length: quantity }, () =>
+      `GFT-${Math.floor(Math.random() * 1000000)}`
+    );
 
-  res.status(200).json({ success: true });
+    const newTicket = new Ticket({
+      username: recipient,
+      competitionSlug: slug,
+      competitionTitle: title,
+      imageUrl,
+      quantity,
+      ticketNumbers,
+      gifted: true,
+      giftedBy: sender,
+      purchasedAt: new Date(),
+    });
+
+    await newTicket.save();
+
+    return res.status(200).json({ success: true, ticket: newTicket });
+  } catch (err) {
+    console.error('❌ Gift Ticket Error:', err);
+    return res.status(500).json({ error: 'Server error while gifting ticket.' });
+  }
 }

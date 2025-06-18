@@ -1,4 +1,3 @@
-// pages/help-support.js
 'use client'
 
 import { useState } from 'react'
@@ -59,7 +58,14 @@ const faqSections = [
   },
 ]
 
-function Accordion({ title, items, isOpen, onClick }) {
+function Accordion({ title, items, isOpen, onClick, searchTerm }) {
+  const filteredItems = items.filter(([q, a]) =>
+    q.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    a.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  if (filteredItems.length === 0) return null
+
   return (
     <div className="border border-white/20 rounded-xl bg-white/5 overflow-hidden">
       <button
@@ -71,7 +77,7 @@ function Accordion({ title, items, isOpen, onClick }) {
       </button>
       {isOpen && (
         <ul className="p-4 list-disc list-inside space-y-4 text-white">
-          {items.map(([q, a], i) => (
+          {filteredItems.map(([q, a], i) => (
             <li key={i}>
               <strong>{q}</strong><br />
               {a}
@@ -85,6 +91,7 @@ function Accordion({ title, items, isOpen, onClick }) {
 
 export default function HelpSupport() {
   const [openIndex, setOpenIndex] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
 
   return (
     <main className="app-background min-h-screen flex justify-center px-4 text-white">
@@ -93,6 +100,15 @@ export default function HelpSupport() {
 
         <div className="p-6 space-y-6">
           <p>Welcome to our Help & Support Center. We’re here to assist you with any questions or issues!</p>
+
+          {/* Search Bar */}
+          <input
+            type="text"
+            placeholder="Search FAQs..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full p-2 rounded bg-white/10 text-white"
+          />
 
           {/* Contact Information */}
           <section>
@@ -109,7 +125,7 @@ export default function HelpSupport() {
             </ul>
           </section>
 
-          {/* Accordion FAQ */}
+          {/* FAQ Accordion */}
           <section className="space-y-6">
             {faqSections.map((section, index) => (
               <Accordion
@@ -118,6 +134,7 @@ export default function HelpSupport() {
                 items={section.items}
                 isOpen={openIndex === index}
                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                searchTerm={searchTerm}
               />
             ))}
           </section>
