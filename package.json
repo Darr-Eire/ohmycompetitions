@@ -3,14 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "type": "module",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "create-pi-code": "node scripts/createPiCashCode.js",
-    "draw-winner": "node scripts/drawWinner.js",
-    "rollover-prize": "node scripts/rolloverUnclaimed.js",
-    "seed-pi-cash": "node scripts/seedPiCashCode.js"
+    "create-pi-code": "node scripts/createPiCashCode.mjs",
+    "draw-winner": "node scripts/drawWinner.mjs",
+    "rollover-prize": "node scripts/rolloverUnclaimed.mjs",
+    "seed-pi-cash": "node scripts/seedPiCashCode.mjs",
+    "seed-competitions": "node scripts/seedPiCompetitions.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

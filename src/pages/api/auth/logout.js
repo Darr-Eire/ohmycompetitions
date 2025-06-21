@@ -1,15 +1,21 @@
 // pages/api/auth/logout.js
 
-export default function handler(req, res) {
-  if (req.method !== 'POST' && req.method !== 'GET') {
-    res.setHeader('Allow', ['POST', 'GET'])
-    return res.status(405).end(`Method ${req.method} Not Allowed`)
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Correctly clear the pi_token cookie
-  res.setHeader('Set-Cookie', [
-    `pi_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Strict`,
-  ])
+  try {
+    // Clear any session data if needed
+    // If you're using cookies, clear them here
+    res.setHeader('Set-Cookie', [
+      'auth=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT',
+      'user=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT'
+    ]);
 
-  return res.status(200).json({ message: 'Logged out' })
+    res.status(200).json({ message: 'Logged out successfully' });
+  } catch (error) {
+    console.error('❌ Logout error:', error);
+    res.status(500).json({ error: 'Failed to logout' });
+  }
 }

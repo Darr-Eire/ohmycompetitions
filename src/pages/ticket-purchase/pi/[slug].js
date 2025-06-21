@@ -1,13 +1,12 @@
-'use client';
-
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
+import { usePiAuth } from '../../../context/PiAuthContext';
 
 const piCompetitions = {
   'pi-giveaway-10k': {
     title: '10,000 Pi Giveaway',
     prize: '10,000 π',
-    entryFee: 2.2,
+    piAmount: 2.2,
     date: 'June 28, 2025',
     time: '12:00 AM UTC',
     endsAt: '2025-06-30T00:00:00Z',
@@ -18,7 +17,7 @@ const piCompetitions = {
   'pi-giveaway-5k': {
     title: '5,000 Pi Giveaway',
     prize: '5,000 π',
-    entryFee: 1.8,
+    piAmount: 1.8,
     date: 'June 29, 2025',
     time: '12:00 AM UTC',
     endsAt: '2025-06-30T00:00:00Z',
@@ -29,7 +28,7 @@ const piCompetitions = {
   'pi-giveaway-2.5k': {
     title: '2,500 Pi Giveaway',
     prize: '2,500 π',
-    entryFee: 1.6,
+    piAmount: 1.6,
     date: 'June 28, 2025',
     time: '12:00 AM UTC',
     endsAt: '2025-06-29T00:00:00Z',
@@ -43,6 +42,7 @@ export default function PiTicketPage() {
   const router = useRouter();
   const { slug } = router.query;
   const competition = piCompetitions[slug];
+  const { user, loginWithPi } = usePiAuth();
 
   const [quantity, setQuantity] = useState(1);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -73,7 +73,13 @@ export default function PiTicketPage() {
   const handlePayment = async () => {
     if (!competition) return;
 
-    const total = competition.entryFee * quantity;
+    if (!user) {
+      alert('Please login with Pi to enter the competition');
+      loginWithPi();
+      return;
+    }
+
+    const total = competition.piAmount * quantity;
 
     if (total <= 0) {
       alert('Invalid ticket quantity or price.');
@@ -99,6 +105,30 @@ export default function PiTicketPage() {
         return;
       }
 
+      if (!window.Pi.currentUser?.accessToken) {
+        console.log('🔄 Re-authenticating to ensure payment scope...');
+        await loginWithPi();
+      }
+
+      // Check for incomplete payments first
+      try {
+        const incompletePayment = await window.Pi.getIncompletePayment();
+        if (incompletePayment) {
+          console.log('🔄 Found incomplete payment, handling first:', incompletePayment);
+          await fetch('/api/pi/incomplete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              payment: incompletePayment,
+              slug: incompletePayment.metadata?.competitionSlug || slug 
+            })
+          });
+        }
+      } catch (err) {
+        console.warn('⚠️ Error checking incomplete payments:', err);
+        // Continue with new payment even if check fails
+      }
+
       window.Pi.createPayment(
         {
           amount: total.toFixed(8),
@@ -107,32 +137,115 @@ export default function PiTicketPage() {
             type: 'pi-competition-entry',
             competitionSlug: slug,
             quantity,
-          },
+          }
+        },
+        {
           onReadyForServerApproval: async (paymentId) => {
-            const res = await fetch('/api/payments/approve', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ paymentId, slug, amount: total }),
-            });
-            if (!res.ok) throw new Error(await res.text());
-            console.log('✅ Payment approved');
+            try {
+              const res = await fetch('/api/pi/approve-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ paymentId, slug, amount: total }),
+              });
+
+              const data = await res.json();
+              
+              if (!res.ok) {
+                // If it's a 404, show a more specific message
+                if (res.status === 404) {
+                  throw new Error('Competition not found. Please contact support.');
+                }
+                // If it's a 400, show the specific error
+                if (res.status === 400) {
+                  throw new Error(data.error);
+                }
+                throw new Error(data.error || 'Payment approval failed');
+              }
+
+              console.log('✅ Payment approved');
+            } catch (err) {
+              console.error('Error approving payment:', err);
+              // Only show alert if payment wasn't already approved
+              if (!err.message?.includes('already approved')) {
+                throw err;
+              }
+            }
           },
           onReadyForServerCompletion: async (paymentId, txid) => {
             try {
-              const res = await fetch('/api/payments/complete', {
+              const res = await fetch('/api/pi/complete-payment', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ paymentId, txid, slug }),
               });
-              if (!res.ok) throw new Error(await res.text());
-              console.log('✅ Payment completed');
-              alert('✅ Entry confirmed! Good luck!');
+
+              const data = await res.json();
+              
+              if (!res.ok) {
+                // Handle specific error cases
+                if (res.status === 404) {
+                  throw new Error('Competition not found. Please contact support.');
+                }
+                if (data.error?.includes('no longer available')) {
+                  throw new Error('This competition is no longer available for entry. Please try another competition.');
+                }
+                if (data.error?.includes('not active')) {
+                  throw new Error('This competition is no longer active. Please try another competition.');
+                }
+                throw new Error(data.error || 'Payment completion failed');
+              }
+
+              console.log('✅ Payment completed:', data);
+              
+              // Show ticket number in success message if available
+              const ticketMsg = data.ticketNumber 
+                ? ` Your ticket number is #${data.ticketNumber}.` 
+                : '';
+              
+              // Show if competition is now full
+              const statusMsg = data.competitionStatus === 'completed'
+                ? ' This competition is now full!'
+                : '';
+              
+              alert(`✅ Entry confirmed!${ticketMsg}${statusMsg} Good luck!`);
+              
+              // Refresh page if competition status changed
+              if (data.competitionStatus === 'completed') {
+                window.location.reload();
+              }
             } catch (err) {
               console.error('Error completing payment:', err);
-              alert('❌ Server completion failed.');
+              // Check if the error indicates a successful transaction
+              if (err.message?.includes('already completed') || 
+                  err.message?.includes('already processed')) {
+                alert('✅ Entry confirmed! Good luck!');
+              } else {
+                // Show user-friendly error message
+                const errorMsg = err.message?.includes('Please') 
+                  ? err.message  // Already user-friendly
+                  : `❌ ${err.message || 'Server completion failed.'}`;
+                alert(errorMsg);
+                
+                // Refresh page if competition is no longer available
+                if (err.message?.includes('no longer available') || 
+                    err.message?.includes('not active')) {
+                  window.location.reload();
+                }
+              }
             } finally {
               setProcessing(false);
             }
+          },
+          onIncomplete: (payment) => {
+            console.warn('⚠️ Incomplete payment:', payment);
+            fetch('/api/pi/incomplete', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ payment, slug })
+            })
+            .catch(err => console.error('Failed to log incomplete payment:', err));
+            alert('Your previous payment was incomplete. Please try again.');
+            setProcessing(false);
           },
           onCancel: () => {
             console.warn('❌ Payment cancelled');
@@ -142,7 +255,7 @@ export default function PiTicketPage() {
             console.error('❌ Payment error:', err);
             alert('❌ Payment failed. See console for details.');
             setProcessing(false);
-          },
+          }
         }
       );
     } catch (err) {
@@ -171,7 +284,7 @@ export default function PiTicketPage() {
         <section className="text-white text-base max-w-md mx-auto text-left space-y-3">
           {[
             ['Prize', competition.prize],
-            ['Entry Fee', `${competition.entryFee} π`],
+            ['Entry Fee', `${competition.piAmount} π`],
             ['Total Tickets', competition.totalTickets.toLocaleString()],
             ['Tickets Sold', competition.ticketsSold.toLocaleString()],
             ['Location', competition.location],
@@ -206,7 +319,7 @@ export default function PiTicketPage() {
         </div>
 
         <p className="text-center text-lg font-bold mt-6">
-          Total: {(competition.entryFee * quantity).toFixed(2)} π
+          Total: {(competition.piAmount * quantity).toFixed(2)} π
         </p>
 
         <button
