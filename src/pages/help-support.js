@@ -108,9 +108,19 @@ export default function HelpSupport() {
               <li className="flex justify-between flex-wrap"><strong>Address</strong><span className="text-right">Dublin, Ireland</span></li>
               <li className="flex justify-between flex-wrap"><strong>Pi Username</strong><span className="text-right">@darreire2020</span></li>
               <li className="flex justify-between flex-wrap"><strong>Instagram</strong><a href="https://instagram.com/_ohmycompetitions" target="_blank" rel="noopener noreferrer" className="text-blue-300 hover:underline text-right">OhMyCompetitions</a></li>
-              <li className="flex justify-between flex-wrap"><strong>Discord</strong><a href="https://discord.gg/YOUR_DISCORD_INVITE" target="_blank" rel="noopener noreferrer" className="text-blue-300 hover:underline text-right">OhMyCompetitions</a></li>
+              <li className="flex justify-between flex-wrap"><strong>Discord</strong><a href="https://discord.gg/YOUR_DISCORD_INVITE" target="_blank" rel="noopener noreferrer" className="text-blue-300 hover:underline text-right">ohmycompetitions_</a></li>
               <li className="flex justify-between flex-wrap"><strong>X</strong><a href="https://x.com/OM_Competitions" target="_blank" rel="noopener noreferrer" className="text-blue-300 hover:underline text-right">@OhMyCompetitions</a></li>
-              <li className="flex justify-between flex-wrap"><strong>Facebook</strong><a href="https://facebook.com/ohmycompetitions" target="_blank" rel="noopener noreferrer" className="text-blue-300 hover:underline text-right">facebook.com/ohmycompetitions</a></li>
+<li className="flex justify-between flex-wrap">
+  <strong>Facebook</strong>
+  <a
+    href="https://www.facebook.com/profile.php?id=61577406478876"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="text-blue-300 hover:underline text-right"
+  >
+    Oh My Competitions
+  </a>
+</li>
             </ul>
           </section>
 

@@ -3,7 +3,7 @@
 import PiCompetitionCard from '@components/PiCompetitionCard'
 
 const piComps = [
-   {
+  {
     comp: { slug: 'pi-giveaway-10k', entryFee: 2.2, totalTickets: 5200, ticketsSold: 0, endsAt: '2025-06-30T00:00:00Z' },
     title: '10,000 Pi',
     prize: '10,000 π',
@@ -32,14 +32,25 @@ const piComps = [
 export default function PiCompetitionsPage() {
   return (
     <main className="app-background min-h-screen px-4 py-8 text-white">
-      <div className="max-w-screen-lg mx-auto">
-        <h1 className="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-[#00ffd5] to-[#0077ff] bg-clip-text text-transparent">
+      <div className="max-w-screen-lg mx-auto px-4 sm:px-0">
+        <h1
+          className="
+            text-3xl font-bold text-center mb-4
+            bg-gradient-to-r from-[#00ffd5] to-[#0077ff]
+            bg-clip-text text-transparent
+          "
+        >
           Pi Competitions
         </h1>
 
+        <p className="text-center text-white text-base sm:text-lg max-w-md mx-auto mb-8">
+          Join exciting Pi competitions starting from just{' '}
+          <span className="font-semibold">1.6 π</span> per entry — grab your chance to win big!
+        </p>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {piComps.map((item) => (
-            <PiCompetitionCard key={item.comp.slug} {...item} />
+            <PiCompetitionCard key={item.comp.slug} {...item} fee={`${item.comp.entryFee.toFixed(2)} π`} />
           ))}
         </div>
       </div>
