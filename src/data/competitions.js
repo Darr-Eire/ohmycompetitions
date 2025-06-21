@@ -225,7 +225,7 @@ export const premiumItems = [
   {
     comp: {
       slug: 'dubai-luxury-holiday',
-      entryFee: 2.5,
+      entryFee: 2,
       totalTickets: 4000,
       ticketsSold: 0,
       endsAt: '2025-06-30T22:00:00Z',
@@ -240,7 +240,7 @@ export const premiumItems = [
   {
     comp: {
       slug: 'penthouse-stay',
-      entryFee: 15,
+      entryFee: .75,
       totalTickets: 3000,
       ticketsSold: 0,
       endsAt: '2025-06-30T21:00:00Z',
@@ -255,7 +255,7 @@ export const premiumItems = [
   {
     comp: {
       slug: 'first-class-flight',
-      entryFee: 2,
+      entryFee: 1,
       totalTickets: 2500,
       ticketsSold: 0,
       endsAt: '2025-06-30T21:00:00Z',

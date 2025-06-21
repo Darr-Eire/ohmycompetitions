@@ -35,9 +35,7 @@ const BATTLE_MODES = [
 ];
 
 export default function PiBattlesLobbyPage() {
-  const correctAnswer = '9'; // Skill question answer
-  const [skillAnswer, setSkillAnswer] = useState('');
-  const isCorrect = skillAnswer.trim() === correctAnswer;
+
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] px-4 py-10 text-white font-orbitron">
@@ -50,24 +48,7 @@ export default function PiBattlesLobbyPage() {
 
       <div className="max-w-3xl mx-auto">
 
-        {/* Skill Question */}
-        <div className="mb-6 max-w-md mx-auto">
-          <label htmlFor="skill-question" className="block mb-2 font-semibold text-cyan-300">
-            Skill Question (required):
-          </label>
-          <p className="mb-2 text-white">What is 6 + 3?</p>
-          <input
-            id="skill-question"
-            type="text"
-            value={skillAnswer}
-            onChange={e => setSkillAnswer(e.target.value)}
-            placeholder="Enter your answer"
-            className="w-full px-4 py-2 rounded-lg bg-white/10 border border-cyan-500 text-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
-          />
-          {skillAnswer && !isCorrect && (
-            <p className="mt-1 text-red-500 text-sm">Incorrect answer. You must answer correctly to proceed.</p>
-          )}
-        </div>
+  
 
         {/* Instructions */}
         <p className="text-white mt-2 text-center">
@@ -81,25 +62,22 @@ export default function PiBattlesLobbyPage() {
           </h2>
 
           <div className="space-y-4">
-            {BATTLE_MODES.map(mode => (
-              <Link
-                key={mode.id}
-                href={isCorrect ? `/battles/lobby/${mode.id}` : '#'}
-                className={`block ${isCorrect ? 'cursor-pointer' : 'cursor-not-allowed pointer-events-none opacity-60'}`}
-                aria-disabled={!isCorrect}
-                onClick={e => {
-                  if (!isCorrect) e.preventDefault();
-                }}
-              >
-                <div
-                  className={`p-5 rounded-2xl shadow-[0_0_20px_#00fff055] bg-gradient-to-r ${mode.color} border border-cyan-400 text-center`}
-                >
-                  <h3 className="text-xl font-bold text-white mb-1">{mode.title}</h3>
-                  <p className="text-sm text-white/90 mb-1">{mode.desc}</p>
-                  <p className="text-xs text-white/70">{mode.players}</p>
-                </div>
-              </Link>
-            ))}
+       {BATTLE_MODES.map(mode => (
+  <Link
+    key={mode.id}
+    href={`/battles/lobby/${mode.id}`}
+    className="block cursor-pointer"
+  >
+    <div
+      className={`p-5 rounded-2xl shadow-[0_0_20px_#00fff055] bg-gradient-to-r ${mode.color} border border-cyan-400 text-center`}
+    >
+      <h3 className="text-xl font-bold text-white mb-1">{mode.title}</h3>
+      <p className="text-sm text-white/90 mb-1">{mode.desc}</p>
+      <p className="text-xs text-white/70">{mode.players}</p>
+    </div>
+  </Link>
+))}
+
           </div>
         </section>
 
