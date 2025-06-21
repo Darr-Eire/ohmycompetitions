@@ -16,6 +16,8 @@ export default function VaultPro() {
   const [correctIndexes, setCorrectIndexes] = useState([]);
   const [retryUsed, setRetryUsed] = useState(false);
   const [dailyUsed, setDailyUsed] = useState(false);
+  const [skillAnswer, setSkillAnswer] = useState('');
+  const correctAnswer = '9'; // skill question: 6 + 3
 
   useEffect(() => {
     if (status === 'playing') {
@@ -41,9 +43,15 @@ export default function VaultPro() {
     setRetryUsed(false);
     setStatus('playing');
     setDailyUsed(true);
+    setSkillAnswer('');
   };
 
   const enterCode = () => {
+    if (skillAnswer.trim() !== correctAnswer) {
+      alert('Answer the skill question correctly before cracking the code.');
+      return;
+    }
+
     const correct = digits.map((d, idx) => d === code[idx]);
     const isWin = correct.every(Boolean);
 
@@ -59,9 +67,13 @@ export default function VaultPro() {
     setRetryUsed(true);
     setDigits(Array(NUM_DIGITS).fill(0));
     setStatus('playing');
+    setSkillAnswer('');
   };
 
-  const reset = () => setStatus('idle');
+  const reset = () => {
+    setStatus('idle');
+    setSkillAnswer('');
+  };
 
   return (
     <main className="min-h-screen px-4 py-12 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-orbitron flex flex-col items-center">
@@ -80,8 +92,13 @@ export default function VaultPro() {
         <div className="bg-white bg-opacity-10 rounded-2xl shadow-lg p-6 text-center">
 
           {status === 'idle' && (
-            <button onClick={startGame} disabled={dailyUsed}
-              className={`w-full py-3 rounded-full text-lg font-semibold text-white ${dailyUsed ? 'bg-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] hover:brightness-110 shadow-[0_0_30px_#00fff055] border border-cyan-700'}`}>
+            <button
+              onClick={startGame}
+              disabled={dailyUsed}
+              className={`w-full py-3 rounded-full text-lg font-semibold text-white ${
+                dailyUsed ? 'bg-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] hover:brightness-110 shadow-[0_0_30px_#00fff055] border border-cyan-700'
+              }`}
+            >
               Free Daily Attempt
             </button>
           )}
@@ -92,13 +109,52 @@ export default function VaultPro() {
               <div className="flex justify-center gap-4 mb-6">
                 {digits.map((digit, i) => (
                   <div key={i} className="flex flex-col items-center space-y-2">
-                    <button onClick={() => adjustDigit(i, 1)} className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-semibold w-10 h-10 rounded-full text-lg shadow-[0_0_30px_#00fff055] border border-cyan-700">▲</button>
+                    <button
+                      onClick={() => adjustDigit(i, 1)}
+                      className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-semibold w-10 h-10 rounded-full text-lg shadow-[0_0_30px_#00fff055] border border-cyan-700"
+                    >
+                      ▲
+                    </button>
                     <div className="text-3xl font-mono">{digit}</div>
-                    <button onClick={() => adjustDigit(i, -1)} className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-semibold w-10 h-10 rounded-full text-lg shadow-[0_0_30px_#00fff055] border border-cyan-700">▼</button>
+                    <button
+                      onClick={() => adjustDigit(i, -1)}
+                      className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-semibold w-10 h-10 rounded-full text-lg shadow-[0_0_30px_#00fff055] border border-cyan-700"
+                    >
+                      ▼
+                    </button>
                   </div>
                 ))}
               </div>
-              <button onClick={enterCode} className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-semibold w-full py-3 text-lg rounded-full shadow-[0_0_30px_#00fff055] border border-cyan-700 hover:brightness-110 transition">Crack Code</button>
+
+              {/* Skill Question */}
+              <div className="mb-4 text-left">
+                <label htmlFor="skill-question" className="block font-semibold mb-1">
+                  Skill Question (required):
+                </label>
+                <p className="text-sm mb-1">What is 6 + 3?</p>
+                <input
+                  id="skill-question"
+                  type="text"
+                  value={skillAnswer}
+                  onChange={(e) => setSkillAnswer(e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg bg-white/10 border border-cyan-500 text-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                  placeholder="Enter your answer"
+                />
+                {skillAnswer && skillAnswer.trim() !== correctAnswer && (
+                  <p className="text-sm text-red-400 mt-1">
+                    Incorrect answer. You must answer correctly to proceed.
+                  </p>
+                )}
+              </div>
+
+              <button
+                onClick={enterCode}
+                disabled={skillAnswer.trim() !== correctAnswer}
+                className={`bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-semibold w-full py-3 text-lg rounded-full shadow-[0_0_30px_#00fff055] border border-cyan-700 hover:brightness-110 transition
+                ${skillAnswer.trim() !== correctAnswer ? 'cursor-not-allowed opacity-70' : ''}`}
+              >
+                Crack Code
+              </button>
             </>
           )}
 
@@ -107,18 +163,33 @@ export default function VaultPro() {
               <p className="text-yellow-300 font-semibold text-lg mb-3">Close Pioneer! Correct digits:</p>
               <div className="flex justify-center gap-4 mb-4">
                 {digits.map((d, i) => (
-                  <div key={i} className={`w-14 h-14 flex justify-center items-center rounded-full text-2xl font-bold ${correctIndexes[i] ? 'bg-green-400 text-black' : 'bg-red-400 text-black'}`}>{d}</div>
+                  <div
+                    key={i}
+                    className={`w-14 h-14 flex justify-center items-center rounded-full text-2xl font-bold ${
+                      correctIndexes[i] ? 'bg-green-400 text-black' : 'bg-red-400 text-black'
+                    }`}
+                  >
+                    {d}
+                  </div>
                 ))}
               </div>
 
               {!retryUsed ? (
-                <button onClick={handleRetry} className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-semibold w-full py-3 text-lg rounded-full shadow-[0_0_30px_#00fff055] border border-cyan-700 hover:brightness-110 transition">
+                <button
+                  onClick={handleRetry}
+                  className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-semibold w-full py-3 text-lg rounded-full shadow-[0_0_30px_#00fff055] border border-cyan-700 hover:brightness-110 transition"
+                >
                   Retry Attempt
                 </button>
               ) : (
                 <>
                   <p className="text-red-400 font-semibold mb-2">The Vault stays locked... See you tomorrow 🚀</p>
-                  <button onClick={reset} className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-semibold w-full py-3 rounded-full shadow-[0_0_30px_#00fff055] border border-cyan-700 hover:brightness-110 transition">Back to Menu</button>
+                  <button
+                    onClick={reset}
+                    className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-semibold w-full py-3 rounded-full shadow-[0_0_30px_#00fff055] border border-cyan-700 hover:brightness-110 transition"
+                  >
+                    Back to Menu
+                  </button>
                 </>
               )}
             </>
@@ -128,20 +199,26 @@ export default function VaultPro() {
             <>
               <Confetti width={width} height={height} />
               <p className="text-green-400 font-bold text-xl mb-4">🎉 You cracked the Vault & won {PRIZE_POOL} π!</p>
-              <button onClick={reset} className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-semibold w-full py-3 rounded-full shadow-[0_0_30px_#00fff055] border border-cyan-700 hover:brightness-110 transition">Play Again Tomorrow</button>
+              <button
+                onClick={reset}
+                className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-semibold w-full py-3 rounded-full shadow-[0_0_30px_#00fff055] border border-cyan-700 hover:brightness-110 transition"
+              >
+                Play Again Tomorrow
+              </button>
             </>
           )}
 
         </div>
 
         <div className="text-center mt-6">
-          <Link href="/terms/vault-pro-plus" className="text-sm text-cyan-300 underline">Vault Pro Terms & Conditions</Link>
+          <Link href="/terms/vault-pro-plus" className="text-sm text-cyan-300 underline">
+            Vault Pro Terms & Conditions
+          </Link>
         </div>
 
         <Link href="/try-your-luck" className="text-sm text-cyan-300 underline block text-center mt-2">
           Back to Mini Games
         </Link>
-
       </div>
     </main>
   );

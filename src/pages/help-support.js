@@ -35,18 +35,7 @@ const faqSections = [
       ['What if I miss the window?', 'Unfortunately, unclaimed prizes cannot be recovered. Set reminders and check back every Friday!'],
     ]
   },
-  {
-    title: 'Pi Lottery — FAQ',
-    items: [
-      ['What is the Pi Lottery?', 'The Pi Lottery is a weekly draw where users select 6 numbers (including 1 Bonus Ball) and compete to win Pi.'],
-      ['When is the draw?', 'Every week on Friday. Winning numbers are announced and displayed on the Pi Lottery page.'],
-      ['How do I enter?', 'Pick your 6 numbers and confirm entry using Pi through the secure transaction popup.'],
-      ['What is the Bonus Ball?', 'The 6th number you select is automatically treated as your Bonus Ball. Matching it unlocks extra prizes.'],
-      ['Are there country-specific lotteries?', 'Yes! Select your country from the dropdown to view or enter region-specific draws.'],
-      ['Can I see past results?', 'Yes. Last week’s winning numbers and draw history are displayed at the bottom of the Pi Lottery page.'],
-      ['Can I win with fewer than 6 matches?', 'Yes — prizes scale based on how many numbers you match, including combinations with the Bonus Ball.'],
-    ]
-  },
+
   {
     title: 'How to Claim if You Win',
     items: [

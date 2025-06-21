@@ -112,16 +112,7 @@ export default function MyTickets() {
       imageUrl: '/images/cashcode.png',
       theme: 'cashcode',
     },
-    {
-      competitionTitle: 'Global Pi Lottery',
-      prize: '5,000 π',
-      entryFee: 1.2,
-      quantity: 1,
-      drawDate: '2025-07-20T18:00:00Z',
-      ticketNumbers: ['LOT001'],
-      imageUrl: '/images/lottery.png',
-      theme: 'lottery',
-    },
+
   ];
 
   useEffect(() => {
@@ -158,7 +149,7 @@ export default function MyTickets() {
       <option value="crypto">Crypto</option>
       <option value="free">Free</option>
       <option value="cashcode">Pi Cash Code</option>
-      <option value="lottery">Pi Lotteries</option>
+ 
     </select>
 
     {filtered.length > 0 ? (

@@ -75,7 +75,6 @@ export default function FuturePage() {
   <ul className="list-disc list-inside space-y-2 text-white">
     <li><strong>Live Draw Events:</strong> Real-time draws streamed in-app with countdowns, animations, and live chat reactions.</li>
     <li><strong>Regional Competitions:</strong> Localized competitions by country (Nigeria, India, Philippines, etc.) with unique prizes.</li>
-    <li><strong>Global Lottery System:</strong> Weekly Pi-powered lottery with auto-matched winning numbers and jackpot rollovers.</li>
     <li><strong>Sponsored Competitions:</strong> Official partner competitions with real-world products and Pi-backed entry fees.</li>
     <li><strong>Scratch Card Games:</strong> Tap-to-reveal instant win games with visual effects and surprise rarity tiers.</li>
     <li><strong>Pi Bomb Royale </strong> Elimination-based game mode with fast reflex rounds and a growing Pi prize pool.</li>

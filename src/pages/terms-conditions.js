@@ -77,15 +77,7 @@ export default function TermsConditions() {
                 'Prizes and mechanics are subject to Pi Network\'s evolving ecosystem rules.'
               ]
             },
-            {
-              title: '8. Pi Lottery',
-              points: [
-                'Lottery numbers must be selected before the cutoff time.',
-                'One entry per person per draw, unless otherwise specified.',
-                'Winning numbers and bonus balls are randomly drawn and published transparently.',
-                'Country-specific lotteries require users to match their registered country.'
-              ]
-            },
+      
             {
               title: '9. Pi Cash Code',
               points: [

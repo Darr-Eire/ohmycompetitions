@@ -163,7 +163,7 @@ export default function Account() {
         <option value="btc">Win 1 BTC — 0.5 π</option>
         <option value="moon">Pi To The Moon — 0 π</option>
         <option value="cashcode">Pi Cash Code — 0 π</option>
-        <option value="lottery">Global Pi Lottery — 1.2 π</option>
+     
       </select>
     </div>
 
@@ -193,7 +193,7 @@ export default function Account() {
           btc: { title: 'Win 1 BTC', entryFee: 0.5 },
           moon: { title: 'Pi To The Moon', entryFee: 0 },
           cashcode: { title: 'Pi Cash Code', entryFee: 0 },
-          lottery: { title: 'Global Pi Lottery', entryFee: 1.2 },
+      
         };
 
         const selected = comps[selectedCompetition];
@@ -231,7 +231,7 @@ export default function Account() {
           btc: 0.5,
           moon: 0,
           cashcode: 0,
-          lottery: 1.2,
+      
         };
         const fee = comps[selectedCompetition] || 0;
         const total = (ticketQuantity * fee).toFixed(2);

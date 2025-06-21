@@ -7,7 +7,6 @@ export default function IndexPage() {
     { icon: '💎', text: 'Daily Competitions' },
     { icon: '📲', text: 'Pi Cash Code' },
     { icon: '🎁', text: 'Crypto Giveaways' },
-    { icon: '🌍', text: 'Global Lotteries' },
     { icon: '⚔️', text: 'Pi Battles' },
     { icon: '🎮', text: 'Mini Games' },
   ];

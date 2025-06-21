@@ -31,7 +31,6 @@ export default function Header() {
 const competitionCategories = [
    ['Pi Giveaways', '/competitions/pi'],
   ['Pi Cash Code', '/pi-cash-code'],
-   ['Pi Lottery', '/lottery'],
   ['Pi Battles', '/competitions/pibattles'],
   ['Featured', '/competitions/featured'],
   ['Travel', '/competitions/travel'],
@@ -122,7 +121,7 @@ const competitionCategories = [
               </li>
             ))}
 
-            {/* Dropdown under Pi Lottery */}
+       
             <li>
               <button
                 onClick={() => setCompDropdownOpen(prev => !prev)}

@@ -26,14 +26,7 @@ export default function TryYourLuckPage() {
     reward: ' You unlocked 1 retry token!',
     storageKey: 'hackVaultPlayed',
   },
-  {
-    title: 'Pi Bomb Pass',
-    href: '/battles/mode/pi-bomb-pass',
-    icon: '💣',
-    desc: 'Pass the bomb before it explodes! Eliminate rivals and survive each round.',
-    reward: ' Stay alive to earn big π!',
-    storageKey: 'piBombPassPlayed',
-  },
+  
 ];
 
 
