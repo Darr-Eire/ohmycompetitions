@@ -14,25 +14,26 @@ function TicketCard({ ticket }) {
   if (ticket.earned) statusLabel = '💸 Earned';
 
   return (
-    <div className="bg-[#1e293b] text-white border border-cyan-300 rounded-xl shadow-lg p-4 space-y-3 font-mono text-center w-[85vw] max-w-sm mx-2 shrink-0">
-      <h3 className="text-lg font-bold flex flex-col items-center">
-        {ticket.competitionTitle}
-        <span className="text-xs font-medium text-cyan-400 mt-1">{statusLabel}</span>
-      </h3>
-      <img
-        src={ticket.imageUrl}
-        alt="Prize"
-        className="w-full object-cover rounded-md max-h-48"
-      />
-      <div className="grid grid-cols-2 text-sm gap-2 mt-2">
-        <p className="col-span-2 text-cyan-300 font-medium">{ticket.prize}</p>
-        <p>🎟 Tickets: {ticket.quantity}</p>
-        <p>💰 {ticket.entryFee.toFixed(2)} π</p>
-        <p>🕒 {drawDate.toLocaleDateString()}</p>
-        <p>{isActive ? '🟢 Active' : '🔴 Closed'}</p>
-      </div>
-      <p className="text-xs text-gray-400">Ticket IDs: {ticket.ticketNumbers.join(', ')}</p>
-    </div>
+<div className="bg-[#1e293b] text-white border border-cyan-300 rounded-xl shadow-lg p-3 space-y-2 font-mono text-center w-[70vw] max-w-sm mx-2 shrink-0">
+  <h3 className="text-base font-bold flex flex-col items-center">
+    {ticket.competitionTitle}
+    <span className="text-xs font-medium text-cyan-400 mt-1">{statusLabel}</span>
+  </h3>
+  <img
+    src={ticket.imageUrl}
+    alt="Prize"
+    className="w-full object-cover rounded-md max-h-44"
+  />
+  <div className="grid grid-cols-2 text-xs gap-2 mt-2">
+    <p className="col-span-2 text-cyan-300 font-medium">{ticket.prize}</p>
+    <p>🎟 {ticket.quantity}</p>
+    <p>💰 {ticket.entryFee.toFixed(2)} π</p>
+    <p>🕒 {drawDate.toLocaleDateString()}</p>
+    <p>{isActive ? '🟢 Active' : '🔴 Closed'}</p>
+  </div>
+  <p className="text-[10px] text-gray-400">Ticket IDs: {ticket.ticketNumbers.join(', ')}</p>
+</div>
+
   );
 }
 

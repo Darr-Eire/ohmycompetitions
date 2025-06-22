@@ -68,13 +68,16 @@ export default function PiBattlesLobbyPage() {
     href={`/battles/lobby/${mode.id}`}
     className="block cursor-pointer"
   >
-    <div
-      className={`p-5 rounded-2xl shadow-[0_0_20px_#00fff055] bg-gradient-to-r ${mode.color} border border-cyan-400 text-center`}
-    >
-      <h3 className="text-xl font-bold text-white mb-1">{mode.title}</h3>
-      <p className="text-sm text-white/90 mb-1">{mode.desc}</p>
-      <p className="text-xs text-white/70">{mode.players}</p>
-    </div>
+   <div
+  className={`p-5 rounded-2xl bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] border border-cyan-400 text-center shadow-[0_0_20px_#00fff055] hover:scale-[1.02] transition-transform duration-200`}
+>
+  <h3 className={`text-xl font-bold text-white mb-1 bg-clip-text text-transparent bg-gradient-to-r ${mode.accent}`}>
+    {mode.title}
+  </h3>
+  <p className="text-sm text-white/90 mb-1">{mode.desc}</p>
+  <p className="text-xs text-white/70">{mode.players}</p>
+</div>
+
   </Link>
 ))}
 

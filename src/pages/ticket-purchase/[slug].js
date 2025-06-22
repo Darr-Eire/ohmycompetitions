@@ -129,36 +129,43 @@ export default function TicketPurchasePage() {
 
   return (
     <main className="min-h-screen px-4 py-10 text-white bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] font-orbitron">
-      <div className="max-w-xl mx-auto bg-white/5 backdrop-blur-lg border border-cyan-400 rounded-2xl shadow-[0_0_60px_#00ffd577] p-6">
-        <div className="bg-gradient-to-r from-cyan-400 to-blue-500 px-4 py-3 text-center rounded-xl mb-4">
-          <h1 className="text-xl sm:text-2xl font-bold text-black uppercase">{comp.title}</h1>
-        </div>
+     <div className="max-w-xl mx-auto bg-white/5 backdrop-blur-lg border border-cyan-400 rounded-2xl shadow-[0_0_60px_#00ffd577] p-6">
+  <div className="bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-500 p-[2px] rounded-xl mb-4">
+   <div className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] rounded-lg px-4 py-3 font-orbitron">
+  <h1 className="text-center text-white text-2xl sm:text-3xl font-extrabold tracking-wide uppercase drop-shadow-md">
+    {comp.title}
+  </h1>
+</div>
+
+  </div>
+
 
         <div className="space-y-6 text-center">
           {/* Only render images if NOT a daily competition */}
-          {!isDaily && mainImage && (
-            <>
-              <Image
-                src={mainImage}
-                alt={comp.title}
-                width={600}
-                height={300}
-                className="w-fit max-h-64 object-cover rounded-lg border border-blue-500 mx-auto"
-              />
-              <div className="flex justify-center gap-4 mt-2">
-                {miniImages.map((img, i) => (
-                  <Image
-                    key={i}
-                    src={img}
-                    alt={`Thumb ${i + 1}`}
-                    width={150}
-                    height={90}
-                    className="rounded-lg border border-cyan-400"
-                  />
-                ))}
-              </div>
-            </>
-          )}
+       {!isDaily && mainImage && (
+  <>
+    <Image
+      src={mainImage}
+      alt={comp.title}
+      width={600}
+      height={300}
+      className="w-full max-h-64 object-cover rounded-lg border border-blue-500 mx-auto"
+    />
+    <div className="flex justify-center flex-wrap gap-2 mt-2 px-2">
+      {miniImages.map((img, i) => (
+        <Image
+          key={i}
+          src={img}
+          alt={`Thumb ${i + 1}`}
+          width={100}
+          height={60}
+          className="rounded-lg border border-cyan-400 object-cover w-24 h-16 sm:w-32 sm:h-20"
+        />
+      ))}
+    </div>
+  </>
+)}
+
 
           <p className="text-white text-2xl font-bold">{comp.prize}</p>
 

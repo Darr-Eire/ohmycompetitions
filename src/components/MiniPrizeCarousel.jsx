@@ -8,7 +8,7 @@ import {
   freeItems,
   cryptoGiveawaysItems,
   dailyItems,
-} from '../data/competitions'; // Use relative path
+} from '../data/competitions'; // Adjust path as needed
 
 const allCompetitions = [
   ...techItems,
@@ -24,8 +24,9 @@ export default function MiniPrizeCarousel() {
   const [visibleCount, setVisibleCount] = useState(5);
 
   useEffect(() => {
+    // Set visible count based on window width
     const updateVisibleCount = () => {
-      setVisibleCount(window.innerWidth < 640 ? 3 : 5); // sm breakpoint
+      setVisibleCount(window.innerWidth < 640 ? 3 : 5);
     };
 
     updateVisibleCount();
@@ -34,14 +35,14 @@ export default function MiniPrizeCarousel() {
   }, []);
 
   useEffect(() => {
+    // Auto-slide carousel every 4 seconds
     const interval = setInterval(() => {
-      setIndex((prevIndex) =>
-        (prevIndex + visibleCount) % allCompetitions.length
-      );
+      setIndex((prevIndex) => (prevIndex + visibleCount) % allCompetitions.length);
     }, 4000);
     return () => clearInterval(interval);
   }, [visibleCount]);
 
+  // Get visible items for current index
   const visibleItems = Array.from({ length: visibleCount }, (_, i) => {
     return allCompetitions[(index + i) % allCompetitions.length];
   });

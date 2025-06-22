@@ -21,40 +21,38 @@ import {
   dailyItems,
 } from '@data/competitions';
 
-
 export default function HomePage() {
-  return (
-    <>
-      
-      
-<MiniPrizeCarousel
-  items={[
+  // Filter out all comingSoon competitions from all item arrays combined
+  const liveCompetitions = [
     ...techItems,
     ...premiumItems,
     ...piItems,
     ...dailyItems,
     ...freeItems,
     ...cryptoGiveawaysItems,
-  ]}
-/>
-{/* Hero Banner */}
-  <div className="mt-2 mb-4 flex justify-center">
-  <PiCashHeroBanner />
-</div>
+  ].filter(item => !item.comp?.comingSoon);
 
-     <main className="space-y-10">
+  return (
+    <>
+      <MiniPrizeCarousel items={liveCompetitions} />
 
+      {/* Hero Banner */}
+      <div className="mt-2 mb-4 flex justify-center">
+        <PiCashHeroBanner />
+      </div>
+
+      <main className="space-y-10">
         <Section title="Featured Competitions" items={techItems} viewMoreHref="/competitions/featured" />
         <Section title="Travel & Lifestyle" items={premiumItems} viewMoreHref="/competitions/travel" />
         <Section title="Pi Giveaways" items={piItems} viewMoreHref="/competitions/pi" extraClass="mt-12" />
         <Section title="Crypto Giveaways" items={cryptoGiveawaysItems} viewMoreHref="/competitions/crypto-giveaways" />
         <Section title="Daily Competitions" items={dailyItems} viewMoreHref="/competitions/daily" extraClass="mt-12" />
 
-       <section className="w-full bg-white/5 backdrop-blur-lg px-4 sm:px-6 py-8 my-4 border border-cyan-400 rounded-3xl shadow-[0_0_60px_#00ffd577] neon-outline">
-  <div className="max-w-7xl mx-auto">
-    <h2 className="text-xl sm:text-2xl font-bold text-center text-cyan-300 mb-6 font-orbitron">
-      ✨ Featured Free Competition ✨
-    </h2>
+        <section className="w-full bg-white/5 backdrop-blur-lg px-4 sm:px-6 py-8 my-4 border border-cyan-400 rounded-3xl shadow-[0_0_60px_#00ffd577] neon-outline">
+          <div className="max-w-7xl mx-auto">
+            <h2 className="text-xl sm:text-2xl font-bold text-center text-cyan-300 mb-6 font-orbitron">
+              ✨ Featured Free Competition ✨
+            </h2>
 
             <FreeCompetitionCard
               comp={{ endsAt: '2025-05-10T23:59:59Z', ticketsSold: 0, totalTickets: 10000, slug: 'pi-to-the-moon' }}
@@ -67,13 +65,12 @@ export default function HomePage() {
         <TopWinnersCarousel />
 
         <div className="flex justify-center mt-8">
-         <div className="grid grid-cols-2 gap-4 w-full max-w-md px-4 py-6 bg-gradient-to-r from-cyan-300 to-blue-500 rounded-xl shadow-lg text-black text-center text-sm sm:text-base">
-  <Stat label="Winners" value="44,000+" />
-  <Stat label="Total Pi Won" value="106,400 π" />
-  <Stat label="Donated to Charity" value="15,000 π" />
-  <Stat label="User Rated" value="5★" />
-</div>
-
+          <div className="grid grid-cols-2 gap-4 w-full max-w-md px-4 py-6 bg-gradient-to-r from-cyan-300 to-blue-500 rounded-xl shadow-lg text-black text-center text-sm sm:text-base">
+            <Stat label="Winners" value="44,000+" />
+            <Stat label="Total Pi Won" value="106,400 π" />
+            <Stat label="Donated to Charity" value="15,000 π" />
+            <Stat label="User Rated" value="5★" />
+          </div>
         </div>
       </main>
     </>
