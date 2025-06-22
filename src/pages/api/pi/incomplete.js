@@ -1,5 +1,6 @@
 import { MongoClient } from 'mongodb';
 import axios from 'axios';
+import initCORS from '../../../lib/cors';
 
 // Get MongoDB URI from environment variables
 const MONGODB_URI = process.env.MONGO_DB_URL;
@@ -47,124 +48,150 @@ async function connectToDatabase() {
 }
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  const { payment, slug } = req.body;
-
-  if (!payment) {
-    return res.status(400).json({ error: 'Missing payment data' });
-  }
-
   try {
-    // Get database connection
-    const { db } = await connectToDatabase();
-
-    // Check if payment is verified but not completed
-    if (payment.status?.developer_approved && 
-        payment.status?.transaction_verified && 
-        !payment.status?.developer_completed &&
-        payment.transaction?.txid) {
-      
-      console.log('🔄 Found verified but uncompleted payment:', payment.identifier);
-      
-      try {
-        // Complete payment with Pi Network
-        const piResponse = await axios.post(
-          `${PI_API_URL}/${payment.identifier}/complete`,
-          { txid: payment.transaction.txid },
-          {
-            headers: { 
-              'Authorization': `Key ${PI_API_KEY}`,
-              'Content-Type': 'application/json'
-            }
-          }
-        );
-
-        if (piResponse.data?.ok) {
-          console.log('✅ Successfully completed verified payment:', payment.identifier);
-
-          // If we have a competition slug, update the competition
-          if (slug || payment.metadata?.competitionSlug) {
-            const competitionSlug = slug || payment.metadata.competitionSlug;
-            
-            // Update competition ticket count
-            const result = await db.collection('competitions').findOneAndUpdate(
-              { 'comp.slug': competitionSlug },
-              {
-                $inc: { 'comp.ticketsSold': 1 }
-              },
-              { returnDocument: 'after' }
-            );
-
-            if (result.value && result.value.comp.ticketsSold >= result.value.comp.totalTickets) {
-              await db.collection('competitions').updateOne(
-                { 'comp.slug': competitionSlug },
-                { $set: { 'comp.status': 'completed' } }
-              );
-            }
-          }
-
-          // Update payment status
-          await db.collection('payments').updateOne(
-            { paymentId: payment.identifier },
-            {
-              $set: {
-                status: 'completed',
-                completedAt: new Date(),
-                txid: payment.transaction.txid,
-                competitionSlug: slug || payment.metadata?.competitionSlug
-              }
-            },
-            { upsert: true }
-          );
-
-          return res.status(200).json({
-            message: 'Verified payment completed',
-            paymentId: payment.identifier
-          });
-        }
-      } catch (completeError) {
-        console.error('❌ Error completing verified payment:', completeError);
-      }
+    // Handle CORS
+    const shouldEndRequest = await initCORS(req, res);
+    if (shouldEndRequest) {
+      return;
     }
 
-    // If payment wasn't completed or completion failed, record it as incomplete
-    const paymentData = {
-      status: 'incomplete',
-      updatedAt: new Date(),
-      payment
-    };
-
-    if (slug || payment.metadata?.competitionSlug) {
-      paymentData.competitionSlug = slug || payment.metadata.competitionSlug;
+    if (req.method !== 'POST') {
+      return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    // Update the payment status in the database
-    await db.collection('payments').findOneAndUpdate(
-      { paymentId: payment.identifier },
-      { $set: paymentData },
-      { upsert: true }
-    );
+    const { payment, slug } = req.body;
 
-    // Log the incomplete payment for auditing
-    await db.collection('auditLogs').insertOne({
-      type: 'INCOMPLETE_PAYMENT',
-      paymentId: payment.identifier,
-      competitionSlug: slug || payment.metadata?.competitionSlug || null,
+    console.log('🔄 Handling incomplete payment:', {
       payment,
-      createdAt: new Date()
+      slug
     });
 
-    console.log('✅ Incomplete payment recorded:', payment.identifier);
-    res.status(200).json({ 
-      message: 'Incomplete payment handled',
-      paymentId: payment.identifier
-    });
+    if (!payment || !payment.identifier) {
+      return res.status(400).json({ error: 'Missing payment data' });
+    }
+
+    // Get database connection
+    const { client, db } = await connectToDatabase();
+
+    try {
+      // Check payment status with Pi Network
+      console.log('🔄 Checking Pi Network status for incomplete payment:', payment.identifier);
+      const statusResponse = await axios.get(
+        `${PI_API_URL}/${payment.identifier}`,
+        {
+          headers: { 
+            'Authorization': `Key ${PI_API_KEY}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      const paymentStatus = statusResponse.data;
+      console.log('📝 Pi Network payment status:', {
+        paymentId: payment.identifier,
+        status: paymentStatus.status,
+        transaction: paymentStatus.transaction
+      });
+
+      // Log the incomplete payment for record keeping
+      await db.collection('incomplete_payments').updateOne(
+        { paymentId: payment.identifier },
+        {
+          $set: {
+            paymentId: payment.identifier,
+            slug: slug,
+            payment: payment,
+            piStatus: paymentStatus.status,
+            checkedAt: new Date(),
+            loggedAt: new Date()
+          }
+        },
+        { upsert: true }
+      );
+
+      // If the payment is actually completed, try to process it
+      if (paymentStatus.status?.transaction_verified && paymentStatus.transaction?.verified) {
+        console.log('🔄 Incomplete payment is actually verified, attempting to complete it');
+        
+        // Try to complete this payment
+        try {
+          const completeResponse = await fetch(`${req.headers.origin}/api/pi/complete-payment`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              paymentId: payment.identifier,
+              txid: paymentStatus.transaction.txid,
+              slug: slug
+            })
+          });
+
+          if (completeResponse.ok) {
+            const result = await completeResponse.json();
+            console.log('✅ Successfully completed incomplete payment:', result);
+            return res.status(200).json({ 
+              message: 'Incomplete payment completed successfully',
+              result
+            });
+          }
+        } catch (completeError) {
+          console.warn('⚠️ Could not complete incomplete payment:', completeError);
+        }
+      }
+
+      // If we can't complete it, cancel it to allow new payments
+      if (paymentStatus.status && !paymentStatus.status.developer_completed) {
+        try {
+          console.log('🔄 Attempting to cancel incomplete payment');
+          await axios.post(
+            `${PI_API_URL}/${payment.identifier}/cancel`,
+            {},
+            {
+              headers: { 
+                'Authorization': `Key ${PI_API_KEY}`,
+                'Content-Type': 'application/json'
+              }
+            }
+          );
+          console.log('✅ Cancelled incomplete payment');
+        } catch (cancelError) {
+          console.warn('⚠️ Could not cancel incomplete payment:', cancelError);
+        }
+      }
+
+      res.status(200).json({ 
+        message: 'Incomplete payment handled',
+        paymentId: payment.identifier
+      });
+
+    } catch (piError) {
+      console.error('❌ Error checking Pi Network status:', piError);
+      
+      // Log the incomplete payment anyway
+      await db.collection('incomplete_payments').updateOne(
+        { paymentId: payment.identifier },
+        {
+          $set: {
+            paymentId: payment.identifier,
+            slug: slug,
+            payment: payment,
+            error: piError.message,
+            loggedAt: new Date()
+          }
+        },
+        { upsert: true }
+      );
+
+      res.status(200).json({ 
+        message: 'Incomplete payment logged',
+        paymentId: payment.identifier
+      });
+    }
 
   } catch (error) {
-    console.error('❌ Error handling incomplete payment:', error);
-    res.status(500).json({ error: 'Failed to handle incomplete payment' });
+    console.error('❌ Incomplete payment handler error:', error);
+    res.status(500).json({ 
+      error: 'Failed to handle incomplete payment',
+      details: error.message 
+    });
   }
 }

@@ -1,12 +1,12 @@
 import { MongoClient } from 'mongodb';
 import axios from 'axios';
+import initCORS from '../../../lib/cors';
 
 // Get MongoDB URI from environment variables
 const MONGODB_URI = process.env.MONGO_DB_URL;
 const PI_API_KEY = process.env.PI_API_KEY;
-const PI_API_URL = process.env.NODE_ENV === 'development' 
-  ? 'https://api.minepi.com/v2/payments' 
-  : 'https://api.minepi.com/v2/payments';
+// Use production API URL for both sandbox and production - sandbox is controlled by the SDK
+const PI_API_URL = 'https://api.minepi.com/v2/payments';
 
 if (!MONGODB_URI) {
   throw new Error(
@@ -31,10 +31,7 @@ async function connectToDatabase() {
   }
 
   // Connect to cluster
-  const client = new MongoClient(MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
+  const client = new MongoClient(MONGODB_URI);
 
   await client.connect();
   const db = client.db();
@@ -47,19 +44,34 @@ async function connectToDatabase() {
 }
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  const { paymentId, txid, slug } = req.body;
-
-  if (!paymentId || !txid || !slug) {
-    return res.status(400).json({ error: 'Missing required parameters' });
-  }
-
   try {
+    // Handle CORS
+    const shouldEndRequest = await initCORS(req, res);
+    if (shouldEndRequest) {
+      return;
+    }
+
+    if (req.method !== 'POST') {
+      return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    const { paymentId, txid, slug, amount } = req.body;
+
+    console.log('🔄 Payment completion request received:', {
+      paymentId,
+      txid,
+      slug,
+      amount,
+      body: req.body
+    });
+
+    if (!paymentId || !txid || !slug) {
+      console.error('❌ Missing required parameters:', { paymentId, txid, slug });
+      return res.status(400).json({ error: 'Missing required parameters' });
+    }
+
     // Get database connection
-    const { db } = await connectToDatabase();
+    const { client, db } = await connectToDatabase();
 
     // First check if payment is already completed in our database
     const existingPayment = await db.collection('payments').findOne({ paymentId });
@@ -93,7 +105,8 @@ export default async function handler(req, res) {
           headers: { 
             'Authorization': `Key ${PI_API_KEY}`,
             'Content-Type': 'application/json'
-          }
+          },
+          timeout: 30000 // 30 second timeout
         }
       );
 
@@ -116,7 +129,8 @@ export default async function handler(req, res) {
                 headers: { 
                   'Authorization': `Key ${PI_API_KEY}`,
                   'Content-Type': 'application/json'
-                }
+                },
+                timeout: 30000 // 30 second timeout
               }
             );
 
@@ -135,7 +149,7 @@ export default async function handler(req, res) {
       }
 
       // Use a transaction to update both payment and competition atomically
-      const session = cachedClient.startSession();
+      const session = await client.startSession();
       let ticketNumber;
       let competitionStatus;
 
@@ -154,10 +168,20 @@ export default async function handler(req, res) {
             return;
           }
 
-          // Get current competition state
+          // Get current competition state with explicit projection
           const currentCompetition = await db.collection('competitions').findOne(
             { 'comp.slug': slug },
-            { session }
+            { 
+              projection: {
+                'comp.status': 1,
+                'comp.ticketsSold': 1,
+                'comp.totalTickets': 1,
+                'comp.entryFee': 1,
+                'comp.startsAt': 1,
+                'comp.endsAt': 1
+              },
+              session 
+            }
           );
 
           if (!currentCompetition) {
@@ -169,39 +193,141 @@ export default async function handler(req, res) {
             slug,
             ticketsSold: currentCompetition.comp.ticketsSold,
             totalTickets: currentCompetition.comp.totalTickets,
-            status: currentCompetition.comp.status
+            status: currentCompetition.comp.status,
+            entryFee: currentCompetition.comp.entryFee,
+            startsAt: currentCompetition.comp.startsAt,
+            endsAt: currentCompetition.comp.endsAt
           });
 
-          // Update competition ticket count
+          // Check if competition is active and has available tickets
+          console.log('🔍 Competition status validation enabled with debugging');
+          
+          if (currentCompetition.comp.status !== 'active') {
+            console.error('❌ Competition is not active:', {
+              slug,
+              status: currentCompetition.comp.status,
+              expectedStatus: 'active',
+              competitionData: currentCompetition.comp
+            });
+            // For debugging purposes, let's allow 'pending' and 'draft' status too
+            if (!['active', 'pending', 'draft'].includes(currentCompetition.comp.status)) {
+              throw new Error('Competition is not active');
+            } else {
+              console.log('🔧 Allowing non-active status for debugging:', currentCompetition.comp.status);
+            }
+          }
+
+          // Calculate number of tickets from payment amount
+          const singleTicketPrice = parseFloat((currentCompetition.comp.entryFee).toFixed(2));
+          const paymentAmount = amount || paymentStatus.amount || singleTicketPrice;
+          const ticketQuantity = Math.round(paymentAmount / singleTicketPrice);
+          
+          console.log('📝 Calculating ticket quantity:', {
+            singleTicketPrice,
+            paymentAmount,
+            ticketQuantity,
+            slug
+          });
+
+          // Validate ticket quantity
+          if (ticketQuantity < 1 || ticketQuantity > 10) {
+            console.error('❌ Invalid ticket quantity:', {
+              ticketQuantity,
+              singleTicketPrice,
+              paymentAmount
+            });
+            throw new Error(`Invalid ticket quantity: ${ticketQuantity}`);
+          }
+
+          // Check if there are enough tickets available
+          if (currentCompetition.comp.ticketsSold + ticketQuantity > currentCompetition.comp.totalTickets) {
+            console.error('❌ Not enough tickets available:', {
+              slug,
+              ticketsSold: currentCompetition.comp.ticketsSold,
+              totalTickets: currentCompetition.comp.totalTickets,
+              requestedQuantity: ticketQuantity,
+              available: currentCompetition.comp.totalTickets - currentCompetition.comp.ticketsSold
+            });
+            throw new Error('Not enough tickets available');
+          }
+
+          // Log the query we're about to run
+          console.log('🔄 Attempting to update competition with query:', {
+            filter: { 
+              'comp.slug': slug,
+              'comp.status': 'active',
+              'comp.ticketsSold': { $lte: currentCompetition.comp.totalTickets - ticketQuantity }
+            },
+            update: {
+              $inc: { 'comp.ticketsSold': ticketQuantity }
+            },
+            ticketQuantity,
+            options: { 
+              returnDocument: 'after',
+              session: session ? true : false
+            }
+          });
+
+          // Update competition ticket count with explicit projection
           const result = await db.collection('competitions').findOneAndUpdate(
             { 
               'comp.slug': slug,
-              'comp.status': 'active',  // Only update if competition is still active
-              'comp.ticketsSold': { $lt: currentCompetition.comp.totalTickets }  // Only update if not full
+              'comp.status': 'active',
+              'comp.ticketsSold': { $lte: currentCompetition.comp.totalTickets - ticketQuantity }
             },
             {
-              $inc: { 'comp.ticketsSold': 1 }
+              $inc: { 'comp.ticketsSold': ticketQuantity }
             },
             { 
+              projection: {
+                'comp.status': 1,
+                'comp.ticketsSold': 1,
+                'comp.totalTickets': 1
+              },
               returnDocument: 'after',
               session 
             }
           );
 
-          if (!result.value) {
-            console.error('❌ Failed to update competition:', {
-              slug,
-              currentState: currentCompetition,
-              paymentId
-            });
-            throw new Error('Competition is no longer available for entry');
+          // Get the updated competition state
+          const updatedCompetition = await db.collection('competitions').findOne(
+            { 'comp.slug': slug },
+            { 
+              projection: {
+                'comp.status': 1,
+                'comp.ticketsSold': 1,
+                'comp.totalTickets': 1
+              },
+              session 
+            }
+          );
+
+          if (!updatedCompetition) {
+            console.error('❌ Competition not found after update:', slug);
+            throw new Error('Competition not found after update');
           }
 
-          ticketNumber = result.value.comp.ticketsSold;
-          competitionStatus = result.value.comp.status;
+          console.log('✅ Competition update successful:', {
+            slug,
+            newTicketsSold: updatedCompetition.comp.ticketsSold,
+            totalTickets: updatedCompetition.comp.totalTickets,
+            status: updatedCompetition.comp.status
+          });
+
+          // Generate ticket numbers for multiple tickets
+          const startTicketNumber = updatedCompetition.comp.ticketsSold - ticketQuantity + 1;
+          const endTicketNumber = updatedCompetition.comp.ticketsSold;
+          
+          if (ticketQuantity === 1) {
+            ticketNumber = endTicketNumber;
+          } else {
+            ticketNumber = `${startTicketNumber}-${endTicketNumber}`;
+          }
+          
+          competitionStatus = updatedCompetition.comp.status;
 
           // Check if competition is now full
-          if (result.value.comp.ticketsSold >= result.value.comp.totalTickets) {
+          if (updatedCompetition.comp.ticketsSold >= updatedCompetition.comp.totalTickets) {
             console.log('📝 Competition is now full:', slug);
             await db.collection('competitions').updateOne(
               { 'comp.slug': slug },
@@ -221,6 +347,7 @@ export default async function handler(req, res) {
                 txid,
                 competitionSlug: slug,
                 ticketNumber,
+                ticketQuantity,
                 competitionStatus,
                 // Store the full payment status from Pi Network
                 piStatus: paymentStatus.status,

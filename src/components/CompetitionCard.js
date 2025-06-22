@@ -11,7 +11,7 @@ export default function CompetitionCard({
   prize,
   fee,
   imageUrl,
-  endsAt = comp?.endsAt || new Date().toISOString(),
+  endsAt = comp?.comp?.endsAt || comp?.endsAt || new Date().toISOString(),
   hideButton = false,
   children
 }) {
@@ -27,7 +27,16 @@ export default function CompetitionCard({
 
     const interval = setInterval(() => {
       const now = Date.now();
+      const start = new Date(comp?.comp?.startsAt || comp?.startsAt).getTime();
       const end = new Date(endsAt).getTime();
+
+      // Check if competition hasn't started yet
+      if (now < start) {
+        setTimeLeft('');
+        setStatus('UPCOMING');
+        return;
+      }
+
       let diff = end - now;
 
       if (diff <= 0) {
@@ -56,10 +65,10 @@ export default function CompetitionCard({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [endsAt, comp?.comingSoon]);
+  }, [endsAt, comp?.comingSoon, comp?.comp?.startsAt, comp?.startsAt]);
 
-  const sold = comp?.ticketsSold ?? 0;
-  const total = comp?.totalTickets ?? 100;
+  const sold = comp?.comp?.ticketsSold || comp?.ticketsSold || 0;
+  const total = comp?.comp?.totalTickets || comp?.totalTickets || 100;
   const percent = Math.min(100, Math.floor((sold / total) * 100));
 
   return (
@@ -82,7 +91,7 @@ export default function CompetitionCard({
         <div className={`w-full text-center px-3 py-1 rounded-full text-xs sm:text-sm font-bold shadow 
           ${status === 'LIVE NOW'
             ? 'bg-gradient-to-r from-[#00ff99] to-[#00cc66] text-black animate-pulse'
-            : status === 'COMING SOON'
+            : status === 'COMING SOON' || status === 'UPCOMING'
               ? 'bg-gradient-to-r from-orange-400 to-orange-500 text-black'
               : 'bg-red-500 text-white'}`}>
           {status === 'COMING SOON' ? 'Coming Soon' : status}
@@ -90,7 +99,7 @@ export default function CompetitionCard({
       </div>
 
       {/* LIVE timer */}
-      {status === 'LIVE' && (
+      {status === 'LIVE NOW' && (
         <div className="flex justify-center items-center gap-3 px-4 pt-3">
           <div className="bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-3 py-1 rounded-lg">
             <p className="text-sm text-black font-mono font-bold">{timeLeft}</p>
@@ -109,8 +118,8 @@ export default function CompetitionCard({
         <div className="flex justify-between">
           <span className="text-cyan-300 font-semibold">Starts:</span>
           <span>
-            {comp?.startsAt
-              ? new Date(comp.startsAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+            {(comp?.comp?.startsAt || comp?.startsAt)
+              ? new Date(comp.comp?.startsAt || comp.startsAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
               : 'TBA'}
           </span>
         </div>
@@ -135,18 +144,27 @@ export default function CompetitionCard({
       {/* Button */}
       {children ? children : !hideButton && (
         <div className="p-4 pt-0 mt-auto">
-          <Link href={`/ticket-purchase/${comp?.slug}`}>
+          {(comp?.comp?.slug || comp?.slug) ? (
+            <Link href={`/ticket-purchase/${comp.comp?.slug || comp.slug}`}>
+              <button
+                className={`w-full py-2 rounded-md font-bold text-black shadow 
+                  ${comp?.comingSoon 
+                    ? 'bg-gradient-to-r from-[#00ffd5] to-[#0077ff] opacity-60 cursor-not-allowed' 
+                    : 'bg-gradient-to-r from-[#00ffd5] to-[#0077ff]'}
+                `}
+                disabled={comp?.comingSoon}
+              >
+                Enter Now
+              </button>
+            </Link>
+          ) : (
             <button
-              className={`w-full py-2 rounded-md font-bold text-black shadow 
-                ${comp?.comingSoon 
-                  ? 'bg-gradient-to-r from-[#00ffd5] to-[#0077ff] opacity-60 cursor-not-allowed' 
-                  : 'bg-gradient-to-r from-[#00ffd5] to-[#0077ff]'}
-              `}
-              disabled={comp?.comingSoon}
+              className="w-full py-2 rounded-md font-bold text-white bg-gray-500 opacity-60 cursor-not-allowed"
+              disabled
             >
-              Enter Now
+              Not Available
             </button>
-          </Link>
+          )}
         </div>
       )}
     </div>

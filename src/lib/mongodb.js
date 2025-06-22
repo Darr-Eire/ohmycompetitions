@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import { MongoClient } from 'mongodb';
 
 const MONGODB_URI = process.env.MONGO_DB_URL;
 
@@ -6,28 +6,39 @@ if (!MONGODB_URI) {
   throw new Error('❌ Please define the MONGO_DB_URL inside .env.local');
 }
 
-let cached = global.mongoose;
-
-if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
-}
+let cachedClient = null;
+let cachedDb = null;
 
 export async function connectToDatabase() {
-  if (cached.conn) {
-    return cached.conn;
+  // If we have a cached connection, use it
+  if (cachedClient && cachedDb) {
+    return { client: cachedClient, db: cachedDb };
   }
 
-  if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI, {
-      bufferCommands: false,
+  try {
+    // Connect to cluster
+    const client = await MongoClient.connect(MONGODB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
+      maxPoolSize: 10
     });
-  }
 
-  cached.conn = await cached.promise;
-  return cached.conn;
+    const db = client.db();
+
+    // Cache the connection
+    cachedClient = client;
+    cachedDb = db;
+
+    console.log('✅ Connected to MongoDB');
+    return { client, db };
+  } catch (error) {
+    console.error('❌ MongoDB connection error:', error);
+    throw new Error('Failed to connect to database');
+  }
 }
 
-// This gives you compatible "clientPromise" for old code that imports it
-export const clientPromise = connectToDatabase;
+// Export a promise for the connection
+export const clientPromise = (async () => {
+  const { client } = await connectToDatabase();
+  return client;
+})();

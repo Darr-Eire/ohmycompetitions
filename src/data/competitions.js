@@ -1,5 +1,3 @@
-
-
 export const techItems = [
   {
     comp: {
@@ -7,8 +5,10 @@ export const techItems = [
       entryFee: 0.40,
       totalTickets: 1100,
       ticketsSold: 0,
-      startsAt: '2025-07-26T14:00:00Z', // 7 days before endsAt
-      endsAt: '2025-07-26T14:00:00Z',
+      startsAt: '2025-06-20T14:00:00Z',
+      endsAt: '2025-08-20T14:00:00Z',
+      paymentType: 'pi',
+      piAmount: 0.40
     },
     title: 'PS5 Bundle',
     prize: 'PlayStation 5',
@@ -22,8 +22,10 @@ export const techItems = [
       entryFee: 0.45,
       totalTickets: 1500,
       ticketsSold: 0,
-      startsAt: '2025-07-16T11:30:00Z',
-      endsAt: '2025-07-16T11:30:00Z',
+      startsAt: '2025-06-16T11:30:00Z',
+      endsAt: '2025-08-16T11:30:00Z',
+      paymentType: 'pi',
+      piAmount: 0.45
     },
     title: '55″ Smart TV',
     prize: '55″ Smart TV',
@@ -37,8 +39,10 @@ export const techItems = [
       entryFee: 0.35,
       totalTickets: 1300,
       ticketsSold: 0,
-      startsAt: '2025-07-12T17:45:00Z',
-      endsAt: '2025-07-12T17:45:00Z',
+      startsAt: '2025-06-12T17:45:00Z',
+      endsAt: '2025-08-12T17:45:00Z',
+      paymentType: 'pi',
+      piAmount: 0.35
     },
     title: 'Xbox One',
     prize: 'Xbox One + Game Pass',
@@ -52,8 +56,10 @@ export const techItems = [
       entryFee: 0.36,
       totalTickets: 1830,
       ticketsSold: 0,
-      startsAt: '2025-07-09T13:30:00Z',
-      endsAt: '2025-07-09T13:30:00Z',
+      startsAt: '2025-06-09T13:30:00Z',
+      endsAt: '2025-08-09T13:30:00Z',
+      paymentType: 'pi',
+      piAmount: 0.36
     },
     title: 'Nintendo Switch',
     prize: 'Nintendo Switch',
@@ -67,8 +73,10 @@ export const techItems = [
       entryFee: 0.30,
       totalTickets: 1665,
       ticketsSold: 0,
-    startsAt: '2025-07-12T13:30:00Z',
-      endsAt: '2025-07-12T13:30:00Z',
+      startsAt: '2025-06-12T13:30:00Z',
+      endsAt: '2025-08-12T13:30:00Z',
+      paymentType: 'pi',
+      piAmount: 0.30
     },
     title: 'Apple AirPods',
     prize: 'Apple AirPods',
@@ -184,8 +192,10 @@ export const premiumItems = [
       entryFee: 2.5,
       totalTickets: 4000,
       ticketsSold: 0,
-      endsAt: '2025-06-30T22:00:00Z',
-      comingSoon: true,
+      startsAt: '2025-06-15T22:00:00Z',
+      endsAt: '2025-08-15T22:00:00Z',
+      paymentType: 'pi',
+      piAmount: 2.5
     },
     title: 'Dubai Luxury Holiday',
     href: '/competitions/dubai-luxury-holiday',
@@ -199,8 +209,10 @@ export const premiumItems = [
       entryFee: 15,
       totalTickets: 3000,
       ticketsSold: 0,
-      endsAt: '2025-06-30T21:00:00Z',
-      comingSoon: true,
+      startsAt: '2025-06-20T21:00:00Z',
+      endsAt: '2025-08-20T21:00:00Z',
+      paymentType: 'pi',
+      piAmount: 15
     },
     title: 'Penthouse Stay',
     href: '/competitions/penthouse-stay',
@@ -214,8 +226,10 @@ export const premiumItems = [
       entryFee: 2,
       totalTickets: 2500,
       ticketsSold: 0,
-      endsAt: '2025-06-30T21:00:00Z',
-      comingSoon: true,
+      startsAt: '2025-06-25T21:00:00Z',
+      endsAt: '2025-08-25T21:00:00Z',
+      paymentType: 'pi',
+      piAmount: 2
     },
     title: 'First Class Flight',
     href: '/competitions/first-class-flight',
@@ -229,12 +243,13 @@ export const premiumItems = [
       entryFee: 12,
       totalTickets: 4000,
       ticketsSold: 0,
-      endsAt: '2025-06-01T22:00:00Z',
-      comingSoon: true,
+      startsAt: '2025-06-01T22:00:00Z',
+      endsAt: '2025-08-01T22:00:00Z',
+      paymentType: 'pi',
+      piAmount: 12
     },
     title: 'Weekend Getaway',
     prize: '€2,000 Travel Voucher',
-    fee: '12 π',
     href: '/competitions/weekend-getaway',
     imageUrl: '/images/weekend.jpeg',
     theme: 'premium',
@@ -272,145 +287,10 @@ export const premiumItems = [
     theme: 'premium',
   },
 ];
-export const piItems = [
-  {
-    comp: { slug: 'pi-giveaway-10k', entryFee: 2.2, totalTickets: 5200, ticketsSold: 0, endsAt: '2025-06-30T00:00:00Z' },
-    title: '10,000 Pi',
-    prize: '10,000 π',
-    href: '/competitions/pi-giveaway-10k',
-    imageUrl: '/images/100000.png',
-    theme: 'pi',
-  },
-  {
-    comp: { slug: 'pi-giveaway-5k', entryFee: 1.8, totalTickets: 2900, ticketsSold: 0, endsAt: '2025-06-29T00:00:00Z' },
-    title: '5,000 Pi',
-    prize: '5,000 π',
-    href: '/competitions/pi-giveaway-5k',
-    imageUrl: '/images/50000.png',
-    theme: 'pi',
-  },
-  {
-    comp: { slug: 'pi-giveaway-2.5k', entryFee: 1.6, totalTickets: 1600, ticketsSold: 0, endsAt: '2025-06-28T00:00:00Z' },
-    title: '2,500 Pi',
-    prize: '2,500 π',
-    href: '/competitions/pi-giveaway-2.5k',
-    imageUrl: '/images/25000.png',
-    theme: 'pi',
-  },
-];
-export const dailyItems = [
-  {
-    comp: { 
-      slug: 'daily-jackpot', 
-      entryFee: 0.45, 
-      totalTickets: 1820, 
-      ticketsSold: 0, 
-      endsAt: '2025-06-30T23:59:59Z',
-      comingSoon: true
-    },
-    title: 'Daily Jackpot',
-    prize: '750 π',
-    href: '/competitions/daily-jackpot',
-    imageUrl: '/images/jackpot.png',
-    theme: 'daily',
-  },
-  {
-    comp: { 
-      slug: 'everyday-pioneer', 
-      entryFee: 0.31, 
-      totalTickets: 1900, 
-      ticketsSold: 0, 
-      endsAt: '2025-06-30T15:14:00Z',
-      comingSoon: true
-    },
-    title: 'Everyday Pioneer',
-    prize: '1,000 π',
-    href: '/competitions/everyday-pioneer',
-    imageUrl: '/images/everyday.png',
-    theme: 'daily',
-  },
-  {
-    comp: { 
-      slug: 'daily-pi-slice', 
-      entryFee: 0.37, 
-      totalTickets: 1500, 
-      ticketsSold: 0, 
-      endsAt: '2025-06-25T15:14:00Z',
-      comingSoon: true
-    },
-    title: 'Daily Pi Slice',
-    prize: '500 π',
-    href: '/competitions/daily-pi-slice',
-    imageUrl: '/images/daily.png',
-    theme: 'daily',
-  },
-];
-
-
-export const freeItems = [
-  {
-    comp: { 
-      slug: 'pi-to-the-moon',
-      entryFee: 0,
-      totalTickets: 20000,
-      ticketsSold: 0,
-      startsAt: '2025-08-20T18:00:00Z',
-      endsAt: '2025-08-31T18:00:00Z',
-      location: 'Online Global Draw'
-    },
-    title: 'Pi To The Moon',
-    prize: '10,000 π',
-    href: '/competitions/pi-to-the-moon',
-    theme: 'free'
-  }
-];
-
-
-
-export const cryptoGiveawaysItems = [
-  {
-    comp: { slug: 'crypto-btc', entryFee: 0.5, totalTickets: 10000, ticketsSold: 4500, endsAt: '2025-06-02T00:59:00Z', comingSoon: true },
-    title: 'Win 1 BTC',
-    href: '/crypto/crypto-btc',
-    token: 'BTC',
-    imageUrl: '/images/crypto-btc.png',
-  },
-  {
-    comp: { slug: 'crypto-eth', entryFee: 0.5, totalTickets: 6000, ticketsSold: 0, endsAt: '2025-06-03T23:59:00Z', comingSoon: true },
-    title: 'Win 2 ETH',
-    href: '/crypto/crypto-eth',
-    token: 'ETH',
-    imageUrl: '/images/crypto-eth.png',
-  },
-  {
-    comp: { slug: 'crypto-xrp', entryFee: 0.4, totalTickets: 8000, ticketsSold: 0, endsAt: '2025-06-09T23:59:00Z', comingSoon: true },
-    title: 'Win 1000 XRP',
-    href: '/crypto/crypto-xrp',
-    token: 'XRP',
-    imageUrl: '/images/crypto-xrp.png',
-  },
-  {
-    comp: { slug: 'crypto-sol', entryFee: 0.4, totalTickets: 7000, ticketsSold: 0, endsAt: '2025-06-05T23:59:00Z', comingSoon: true },
-    title: 'Win 10 SOL',
-    href: '/crypto/crypto-sol',
-    token: 'SOL',
-    imageUrl: '/images/crypto-sol.png',
-  },
-  {
-    comp: { slug: 'crypto-bnb', entryFee: 0.4, totalTickets: 4000, ticketsSold: 0, endsAt: '2025-06-07T23:59:00Z', comingSoon: true },
-    title: 'Win 2 BNB',
-    href: '/crypto/crypto-bnb',
-    token: 'BNB',
-    imageUrl: '/images/crypto-bnb.png',
-  },
-  {
-    comp: { slug: 'crypto-doge', entryFee: 0.3, totalTickets: 10000, ticketsSold: 0, endsAt: '2025-06-11T23:59:00Z', comingSoon: true },
-    title: 'Win 10,000 DOGE',
-    href: '/crypto/crypto-doge',
-    token: 'DOGE',
-    imageUrl: '/images/crypto-doge.png',
-  },
-];
+export const piItems = [];
+export const dailyItems = [];
+export const freeItems = [];
+export const cryptoGiveawaysItems = [];
 
 export const allComps = [
   ...techItems,
