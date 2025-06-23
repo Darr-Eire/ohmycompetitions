@@ -1,4 +1,3 @@
-// src/lib/dbConnect.js
 import mongoose from 'mongoose';
 
 let isConnected = false;
@@ -14,7 +13,7 @@ export async function dbConnect() {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
-    isConnected = db.connections[0].readyState;
+    isConnected = db.connections[0].readyState === 1;
     console.log('✅ MongoDB connected');
   } catch (error) {
     console.error('❌ MongoDB connection error:', error);

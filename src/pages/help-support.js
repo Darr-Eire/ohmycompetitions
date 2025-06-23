@@ -1,4 +1,3 @@
-// pages/help-support.js
 'use client'
 
 import { useState } from 'react'
@@ -36,18 +35,7 @@ const faqSections = [
       ['What if I miss the window?', 'Unfortunately, unclaimed prizes cannot be recovered. Set reminders and check back every Friday!'],
     ]
   },
-  {
-    title: 'Pi Lottery — FAQ',
-    items: [
-      ['What is the Pi Lottery?', 'The Pi Lottery is a weekly draw where users select 6 numbers (including 1 Bonus Ball) and compete to win Pi.'],
-      ['When is the draw?', 'Every week on Friday. Winning numbers are announced and displayed on the Pi Lottery page.'],
-      ['How do I enter?', 'Pick your 6 numbers and confirm entry using Pi through the secure transaction popup.'],
-      ['What is the Bonus Ball?', 'The 6th number you select is automatically treated as your Bonus Ball. Matching it unlocks extra prizes.'],
-      ['Are there country-specific lotteries?', 'Yes! Select your country from the dropdown to view or enter region-specific draws.'],
-      ['Can I see past results?', 'Yes. Last week’s winning numbers and draw history are displayed at the bottom of the Pi Lottery page.'],
-      ['Can I win with fewer than 6 matches?', 'Yes — prizes scale based on how many numbers you match, including combinations with the Bonus Ball.'],
-    ]
-  },
+
   {
     title: 'How to Claim if You Win',
     items: [
@@ -59,7 +47,14 @@ const faqSections = [
   },
 ]
 
-function Accordion({ title, items, isOpen, onClick }) {
+function Accordion({ title, items, isOpen, onClick, searchTerm }) {
+  const filteredItems = items.filter(([q, a]) =>
+    q.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    a.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  if (filteredItems.length === 0) return null
+
   return (
     <div className="border border-white/20 rounded-xl bg-white/5 overflow-hidden">
       <button
@@ -71,7 +66,7 @@ function Accordion({ title, items, isOpen, onClick }) {
       </button>
       {isOpen && (
         <ul className="p-4 list-disc list-inside space-y-4 text-white">
-          {items.map(([q, a], i) => (
+          {filteredItems.map(([q, a], i) => (
             <li key={i}>
               <strong>{q}</strong><br />
               {a}
@@ -85,6 +80,7 @@ function Accordion({ title, items, isOpen, onClick }) {
 
 export default function HelpSupport() {
   const [openIndex, setOpenIndex] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
 
   return (
     <main className="app-background min-h-screen flex justify-center px-4 text-white">
@@ -93,6 +89,15 @@ export default function HelpSupport() {
 
         <div className="p-6 space-y-6">
           <p>Welcome to our Help & Support Center. We’re here to assist you with any questions or issues!</p>
+
+          {/* Search Bar */}
+          <input
+            type="text"
+            placeholder="Search FAQs..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full p-2 rounded bg-white/10 text-white"
+          />
 
           {/* Contact Information */}
           <section>
@@ -103,13 +108,23 @@ export default function HelpSupport() {
               <li className="flex justify-between flex-wrap"><strong>Address</strong><span className="text-right">Dublin, Ireland</span></li>
               <li className="flex justify-between flex-wrap"><strong>Pi Username</strong><span className="text-right">@darreire2020</span></li>
               <li className="flex justify-between flex-wrap"><strong>Instagram</strong><a href="https://instagram.com/_ohmycompetitions" target="_blank" rel="noopener noreferrer" className="text-blue-300 hover:underline text-right">OhMyCompetitions</a></li>
-              <li className="flex justify-between flex-wrap"><strong>Discord</strong><a href="https://discord.gg/YOUR_DISCORD_INVITE" target="_blank" rel="noopener noreferrer" className="text-blue-300 hover:underline text-right">OhMyCompetitions</a></li>
+              <li className="flex justify-between flex-wrap"><strong>Discord</strong><a href="https://discord.gg/YOUR_DISCORD_INVITE" target="_blank" rel="noopener noreferrer" className="text-blue-300 hover:underline text-right">ohmycompetitions_</a></li>
               <li className="flex justify-between flex-wrap"><strong>X</strong><a href="https://x.com/OM_Competitions" target="_blank" rel="noopener noreferrer" className="text-blue-300 hover:underline text-right">@OhMyCompetitions</a></li>
-              <li className="flex justify-between flex-wrap"><strong>Facebook</strong><a href="https://facebook.com/ohmycompetitions" target="_blank" rel="noopener noreferrer" className="text-blue-300 hover:underline text-right">facebook.com/ohmycompetitions</a></li>
+<li className="flex justify-between flex-wrap">
+  <strong>Facebook</strong>
+  <a
+    href="https://www.facebook.com/profile.php?id=61577406478876"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="text-blue-300 hover:underline text-right"
+  >
+    Oh My Competitions
+  </a>
+</li>
             </ul>
           </section>
 
-          {/* Accordion FAQ */}
+          {/* FAQ Accordion */}
           <section className="space-y-6">
             {faqSections.map((section, index) => (
               <Accordion
@@ -118,6 +133,7 @@ export default function HelpSupport() {
                 items={section.items}
                 isOpen={openIndex === index}
                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                searchTerm={searchTerm}
               />
             ))}
           </section>

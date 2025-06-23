@@ -37,6 +37,31 @@ export default function PartnersPage() {
         
          
         </header>
+{/* Host Your Giveaway CTA */}
+<section className="competition-card p-6 bg-white bg-opacity-10 rounded-2xl shadow-lg">
+  <div className="bg-gradient-to-r from-[#0ff] to-[#0af] rounded px-4 py-2 mb-4">
+    <h2 className="text-1xl text-center text-black">
+      Got a Giveaway? Let Us Host It.
+    </h2>
+  </div>
+
+  <p className="text-white text-sm mb-4 text-center">
+    Whether you’re launching a Pi-powered game, a community milestone, or a product drop — we’ll run your giveaway end-to-end. 100% secure. 100% transparent. 100% Pi-native.
+  </p>
+
+  <ul className="space-y-2 text-white text-sm">
+    <li>✅ Transparent prize draws powered by real Pi transactions</li>
+    <li>✅ Verified winner announcements & built-in fraud protection</li>
+    <li>✅ Reach thousands of active Pi users instantly</li>
+    <li>✅ Optional live draws, auto-payments, and branded banners</li>
+  </ul>
+
+  <div className="text-center mt-6">
+    <Link href="/contact">
+      <button className="btn-gradient px-6 py-2">Let’s Talk </button>
+    </Link>
+  </div>
+</section>
 
         {/* Partners grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -76,7 +101,7 @@ export default function PartnersPage() {
             </p>
             <Link href="/contact">
               <button className="btn-gradient w-full">
-                Become a Partner →
+                Become a Partner
               </button>
             </Link>
           </div>

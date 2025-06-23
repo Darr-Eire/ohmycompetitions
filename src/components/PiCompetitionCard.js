@@ -1,4 +1,5 @@
 'use client'
+
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import '@fontsource/orbitron'
@@ -11,30 +12,47 @@ const topCountries = [
 
 export default function PiCompetitionCard({ comp, title, prize, fee, userHandle = '@pioneer' }) {
   const [timeLeft, setTimeLeft] = useState('')
-  const [entryCount, setEntryCount] = useState(12842)
   const endsAt = comp?.endsAt || new Date().toISOString()
+  const endDate = new Date(endsAt)
 
   useEffect(() => {
     if (!endsAt) return
-    const end = new Date(endsAt).getTime()
 
-    const interval = setInterval(() => {
-      const now = Date.now()
-      const diff = end - now
+    const updateTimer = () => {
+      const now = new Date()
+      const diff = endDate.getTime() - now.getTime()
+
       if (diff <= 0) {
         setTimeLeft('Ended')
-      } else {
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        let remainder = diff % (1000 * 60 * 60 * 24);
-        const hrs = Math.floor(remainder / (1000 * 60 * 60));
-        remainder %= (1000 * 60 * 60);
-        const mins = Math.floor(remainder / (1000 * 60));
-        setTimeLeft(`${days}d ${hrs}h ${mins}m`);
+        return
       }
-    }, 1000)
+
+      if (diff > 24 * 60 * 60 * 1000) {
+        // More than 24 hours left: show formatted end date
+        setTimeLeft(`Ends on ${endDate.toLocaleString('en-GB', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          timeZoneName: 'short',
+          hour12: false,
+        })}`)
+      } else {
+        // Less than 24 hours left: show countdown timer (HH:mm:ss)
+        const hrs = Math.floor(diff / (1000 * 60 * 60))
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+        const secs = Math.floor((diff % (1000 * 60)) / 1000)
+
+        setTimeLeft(`${hrs}h ${mins}m ${secs}s`)
+      }
+    }
+
+    updateTimer()
+    const interval = setInterval(updateTimer, 1000)
 
     return () => clearInterval(interval)
-  }, [endsAt])
+  }, [endsAt, endDate])
 
   return (
     <div className="relative w-full max-w-sm mx-auto p-4 bg-[#0f172a] rounded-xl text-white font-orbitron shadow-xl border-2 border-cyan-400 overflow-hidden">
@@ -58,12 +76,13 @@ export default function PiCompetitionCard({ comp, title, prize, fee, userHandle 
         <p>Winner Takes All</p>
         <p>Entry Fee: {(comp.entryFee ?? 0).toFixed(2)} π</p>
         <p>Total Entries: <strong>{(comp.ticketsSold ?? 0).toLocaleString()}</strong></p>
-        <p>{timeLeft}</p>
+        <p className="font-mono text-lg">{timeLeft}</p>
       </div>
 
       <div className="mt-4 bg-[#1a1c2e] p-3 rounded-lg border border-blue-500 text-sm">
-        <p className="text-center text-blue-300 font-semibold mb-2">🌐 Countries with Most Entries
-</p>
+        <p className="text-center text-blue-300 font-semibold mb-2">
+          🌐 Countries with Most Entries
+        </p>
         <ul className="space-y-1">
           {topCountries.map((c, i) => (
             <li key={i} className="flex justify-between">
@@ -73,8 +92,6 @@ export default function PiCompetitionCard({ comp, title, prize, fee, userHandle 
           ))}
         </ul>
       </div>
-
-    
 
       <div className="mt-6">
         <Link href={`/ticket-purchase/pi/${comp.slug}`}>

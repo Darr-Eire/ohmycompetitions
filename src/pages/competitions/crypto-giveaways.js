@@ -7,18 +7,37 @@ import { cryptoGiveawaysItems } from '@data/competitions'
 export default function CryptoGiveawaysPage() {
   return (
     <>
+      <Head>
+        <title>Crypto Giveaways | OhMyCompetitions</title>
+      </Head>
+
       <main className="app-background min-h-screen px-4 py-8 text-white">
-        <div className="max-w-screen-lg mx-auto">
-          <h1 className="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-[#00ffd5] to-[#0077ff] bg-clip-text text-transparent">
+        <div className="max-w-screen-lg mx-auto px-4 sm:px-0">
+          <h1
+            className="
+              text-3xl font-bold text-center mb-4
+              bg-gradient-to-r from-[#00ffd5] to-[#0077ff]
+              bg-clip-text text-transparent
+            "
+          >
             Crypto Giveaways
           </h1>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-6">
-            {cryptoGiveawaysItems.map((item) => (
-              <CryptoGiveawayCard key={item.comp.slug} {...item} />
-            ))}
-          </div>
+          <p className="text-center text-white text-base sm:text-lg max-w-md mx-auto mb-8">
+            No giveaways are live right now — but don’t worry! Check back soon and be ready to grab your chance to win crypto prizes.
+          </p>
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-6">
+            {cryptoGiveawaysItems.length > 0 ? (
+              cryptoGiveawaysItems.map((item) => (
+                <CryptoGiveawayCard key={item.comp.slug} {...item} />
+              ))
+            ) : (
+              <p className="text-center text-gray-400 col-span-full">
+                There are currently no active crypto giveaways.
+              </p>
+            )}
+          </div>
         </div>
       </main>
     </>

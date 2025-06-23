@@ -1,6 +1,9 @@
+'use client';
+
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
-import { usePiAuth } from '../../../context/PiAuthContext';
+import Link from 'next/link';
+import { usePiAuth } from 'context/PiAuthContext'; // Adjust this relative path as needed
 
 const piCompetitions = {
   'pi-giveaway-10k': {
@@ -13,6 +16,7 @@ const piCompetitions = {
     location: 'Online',
     totalTickets: 5200,
     ticketsSold: 0,
+    description: `🎉 Win 10,000 Pi Coins! This exclusive giveaway is limited to just 5,200 entries.\n\n🏆 Grand prize: 10,000 π\n📅 Entry closes: June 30th\n💸 Entry fee: 2.2 π\n📍 Location: Online\n\nInvite friends to increase your odds of winning!`
   },
   'pi-giveaway-5k': {
     title: '5,000 Pi Giveaway',
@@ -24,6 +28,7 @@ const piCompetitions = {
     location: 'Online',
     totalTickets: 2900,
     ticketsSold: 0,
+    description: `🎁 A big Pi drop of 5,000 π is here!\n\nOnly 2,900 entries available.\n\n📆 Ending June 30th.\n💰 Entry Fee: 1.8 π\n📍 Participate from anywhere.\n\nDon't miss out on the Pi fun!`
   },
   'pi-giveaway-2.5k': {
     title: '2,500 Pi Giveaway',
@@ -35,6 +40,7 @@ const piCompetitions = {
     location: 'Online',
     totalTickets: 1600,
     ticketsSold: 0,
+    description: `🚀 Small pool, big opportunity!\n\n🎯 Win 2,500 π for just 1.6 π per entry.\n🎟️ Only 1,600 tickets available.\n📅 Ends June 29.\n\nAct fast and good luck Pioneer!`
   },
 };
 
@@ -47,6 +53,9 @@ export default function PiTicketPage() {
   const [quantity, setQuantity] = useState(1);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [processing, setProcessing] = useState(false);
+  const [skillAnswer, setSkillAnswer] = useState('');
+  const [showDetails, setShowDetails] = useState(false);
+  const correctAnswer = '9';
 
   useEffect(() => {
     if (!competition) return;
@@ -81,20 +90,9 @@ export default function PiTicketPage() {
 
     const total = competition.piAmount * quantity;
 
-    if (total <= 0) {
-      alert('Invalid ticket quantity or price.');
-      return;
-    }
-
-    if (
-      timeLeft.days === 0 &&
-      timeLeft.hours === 0 &&
-      timeLeft.minutes === 0 &&
-      timeLeft.seconds === 0
-    ) {
-      alert('This competition has ended.');
-      return;
-    }
+    if (total <= 0) return alert('Invalid ticket quantity or price.');
+    if (Object.values(timeLeft).every(v => v === 0)) return alert('This competition has ended.');
+    if (skillAnswer.trim() !== correctAnswer) return alert('Incorrect answer to the skill question.');
 
     setProcessing(true);
 
@@ -126,7 +124,6 @@ export default function PiTicketPage() {
         }
       } catch (err) {
         console.warn('⚠️ Error checking incomplete payments:', err);
-        // Continue with new payment even if check fails
       }
 
       window.Pi.createPayment(
@@ -137,115 +134,32 @@ export default function PiTicketPage() {
             type: 'pi-competition-entry',
             competitionSlug: slug,
             quantity,
-          }
-        },
-        {
+          },
           onReadyForServerApproval: async (paymentId) => {
-            try {
-              const res = await fetch('/api/pi/approve-payment', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ paymentId, slug, amount: total }),
-              });
-
-              const data = await res.json();
-              
-              if (!res.ok) {
-                // If it's a 404, show a more specific message
-                if (res.status === 404) {
-                  throw new Error('Competition not found. Please contact support.');
-                }
-                // If it's a 400, show the specific error
-                if (res.status === 400) {
-                  throw new Error(data.error);
-                }
-                throw new Error(data.error || 'Payment approval failed');
-              }
-
-              console.log('✅ Payment approved');
-            } catch (err) {
-              console.error('Error approving payment:', err);
-              // Only show alert if payment wasn't already approved
-              if (!err.message?.includes('already approved')) {
-                throw err;
-              }
-            }
+            const res = await fetch('/api/payments/approve', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ paymentId, slug, amount: total }),
+            });
+            if (!res.ok) throw new Error(await res.text());
+            console.log('✅ Payment approved');
           },
           onReadyForServerCompletion: async (paymentId, txid) => {
             try {
-              const res = await fetch('/api/pi/complete-payment', {
+              const res = await fetch('/api/payments/complete', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ paymentId, txid, slug }),
               });
-
-              const data = await res.json();
-              
-              if (!res.ok) {
-                // Handle specific error cases
-                if (res.status === 404) {
-                  throw new Error('Competition not found. Please contact support.');
-                }
-                if (data.error?.includes('no longer available')) {
-                  throw new Error('This competition is no longer available for entry. Please try another competition.');
-                }
-                if (data.error?.includes('not active')) {
-                  throw new Error('This competition is no longer active. Please try another competition.');
-                }
-                throw new Error(data.error || 'Payment completion failed');
-              }
-
-              console.log('✅ Payment completed:', data);
-              
-              // Show ticket number in success message if available
-              const ticketMsg = data.ticketNumber 
-                ? ` Your ticket number is #${data.ticketNumber}.` 
-                : '';
-              
-              // Show if competition is now full
-              const statusMsg = data.competitionStatus === 'completed'
-                ? ' This competition is now full!'
-                : '';
-              
-              alert(`✅ Entry confirmed!${ticketMsg}${statusMsg} Good luck!`);
-              
-              // Refresh page if competition status changed
-              if (data.competitionStatus === 'completed') {
-                window.location.reload();
-              }
+              if (!res.ok) throw new Error(await res.text());
+              console.log('✅ Payment completed');
+              alert('✅ Entry confirmed! Good luck!');
             } catch (err) {
               console.error('Error completing payment:', err);
-              // Check if the error indicates a successful transaction
-              if (err.message?.includes('already completed') || 
-                  err.message?.includes('already processed')) {
-                alert('✅ Entry confirmed! Good luck!');
-              } else {
-                // Show user-friendly error message
-                const errorMsg = err.message?.includes('Please') 
-                  ? err.message  // Already user-friendly
-                  : `❌ ${err.message || 'Server completion failed.'}`;
-                alert(errorMsg);
-                
-                // Refresh page if competition is no longer available
-                if (err.message?.includes('no longer available') || 
-                    err.message?.includes('not active')) {
-                  window.location.reload();
-                }
-              }
+              alert('❌ Server completion failed.');
             } finally {
               setProcessing(false);
             }
-          },
-          onIncomplete: (payment) => {
-            console.warn('⚠️ Incomplete payment:', payment);
-            fetch('/api/pi/incomplete', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ payment, slug })
-            })
-            .catch(err => console.error('Failed to log incomplete payment:', err));
-            alert('Your previous payment was incomplete. Please try again.');
-            setProcessing(false);
           },
           onCancel: () => {
             console.warn('❌ Payment cancelled');
@@ -255,12 +169,12 @@ export default function PiTicketPage() {
             console.error('❌ Payment error:', err);
             alert('❌ Payment failed. See console for details.');
             setProcessing(false);
-          }
+          },
         }
       );
     } catch (err) {
-      console.error('❌ Unexpected error:', err);
-      alert('❌ Something went wrong during payment.');
+      console.error('❌ Error:', err);
+      alert('❌ Something went wrong.');
       setProcessing(false);
     }
   };
@@ -299,20 +213,33 @@ export default function PiTicketPage() {
           ))}
         </section>
 
+        {/* Competition Details Toggle */}
+        <button
+          onClick={() => setShowDetails(prev => !prev)}
+          className="w-full mt-6 text-center bg-cyan-700 hover:bg-cyan-600 transition px-4 py-2 rounded-md font-semibold"
+        >
+          {showDetails ? 'Hide Competition Details ▲' : 'Show Competition Details ▼'}
+        </button>
+
+        {showDetails && (
+          <div className="mt-4 bg-white/10 p-4 rounded-lg border border-cyan-400 text-sm whitespace-pre-wrap leading-relaxed text-white">
+            <h2 className="text-center text-lg font-bold mb-2 text-cyan-300">Competition Details</h2>
+            <p>{competition.description || 'No additional details available.'}</p>
+          </div>
+        )}
+
         <div className="flex justify-center items-center gap-4 mt-6">
           <button
             onClick={() => setQuantity(q => Math.max(1, q - 1))}
             disabled={quantity <= 1}
-            className="bg-blue-600 text-white px-5 py-2 rounded-full font-bold disabled:opacity-50 select-none"
-            aria-label="Decrease quantity"
+            className="bg-blue-600 text-white px-5 py-2 rounded-full font-bold disabled:opacity-50"
           >
             −
           </button>
           <span className="text-xl font-bold min-w-[3rem] text-center">{quantity}</span>
           <button
             onClick={() => setQuantity(q => q + 1)}
-            className="bg-blue-600 text-white px-5 py-2 rounded-full font-bold select-none"
-            aria-label="Increase quantity"
+            className="bg-blue-600 text-white px-5 py-2 rounded-full font-bold"
           >
             +
           </button>
@@ -322,11 +249,29 @@ export default function PiTicketPage() {
           Total: {(competition.piAmount * quantity).toFixed(2)} π
         </p>
 
+        <div className="mt-4">
+          <label htmlFor="skill-question" className="block font-semibold mb-2">
+            Skill Question (required):
+          </label>
+          <p className="text-sm mb-1">What is 4 + 5?</p>
+          <input
+            id="skill-question"
+            type="text"
+            className="w-full px-4 py-2 rounded-lg bg-white/10 border border-cyan-500 text-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
+            value={skillAnswer}
+            onChange={(e) => setSkillAnswer(e.target.value)}
+            placeholder="Enter your answer"
+          />
+          {skillAnswer.trim() !== '' && skillAnswer.trim() !== correctAnswer && (
+            <p className="text-sm text-red-400 mt-1">You must answer correctly to proceed.</p>
+          )}
+        </div>
+
         <button
           onClick={handlePayment}
-          disabled={processing}
+          disabled={processing || skillAnswer.trim() !== correctAnswer}
           className={`w-full mt-6 py-3 rounded-xl font-bold text-black bg-gradient-to-r from-cyan-400 to-blue-500 shadow-lg transition-transform ${
-            processing ? 'cursor-not-allowed opacity-70' : 'hover:scale-105'
+            processing || skillAnswer.trim() !== correctAnswer ? 'cursor-not-allowed opacity-70' : 'hover:scale-105'
           }`}
         >
           {processing ? 'Processing...' : 'Pay with Pi'}
@@ -335,6 +280,16 @@ export default function PiTicketPage() {
         <p className="mt-4 text-center text-white font-semibold">
           Pioneers, this is your chance to win big and help grow the Pi ecosystem!
         </p>
+
+        <div className="text-center mt-4">
+          <p className="text-sm text-white">
+            By entering, you agree to our{' '}
+            <Link href="/terms-conditions" className="text-cyan-400 underline hover:text-cyan-300 transition-colors">
+              Terms &amp; Conditions
+            </Link>
+            .
+          </p>
+        </div>
       </div>
     </div>
   );

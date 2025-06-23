@@ -17,7 +17,7 @@ export default function Footer() {
       </div>
 
       {/* Social Icons */}
-      <div className="social-icons">
+      <div className="social-icons flex justify-center gap-4 my-4">
         <a href="https://x.com/yourprofile" target="_blank" rel="noopener noreferrer" aria-label="X">
           <SiX size={20} />
         </a>
@@ -33,7 +33,7 @@ export default function Footer() {
       </div>
 
       {/* Links */}
-      <div className="footer-links">
+      <div className="footer-links flex justify-center gap-6 my-2">
         <Link href="/terms-conditions" legacyBehavior>
           <a>Terms & Conditions</a>
         </Link>
@@ -43,7 +43,7 @@ export default function Footer() {
       </div>
 
       {/* Copyright */}
-      <p className="mt-4 text-xs text-cyan-200">
+      <p className="mt-4 text-xs text-cyan-200 text-center">
         &copy; {new Date().getFullYear()} OhMyCompetitions. All rights reserved.
       </p>
     </footer>

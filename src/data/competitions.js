@@ -5,15 +5,20 @@ export const techItems = [
       entryFee: 0.40,
       totalTickets: 1100,
       ticketsSold: 0,
-      startsAt: '2025-06-20T14:00:00Z',
-      endsAt: '2025-08-20T14:00:00Z',
+      startsAt: '2025-07-01T14:00:00Z',
+      endsAt: '2025-08-01T14:00:00Z',
       paymentType: 'pi',
-      piAmount: 0.40
+      piAmount: 0.40,
     },
     title: 'PS5 Bundle',
-    prize: 'PlayStation 5',
+    prize: 'PlayStation 5 + Controller',
     href: '/competitions/ps5-bundle-giveaway',
     imageUrl: '/images/playstation.jpeg',
+    thumbnails: [
+      '/images/playstation1.jpeg',
+      '/images/playstation2.jpeg',
+      '/images/playstation3.jpeg',
+    ],
     theme: 'tech',
   },
   {
@@ -22,15 +27,20 @@ export const techItems = [
       entryFee: 0.45,
       totalTickets: 1500,
       ticketsSold: 0,
-      startsAt: '2025-06-16T11:30:00Z',
-      endsAt: '2025-08-16T11:30:00Z',
+      startsAt: '2025-07-09T11:30:00Z',
+      endsAt: '2025-07-16T11:30:00Z',
       paymentType: 'pi',
-      piAmount: 0.45
+      piAmount: 0.45,
     },
     title: '55″ Smart TV',
     prize: '55″ Smart TV',
     href: '/competitions/55-inch-tv-giveaway',
     imageUrl: '/images/tv.jpg',
+    thumbnails: [
+      '/images/tv1.jpeg',
+      '/images/tv2.jpeg',
+      '/images/tv3.jpeg',
+    ],
     theme: 'tech',
   },
   {
@@ -39,15 +49,20 @@ export const techItems = [
       entryFee: 0.35,
       totalTickets: 1300,
       ticketsSold: 0,
-      startsAt: '2025-06-12T17:45:00Z',
-      endsAt: '2025-08-12T17:45:00Z',
+      startsAt: '2025-07-05T17:45:00Z',
+      endsAt: '2025-07-12T17:45:00Z',
       paymentType: 'pi',
-      piAmount: 0.35
+      piAmount: 0.35,
     },
     title: 'Xbox One',
     prize: 'Xbox One + Game Pass',
     href: '/competitions/xbox-one-bundle',
     imageUrl: '/images/xbox.jpeg',
+    thumbnails: [
+      '/images/xbox1.jpeg',
+      '/images/xbox2.jpeg',
+      '/images/xbox3.jpeg',
+    ],
     theme: 'tech',
   },
   {
@@ -56,146 +71,124 @@ export const techItems = [
       entryFee: 0.36,
       totalTickets: 1830,
       ticketsSold: 0,
-      startsAt: '2025-06-09T13:30:00Z',
-      endsAt: '2025-08-09T13:30:00Z',
+      startsAt: '2025-07-02T13:30:00Z',
+      endsAt: '2025-07-09T13:30:00Z',
       paymentType: 'pi',
-      piAmount: 0.36
+      piAmount: 0.36,
     },
     title: 'Nintendo Switch',
     prize: 'Nintendo Switch',
     href: '/competitions/nintendo-switch',
     imageUrl: '/images/nintendo.png',
+    thumbnails: [
+      '/images/nintendo1.jpeg',
+      '/images/nintendo2.jpeg',
+      '/images/nintendo3.jpeg',
+    ],
     theme: 'tech',
   },
   {
     comp: {
-      slug: 'apple-airpods',
-      entryFee: 0.30,
-      totalTickets: 1665,
+      slug: 'ray-ban',
+      entryFee: 0.60,
+      totalTickets: 2000,
       ticketsSold: 0,
-      startsAt: '2025-06-12T13:30:00Z',
-      endsAt: '2025-08-12T13:30:00Z',
+      startsAt: '2025-07-05T13:30:00Z',
+      endsAt: '2025-07-12T13:30:00Z',
       paymentType: 'pi',
-      piAmount: 0.30
+      piAmount: 0.60,
     },
-    title: 'Apple AirPods',
-    prize: 'Apple AirPods',
-    href: '/competitions/apple-airpods',
-    imageUrl: '/images/airpods.png',
+    title: 'Ray-Ban Meta Wayfarer',
+    prize: 'Ray-Ban Meta Wayfarer',
+    href: '/competitions/ray-ban',
+    imageUrl: '/images/glasses.jpg',
+    thumbnails: [
+      '/images/rayban1.jpeg',
+      '/images/rayban2.jpeg',
+      '/images/rayban3.jpeg',
+    ],
     theme: 'tech',
   },
   {
-    comp: {
-      slug: 'gamer-pc-bundle',
-      comingSoon: true,
-    },
+    comp: { slug: 'gamer-pc-bundle', comingSoon: true },
     title: 'Gaming PC',
     prize: 'Gamer PC Bundle',
     href: '/competitions/gamer-pc-bundle',
     imageUrl: '/images/bundle.jpeg',
+    thumbnails: [
+      '/images/gamer1.jpeg',
+      '/images/gamer2.jpeg',
+      '/images/gamer3.jpeg',
+    ],
     theme: 'tech',
   },
   {
-    comp: {
-      slug: 'electric-bike',
-      comingSoon: true,
-    },
-    title: 'Electric Bike',
-    prize: 'Electric Bike',
-    href: '/competitions/electric-bike',
-    imageUrl: '/images/bike.jpeg',
+    comp: { slug: 'electric-scooter', comingSoon: true },
+    title: 'Electric Scooter',
+    prize: 'Electric Scooter',
+    href: '/competitions/electric-scooter',
+    imageUrl: '/images/scooter.png',
+    thumbnails: [
+      '/images/scooter1.jpeg',
+      '/images/scooter2.jpeg',
+      '/images/scooter3.jpeg',
+    ],
     theme: 'tech',
   },
   {
-    comp: {
-      slug: 'matchday-tickets',
-      comingSoon: true,
-    },
+    comp: { slug: 'matchday-tickets', comingSoon: true },
     title: 'Matchday Tickets',
     prize: 'Matchday Tickets',
     href: '/competitions/matchday-tickets',
-    imageUrl: '/images/liverpool.jpeg',
+    imageUrl: '/images/matchday.jpeg',
+    thumbnails: [
+      '/images/match1.jpeg',
+      '/images/match2.jpeg',
+      '/images/match3.jpeg',
+    ],
     theme: 'tech',
   },
   {
-    comp: {
-      slug: 'apple-smart-watch',
-      comingSoon: true,
-    },
+    comp: { slug: 'apple-smart-watch', comingSoon: true },
     title: 'Apple Smart Watch',
     prize: 'Apple Smart Watch',
     href: '/competitions/apple-smart-watch',
     imageUrl: '/images/watch.png',
+    thumbnails: [
+      '/images/watch1.jpeg',
+      '/images/watch2.jpeg',
+      '/images/watch3.jpeg',
+    ],
     theme: 'tech',
   },
   {
-    comp: {
-      slug: 'gamingchair',
-      comingSoon: true,
-    },
-    title: 'Gaming Chair',
-    prize: 'Gaming Chair',
-    href: '/competitions/gamingchair',
-    imageUrl: '/images/chair.png',
-    theme: 'tech',
-  },
-  {
-    comp: {
-      slug: 'macbook-pro',
-      comingSoon: true,
-    },
+    comp: { slug: 'macbook-pro', comingSoon: true },
     title: 'MacBook Pro',
     prize: 'MacBook Pro',
     href: '/competitions/macbook-pro',
     imageUrl: '/images/macbook.jpeg',
-    theme: 'tech',
-  },
-  {
-    comp: {
-      slug: 'projector',
-      comingSoon: true,
-    },
-    title: 'Mini Projector',
-    prize: 'Projector',
-    href: '/competitions/projector',
-    imageUrl: '/images/projector.png',
-    theme: 'tech',
-  },
-  {
-    comp: {
-      slug: 'amazon-firestick',
-      comingSoon: true,
-    },
-    title: 'Amazon Fire Stick',
-    prize: 'Amazon Fire Stick',
-    href: '/competitions/amazon-firestick',
-    imageUrl: '/images/stick.jpeg',
-    theme: 'tech',
-  },
-  {
-    comp: {
-      slug: 'gopro',
-      comingSoon: true,
-    },
-    title: 'GoPro',
-    prize: 'GoPro Camera',
-    href: '/competitions/gopro',
-    imageUrl: '/images/gopro.png',
+    thumbnails: [
+      '/images/macbook1.jpeg',
+      '/images/macbook2.jpeg',
+      '/images/macbook3.jpeg',
+    ],
     theme: 'tech',
   },
 ];
+
+
  
 export const premiumItems = [
   {
     comp: {
       slug: 'dubai-luxury-holiday',
-      entryFee: 2.5,
+      entryFee: 2,
       totalTickets: 4000,
       ticketsSold: 0,
       startsAt: '2025-06-15T22:00:00Z',
       endsAt: '2025-08-15T22:00:00Z',
       paymentType: 'pi',
-      piAmount: 2.5
+      piAmount: 2.5,
     },
     title: 'Dubai Luxury Holiday',
     href: '/competitions/dubai-luxury-holiday',
@@ -206,13 +199,13 @@ export const premiumItems = [
   {
     comp: {
       slug: 'penthouse-stay',
-      entryFee: 15,
+      entryFee: 0.75,
       totalTickets: 3000,
       ticketsSold: 0,
       startsAt: '2025-06-20T21:00:00Z',
       endsAt: '2025-08-20T21:00:00Z',
       paymentType: 'pi',
-      piAmount: 15
+      piAmount: 15,
     },
     title: 'Penthouse Stay',
     href: '/competitions/penthouse-stay',
@@ -223,13 +216,13 @@ export const premiumItems = [
   {
     comp: {
       slug: 'first-class-flight',
-      entryFee: 2,
+      entryFee: 1,
       totalTickets: 2500,
       ticketsSold: 0,
       startsAt: '2025-06-25T21:00:00Z',
       endsAt: '2025-08-25T21:00:00Z',
       paymentType: 'pi',
-      piAmount: 2
+      piAmount: 2,
     },
     title: 'First Class Flight',
     href: '/competitions/first-class-flight',
@@ -240,13 +233,13 @@ export const premiumItems = [
   {
     comp: {
       slug: 'weekend-getaway',
-      entryFee: 12,
+      entryFee: 2.5,
       totalTickets: 4000,
       ticketsSold: 0,
       startsAt: '2025-06-01T22:00:00Z',
       endsAt: '2025-08-01T22:00:00Z',
       paymentType: 'pi',
-      piAmount: 12
+      piAmount: 12,
     },
     title: 'Weekend Getaway',
     prize: '€2,000 Travel Voucher',
@@ -257,7 +250,7 @@ export const premiumItems = [
   {
     comp: {
       slug: 'airbnb-voucher',
-      entryFee: 10,
+      entryFee: 1,
       totalTickets: 3500,
       ticketsSold: 0,
       endsAt: '2025-06-05T22:00:00Z',
@@ -265,7 +258,7 @@ export const premiumItems = [
     },
     title: 'Airbnb Voucher',
     prize: '€1,000 Airbnb Credit',
-    fee: '10 π',
+    fee: '1 π',
     href: '/competitions/airbnb-voucher',
     imageUrl: '/images/air.png',
     theme: 'premium',
@@ -273,7 +266,7 @@ export const premiumItems = [
   {
     comp: {
       slug: 'spa-day-package',
-      entryFee: 8,
+      entryFee: 1.2,
       totalTickets: 3000,
       ticketsSold: 0,
       endsAt: '2025-06-05T22:00:00Z',
@@ -281,16 +274,210 @@ export const premiumItems = [
     },
     title: 'Spa Day Package',
     prize: 'Luxury Spa Experience',
-    fee: '8 π',
+    fee: '1.2 π',
     href: '/competitions/spa-day-package',
     imageUrl: '/images/spa.jpeg',
     theme: 'premium',
   },
 ];
-export const piItems = [];
-export const dailyItems = [];
-export const freeItems = [];
-export const cryptoGiveawaysItems = [];
+
+export const piItems = [
+  {
+    comp: {
+      slug: 'pi-giveaway-10k',
+      entryFee: 2.2,
+      totalTickets: 5200,
+      ticketsSold: 0,
+      endsAt: '2025-08-31T00:00:00Z',
+    },
+    title: '10,000 Pi',
+    prize: '10,000 π',
+    href: '/competitions/pi-giveaway-10k',
+    imageUrl: '/images/100000.png',
+    theme: 'pi',
+  },
+  {
+    comp: {
+      slug: 'pi-giveaway-5k',
+      entryFee: 1.8,
+      totalTickets: 2900,
+      ticketsSold: 0,
+      endsAt: '2025-09-01T00:00:00Z',
+    },
+    title: '5,000 Pi',
+    prize: '5,000 π',
+    href: '/competitions/pi-giveaway-5k',
+    imageUrl: '/images/50000.png',
+    theme: 'pi',
+  },
+  {
+    comp: {
+      slug: 'pi-giveaway-2.5k',
+      entryFee: 1.6,
+      totalTickets: 1600,
+      ticketsSold: 0,
+      endsAt: '2025-09-02T00:00:00Z',
+    },
+    title: '2,500 Pi',
+    prize: '2,500 π',
+    href: '/competitions/pi-giveaway-2.5k',
+    imageUrl: '/images/25000.png',
+    theme: 'pi',
+  },
+];
+
+export const dailyItems = [
+  {
+    comp: {
+      slug: 'daily-jackpot',
+      entryFee: 0.45,
+      totalTickets: 1820,
+      ticketsSold: 0,
+      endsAt: '2025-06-22T15:14:00Z',
+      comingSoon: true,
+    },
+    title: 'Daily Jackpot',
+    prize: '750 π',
+    href: '/competitions/daily-jackpot',
+    imageUrl: '',
+    theme: 'daily',
+  },
+  {
+    comp: {
+      slug: 'everyday-pioneer',
+      entryFee: 0.31,
+      totalTickets: 1900,
+      ticketsSold: 0,
+      endsAt: '2025-06-22T15:14:00Z',
+      comingSoon: true,
+    },
+    title: 'Everyday Pioneer',
+    prize: '1,000 π',
+    href: '/competitions/everyday-pioneer',
+    imageUrl: '',
+    theme: 'daily',
+  },
+  {
+    comp: {
+      slug: 'daily-pi-slice',
+      entryFee: 0.37,
+      totalTickets: 1500,
+      ticketsSold: 0,
+      endsAt: '2025-06-22T15:14:00Z',
+      comingSoon: true,
+    },
+    title: 'Daily Pi Slice',
+    prize: '500 π',
+    href: '/competitions/daily-pi-slice',
+    imageUrl: '',
+    theme: 'daily',
+  },
+];
+
+export const freeItems = [
+  {
+    comp: {
+      slug: 'pi-to-the-moon',
+      entryFee: 0,
+      totalTickets: 20000,
+      ticketsSold: 0,
+      startsAt: '2025-08-20T18:00:00Z',
+      endsAt: '2025-08-31T18:00:00Z',
+      location: 'Online Global Draw',
+    },
+    title: 'Pi To The Moon',
+    prize: '10,000 π',
+    href: '/competitions/pi-to-the-moon',
+    theme: 'free',
+  },
+];
+
+export const cryptoGiveawaysItems = [
+  {
+    comp: {
+      slug: 'crypto-btc',
+      entryFee: 0.5,
+      totalTickets: 10000,
+      ticketsSold: 4500,
+      endsAt: '2025-06-02T00:59:00Z',
+      comingSoon: true,
+    },
+    title: 'Win 1 BTC',
+    href: '/crypto/crypto-btc',
+    token: 'BTC',
+    imageUrl: '/images/crypto-btc.png',
+  },
+  {
+    comp: {
+      slug: 'crypto-eth',
+      entryFee: 0.5,
+      totalTickets: 6000,
+      ticketsSold: 0,
+      endsAt: '2025-06-03T23:59:00Z',
+      comingSoon: true,
+    },
+    title: 'Win 2 ETH',
+    href: '/crypto/crypto-eth',
+    token: 'ETH',
+    imageUrl: '/images/crypto-eth.png',
+  },
+  {
+    comp: {
+      slug: 'crypto-xrp',
+      entryFee: 0.4,
+      totalTickets: 8000,
+      ticketsSold: 0,
+      endsAt: '2025-06-09T23:59:00Z',
+      comingSoon: true,
+    },
+    title: 'Win 1000 XRP',
+    href: '/crypto/crypto-xrp',
+    token: 'XRP',
+    imageUrl: '/images/crypto-xrp.png',
+  },
+  {
+    comp: {
+      slug: 'crypto-sol',
+      entryFee: 0.4,
+      totalTickets: 7000,
+      ticketsSold: 0,
+      endsAt: '2025-06-05T23:59:00Z',
+      comingSoon: true,
+    },
+    title: 'Win 10 SOL',
+    href: '/crypto/crypto-sol',
+    token: 'SOL',
+    imageUrl: '/images/crypto-sol.png',
+  },
+  {
+    comp: {
+      slug: 'crypto-bnb',
+      entryFee: 0.4,
+      totalTickets: 4000,
+      ticketsSold: 0,
+      endsAt: '2025-06-07T23:59:00Z',
+      comingSoon: true,
+    },
+    title: 'Win 2 BNB',
+    href: '/crypto/crypto-bnb',
+    token: 'BNB',
+    imageUrl: '/images/crypto-bnb.png',
+  },
+  {
+    comp: {
+      slug: 'crypto-doge',
+      entryFee: 0.3,
+      totalTickets: 10000,
+      ticketsSold: 0,
+      endsAt: '2025-06-11T23:59:00Z',
+      comingSoon: true,
+    },
+    title: 'Win 10,000 DOGE',
+    href: '/crypto/crypto-doge',
+    token: 'DOGE',
+    imageUrl: '/images/crypto-doge.png',
+  },
+];
 
 export const allComps = [
   ...techItems,
