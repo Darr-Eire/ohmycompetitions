@@ -4,97 +4,119 @@ import Link from 'next/link'
 
 export default function PrivacyPolicy() {
   return (
-    <main className="page">
-      <div className="competition-card max-w-3xl w-full">
+    <main className="page text-white">
+      <div className="competition-card max-w-3xl w-full mx-auto">
 
         {/* Title */}
-        <div className="competition-top-banner text-center">
-          🔒 Privacy Policy
-        </div>
+        <div className="competition-top-banner text-center text-xl sm:text-2xl font-bold my-4 !text-cyan-300">
+   Privacy Policy
+</div>
+
 
         {/* Divider */}
         <div className="h-1 w-24 bg-blue-300 mx-auto rounded mb-6" />
 
         {/* Body */}
-        <div className="p-6 space-y-6 text-left text-gray-700">
+        <div className="p-6 space-y-6 text-center">
 
-          <p>This Privacy Policy describes how OhMyCompetitions collects, uses, and protects your information.</p>
+          <p className="text-white">
+            This Privacy Policy explains how OhMyCompetitions collects, uses, and protects your personal data in compliance with Pi Network guidelines and relevant privacy laws.
+          </p>
 
-          <h2 className="font-semibold text-blue-600 mt-6">1. Information We Collect</h2>
-          <ul className="list-disc list-inside space-y-2">
-            <li>Basic identification details from your Pi Network login (e.g., Pi username, UID).</li>
-            <li>Email address, if provided voluntarily during registration or support inquiries.</li>
-            <li>Competition participation records (tickets purchased, entries, wins).</li>
-            <li>Technical information such as IP address, browser type, and device information for security purposes.</li>
-          </ul>
+          {/* Sections */}
+          {[
+            {
+              title: '1. What We Collect',
+              points: [
+                'Pi Network UID and username via secure login.',
+                'Optional email address (if provided during contact or nominations).',
+                'Competition activity (e.g., tickets purchased, wins, participation history).',
+                'Device and browser information (IP address, OS, browser type) for security and debugging.'
+              ]
+            },
+            {
+              title: '2. How We Use Your Data',
+              points: [
+                'To run competitions, deliver prizes, and contact winners.',
+                'To verify you’re a real Pi user and prevent abuse.',
+                'To improve our features, mini-games, and platform performance.',
+                'To fulfill legal obligations or resolve disputes if needed.'
+              ]
+            },
+            {
+              title: '3. Data Protection & Security',
+              points: [
+                'We use secure Pi SDK authentication and industry-standard encryption.',
+                'Access to user data is restricted to authorized team members only.',
+                'We do not collect or store your Pi wallet balances or private keys.'
+              ]
+            },
+            {
+              title: '4. Who We Share It With',
+              points: [
+                'We never sell, rent, or trade your personal info.',
+                'We only share data internally for admin purposes.',
+                'We may disclose info if required by law (e.g., fraud investigation or legal order).'
+              ]
+            },
+            {
+              title: '5. Cookies & Tracking',
+              points: [
+                'We may use basic cookies for login sessions, user preferences, and performance analytics.',
+                'No third-party ad tracking or invasive cookies are used.',
+                'You can manage cookie settings in your browser.'
+              ]
+            },
+            {
+              title: '6. Your Privacy Rights',
+              points: [
+                'You can request access to your stored data.',
+                'You can request corrections or deletion of your data.',
+                'To make a request, contact us at ',
+                <span key="email" className="text-cyan-300">ohmycompetitions@gmail.com</span>
+              ]
+            },
+            {
+              title: '7. Data Retention',
+              points: [
+                'We keep your data only as long as needed for app functionality and legal reasons.',
+                'You may request full data deletion at any time.'
+              ]
+            },
+            {
+              title: '8. Pi Network Compliance',
+              points: [
+                'This app follows all Pi Network Developer Guidelines and ecosystem terms.',
+                'We don’t interact with your wallet funds or store Pi private keys.'
+              ]
+            },
+            {
+              title: '9. Updates to This Policy',
+              points: [
+                'We may update this Privacy Policy to reflect changes in the law or our features.',
+                'All updates take effect immediately once posted here.'
+              ]
+            }
+          ].map((section, index) => (
+            <div key={index}>
+              <h2 className="font-semibold text-cyan-300 mt-6">{section.title}</h2>
+              <ul className="list-disc list-inside mt-2 text-white text-left max-w-xl mx-auto">
+                {section.points.map((point, idx) => (
+                  <li key={idx}>{point}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
 
-          <h2 className="font-semibold text-blue-600 mt-6">2. How We Use Your Information</h2>
-          <ul className="list-disc list-inside space-y-2">
-            <li>To manage competitions and prize distributions.</li>
-            <li>To verify account authenticity through Pi Network integration.</li>
-            <li>To notify winners and communicate competition updates.</li>
-            <li>To improve our platform and user experience.</li>
-            <li>To comply with legal obligations where required.</li>
-          </ul>
+          {/* Contact */}
+          <h2 className="font-semibold text-cyan-300 mt-6">10. Contact Us</h2>
+          <p>
+            If you have any privacy-related questions or requests, please email us at{' '}
+            <span className="text-cyan-300">ohmycompetitions@gmail.com</span>.
+          </p>
 
-          <h2 className="font-semibold text-blue-600 mt-6">3. Data Security</h2>
-          <ul className="list-disc list-inside space-y-2">
-            <li>We implement strong measures to protect your data from unauthorized access or disclosure.</li>
-            <li>All transactions through Pi Network are handled securely via official Pi SDKs.</li>
-          </ul>
-
-          <h2 className="font-semibold text-blue-600 mt-6">4. Data Sharing</h2>
-          <ul className="list-disc list-inside space-y-2">
-            <li>We do not sell, rent, or trade your personal information to third parties.</li>
-            <li>Information may be shared internally with authorized staff for competition administration purposes only.</li>
-            <li>We may disclose information if legally required (e.g., by court order or investigation).</li>
-          </ul>
-
-          <h2 className="font-semibold text-blue-600 mt-6">5. Cookies & Tracking</h2>
-          <ul className="list-disc list-inside space-y-2">
-            <li>Our website may use basic cookies for site functionality and anonymous analytics.</li>
-            <li>You can control cookie settings through your browser preferences.</li>
-          </ul>
-
-          <h2 className="font-semibold text-blue-600 mt-6">6. Your Rights</h2>
-          <ul className="list-disc list-inside space-y-2">
-            <li>You have the right to request access to the data we hold about you.</li>
-            <li>You have the right to request correction, deletion, or restriction of your personal information.</li>
-            <li>To exercise your rights, contact us at <span className="text-blue-600">ohmycompetitions@gmail.com</span>.</li>
-          </ul>
-
-          <h2 className="font-semibold text-blue-600 mt-6">7. Retention</h2>
-          <ul className="list-disc list-inside space-y-2">
-            <li>We retain user data only as long as necessary to fulfill competition and legal requirements.</li>
-            <li>Inactive accounts and related data may be deleted upon request.</li>
-          </ul>
-
-          <h2 className="font-semibold text-blue-600 mt-6">8. Pi Network Compliance</h2>
-          <ul className="list-disc list-inside space-y-2">
-            <li>Our app is designed to follow Pi Network's ecosystem rules and data security standards.</li>
-            <li>We do not collect or store Pi balances or private wallet keys.</li>
-          </ul>
-
-          <h2 className="font-semibold text-blue-600 mt-6">9. Updates to This Policy</h2>
-          <ul className="list-disc list-inside space-y-2">
-            <li>This Privacy Policy may be updated as needed for legal, operational, or technological reasons.</li>
-            <li>Changes are effective immediately upon posting to this page.</li>
-          </ul>
-
-          <h2 className="font-semibold text-blue-600 mt-6">10. Contact Us</h2>
-          <p>If you have any questions or concerns regarding this Privacy Policy, please contact us at <span className="text-blue-600">ohmycompetitions@gmail.com</span>.</p>
-
-          {/* Back Home Button */}
-          <div className="text-center mt-8">
-            <Link href="/">
-              <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded">
-                 Back to Home
-              </button>
-            </Link>
-          </div>
-
+        
         </div>
-
       </div>
     </main>
   )

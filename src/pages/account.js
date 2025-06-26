@@ -4,121 +4,245 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Image from 'next/image';
 import { countries } from 'data/countries';
-import { usePiAuth } from '../context/PiAuthContext';
+import TicketCard from 'components/TicketCard';
+import ReferralStatsCard from 'components/ReferralStatsCard';
 
 export default function Account() {
-  const { user, login } = usePiAuth();
   const [tickets, setTickets] = useState([]);
-  const [selectedCountry, setSelectedCountry] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState('Ireland');
+  const [giftUsername, setGiftUsername] = useState('');
+  const [selectedCompetition, setSelectedCompetition] = useState('');
+  const [message, setMessage] = useState('');
+  const [ticketQuantity, setTicketQuantity] = useState(1);
+  const [filter, setFilter] = useState('all');
+  const [filteredTicket, setFilteredTicket] = useState(null);
 
   useEffect(() => {
-    if (!user) return;
-    fetchUserData(user.username); // or user.uid if you're storing that
-  }, [user]);
+    const mockTickets = [
+      {
+        competitionTitle: 'PS5 Bundle',
+        prize: 'PlayStation 5',
+        entryFee: 0.4,
+        quantity: 2,
+        drawDate: '2025-07-01T12:00:00Z',
+        purchasedAt: new Date().toISOString(),
+        ticketNumbers: ['A123', 'A124'],
+        imageUrl: '/images/playstation.jpeg',
+        gifted: false,
+        claimed: false,
+      },
+      {
+        competitionTitle: '55" Smart TV',
+        prize: '55-inch 4K HDR TV',
+        entryFee: 0.45,
+        quantity: 1,
+        drawDate: '2025-06-01T12:00:00Z',
+        purchasedAt: new Date().toISOString(),
+        ticketNumbers: ['B001'],
+        imageUrl: '/images/tv.jpg',
+        gifted: true,
+        claimed: true,
+      },
+    ];
 
-  const fetchUserData = async (username) => {
-    try {
-      const [userRes, ticketsRes] = await Promise.all([
-        axios.post('/api/user/me', { username }),
-        axios.post('/api/user/tickets', { username }),
-      ]);
-      setSelectedCountry(userRes.data.country || '');
-      setTickets(ticketsRes.data || []);
-    } catch (err) {
-      console.error('⚠️ Failed to fetch account data:', err);
+    setTickets(mockTickets);
+  }, []);
+
+  useEffect(() => {
+    const now = new Date();
+    let list = [];
+
+    switch (filter) {
+      case 'active':
+        list = tickets.filter(t => new Date(t.drawDate) > now && !t.claimed);
+        break;
+      case 'inactive':
+        list = tickets.filter(t => new Date(t.drawDate) <= now);
+        break;
+      case 'upcoming':
+        list = tickets.filter(t => new Date(t.drawDate) > now);
+        break;
+      case 'gifted':
+        list = tickets.filter(t => t.gifted);
+        break;
+      default:
+        list = tickets;
     }
-  };
 
-  const handleCountryChange = async (e) => {
-    const newCountry = e.target.value;
-    setSelectedCountry(newCountry);
-    try {
-      await axios.post('/api/user/update-country', {
-        username: user.username,
-        country: newCountry,
-      });
-    } catch (err) {
-      console.error('⚠️ Failed to update country:', err);
-    }
-  };
+    setFilteredTicket(list.length > 0 ? list[0] : null);
+  }, [filter, tickets]);
 
-  if (!user) {
-    return (
-      <div className="text-white text-center mt-10">
-        <p className="mb-4">⚠️ You must log in to view your account.</p>
-        <button
-          onClick={login}
-          className="bg-cyan-500 px-4 py-2 rounded text-black font-semibold hover:bg-cyan-600"
-        >
-          Login with Pi
-        </button>
-      </div>
-    );
-  }
+  const totalPurchased = tickets.reduce((sum, t) => sum + (t.quantity || 0), 0);
+  const totalGifted = tickets.filter(t => t.gifted).reduce((sum, t) => sum + (t.quantity || 0), 0);
+  const totalEarned = tickets.filter(t => !t.gifted).reduce((sum, t) => sum + (t.quantity || 0), 0);
 
   return (
-    <div className="max-w-3xl mx-auto p-4 text-white">
-      <h1 className="text-3xl mb-6 font-orbitron text-center">My Account</h1>
+    <div className="bg-[#1e293b] min-h-screen max-w-md mx-auto p-4 text-white space-y-8">
 
-      {/* Personal Info */}
-      <div className="bg-[#111827] rounded-2xl shadow-lg p-6 mb-8 border border-cyan-400">
-        <h2 className="text-xl mb-4 font-semibold">Personal Info</h2>
-        <p><strong>Username:</strong> {user.username}</p>
-        {user.uid && <p><strong>User ID:</strong> {user.uid}</p>}
+      {/* Profile Card */}
+      <div className="border border-cyan-600 rounded-2xl p-6 text-center shadow-lg space-y-4">
+        <h2 className="text-xl font-bold">darreire2020</h2>
+        <p className="text-sm text-white">ID: v127473</p>
 
-        <div className="mt-4">
-          <label className="block mb-2">Country:</label>
-          <select
-            className="p-2 rounded text-black"
-            value={selectedCountry}
-            onChange={handleCountryChange}
-          >
-            <option value="">Select Country</option>
-            {countries.map(c => (
-              <option key={c.code} value={c.name}>{c.name}</option>
-            ))}
-          </select>
 
-          {selectedCountry && (
-            <div className="mt-2 flex items-center">
-              <Image 
-                src={`/flags/${selectedCountry}.png`} 
-                alt={`${selectedCountry} flag`} 
-                width={40} 
-                height={25} 
-                className="rounded shadow"
-                onError={(e) => (e.target.style.display = 'none')}
-              />
-              <span className="ml-2">{selectedCountry}</span>
-            </div>
-          )}
+        <div className="grid grid-cols-2 gap-2 text-[10px] text-left mt-2">
+          <div className="bg-[#0f172a] p-2 rounded-md border border-cyan-600">
+            <p className="text-gray-400 mb-1">🔢 Tickets Bought</p>
+            <p className="text-white font-semibold text-sm">{totalPurchased}</p>
+          </div>
+          <div className="bg-[#0f172a] p-2 rounded-md border border-cyan-600">
+            <p className="text-gray-400 mb-1">📅Tickets Joined</p>
+            <p className="text-white font-semibold text-sm">16/06/2025</p>
+          </div>
+          <div className="bg-[#0f172a] p-2 rounded-md border border-yellow-400">
+            <p className="text-gray-400 mb-1">🎁Tickets Gifted</p>
+            <p className="text-white font-semibold text-sm">{totalGifted}</p>
+          </div>
+          <div className="bg-[#0f172a] p-2 rounded-md border border-green-500">
+            <p className="text-gray-400 mb-1">🏅Tickets Earned</p>
+            <p className="text-white font-semibold text-sm">{totalEarned}</p>
+          </div>
         </div>
       </div>
+{/* Competition Category Filter + View */}
+<div className="space-y-3">
 
-      {/* Ticket Summary */}
-      <div className="bg-[#111827] rounded-2xl shadow-lg p-6 mb-8 border border-cyan-400">
-        <h2 className="text-xl mb-4 font-semibold">Tickets Summary</h2>
-        <p><strong>Total Tickets Purchased:</strong> {tickets.reduce((acc, t) => acc + t.quantity, 0)}</p>
-      </div>
 
-      {/* Purchase History */}
-      <div className="bg-[#111827] rounded-2xl shadow-lg p-6 border border-cyan-400">
-        <h2 className="text-xl mb-4 font-semibold">Purchase History</h2>
-        {tickets.length === 0 ? (
-          <p>You have not purchased any tickets yet.</p>
-        ) : (
-          <div className="space-y-4">
-            {tickets.map((ticket, index) => (
-              <div key={index} className="p-4 bg-[#1f2937] rounded-lg border border-cyan-500">
-                <p><strong>Competition:</strong> {ticket.competitionTitle}</p>
-                <p><strong>Tickets Purchased:</strong> {ticket.quantity}</p>
-                <p><strong>Purchase Date:</strong> {new Date(ticket.purchasedAt).toLocaleDateString()}</p>
-                <p><strong>Ticket Numbers:</strong> {ticket.ticketNumbers.join(', ')}</p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+
+  {filteredTicket ? (
+    <TicketCard ticket={filteredTicket} />
+  ) : (
+    <p className="text-center text-white/70">No ticket found for this category.</p>
+  )}
+</div>
+
+
+
+      {/* Referrals */}
+      <ReferralStatsCard
+        username="darreire2020-7c734d"
+        signupCount={7}
+        ticketsEarned={7}
+        miniGamesBonus={3}
+      />
+
+      {/* Gift a Ticket */}
+    <div className="bg-gradient-to-r from-[#0f172a]/80 via-[#1e293b]/90 to-[#0f172a]/80 border border-cyan-400 rounded-2xl shadow-[0_0_40px_#00ffd533] p-6 space-y-6">
+  <div className="text-center space-y-1">
+    <h2 className="text-xl font-bold text-white">Gift a Ticket</h2>
+    <p className="text-sm text-gray-400">Give a fellow Pioneer who deserves it.</p>
+  </div>
+
+  <div className="space-y-4">
+    <div>
+      <label className="block mb-1 text-sm font-medium text-white">Recipient Username</label>
+      <input
+        type="text"
+        placeholder="@exampleuser"
+        className="w-full p-2 rounded bg-[#1e293b] text-white border border-cyan-600 placeholder-gray-400"
+        value={giftUsername}
+        onChange={(e) => setGiftUsername(e.target.value)}
+      />
+    </div>
+
+    <div>
+      <label className="block mb-1 text-sm font-medium text-white">Select Competition</label>
+      <select
+        className="w-full p-2 rounded bg-[#1e293b] text-white border border-cyan-600"
+        value={selectedCompetition}
+        onChange={(e) => {
+          setSelectedCompetition(e.target.value);
+          setTicketQuantity(1);
+        }}
+      >
+        <option value="">-- Select --</option>
+        <option value="ps5">PS5 Mega Bundle — 0.4 π</option>
+        <option value="dubai">Dubai Luxury Holiday — 2.5 π</option>
+        <option value="pi10k">10,000 Pi — 2.2 π</option>
+        <option value="daily">Daily Jackpot — 0.45 π</option>
+        <option value="btc">Win 1 BTC — 0.5 π</option>
+        <option value="moon">Pi To The Moon — 0 π</option>
+        <option value="cashcode">Pi Cash Code — 0 π</option>
+     
+      </select>
+    </div>
+
+    <div>
+      <label className="block mb-1 text-sm font-medium text-white">Quantity to Purchase</label>
+      <select
+        className="w-full p-2 rounded bg-[#1e293b] text-white border border-cyan-600"
+        value={ticketQuantity}
+        onChange={(e) => setTicketQuantity(parseInt(e.target.value))}
+        disabled={selectedCompetition === ''}
+      >
+        <option value="">-- Select Quantity --</option>
+        {Array.from({ length: 100 }, (_, i) => i + 1).map((num) => (
+          <option key={num} value={num}>{num}</option>
+        ))}
+      </select>
+    </div>
+
+    <button
+      className="bg-green-600 hover:bg-green-700 transition-colors w-full py-2 font-semibold rounded"
+      onClick={async () => {
+        const comps = {
+          ps5: { title: 'PS5 Mega Bundle', entryFee: 0.4 },
+          dubai: { title: 'Dubai Luxury Holiday', entryFee: 2.5 },
+          pi10k: { title: '10,000 Pi', entryFee: 2.2 },
+          daily: { title: 'Daily Jackpot', entryFee: 0.45 },
+          btc: { title: 'Win 1 BTC', entryFee: 0.5 },
+          moon: { title: 'Pi To The Moon', entryFee: 0 },
+          cashcode: { title: 'Pi Cash Code', entryFee: 0 },
+      
+        };
+
+        const selected = comps[selectedCompetition];
+
+        if (!giftUsername || !selectedCompetition || ticketQuantity < 1) {
+          return setMessage('⚠️ Please complete all fields.');
+        }
+
+        try {
+          setMessage('⏳ Processing...');
+          await axios.post('/api/tickets/purchase-and-gift', {
+            competition: selected.title,
+            recipient: giftUsername.replace('@', '').trim(),
+            quantity: ticketQuantity,
+            entryFee: selected.entryFee,
+            purchaseNew: true,
+          });
+
+          setMessage(`✅ Sent ${ticketQuantity} ticket(s) to ${giftUsername}`);
+          setGiftUsername('');
+          setSelectedCompetition('');
+          setTicketQuantity(1);
+        } catch (err) {
+          console.error(err);
+          setMessage('❌ Failed to purchase and send tickets.');
+        }
+      }}
+    >
+      {(() => {
+        const comps = {
+          ps5: 0.4,
+          dubai: 2.5,
+          pi10k: 2.2,
+          daily: 0.45,
+          btc: 0.5,
+          moon: 0,
+          cashcode: 0,
+      
+        };
+        const fee = comps[selectedCompetition] || 0;
+        const total = (ticketQuantity * fee).toFixed(2);
+        return `Purchase & Send (${ticketQuantity} = ${total} π)`;
+      })()}
+    </button>
+  </div>
+
+  {message && <p className="mt-4 text-center text-cyan-300">{message}</p>}
+</div>
+
     </div>
   );
 }

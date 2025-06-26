@@ -153,7 +153,7 @@ export default function FreeCompetitionCard({ comp, title, prize, userHandle }) 
 
       {/* T&Cs link */}
       <div className="text-center pt-4">
-        <Link href="/terms" className="text-sm text-cyan-300 underline hover:text-cyan-400">
+        <Link href="/terms-conditions" className="text-sm text-cyan-300 underline hover:text-cyan-400">
           View Full Terms & Conditions
         </Link>
       </div>

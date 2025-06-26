@@ -9,6 +9,7 @@ module.exports = {
   },
   plugins: [
     require('@tailwindcss/aspect-ratio'),
+    require('tailwind-scrollbar-hide'), // ✅ Added plugin
   ],
   safelist: [
     // gradients for FUT cards
@@ -30,4 +31,4 @@ module.exports = {
     'hover:bg-purple-700',
     'text-white',
   ],
-}
+};

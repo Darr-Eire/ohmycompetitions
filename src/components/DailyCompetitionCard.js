@@ -61,7 +61,7 @@ export default function DailyCompetitionCard({ comp, title, prize, fee }) {
       {/* Header */}
       <div className="flex justify-between items-center text-sm mb-5 z-10 relative">
         <span className="px-4 py-1.5 rounded-full border border-cyan-400 bg-cyan-600/30 text-white font-semibold">
-           {new Date(endsAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+          {new Date(endsAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
         </span>
 
         {/* LIVE NOW badge */}
@@ -75,10 +75,16 @@ export default function DailyCompetitionCard({ comp, title, prize, fee }) {
         {title}
       </h3>
 
+      {/* Placeholder for the image replaced by idea section */}
+      <div className="bg-cyan-500/20 p-4 rounded-xl text-center text-sm font-semibold mb-6">
+        <p>🚀 Join now and compete for the Pi prize! 🎉</p>
+        <p className="mt-2 text-xs text-gray-200">Only {total - sold} tickets left! 🔥</p>
+      </div>
+
       {/* Timer below title */}
       <div className="flex justify-center mb-6">
         <span className="bg-cyan-300 text-black px-4 py-1.5 rounded-full font-bold text-sm font-mono select-none">
-           {timeLeft}
+          {timeLeft}
         </span>
       </div>
 

@@ -2,7 +2,7 @@
 'use client'
 
 import Link from 'next/link'
-import CompetitionCard from '@components/CompetitionCard'
+import CompetitionCard from 'components/CompetitionCard'
 
 export default function WeeklyPiGiveaway() {
   const comp = { slug: 'weekly-pi-giveaway', entryFee: 0 }
