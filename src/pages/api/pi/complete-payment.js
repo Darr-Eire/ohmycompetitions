@@ -251,6 +251,15 @@ export default async function handler(req, res) {
             throw new Error('Not enough tickets available');
           }
 
+          // Calculate prize pool addition (50% of payment)
+          const prizePoolAddition = paymentAmount * 0.5;
+          
+          console.log('💰 Prize pool calculation:', {
+            paymentAmount,
+            prizePoolAddition,
+            percentage: '50%'
+          });
+
           // Log the query we're about to run
           console.log('🔄 Attempting to update competition with query:', {
             filter: { 
@@ -259,16 +268,20 @@ export default async function handler(req, res) {
               'comp.ticketsSold': { $lte: currentCompetition.comp.totalTickets - ticketQuantity }
             },
             update: {
-              $inc: { 'comp.ticketsSold': ticketQuantity }
+              $inc: { 
+                'comp.ticketsSold': ticketQuantity,
+                'comp.prizePool': prizePoolAddition
+              }
             },
             ticketQuantity,
+            prizePoolAddition,
             options: { 
               returnDocument: 'after',
               session: session ? true : false
             }
           });
 
-          // Update competition ticket count with explicit projection
+          // Update competition ticket count AND prize pool with explicit projection
           const result = await db.collection('competitions').findOneAndUpdate(
             { 
               'comp.slug': slug,
@@ -276,13 +289,17 @@ export default async function handler(req, res) {
               'comp.ticketsSold': { $lte: currentCompetition.comp.totalTickets - ticketQuantity }
             },
             {
-              $inc: { 'comp.ticketsSold': ticketQuantity }
+              $inc: { 
+                'comp.ticketsSold': ticketQuantity,
+                'comp.prizePool': prizePoolAddition
+              }
             },
             { 
               projection: {
                 'comp.status': 1,
                 'comp.ticketsSold': 1,
-                'comp.totalTickets': 1
+                'comp.totalTickets': 1,
+                'comp.prizePool': 1
               },
               returnDocument: 'after',
               session 
@@ -296,7 +313,8 @@ export default async function handler(req, res) {
               projection: {
                 'comp.status': 1,
                 'comp.ticketsSold': 1,
-                'comp.totalTickets': 1
+                'comp.totalTickets': 1,
+                'comp.prizePool': 1
               },
               session 
             }
@@ -311,6 +329,8 @@ export default async function handler(req, res) {
             slug,
             newTicketsSold: updatedCompetition.comp.ticketsSold,
             totalTickets: updatedCompetition.comp.totalTickets,
+            newPrizePool: updatedCompetition.comp.prizePool,
+            prizePoolAddition,
             status: updatedCompetition.comp.status
           });
 

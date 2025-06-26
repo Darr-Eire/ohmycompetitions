@@ -8,6 +8,7 @@ const CompetitionSchema = new mongoose.Schema({
     entryFee: { type: Number, required: true },
     totalTickets: { type: Number, required: true },
     ticketsSold: { type: Number, default: 0 },
+    prizePool: { type: Number, default: 0 }, // 50% of ticket sales goes to prize pool
     startsAt: String,
     endsAt: String,
     location: String,
@@ -19,6 +20,7 @@ const CompetitionSchema = new mongoose.Schema({
   prize: { type: String, required: true },
   href: String,
   theme: { type: String, required: true },
+  imageUrl: String,
   winners: [{
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     username: String,

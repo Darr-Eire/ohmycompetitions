@@ -33,9 +33,9 @@ export function loadPiSdk(setReady) {
         clearInterval(check);
         clearTimeout(checkTimeout);
 
-        const sandbox = process.env.NEXT_PUBLIC_SANDBOX_SDK === 'true';
+        const sandbox = process.env.NEXT_PUBLIC_PI_SANDBOX === 'true';
         try {
-          window.Pi.init({ version: '2.0', sandbox });
+          window.Pi.init({ version: '2.0', sandbox, appId: process.env.NEXT_PUBLIC_PI_APP_ID });
           setReady(true);
           console.log('✅ Pi SDK loaded and initialized in', sandbox ? 'sandbox' : 'production', 'mode');
         } catch (err) {

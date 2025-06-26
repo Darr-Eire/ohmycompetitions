@@ -10,7 +10,7 @@ export default function Document() {
             __html: `
               window._ENV = {
                 backendURL: "${process.env.NEXT_PUBLIC_BACKEND_URL || ''}",
-                sandbox: "${process.env.NEXT_PUBLIC_SANDBOX_SDK || 'true'}"
+                sandbox: "${process.env.NEXT_PUBLIC_PI_SANDBOX || 'true'}"
               };
             `,
           }}

@@ -1,4 +1,5 @@
-import { connectToDatabase } from '../../../lib/mongodb';
+import { dbConnect } from 'lib/dbConnect';
+import Competition from 'models/Competition';
 
 export default async function handler(req, res) {
   // Set CORS headers to prevent ad blocker issues
@@ -17,29 +18,28 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Get database connection
-    const { db } = await connectToDatabase();
+    await dbConnect();
 
-    // Get competition by slug
-    const competition = await db.collection('competitions').findOne(
-      { slug },
-      {
-        projection: {
-          _id: 1,
-          status: 1,
-          ticketsSold: 1,
-          totalTickets: 1,
-          entryFee: 1,
-          startsAt: 1,
-          endsAt: 1,
-          slug: 1,
-          title: 1,
-          prize: 1,
-          imageUrl: 1,
-          location: 1
-        }
-      }
-    );
+    // Get competition by slug using Mongoose
+    const competition = await Competition.findOne({ 'comp.slug': slug })
+      .select({
+        _id: 1,
+        'comp.status': 1,
+        'comp.ticketsSold': 1,
+        'comp.totalTickets': 1,
+        'comp.entryFee': 1,
+        'comp.startsAt': 1,
+        'comp.endsAt': 1,
+        'comp.slug': 1,
+        'comp.paymentType': 1,
+        'comp.piAmount': 1,
+        title: 1,
+        prize: 1,
+        imageUrl: 1,
+        theme: 1,
+        href: 1
+      })
+      .lean();
 
     if (!competition) {
       console.log('❌ Competition not found:', { slug });
@@ -55,32 +55,32 @@ export default async function handler(req, res) {
       success: true,
       data: {
         ...competition,
-        ticketsSold: competition.ticketsSold || 0,
-        totalTickets: competition.totalTickets || 100,
-        entryFee: competition.entryFee || 0,
-        location: competition.location || 'Online',
-        status: competition.status || 'active'
+        comp: {
+          ...competition.comp,
+          ticketsSold: competition.comp?.ticketsSold || 0,
+          totalTickets: competition.comp?.totalTickets || 100,
+          entryFee: competition.comp?.entryFee || 0,
+          status: competition.comp?.status || 'active',
+          paymentType: competition.comp?.paymentType || 'pi'
+        },
+        imageUrl: competition.imageUrl || '/images/default-prize.png'
       }
     };
 
     console.log('✅ Competition found:', {
       slug,
       title: competition.title,
-      entryFee: competition.entryFee,
-      ticketsSold: competition.ticketsSold,
-      totalTickets: competition.totalTickets
+      entryFee: competition.comp?.entryFee,
+      ticketsSold: competition.comp?.ticketsSold,
+      totalTickets: competition.comp?.totalTickets
     });
 
     res.status(200).json(response);
   } catch (error) {
-    console.error('❌ Error fetching competition:', {
-      error: error.message,
-      stack: error.stack,
-      slug
-    });
+    console.error('❌ Error fetching competition:', error);
     res.status(500).json({ 
       success: false,
-      error: 'Internal server error',
+      error: error.message || 'Internal server error',
       code: 'INTERNAL_ERROR'
     });
   }

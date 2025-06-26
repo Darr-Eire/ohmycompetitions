@@ -20,9 +20,9 @@ export function loadPiSdk(setReady) {
       if (window.Pi && typeof window.Pi.createPayment === 'function') {
         clearInterval(check);
 
-        // Always use sandbox in development
-        const sandbox = process.env.NODE_ENV === 'development';
-        window.Pi.init({ version: '2.0', sandbox });
+            // Use PI_SANDBOX environment variable to determine sandbox mode
+    const sandbox = process.env.NEXT_PUBLIC_PI_SANDBOX === 'true';
+    window.Pi.init({ version: '2.0', sandbox });
 
         setReady(true);
         console.log('✅ Pi SDK loaded and initialized in', sandbox ? 'sandbox' : 'production', 'mode');

@@ -69,7 +69,7 @@ export default function PiCashCodePage() {
     const script = document.createElement('script');
     script.src = 'https://sdk.minepi.com/pi-sdk.js';
     script.onload = () => {
-      window.Pi.init({ version: '2.0', sandbox: process.env.NEXT_PUBLIC_SANDBOX_SDK === 'true' });
+              window.Pi.init({ version: '2.0', sandbox: process.env.NEXT_PUBLIC_PI_SANDBOX === 'true' });
     };
     document.head.appendChild(script);
   }, []);
