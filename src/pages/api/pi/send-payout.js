@@ -4,9 +4,24 @@ import initCORS from '../../../lib/cors';
 
 // Get MongoDB URI from environment variables
 const MONGODB_URI = process.env.MONGO_DB_URL;
-const PI_API_KEY = process.env.PI_API_KEY;
-// Use production API URL for both sandbox and production - sandbox is controlled by the SDK
+
+// Pi Network configuration - generate API key from App ID and App Secret
+const PI_APP_ID = process.env.PI_APP_ID;
+const PI_APP_SECRET = process.env.PI_APP_SECRET;
+const PI_API_KEY = PI_APP_SECRET; // For App-to-User payments, use the App Secret as API Key
+
+// Pi Network uses the same API endpoint for both sandbox and production
+// The sandbox mode is controlled by the SDK initialization, not the API endpoint
+const IS_SANDBOX = process.env.NEXT_PUBLIC_PI_SANDBOX === 'true';
 const PI_API_URL = 'https://api.minepi.com/v2/payments';
+
+console.log('🔧 Pi Network Configuration:', {
+  appId: PI_APP_ID,
+  isSandbox: IS_SANDBOX,
+  apiUrl: PI_API_URL,
+  hasApiKey: !!PI_API_KEY,
+  note: 'Using official Pi Network API endpoint for both sandbox and production'
+});
 
 if (!MONGODB_URI) {
   throw new Error(
@@ -14,9 +29,9 @@ if (!MONGODB_URI) {
   );
 }
 
-if (!PI_API_KEY) {
+if (!PI_APP_ID || !PI_APP_SECRET) {
   throw new Error(
-    'Please define the PI_API_KEY environment variable inside .env.local'
+    'Please define the PI_APP_ID and PI_APP_SECRET environment variables inside .env.local'
   );
 }
 
@@ -99,7 +114,11 @@ export default async function handler(req, res) {
       console.log('🔄 Creating App-to-User payment with Pi Network:', {
         userUid,
         amount: payoutAmount,
-        url: PI_API_URL
+        url: PI_API_URL,
+        appId: PI_APP_ID,
+        isSandbox: IS_SANDBOX,
+        apiKeyLength: PI_API_KEY ? PI_API_KEY.length : 0,
+        apiKeyStart: PI_API_KEY ? PI_API_KEY.substring(0, 8) + '...' : 'undefined'
       });
 
       const paymentData = {
@@ -114,13 +133,19 @@ export default async function handler(req, res) {
         }
       };
 
+      console.log('📤 Sending payment data to Pi Network:', {
+        ...paymentData,
+        metadata: { ...paymentData.metadata, appId: PI_APP_ID }
+      });
+
       const piResponse = await axios.post(
         PI_API_URL,
         paymentData,
         {
           headers: { 
             'Authorization': `Key ${PI_API_KEY}`,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'User-Agent': `OhMyCompetitions/${PI_APP_ID}`
           },
           timeout: 30000 // 30 second timeout
         }

@@ -70,14 +70,24 @@ export function PiAuthProvider({ children }) {
       }
 
       console.log('✅ Pi authentication successful, verifying with backend...');
+      
+      // Check for referral code in localStorage (from signup page)
+      const pendingReferralCode = localStorage.getItem('pendingReferralCode');
+      
       const res = await axios.post('/api/pi/verify', { 
         accessToken,
-        userData: piUser
+        userData: piUser,
+        referralCode: pendingReferralCode || null
       });
 
       if (res.status === 200) {
         setUser(res.data);
         console.log('✅ Login verified:', res.data);
+        
+        // Clear pending referral code after successful application
+        if (pendingReferralCode) {
+          localStorage.removeItem('pendingReferralCode');
+        }
       } else {
         throw new Error(`Login verification failed with status ${res.status}`);
       }

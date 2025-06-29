@@ -5,6 +5,7 @@ import Confetti from 'react-confetti'
 import { useWindowSize } from '@uidotdev/usehooks'
 import Link from 'next/link'
 import Head from 'next/head'
+import { usePiAuth } from '../../context/PiAuthContext'
 
 const PI_DIGITS = ['3', '1', '4', '1', '5', '9', '2', '6']
 const DIGIT_SPEEDS = [1000, 900, 800, 600, 400, 300, 200, 150]
@@ -18,6 +19,7 @@ const SKILL_ANSWER = '9'
 
 export default function MatchPiGame() {
   const { width, height } = useWindowSize()
+  const { user, loginWithPi } = usePiAuth()
   const intervalRef = useRef(null)
   const countdownIntervalRef = useRef(null)
   const todayKey = new Date().toDateString()
@@ -38,6 +40,8 @@ export default function MatchPiGame() {
   const [winStreak, setWinStreak] = useState(0)
   const [nextFreeCountdown, setNextFreeCountdown] = useState('')
   const [skillAnswer, setSkillAnswer] = useState('')
+  const [payoutStatus, setPayoutStatus] = useState('')
+  const [sendingPayout, setSendingPayout] = useState(false)
 
   useEffect(() => {
     const roll = Math.floor(Math.random() * JACKPOT_CHANCE)
@@ -117,8 +121,52 @@ export default function MatchPiGame() {
       const streak = parseInt(localStorage.getItem('piWinStreak') || '0') + 1
       setWinStreak(streak)
       localStorage.setItem('piWinStreak', streak.toString())
+      
+      // Send Pi payout
+      sendPiPayout(reward, bonus !== '')
     } else {
       setDigitIndex(digitIndex + 1)
+    }
+  }
+
+  const sendPiPayout = async (finalPrize, hasPerfectTiming) => {
+    if (!user) {
+      setPayoutStatus('❌ User not logged in')
+      return
+    }
+
+    setSendingPayout(true)
+    setPayoutStatus('💰 Sending Pi payout...')
+
+    try {
+      const response = await fetch('/api/try-your-luck/match-pi-win', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userUid: user.uid,
+          username: user.username,
+          prizeAmount: BASE_PRIZE,
+          isJackpot,
+          perfectTiming: hasPerfectTiming
+        })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        setPayoutStatus(`✅ ${result.message}`)
+        console.log('🎉 Pi payout successful:', result)
+      } else {
+        setPayoutStatus(`❌ ${result.error || 'Payout failed'}`)
+        console.error('❌ Pi payout failed:', result)
+      }
+    } catch (error) {
+      console.error('❌ Payout API error:', error)
+      setPayoutStatus('❌ Failed to send payout. Please contact support.')
+    } finally {
+      setSendingPayout(false)
     }
   }
 
@@ -130,6 +178,13 @@ export default function MatchPiGame() {
       alert('Answer the skill question correctly before starting.')
       return
     }
+    
+    if (!user) {
+      alert('Please login with Pi to play Match Pi Code!')
+      loginWithPi()
+      return
+    }
+    
     localStorage.setItem(`piFreePlayed-${todayKey}`, 'true')
     setFreePlayedToday(true)
     beginNewAttempt()
@@ -144,6 +199,7 @@ export default function MatchPiGame() {
     setPerfectFrame(true)
     setShowConfetti(false)
     setSkillAnswer('') // reset skill question on attempt start
+    setPayoutStatus('')
   }
 
   const retry = () => {
@@ -194,131 +250,175 @@ export default function MatchPiGame() {
             </h1>
           </div>
 
+          {/* User Status */}
+          {!user && (
+            <div className="bg-red-800 bg-opacity-30 border border-red-400 p-3 rounded-xl text-center">
+              <p className="text-red-300 mb-2">🔐 Login Required</p>
+              <button
+                onClick={loginWithPi}
+                className="bg-yellow-500 hover:bg-yellow-600 text-black px-4 py-2 rounded font-bold"
+              >
+                Login with Pi
+              </button>
+            </div>
+          )}
+
+          {user && (
+            <div className="bg-green-800 bg-opacity-30 border border-green-400 p-3 rounded-xl text-center">
+              <p className="text-green-300">✅ Logged in as {user.username}</p>
+            </div>
+          )}
+
           {winStreak >= 3 && (
             <div className="bg-cyan-800 bg-opacity-30 border border-cyan-400 p-3 rounded-xl">
               🌟 You're on a {winStreak}-day win streak! Bonus activated!
             </div>
           )}
 
-          <p className="text-cyan-300 text-lg mx-auto">
-            Match digits of π: <code>{PI_DIGITS.join('')}</code>
-          </p>
-
-          <div className="text-sm text-white">Next free try in: {nextFreeCountdown}</div>
-
-          <div>
-            <div className="text-sm mb-2 text-white">Hit in Order</div>
-            <div className="flex justify-center gap-1 text-2xl">
-              {PI_DIGITS.map((digit, i) => {
-                const item = progress[i]
-                const isNext = i === digitIndex
-                return (
-                  <span
-                    key={i}
-                    className={`w-8 h-8 flex items-center justify-center rounded-md
-                  ${
-                    item?.success
-                      ? 'bg-cyan-500 text-black'
-                      : isNext
-                      ? 'bg-cyan-300 text-black animate-pulse'
-                      : 'bg-gray-700'
-                  }`}
-                  >
-                    {item?.hit || digit}
-                  </span>
-                )
-              })}
-            </div>
-          </div>
-
-          {scrolling && (
-            <>
-              <div className="py-6">
-                <div className="text-6xl font-mono text-cyan-300 shadow-[0_0_20px_#22d3ee] border-4 border-cyan-500 rounded-full w-24 h-24 mx-auto flex items-center justify-center">
-                  {currentDigit}
+          {/* Payout Status */}
+          {payoutStatus && (
+            <div className={`p-3 rounded-lg mb-4 ${
+              payoutStatus.includes('✅') ? 'bg-green-800 bg-opacity-30 border border-green-400' :
+              payoutStatus.includes('❌') ? 'bg-red-800 bg-opacity-30 border border-red-400' :
+              'bg-yellow-800 bg-opacity-30 border border-yellow-400'
+            }`}>
+              <p className="text-sm">{payoutStatus}</p>
+              {sendingPayout && (
+                <div className="flex justify-center items-center mt-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-cyan-300"></div>
+                  <span className="ml-2 text-xs">Processing...</span>
                 </div>
-                <div className="mt-3 text-sm text-white">Tap “Stop” when this matches the target</div>
-              </div>
-
-              <button
-                onClick={handleStop}
-                className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-semibold px-6 py-3 rounded-xl shadow-[0_0_30px_#00fff055] border border-cyan-700 hover:brightness-110 transition w-full"
-              >
-                Stop
-              </button>
-            </>
+              )}
+            </div>
           )}
 
-          {!scrolling && (
-            <>
-              <div className="mb-4 text-left">
-                <label htmlFor="skill-question" className="block font-semibold mb-1 text-white">
-                  Skill Question (required):
-                </label>
-                <p className="text-sm mb-1 text-white">{SKILL_QUESTION}</p>
-                <input
-                  id="skill-question"
-                  type="text"
-                  value={skillAnswer}
-                  onChange={(e) => setSkillAnswer(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg bg-white/10 border border-cyan-500 text-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                  placeholder="Enter your answer"
-                />
-                {skillAnswer && !skillAnswerIsCorrect && (
-                  <p className="text-sm text-red-400 mt-1">
-                    Incorrect answer. You must answer correctly to proceed.
-                  </p>
+          <div className="bg-white bg-opacity-10 rounded-2xl shadow-lg p-6 text-center">
+            <p className="text-base text-gray-300 mb-6">
+              {isJackpot && '🎰 JACKPOT MODE! '}
+              Stop the timer at exactly π (3.1415926) to win {isJackpot ? BASE_PRIZE * 2 : BASE_PRIZE}π
+            </p>
+
+            {/* Skill Question */}
+            <div className="mb-4 text-left">
+              <label className="block text-sm font-bold mb-2">Skill Question (required):</label>
+              <p className="text-sm mb-2 text-gray-300">{SKILL_QUESTION}</p>
+              <input
+                type="text"
+                value={skillAnswer}
+                onChange={(e) => setSkillAnswer(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg bg-white/10 border border-cyan-500 text-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                placeholder="Enter your answer"
+              />
+              {skillAnswer && !skillAnswerIsCorrect && (
+                <p className="text-sm text-red-400 mt-1">
+                  Incorrect answer. You must answer correctly to proceed.
+                </p>
+              )}
+            </div>
+
+            {/* Game Display */}
+            <div className="mb-6">
+              <div className="text-6xl font-mono mb-4 h-16 flex items-center justify-center">
+                {scrolling ? (
+                  <span className="animate-pulse">{currentDigit}</span>
+                ) : (
+                  <span className="text-gray-500">-</span>
                 )}
               </div>
 
-              <button
-                onClick={freePlayedToday ? retry : startFreeTry}
-                disabled={freePlayedToday && !canRetry}
-                className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-semibold px-6 py-3 rounded-xl shadow-[0_0_30px_#00fff055] border border-cyan-700 hover:brightness-110 transition w-full disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                {freePlayedToday ? `Retry (${RETRY_PRICE}π)` : 'Start Daily Free Try'}
-              </button>
-            </>
-          )}
-
-          {result && <div className="text-lg font-bold mt-4 text-cyan-300">{result}</div>}
-
-          <div>
-            <button onClick={shareScore} className="text-sm text-cyan-300 underline">
-              Share My Score
-            </button>
-
-            <div className="text-sm text-white mt-2">
-              Closest Try: Matched {closestTry} / {PI_DIGITS.length} digits
-            </div>
-
-            {yesterdayStats && (
-              <div className="mt-6 bg-cyan-950 bg-opacity-20 rounded-xl p-4 border border-cyan-600 text-sm text-cyan-300 space-y-2 inline-block text-left">
-                <h2 className="text-base font-bold text-cyan-300">📅 Yesterday’s Results</h2>
-                {Object.entries(yesterdayStats).map(([k, v], i) => (
-                  <div key={i}>
-                    <strong>{k === 'free' ? 'Free' : `Paid #${k.replace('paid', '')}`}</strong>: {v.success ? '✅ Success' : '❌ Failed'} — reached {v.depth} / {PI_DIGITS.length}
-                  </div>
-                ))}
+              {/* Progress Display */}
+              <div className="flex justify-center gap-2 mb-4">
+                {PI_DIGITS.map((expectedDigit, i) => {
+                  const attempt = progress[i]
+                  return (
+                    <div
+                      key={i}
+                      className={`w-8 h-8 flex items-center justify-center rounded text-sm font-bold ${
+                        attempt
+                          ? attempt.success
+                            ? 'bg-green-500 text-black'
+                            : 'bg-red-500 text-white'
+                          : i === digitIndex && scrolling
+                          ? 'bg-yellow-400 text-black animate-pulse'
+                          : 'bg-gray-600 text-gray-300'
+                      }`}
+                    >
+                      {attempt ? attempt.hit : expectedDigit}
+                    </div>
+                  )
+                })}
               </div>
-            )}
 
-            <div className="text-sm text-white mt-2">
-              Retries: {retries}/{MAX_RETRIES}
+              <p className="text-sm text-gray-400 mb-4">
+                Target: 3.1415926 | Progress: {progress.filter(p => p.success).length}/{PI_DIGITS.length}
+              </p>
+
+              {result && (
+                <p className={`text-lg font-bold mb-4 ${
+                  result.includes('🏆') ? 'text-green-400' : 'text-red-400'
+                }`}>
+                  {result}
+                </p>
+              )}
             </div>
 
-            <Link href="/try-your-luck" className="text-sm text-cyan-300 underline block mt-4">
-              Back to Mini Games
+            {/* Action Buttons */}
+            <div className="space-y-3">
+              {!scrolling && !freePlayedToday && !showConfetti && (
+                <button
+                  onClick={startFreeTry}
+                  disabled={!skillAnswerIsCorrect || !user}
+                  className={`w-full py-3 px-6 rounded-full font-bold transition ${
+                    skillAnswerIsCorrect && user
+                      ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white'
+                      : 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                  }`}
+                >
+                  {!user ? 'Login Required' : 'Free Try Today'}
+                </button>
+              )}
+
+              {scrolling && (
+                <button
+                  onClick={handleStop}
+                  className="w-full py-3 px-6 rounded-full font-bold bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white transition"
+                >
+                  STOP
+                </button>
+              )}
+
+              {!scrolling && (freePlayedToday || result.includes('❌')) && canRetry && !showConfetti && (
+                <button
+                  onClick={retry}
+                  disabled={!skillAnswerIsCorrect}
+                  className={`w-full py-3 px-6 rounded-full font-bold transition ${
+                    skillAnswerIsCorrect
+                      ? 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white'
+                      : 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                  }`}
+                >
+                  Retry (${RETRY_PRICE}π) - {MAX_RETRIES - retries} left
+                </button>
+              )}
+            </div>
+
+            {/* Stats */}
+            <div className="mt-6 text-xs text-gray-400 space-y-1">
+              <p>Daily reset: {nextFreeCountdown}</p>
+              <p>Best streak: {closestTry}/{PI_DIGITS.length} digits</p>
+              <p>Win streak: {winStreak} days</p>
+            </div>
+          </div>
+
+          {showConfetti && <Confetti width={width} height={height} />}
+
+          <div className="text-center space-y-2">
+            <Link href="/try-your-luck" className="text-sm text-cyan-300 underline block">
+              ← Back to Mini Games
             </Link>
-
-            {showConfetti && <Confetti width={width} height={height} />}
-
-            <p className="text-xs text-white mt-6">
-              By playing this game, you are agreeing to ohmycompetitions{' '}
-              <Link href="/terms" className="underline text-cyan-400">
-                Terms & Conditions
-              </Link>
-            </p>
+            <Link href="/terms-conditions" className="text-xs text-gray-400 underline block">
+              Terms & Conditions
+            </Link>
           </div>
         </div>
       </main>

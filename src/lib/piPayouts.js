@@ -11,7 +11,23 @@
  */
 export async function sendPayout(userUid, amount, reason, memo = null, metadata = {}) {
   try {
-    const response = await fetch('/api/pi/send-payout', {
+    // For server-side API calls, use localhost to avoid external URL loops
+    // Only use external URL for client-side calls
+    const isServerSide = typeof window === 'undefined';
+    const baseUrl = isServerSide 
+      ? 'http://localhost:3000' 
+      : (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000');
+    const payoutUrl = `${baseUrl}/api/pi/send-payout`;
+    
+    console.log('🔄 sendPayout making request to:', {
+      url: payoutUrl,
+      isServerSide,
+      userUid,
+      amount,
+      reason
+    });
+    
+    const response = await fetch(payoutUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -28,8 +44,24 @@ export async function sendPayout(userUid, amount, reason, memo = null, metadata 
       })
     });
 
+    console.log('📝 sendPayout response:', {
+      status: response.status,
+      statusText: response.statusText,
+      headers: Object.fromEntries(response.headers.entries())
+    });
+
     if (!response.ok) {
-      const errorData = await response.json();
+      const responseText = await response.text();
+      console.error('❌ sendPayout error response:', responseText);
+      
+      let errorData;
+      try {
+        errorData = JSON.parse(responseText);
+      } catch (e) {
+        // If we can't parse JSON, it's likely an HTML error page
+        throw new Error(`Server returned HTML instead of JSON: ${responseText.substring(0, 200)}...`);
+      }
+      
       throw new Error(errorData.error || 'Failed to send payout');
     }
 
@@ -129,7 +161,11 @@ export async function sendPromotionReward(userUid, amount, promotionName) {
  */
 export async function checkPayoutStatus(paymentId) {
   try {
-    const response = await fetch(`/api/pi/payout-status?paymentId=${paymentId}`);
+    const isServerSide = typeof window === 'undefined';
+    const baseUrl = isServerSide 
+      ? 'http://localhost:3000' 
+      : (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000');
+    const response = await fetch(`${baseUrl}/api/pi/payout-status?paymentId=${paymentId}`);
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -150,8 +186,12 @@ export async function checkPayoutStatus(paymentId) {
  */
 export async function listPayouts(filters = {}) {
   try {
+    const isServerSide = typeof window === 'undefined';
+    const baseUrl = isServerSide 
+      ? 'http://localhost:3000' 
+      : (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000');
     const queryParams = new URLSearchParams(filters).toString();
-    const url = `/api/pi/list-payouts${queryParams ? '?' + queryParams : ''}`;
+    const url = `${baseUrl}/api/pi/list-payouts${queryParams ? '?' + queryParams : ''}`;
     
     const response = await fetch(url);
 

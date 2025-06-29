@@ -4,7 +4,11 @@ import initCORS from '../../../lib/cors';
 
 // Get MongoDB URI from environment variables
 const MONGODB_URI = process.env.MONGO_DB_URL;
-const PI_API_KEY = process.env.PI_API_KEY;
+
+// Pi Network configuration - use App Secret as API key for App-to-User payments
+const PI_APP_ID = process.env.PI_APP_ID;
+const PI_APP_SECRET = process.env.PI_APP_SECRET;
+const PI_API_KEY = PI_APP_SECRET;
 // Use production API URL for both sandbox and production - sandbox is controlled by the SDK
 const PI_API_URL = 'https://api.minepi.com/v2/payments';
 
@@ -14,9 +18,9 @@ if (!MONGODB_URI) {
   );
 }
 
-if (!PI_API_KEY) {
+if (!PI_APP_ID || !PI_APP_SECRET) {
   throw new Error(
-    'Please define the PI_API_KEY environment variable inside .env.local'
+    'Please define the PI_APP_ID and PI_APP_SECRET environment variables inside .env.local'
   );
 }
 

@@ -10,12 +10,60 @@ const client = new MongoClient(MONGODB_URI, {
   useUnifiedTopology: true,
 });
 
+// Helper function to apply referral code to new users
+async function applyReferralCodeToNewUser(db, newUser, referralCode) {
+  try {
+    console.log(`🔄 Applying referral code ${referralCode} to user ${newUser.username}...`);
+    
+    // Find the referrer by referral code
+    const referrer = await db.collection('users').findOne({ 
+      referralCode: referralCode 
+    });
+
+    if (!referrer) {
+      console.warn(`⚠️ Invalid referral code: ${referralCode}`);
+      return false;
+    }
+
+    if (referrer.username === newUser.username) {
+      console.warn(`⚠️ User cannot refer themselves: ${newUser.username}`);
+      return false;
+    }
+
+    // Update new user with referral info and bonus tickets
+    await db.collection('users').updateOne(
+      { _id: newUser._id },
+      { 
+        $set: { 
+          referredBy: referralCode,
+          bonusTickets: 5
+        }
+      }
+    );
+
+    // Give referrer bonus tickets
+    await db.collection('users').updateOne(
+      { _id: referrer._id },
+      { 
+        $inc: { bonusTickets: 5 }
+      }
+    );
+
+    console.log(`✅ Referral applied successfully: ${newUser.username} referred by ${referrer.username}`);
+    return true;
+
+  } catch (error) {
+    console.error('❌ Failed to apply referral code:', error);
+    return false;
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  const { accessToken, userData } = req.body;
+  const { accessToken, userData, referralCode } = req.body;
   
   if (!accessToken) {
     console.error('❌ Missing access token in request');
@@ -98,11 +146,19 @@ export default async function handler(req, res) {
         accessToken,
         roles: piUser.roles || [],
         tickets: 0,
-        country: userData?.country || null
+        country: userData?.country || null,
+        bonusTickets: 0,
+        referredBy: '',
+        referralCode: null // Will be generated if needed
       };
 
       const result = await db.collection('users').insertOne(newUser);
       user = { ...newUser, _id: result.insertedId };
+
+      // Apply referral code if provided for new users
+      if (referralCode && referralCode.trim()) {
+        await applyReferralCodeToNewUser(db, user, referralCode.trim());
+      }
     }
 
     console.log('✅ User verified and updated:', {

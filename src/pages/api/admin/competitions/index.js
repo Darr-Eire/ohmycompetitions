@@ -19,6 +19,14 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       const { slug, entryFee, totalTickets, title, prize, theme, startsAt, endsAt, piAmount } = req.body;
       
+      // Check if competition with this slug already exists
+      const existingCompetition = await Competition.findOne({ 'comp.slug': slug });
+      if (existingCompetition) {
+        return res.status(409).json({ 
+          message: `Competition with slug "${slug}" already exists. Please use a different slug.` 
+        });
+      }
+      
       const competition = await Competition.create({
         comp: { 
           slug, 
@@ -51,6 +59,17 @@ export default async function handler(req, res) {
     res.status(405).end();
   } catch (error) {
     console.error('Admin competitions API error:', error);
+    
+    // Handle duplicate key errors specifically
+    if (error.code === 11000) {
+      const duplicateField = error.keyValue;
+      return res.status(409).json({ 
+        message: `Competition with this ${Object.keys(duplicateField)[0]} already exists. Please use a different value.`,
+        field: Object.keys(duplicateField)[0],
+        value: Object.values(duplicateField)[0]
+      });
+    }
+    
     return res.status(500).json({ 
       message: 'Server error', 
       error: error.message 

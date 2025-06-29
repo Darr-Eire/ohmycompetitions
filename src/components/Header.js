@@ -78,21 +78,26 @@ const competitionCategories = [
         </Link>
       </div>
 
-      <div className="ml-auto flex items-center">
+      <div className="ml-auto flex items-center gap-2">
         {!user ? (
-          <button
-            onClick={async () => {
-              try {
-                await loginWithPi();
-              } catch (err) {
-                console.error('❌ Pi Login failed:', err);
-                alert('Pi login failed. Try again.');
-              }
-            }}
-            className="neon-button text-xs px-4 py-2"
-          >
-            Login with Pi
-          </button>
+          <>
+            <Link href="/signup" className="neon-button text-xs px-3 py-2">
+              Sign Up
+            </Link>
+            <button
+              onClick={async () => {
+                try {
+                  await loginWithPi();
+                } catch (err) {
+                  console.error('❌ Pi Login failed:', err);
+                  alert('Pi login failed. Try again.');
+                }
+              }}
+              className="neon-button text-xs px-4 py-2"
+            >
+              Login
+            </button>
+          </>
         ) : (
           <div className="text-white text-xs flex items-center gap-2">
             <span>👋 {user.username}</span>

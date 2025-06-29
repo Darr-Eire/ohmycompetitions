@@ -213,10 +213,10 @@ export default function Account() {
 
       } catch (error) {
         console.error('Failed to fetch user data:', error);
-        // Use mock data if API fails
-        setTickets(getMockTickets());
-        setUserStats(calculateUserStats(getMockTickets()));
-        setReferralData({ signupCount: 7, ticketsEarned: 7, miniGamesBonus: 3 });
+        // Set empty data instead of mock data
+        setTickets([]);
+        setUserStats({ totalPurchased: 0, totalGifted: 0, totalEarned: 0, joinDate: new Date().toLocaleDateString() });
+        setReferralData({ signupCount: 0, ticketsEarned: 0, miniGamesBonus: 0 });
       } finally {
         setLoading(false);
       }
@@ -297,45 +297,7 @@ export default function Account() {
     return filtered;
   };
 
-  // Mock data for fallback
-  const getMockTickets = () => [
-    {
-      competitionTitle: 'PS5 Mega Bundle',
-      prize: 'PlayStation 5 + Controller',
-      entryFee: 0.4,
-      quantity: 2,
-      drawDate: '2025-07-01T18:00:00Z',
-      ticketNumbers: ['A101', 'A102'],
-      imageUrl: '/images/playstation.jpeg',
-      theme: 'tech',
-      gifted: false,
-      earned: false
-    },
-    {
-      competitionTitle: 'Daily Jackpot',
-      prize: '750 π',
-      entryFee: 0.45,
-      quantity: 1,
-      drawDate: '2025-06-30T23:59:59Z',
-      ticketNumbers: ['DJ001'],
-      imageUrl: '/images/daily.png',
-      theme: 'daily',
-      gifted: false,
-      earned: true
-    },
-    {
-      competitionTitle: 'Pi To The Moon',
-      prize: '10,000 π',
-      entryFee: 0,
-      quantity: 1,
-      drawDate: '2025-08-31T18:00:00Z',
-      ticketNumbers: ['FREE001'],
-      imageUrl: '/images/pi-moon.png',
-      theme: 'free',
-      gifted: true,
-      earned: false
-    }
-  ];
+
 
   const filteredTickets = getFilteredTickets();
   const groupedTickets = groupTicketsByTheme(filteredTickets);

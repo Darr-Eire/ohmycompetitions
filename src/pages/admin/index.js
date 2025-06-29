@@ -169,12 +169,12 @@ export default function AdminDashboard() {
             >
               ➕ Create Competition
             </Link>
-            <button
+                  <button
               onClick={loadStats}
               className="bg-gray-600 hover:bg-gray-700 px-4 py-3 rounded font-bold transition"
-            >
+                  >
               🔄 Refresh Statistics
-            </button>
+                  </button>
             <Link
               href="/"
               className="bg-blue-600 hover:bg-blue-700 px-4 py-3 rounded font-bold text-center transition"

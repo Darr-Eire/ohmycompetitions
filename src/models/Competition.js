@@ -17,6 +17,7 @@ const CompetitionSchema = new mongoose.Schema({
     status: { type: String, enum: ['active', 'completed', 'cancelled'], default: 'active' }
   },
   title: { type: String, required: true },
+  description: { type: String },
   prize: { type: String, required: true },
   href: String,
   theme: { type: String, required: true },
