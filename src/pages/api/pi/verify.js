@@ -115,7 +115,8 @@ export default async function handler(req, res) {
     // First, try to find the existing user
     const existingUser = await db.collection('users').findOne({ 
       $or: [
-        { uid: piUser.uid },
+        { piUserId: piUser.uid },
+        { uid: piUser.uid }, // Support legacy field name
         { username: piUser.username }
       ]
     });
@@ -128,7 +129,8 @@ export default async function handler(req, res) {
         { 
           $set: {
             username: piUser.username,
-            uid: piUser.uid,
+            piUserId: piUser.uid, // Store in correct field name
+            uid: piUser.uid, // Keep legacy field for backward compatibility
             lastLogin: new Date(),
             accessToken,
             roles: piUser.roles || []
@@ -140,7 +142,8 @@ export default async function handler(req, res) {
       // Create new user
       const newUser = {
         username: piUser.username,
-        uid: piUser.uid,
+        piUserId: piUser.uid, // Store in correct field name
+        uid: piUser.uid, // Keep legacy field for backward compatibility
         createdAt: new Date(),
         lastLogin: new Date(),
         accessToken,
@@ -163,6 +166,7 @@ export default async function handler(req, res) {
 
     console.log('✅ User verified and updated:', {
       username: user.username,
+      piUserId: user.piUserId,
       uid: user.uid,
       _id: user._id
     });

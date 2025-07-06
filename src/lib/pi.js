@@ -198,11 +198,11 @@ export async function createPiPayment({ competitionSlug, amount, memo }) {
         // Even if our approval flag isn't set, try to complete the payment
         // The Pi SDK might call this callback regardless of our approval status
         try {
-          const response = await fetch(`${baseUrl}/api/pi/complete-payment`, {
+          const response = await fetch(`${baseUrl}/api/pi/complete`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
-              paymentId,
+              paymentId, 
               txid,
               slug: competitionSlug,
               amount: parseFloat(amount.toFixed(2))
@@ -210,37 +210,35 @@ export async function createPiPayment({ competitionSlug, amount, memo }) {
           });
 
           if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: 'Payment completion failed' }));
-            console.error('❌ Server completion failed:', errorData);
-            throw new Error(errorData.error || 'Payment completion failed');
+            const responseText = await response.text();
+            console.error('❌ Payment completion failed:', {
+              status: response.status,
+              statusText: response.statusText,
+              responseText,
+              url: `${baseUrl}/api/pi/complete`
+            });
+            throw new Error(`Payment completion failed (${response.status}): ${responseText}`);
           }
 
           const result = await response.json();
-          console.log('✅ Payment completed:', result);
+          console.log('✅ Payment completed successfully:', result);
           resolve(result);
         } catch (err) {
           console.error('❌ Payment completion error:', err);
-          
-          // If the error is about approval, but we have a txid, the payment might actually be valid
-          if (err.message.includes('not approved') && txid) {
-            console.log('🔧 Attempting completion despite approval error since we have txid:', txid);
-            // The payment might still be valid, so don't reject immediately
-          }
-          
-          reject(err);
+          reject(new Error(`Payment completion failed: ${err.message}`));
         }
       },
 
-      // Called when the user cancels the payment
+      // Called when payment is cancelled
       onCancel: function(paymentId) {
-        console.log('❌ Payment cancelled:', paymentId);
-        reject(new Error('Payment cancelled by user'));
+        console.log('❌ Payment cancelled by user:', paymentId);
+        reject(new Error('Payment was cancelled by user'));
       },
 
-      // Called when there's a payment error
-      onError: function(error, paymentId) {
-        console.error('❌ Payment error:', error, paymentId);
-        reject(error);
+      // Called when there's an error with the payment
+      onError: function(error, payment) {
+        console.error('❌ Payment error:', error, payment);
+        reject(new Error(`Payment error: ${error.message || error.type || 'Unknown error'}`));
       }
     });
   });

@@ -28,10 +28,12 @@ export default async function handler(req, res) {
     const giftedTickets = await Ticket.find({ username }).lean();
     
     // Find user's purchased tickets via Entry model using both username and UID
+    // Handle both piUserId and uid field names for backward compatibility
+    const userPiId = user.piUserId || user.uid;
     const userEntries = await Entry.find({ 
       $or: [
         { userUid: username },
-        { userUid: user.piUserId },
+        { userUid: userPiId },
         { username: username }
       ]
     }).lean();
@@ -53,7 +55,7 @@ export default async function handler(req, res) {
             { status: 'completed' },
             {
               $or: [
-                { 'piUser.uid': user.piUserId },
+                { 'piUser.uid': userPiId },
                 { 'piUser.uid': username },
                 { 'piUser.username': username }
               ]
@@ -191,7 +193,8 @@ export default async function handler(req, res) {
       gifted: giftedTickets.length,
       entries: userEntries.length,
       payments: userPayments.length,
-      total: uniqueTickets.length
+      total: uniqueTickets.length,
+      userPiId: userPiId // Add this for debugging
     });
 
     res.status(200).json(uniqueTickets);
