@@ -33,53 +33,59 @@ export default async function handler(req, res) {
         'comp.slug': 1,
         'comp.paymentType': 1,
         'comp.piAmount': 1,
+        'comp.location': 1,
         title: 1,
         prize: 1,
         imageUrl: 1,
         theme: 1,
-        href: 1
+        href: 1,
+        description: 1
       })
       .lean();
 
     if (!competition) {
       console.log('❌ Competition not found:', { slug });
       return res.status(404).json({ 
-        success: false,
         error: 'Competition not found',
         code: 'COMPETITION_NOT_FOUND'
       });
     }
 
-    // Format the response with default values
+    // Flatten the structure to match what the frontend expects
     const response = {
-      success: true,
-      data: {
-        ...competition,
-        comp: {
-          ...competition.comp,
-          ticketsSold: competition.comp?.ticketsSold || 0,
-          totalTickets: competition.comp?.totalTickets || 100,
-          entryFee: competition.comp?.entryFee || 0,
-          status: competition.comp?.status || 'active',
-          paymentType: competition.comp?.paymentType || 'pi'
-        },
-        imageUrl: competition.imageUrl || '/images/default-prize.png'
-      }
+      _id: competition._id,
+      slug: competition.comp?.slug,
+      title: competition.title,
+      prize: competition.prize,
+      description: competition.description,
+      imageUrl: competition.imageUrl || '/images/default-prize.png',
+      theme: competition.theme,
+      href: competition.href,
+      // Flatten comp fields to top level
+      ticketsSold: competition.comp?.ticketsSold || 0,
+      totalTickets: competition.comp?.totalTickets || 100,
+      entryFee: competition.comp?.entryFee || 0,
+      piAmount: competition.comp?.piAmount || competition.comp?.entryFee || 0,
+      status: competition.comp?.status || 'active',
+      paymentType: competition.comp?.paymentType || 'pi',
+      startsAt: competition.comp?.startsAt,
+      endsAt: competition.comp?.endsAt,
+      location: competition.comp?.location || 'Online'
     };
 
-    console.log('✅ Competition found:', {
+    console.log('✅ Competition found and formatted:', {
       slug,
-      title: competition.title,
-      entryFee: competition.comp?.entryFee,
-      ticketsSold: competition.comp?.ticketsSold,
-      totalTickets: competition.comp?.totalTickets
+      title: response.title,
+      entryFee: response.entryFee,
+      ticketsSold: response.ticketsSold,
+      totalTickets: response.totalTickets,
+      status: response.status
     });
 
     res.status(200).json(response);
   } catch (error) {
     console.error('❌ Error fetching competition:', error);
     res.status(500).json({ 
-      success: false,
       error: error.message || 'Internal server error',
       code: 'INTERNAL_ERROR'
     });

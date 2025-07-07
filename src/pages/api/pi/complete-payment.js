@@ -113,6 +113,30 @@ export default async function handler(req, res) {
       const paymentStatus = statusResponse.data;
       console.log('📝 Payment status:', paymentStatus);
 
+      // Extract user information from Pi Network response
+      const piUser = paymentStatus.user || {};
+      console.log('👤 User info from Pi Network payment:', {
+        uid: piUser.uid,
+        username: piUser.username,
+        paymentId
+      });
+
+      if (!piUser.uid) {
+        console.warn('⚠️ No user info found in payment response');
+      }
+
+      // Extract user information from Pi Network response
+      const piUser = paymentStatus.user || {};
+      console.log('👤 User info from Pi Network payment:', {
+        uid: piUser.uid,
+        username: piUser.username,
+        paymentId
+      });
+
+      if (!piUser.uid) {
+        console.warn('⚠️ No user info found in payment response');
+      }
+
       // If payment is already completed with Pi Network, just update our records
       if (paymentStatus.status?.developer_completed) {
         console.log('✅ Payment already completed with Pi Network:', paymentId);
@@ -369,9 +393,15 @@ export default async function handler(req, res) {
                 ticketNumber,
                 ticketQuantity,
                 competitionStatus,
+                // Store user information from Pi Network
+                piUser: {
+                  uid: piUser.uid,
+                  username: piUser.username
+                },
                 // Store the full payment status from Pi Network
                 piStatus: paymentStatus.status,
-                transaction: paymentStatus.transaction
+                transaction: paymentStatus.transaction,
+                amount: paymentAmount
               }
             },
             { 
@@ -380,11 +410,12 @@ export default async function handler(req, res) {
             }
           );
 
-          console.log('✅ Successfully updated:', {
+          console.log('✅ Successfully updated payment with user info:', {
             competition: slug,
             ticketNumber,
             status: competitionStatus,
-            paymentId
+            paymentId,
+            user: piUser.username || piUser.uid
           });
         });
 

@@ -46,27 +46,62 @@ export default function TicketPurchasePage() {
   const { slug } = router.query;
   const { user, login } = usePiAuth();
 
-  const comp = typeof slug === 'string' ? COMPETITIONS[slug] : null;
-  const isFree = FREE_TICKET_COMPETITIONS.includes(slug);
-  const isDaily = DAILY_COMPETITIONS.includes(slug);
-
+  const [comp, setComp] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [sharedBonus, setSharedBonus] = useState(false);
-  const [competitionStatus, setCompetitionStatus] = useState(null);
+  const [competitionStatus, setCompetitionStatus] = useState('active');
   const [showSkillQuestion, setShowSkillQuestion] = useState(false);
   const [skillAnswer, setSkillAnswer] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
+  const [liveTicketsSold, setLiveTicketsSold] = useState(0);
+
+  const isFree = comp?.paymentType === 'free';
+  const isDaily = comp?.theme === 'daily';
 
   const mainImage = comp?.imageUrl;
   const miniImages = comp?.thumbnails || [];
 
+  const fetchCompetition = async (slugParam) => {
+    if (!slugParam) return;
+
+    try {
+      setLoading(true);
+      
+      // First try to fetch from API (live data)
+      try {
+        const response = await fetch(`/api/competitions/${slugParam}`);
+        if (response.ok) {
+          const liveComp = await response.json();
+          console.log('✅ Fetched live competition data:', liveComp);
+          setComp(liveComp);
+          setLiveTicketsSold(liveComp.ticketsSold || 0);
+          setLoading(false);
+          return;
+        }
+      } catch (apiError) {
+        console.warn('⚠️ Failed to fetch from API, using static data:', apiError);
+      }
+
+      // Fallback to static data
+      const staticComp = flattenCompetitions.find(c => c.comp.slug === slugParam);
+      if (staticComp) {
+        console.log('📁 Using static competition data:', staticComp);
+        setComp(staticComp.comp);
+        setLiveTicketsSold(staticComp.comp.ticketsSold || 0);
+      } else {
+        setError('Competition not found');
+      }
+    } catch (err) {
+      console.error('❌ Error fetching competition:', err);
+      setError('Failed to load competition');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!router.isReady || !slug) return;
-
-    const fetchCompetition = async (slugParam) => {
-      console.log('📦 (Optional) Fetching or refreshing competition:', slugParam);
-    };
 
     fetchCompetition(slug);
   }, [router.isReady, slug]);
@@ -99,8 +134,38 @@ export default function TicketPurchasePage() {
     claimFreeTicket();
   };
 
-  const handlePaymentSuccess = (result) => {
+  const handlePaymentSuccess = async (result) => {
     console.log('🎉 Payment successful, refreshing competition data:', result);
+    
+    // Update local state immediately for instant feedback
+    if (result.ticketQuantity) {
+      setLiveTicketsSold(prev => prev + result.ticketQuantity);
+    }
+    
+    // Refresh full competition data from server
+    try {
+      await fetchCompetition(slug);
+      
+      // Show success message with updated info
+      const ticketText = result.ticketNumber?.toString().includes('-') 
+        ? `ticket numbers ${result.ticketNumber}`
+        : `ticket number ${result.ticketNumber}`;
+      
+      const message = result.competitionStatus === 'completed' 
+        ? `🎉 Success! Your ${ticketText}. This competition is now SOLD OUT!`
+        : `🎉 Success! Your ${ticketText}. Updated tickets available!`;
+      
+      alert(message);
+      
+      // If competition is full, show special message
+      if (result.competitionStatus === 'completed') {
+        setTimeout(() => {
+          alert('🚀 This competition is now SOLD OUT! The draw will happen soon.');
+        }, 2000);
+      }
+    } catch (refreshError) {
+      console.error('❌ Failed to refresh competition data:', refreshError);
+    }
   };
 
   useEffect(() => {
@@ -137,7 +202,7 @@ export default function TicketPurchasePage() {
     return (
       <div className="p-6 text-center text-white bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] min-h-screen">
         <h1 className="text-2xl font-bold text-red-500">Competition Not Found</h1>
-        <p className="mt-4">We couldn’t find “{slug}”.</p>
+        <p className="mt-4">We couldn't find "{slug}".</p>
         <Link href="/" className="mt-6 inline-block text-blue-400 underline font-semibold">Back to Home</Link>
       </div>
     );
@@ -188,7 +253,19 @@ export default function TicketPurchasePage() {
             <div className="flex justify-between"><span className="font-semibold">Start Time</span><span>{new Date(comp.endsAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} UTC</span></div>
             <div className="flex justify-between"><span className="font-semibold">Location</span><span>{comp.location}</span></div>
             <div className="flex justify-between"><span className="font-semibold">Entry Fee</span><span>{comp.entryFee.toFixed(2)} π</span></div>
-            <div className="flex justify-between"><span className="font-semibold">Tickets Sold</span><span>{comp.ticketsSold} / {comp.totalTickets}</span></div>
+            <div className="flex justify-between">
+              <span className="font-semibold">Tickets Sold</span>
+              <span className={`${liveTicketsSold >= comp.totalTickets ? 'text-red-400 font-bold' : ''}`}>
+                {liveTicketsSold} / {comp.totalTickets}
+                {liveTicketsSold >= comp.totalTickets && ' (SOLD OUT)'}
+              </span>
+            </div>
+            {liveTicketsSold > 0 && (
+              <div className="flex justify-between text-cyan-400">
+                <span className="font-semibold">Available</span>
+                <span>{Math.max(0, comp.totalTickets - liveTicketsSold)} tickets remaining</span>
+              </div>
+            )}
           </div>
 
           {isFree ? (

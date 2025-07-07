@@ -69,7 +69,13 @@ export default function CompetitionCard({
 
   const sold = comp?.comp?.ticketsSold || comp?.ticketsSold || 0;
   const total = comp?.comp?.totalTickets || comp?.totalTickets || 100;
-  const percent = Math.min(100, Math.floor((sold / total) * 100));
+  const remaining = Math.max(0, total - sold);
+  const soldOutPercentage = (sold / total) * 100;
+  
+  // Determine ticket status
+  const isSoldOut = sold >= total;
+  const isLowStock = remaining <= total * 0.1 && remaining > 0; // Less than 10% remaining
+  const isNearlyFull = remaining <= total * 0.25 && remaining > 0; // Less than 25% remaining
 
   return (
     <div className="flex flex-col w-full max-w-xs mx-auto h-full bg-[#0f172a] border border-cyan-600 rounded-xl shadow-lg text-white font-orbitron overflow-hidden transition-all duration-300 hover:scale-[1.03]">
@@ -134,11 +140,48 @@ export default function CompetitionCard({
           <span>{total.toLocaleString()}</span>
         </div>
 
-        <div className="w-full bg-gray-700 h-3 rounded-full overflow-hidden">
-          <div className="h-full bg-gradient-to-r from-cyan-400 to-blue-500" style={{ width: `${percent}%` }} />
+        {/* Enhanced Ticket Information */}
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-400">Tickets</span>
+            <div className="text-right">
+              <span className={`text-sm font-semibold ${
+                isSoldOut ? 'text-red-400' : 
+                isLowStock ? 'text-orange-400' : 
+                isNearlyFull ? 'text-yellow-400' : 
+                'text-gray-300'
+              }`}>
+                {sold.toLocaleString()} / {total.toLocaleString()}
+              </span>
+              {isSoldOut && (
+                <div className="text-xs text-red-400 font-bold">SOLD OUT</div>
+              )}
+              {isLowStock && !isSoldOut && (
+                <div className="text-xs text-orange-400 font-bold">
+                  Only {remaining} left!
+                </div>
+              )}
+              {isNearlyFull && !isLowStock && !isSoldOut && (
+                <div className="text-xs text-yellow-400">
+                  {remaining} remaining
+                </div>
+              )}
+            </div>
+          </div>
+          
+          {/* Progress bar */}
+          <div className="w-full bg-gray-700 rounded-full h-2">
+            <div 
+              className={`h-2 rounded-full transition-all duration-300 ${
+                isSoldOut ? 'bg-red-500' :
+                isLowStock ? 'bg-orange-500' :
+                isNearlyFull ? 'bg-yellow-500' :
+                'bg-blue-500'
+              }`}
+              style={{ width: `${Math.min(soldOutPercentage, 100)}%` }}
+            />
+          </div>
         </div>
-
-        <p className="text-gray-300 text-xs">Sold: {sold.toLocaleString()} ({percent}%)</p>
       </div>
 
       {/* Button */}
