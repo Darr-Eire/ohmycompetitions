@@ -1,6 +1,5 @@
 import { dbConnect } from 'lib/dbConnect';
-
-import Nomination from 'models/Nomination';
+import PioneerNomination from 'models/PioneerNomination';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -19,8 +18,19 @@ export default async function handler(req, res) {
   }
 
   try {
-    await connectToDatabase();
-    const newNomination = await Nomination.create({ name, reason });
+    await dbConnect();
+    
+    // Check for duplicate nominations
+    const existing = await PioneerNomination.findOne({ name });
+    if (existing) {
+      return res.status(409).json({ error: 'This Pioneer has already been nominated.' });
+    }
+
+    const newNomination = await PioneerNomination.create({ 
+      name, 
+      reason,
+      votes: 0
+    });
     res.status(201).json(newNomination);
   } catch (err) {
     console.error('Submit error:', err);

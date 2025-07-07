@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import AdminSidebar from '../../components/AdminSidebar';
 
 export default function AdminTryYourLuckPage() {
   const [games, setGames] = useState([]);

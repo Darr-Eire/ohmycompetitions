@@ -1,67 +1,61 @@
-'use client';
+import bcrypt from 'bcryptjs';
+import { connectToDatabase } from '../../../lib/mongodb';
+import User from '../../../models/User';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
-export default function AdminLoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  try {
+    await connectToDatabase();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
+    const { email, password } = req.body;
 
-    try {
-      const res = await fetch('/api/auth/login', {   // <-- Corrected API endpoint here
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        router.push('/admin/competitions');  // redirect to admin dashboard
-      } else {
-        setError(data.error || 'Invalid credentials');
-      }
-    } catch (err) {
-      console.error('Login request failed:', err);
-      setError('Login failed. Please try again.');
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password required' });
     }
-  };
 
-  return (
-    <main className="min-h-screen flex justify-center items-center bg-[#0b1120] text-white font-orbitron">
-      <div className="p-8 border border-cyan-500 rounded-2xl shadow-[0_0_30px_#00f0ff88] bg-[#0f172a] w-full max-w-md">
-        <h1 className="text-3xl mb-6 text-center font-bold text-cyan-300">Admin Login</h1>
+    // Find admin user
+    const user = await User.findOne({ 
+      email: email.toLowerCase(),
+      role: 'admin' 
+    });
 
-        {error && <div className="text-red-400 mb-4 text-center">{error}</div>}
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full p-3 rounded-xl bg-black border border-cyan-400 text-white placeholder-cyan-400"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full p-3 rounded-xl bg-black border border-cyan-400 text-white placeholder-cyan-400"
-          />
-          <button type="submit" className="w-full py-3 bg-cyan-400 hover:bg-cyan-300 text-black font-bold rounded-xl transition">
-            Login
-          </button>
-        </form>
-      </div>
-    </main>
-  );
+    // Verify password
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    
+    if (!isValidPassword) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    // Create session (simplified - you may want to use JWT)
+    const adminSession = {
+      userId: user._id,
+      email: user.email,
+      role: user.role,
+      isAdmin: true
+    };
+
+    // Set session cookie (simplified)
+    res.setHeader('Set-Cookie', `admin-session=${JSON.stringify(adminSession)}; HttpOnly; Path=/; Max-Age=86400`);
+
+    return res.status(200).json({ 
+      success: true,
+      message: 'Admin login successful',
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role
+      }
+    });
+
+  } catch (error) {
+    console.error('Admin login error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
 }

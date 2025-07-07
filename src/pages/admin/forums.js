@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
+import AdminSidebar from '../../components/AdminSidebar';
 
 export default function AdminForumsPage() {
   const [threads, setThreads] = useState([]);
@@ -16,8 +17,16 @@ export default function AdminForumsPage() {
     author: 'admin'
   });
 
+  const [forumStats, setForumStats] = useState({
+    totalThreads: 0,
+    totalReplies: 0,
+    activeUsers: 0,
+    pendingModeration: 0
+  });
+
   useEffect(() => {
     loadThreads();
+    loadForumStats();
   }, []);
 
   const loadThreads = async () => {
@@ -31,6 +40,23 @@ export default function AdminForumsPage() {
       setError('Failed to load threads');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadForumStats = async () => {
+    try {
+      const response = await fetch('/api/admin/forums');
+      if (response.ok) {
+        const data = await response.json();
+        setForumStats({
+          totalThreads: data.length || 0,
+          totalReplies: data.reduce((sum, thread) => sum + (thread.replies?.length || 0), 0),
+          activeUsers: new Set(data.flatMap(thread => [thread.author, ...(thread.replies?.map(r => r.author) || [])])).size,
+          pendingModeration: data.filter(thread => thread.status === 'pending').length
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load forum stats:', error);
     }
   };
 
@@ -83,11 +109,111 @@ export default function AdminForumsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-8 font-orbitron">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6 text-cyan-400">Admin - Forum Management</h1>
+    <AdminSidebar>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-cyan-400">💬 Forum Management</h1>
+          <p className="text-gray-400 mt-1">Moderate forum discussions and manage community content</p>
+        </div>
 
-        {error && <p className="text-red-400 mb-4 text-center">{error}</p>}
+        {/* Forum Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-[#0f172a] border border-cyan-400 rounded-lg p-4 text-center">
+            <div className="text-2xl font-bold text-cyan-400">{forumStats.totalThreads}</div>
+            <div className="text-sm text-gray-300">Total Threads</div>
+          </div>
+          <div className="bg-[#0f172a] border border-blue-400 rounded-lg p-4 text-center">
+            <div className="text-2xl font-bold text-blue-400">{forumStats.totalReplies}</div>
+            <div className="text-sm text-gray-300">Total Replies</div>
+          </div>
+          <div className="bg-[#0f172a] border border-green-400 rounded-lg p-4 text-center">
+            <div className="text-2xl font-bold text-green-400">{forumStats.activeUsers}</div>
+            <div className="text-sm text-gray-300">Active Users</div>
+          </div>
+          <div className="bg-[#0f172a] border border-yellow-400 rounded-lg p-4 text-center">
+            <div className="text-2xl font-bold text-yellow-400">{forumStats.pendingModeration}</div>
+            <div className="text-sm text-gray-300">Pending Moderation</div>
+          </div>
+        </div>
+
+        {/* Forum Categories */}
+        <div className="bg-[#0f172a] border border-cyan-400 rounded-lg p-6">
+          <h2 className="text-xl font-bold text-cyan-300 mb-4">Forum Categories</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="border border-gray-700 rounded-lg p-4">
+              <h3 className="font-bold text-white mb-2">🗣️ General Discussions</h3>
+              <p className="text-gray-400 text-sm mb-3">General community discussions and chat</p>
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-500">Threads: 0</span>
+                <span className="text-gray-500">Posts: 0</span>
+              </div>
+            </div>
+            
+            <div className="border border-gray-700 rounded-lg p-4">
+              <h3 className="font-bold text-white mb-2">💡 Ideas & Suggestions</h3>
+              <p className="text-gray-400 text-sm mb-3">Community ideas and feature requests</p>
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-500">Threads: 0</span>
+                <span className="text-gray-500">Posts: 0</span>
+              </div>
+            </div>
+            
+            <div className="border border-gray-700 rounded-lg p-4">
+              <h3 className="font-bold text-white mb-2">🏆 Winner Celebrations</h3>
+              <p className="text-gray-400 text-sm mb-3">Celebrate winners and success stories</p>
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-500">Threads: 0</span>
+                <span className="text-gray-500">Posts: 0</span>
+              </div>
+            </div>
+            
+            <div className="border border-gray-700 rounded-lg p-4">
+              <h3 className="font-bold text-white mb-2">👑 Pioneer of the Week</h3>
+              <p className="text-gray-400 text-sm mb-3">Weekly pioneer nominations and voting</p>
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-500">Nominations: 0</span>
+                <span className="text-gray-500">Votes: 0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Moderation Tools */}
+        <div className="bg-[#0f172a] border border-yellow-400 rounded-lg p-6">
+          <h2 className="text-xl font-bold text-yellow-300 mb-4">🛡️ Moderation Tools</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button className="bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 p-4 rounded-lg transition">
+              <div className="text-lg mb-2">⚠️</div>
+              <div className="font-semibold">Pending Posts</div>
+              <div className="text-sm text-yellow-300">{forumStats.pendingModeration} items</div>
+            </button>
+            
+            <button className="bg-red-500/20 hover:bg-red-500/30 text-red-400 p-4 rounded-lg transition">
+              <div className="text-lg mb-2">🚫</div>
+              <div className="font-semibold">Reported Content</div>
+              <div className="text-sm text-red-300">0 reports</div>
+            </button>
+            
+            <button className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 p-4 rounded-lg transition">
+              <div className="text-lg mb-2">📊</div>
+              <div className="font-semibold">Analytics</div>
+              <div className="text-sm text-blue-300">View detailed stats</div>
+            </button>
+          </div>
+        </div>
+
+        {/* Recent Activity */}
+        <div className="bg-[#0f172a] border border-cyan-400 rounded-lg p-6">
+          <h2 className="text-xl font-bold text-cyan-300 mb-4">📈 Recent Activity</h2>
+          
+          <div className="text-center py-8">
+            <div className="text-4xl mb-4">💬</div>
+            <h3 className="text-lg font-bold text-gray-300 mb-2">No Recent Activity</h3>
+            <p className="text-gray-400">Forum activity will appear here once users start posting.</p>
+          </div>
+        </div>
 
         {/* Create New Thread Form */}
         <div className="border border-cyan-400 rounded-lg p-6 bg-[#0f172a] mb-8">
@@ -235,6 +361,6 @@ export default function AdminForumsPage() {
           </Link>
         </div>
       </div>
-    </div>
+    </AdminSidebar>
   );
 }

@@ -97,6 +97,10 @@ export default async function handler(req, res) {
     console.log('🔄 Completing payment with Pi Network:', paymentId);
     console.log('📝 Using API URL:', PI_API_URL);
 
+    // Add completion start time for monitoring
+    const completionStartTime = Date.now();
+    console.log('⏰ Payment completion started at:', new Date().toISOString());
+
     try {
       // Check payment status with Pi Network first
       const statusResponse = await axios.get(
@@ -106,35 +110,52 @@ export default async function handler(req, res) {
             'Authorization': `Key ${PI_API_KEY}`,
             'Content-Type': 'application/json'
           },
-          timeout: 30000 // 30 second timeout
+          timeout: 15000 // Reduce to 15 second timeout for faster failure detection
         }
       );
 
       const paymentStatus = statusResponse.data;
       console.log('📝 Payment status:', paymentStatus);
 
-      // Extract user information from Pi Network response
-      const piUser = paymentStatus.user || {};
-      console.log('👤 User info from Pi Network payment:', {
-        uid: piUser.uid,
-        username: piUser.username,
-        paymentId
+      // Extract user information from Pi Network response with enhanced logging
+      console.log('🔍 Raw payment status structure:', {
+        hasUser: !!paymentStatus.user,
+        hasUserUid: !!paymentStatus.user_uid,
+        hasFromUser: !!paymentStatus.from_user,
+        fullStatus: paymentStatus
       });
 
-      if (!piUser.uid) {
-        console.warn('⚠️ No user info found in payment response');
+      // Try multiple possible locations for user info in Pi Network response
+      let piUser = null;
+      
+      if (paymentStatus.user && (paymentStatus.user.uid || paymentStatus.user.username)) {
+        piUser = paymentStatus.user;
+        console.log('✅ Found user info in paymentStatus.user');
+      } else if (paymentStatus.user_uid) {
+        // Sometimes Pi Network returns user_uid instead of user object
+        piUser = { uid: paymentStatus.user_uid, username: null };
+        console.log('✅ Found user_uid in paymentStatus');
+      } else if (paymentStatus.from_user) {
+        piUser = paymentStatus.from_user;
+        console.log('✅ Found user info in paymentStatus.from_user');
+      } else {
+        console.warn('⚠️ No user info found in Pi Network response. Available fields:', Object.keys(paymentStatus));
+        piUser = { uid: null, username: null };
       }
 
-      // Extract user information from Pi Network response
-      const piUser = paymentStatus.user || {};
-      console.log('👤 User info from Pi Network payment:', {
-        uid: piUser.uid,
-        username: piUser.username,
+      console.log('👤 Extracted user info:', {
+        uid: piUser?.uid,
+        username: piUser?.username,
+        source: piUser === paymentStatus.user ? 'user' : 
+                piUser === paymentStatus.from_user ? 'from_user' : 'user_uid',
         paymentId
       });
 
-      if (!piUser.uid) {
-        console.warn('⚠️ No user info found in payment response');
+      if (!piUser?.uid && !piUser?.username) {
+        console.error('❌ Critical: No user identification found in payment:', {
+          paymentId,
+          paymentStatus: JSON.stringify(paymentStatus, null, 2)
+        });
       }
 
       // If payment is already completed with Pi Network, just update our records
@@ -168,6 +189,13 @@ export default async function handler(req, res) {
             // Don't throw here - we'll continue processing since transaction is verified
           }
         } else {
+          console.error('❌ Transaction not verified:', {
+            paymentId,
+            status: paymentStatus.status,
+            transaction: paymentStatus.transaction,
+            transactionVerified: paymentStatus.transaction?.verified,
+            statusTransactionVerified: paymentStatus.status?.transaction_verified
+          });
           throw new Error('Transaction not verified');
         }
       }

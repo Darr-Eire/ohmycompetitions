@@ -198,7 +198,7 @@ export async function createPiPayment({ competitionSlug, amount, memo }) {
         // Even if our approval flag isn't set, try to complete the payment
         // The Pi SDK might call this callback regardless of our approval status
         try {
-          const response = await fetch(`${baseUrl}/api/pi/complete`, {
+          const response = await fetch(`${baseUrl}/api/pi/complete-payment`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
@@ -215,7 +215,7 @@ export async function createPiPayment({ competitionSlug, amount, memo }) {
               status: response.status,
               statusText: response.statusText,
               responseText,
-              url: `${baseUrl}/api/pi/complete`
+              url: `${baseUrl}/api/pi/complete-payment`
             });
             throw new Error(`Payment completion failed (${response.status}): ${responseText}`);
           }

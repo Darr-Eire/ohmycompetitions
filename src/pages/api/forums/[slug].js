@@ -1,40 +1,17 @@
-// src/pages/api/forums/thread/[id].js
-
-import { dbConnect } from '../../../../lib/dbConnect';
-import Thread from '../../../../models/Thread';
-import Reply from '../../../../models/Reply';
-import mongoose from 'mongoose';
+import { dbConnect } from '../../../lib/dbConnect';
+import Thread from '../../../models/Thread';
+import Reply from '../../../models/Reply';
 
 export default async function handler(req, res) {
-  await dbConnect();
-
-  // ✅ TEMPORARILY DISABLED AUTH FOR LOCAL TESTING
-  // const session = await getServerSession(req, res, authOptions);
-  // if (!session || session.user?.role !== 'admin') {
-  //   return res.status(401).json({ message: 'Unauthorized' });
-  // }
-
-  const { id } = req.query;
-
-  // Helper function to check if string is valid ObjectId
-  const isValidObjectId = (str) => {
-    return mongoose.Types.ObjectId.isValid(str) && str.length === 24;
-  };
+  const { slug } = req.query;
 
   if (req.method === 'GET') {
     try {
-      let query;
-      
-      // If it's a valid ObjectId, search by _id, otherwise search by slug
-      if (isValidObjectId(id)) {
-        query = { _id: id };
-      } else {
-        query = { slug: id };
-      }
+      await dbConnect();
 
       // Find thread and increment view count
       const thread = await Thread.findOneAndUpdate(
-        query,
+        { slug },
         { $inc: { views: 1 } },
         { new: true }
       ).lean();
@@ -56,22 +33,15 @@ export default async function handler(req, res) {
   } else if (req.method === 'POST') {
     // Add reply to thread
     try {
+      await dbConnect();
+
       const { body, author, authorUid } = req.body;
 
       if (!body) {
         return res.status(400).json({ error: 'Reply body is required' });
       }
 
-      let query;
-      
-      // If it's a valid ObjectId, search by _id, otherwise search by slug
-      if (isValidObjectId(id)) {
-        query = { _id: id };
-      } else {
-        query = { slug: id };
-      }
-
-      const thread = await Thread.findOne(query);
+      const thread = await Thread.findOne({ slug });
       if (!thread) {
         return res.status(404).json({ error: 'Thread not found' });
       }
@@ -102,4 +72,4 @@ export default async function handler(req, res) {
     res.setHeader('Allow', ['GET', 'POST']);
     res.status(405).end();
   }
-}
+} 

@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import axios from 'axios';
+import AdminSidebar from '../../components/AdminSidebar';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -99,7 +100,7 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-black text-white p-8 font-orbitron">
+    <AdminSidebar>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
@@ -169,12 +170,12 @@ export default function AdminDashboard() {
             >
               ➕ Create Competition
             </Link>
-                  <button
+            <button
               onClick={loadStats}
               className="bg-gray-600 hover:bg-gray-700 px-4 py-3 rounded font-bold transition"
-                  >
+            >
               🔄 Refresh Statistics
-                  </button>
+            </button>
             <Link
               href="/"
               className="bg-blue-600 hover:bg-blue-700 px-4 py-3 rounded font-bold text-center transition"
@@ -218,15 +219,7 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
-
-        {/* Footer */}
-        <div className="mt-8 text-center text-gray-500 text-sm">
-          <p>Admin Dashboard • OhMyCompetitions • Build v1.0</p>
-          <p className="mt-1">
-            🔐 Authorized Personnel Only • All actions are logged
-          </p>
-        </div>
       </div>
-    </div>
+    </AdminSidebar>
   );
 }

@@ -1,11 +1,10 @@
 import { dbConnect } from 'lib/dbConnect';
-
 import PioneerNomination from 'models/PioneerNomination';
-
-
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../auth/[...nextauth]';
 
 export default async function handler(req, res) {
-  await connectToDatabase();
+  await dbConnect();
 
   if (req.method === 'POST') {
     const { name, reason } = req.body;
@@ -20,7 +19,17 @@ export default async function handler(req, res) {
     }
 
     try {
-      const saved = await PioneerNomination.create({ name, reason });
+      // Check for duplicate nominations
+      const existing = await PioneerNomination.findOne({ name });
+      if (existing) {
+        return res.status(409).json({ error: 'This Pioneer has already been nominated.' });
+      }
+
+      const saved = await PioneerNomination.create({ 
+        name, 
+        reason,
+        votes: 0
+      });
       return res.status(201).json({ success: true, nomination: saved });
     } catch (err) {
       console.error('Nomination Error:', err);
@@ -29,14 +38,13 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'GET') {
-    const session = await getServerSession(req, res, authOptions);
-
-    if (!session || session.user.role !== 'admin') {
-      return res.status(401).json({ message: 'Unauthorized' });
+    try {
+      const nominations = await PioneerNomination.find().sort({ createdAt: -1 }).limit(50);
+      return res.status(200).json(nominations);
+    } catch (err) {
+      console.error('Fetch Error:', err);
+      return res.status(500).json({ error: 'Failed to fetch nominations' });
     }
-
-    const nominations = await PioneerNomination.find().sort({ createdAt: -1 }).limit(50);
-    return res.status(200).json(nominations);
   }
 
   res.status(405).json({ error: 'Method not allowed' });

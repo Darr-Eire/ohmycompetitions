@@ -1,5 +1,5 @@
-import { connectToDatabase } from 'lib/mongodb';
-import Discussion from 'models/Discussion';
+import { dbConnect } from 'lib/dbConnect';
+import Thread from 'models/Thread';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -13,8 +13,24 @@ export default async function handler(req, res) {
   }
 
   try {
-    await connectToDatabase();
-    const saved = await Discussion.create({ title, content });
+    await dbConnect();
+    
+    // Generate slug from title
+    const slug = title.toLowerCase()
+      .replace(/[^a-z0-9]/g, '-')
+      .replace(/-+/g, '-')
+      .substring(0, 50);
+
+    const saved = await Thread.create({ 
+      slug: `${slug}-${Date.now()}`,
+      title, 
+      body: content,
+      category: 'general',
+      author: 'Anonymous', // TODO: Add proper auth
+      createdAt: new Date()
+    });
+
+    console.log('✅ Discussion thread created:', saved.title);
     res.status(200).json({ message: 'Discussion saved', data: saved });
   } catch (error) {
     console.error('❌ MongoDB Error:', error);

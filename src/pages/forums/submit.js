@@ -2,42 +2,54 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { FaPoll, FaThumbsUp } from 'react-icons/fa'
+import { FaVoteYea, FaArrowLeft } from 'react-icons/fa'
 
-
-export default function SubmitVotePage() {
-  const [choice, setChoice] = useState('')
-  const [reason, setReason] = useState('')
+export default function SubmitPage() {
+  const [title, setTitle] = useState('')
+  const [content, setContent] = useState('')
+  const [type, setType] = useState('vote')
+  const [submitting, setSubmitting] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-
-    const res = await fetch('/api/submit/vote', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ voteOption: choice, reason }),
-    })
-
-    const result = await res.json()
-    if (res.ok) {
-      alert('🗳️ Vote submitted successfully!')
-      setChoice('')
-      setReason('')
-    } else {
-      alert('❌ Error: ' + result.error)
+    if (!title.trim() || !content.trim()) {
+      alert('Please fill in both title and description')
+      return
     }
+
+    setSubmitting(true)
+    try {
+      const endpoint = type === 'vote' ? '/api/submit/vote' : '/api/submit/celebration'
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, content })
+      })
+
+      if (res.ok) {
+        alert('✅ Submission successful!')
+        setTitle('')
+        setContent('')
+      } else {
+        const error = await res.json()
+        alert('❌ Error: ' + error.error)
+      }
+    } catch (err) {
+      alert('❌ Failed to submit')
+    }
+    setSubmitting(false)
   }
 
   return (
     <main className="min-h-screen px-4 py-10 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-orbitron">
       <div className="max-w-3xl mx-auto border border-cyan-700 rounded-2xl p-6 sm:p-8 backdrop-blur-md shadow-[0_0_30px_#00fff055]">
 
-        {/* Header Title */}
+        {/* Header */}
         <div className="text-center mb-8">
           <h1 className="w-full text-lg sm:text-xl font-bold text-white px-4 py-3 rounded-xl font-orbitron shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
             <div className="flex justify-center items-center gap-2">
-              <FaThumbsUp />
-              Submit Your Vote
+              <FaVoteYea />
+              Forum Submission
             </div>
           </h1>
         </div>
@@ -45,45 +57,66 @@ export default function SubmitVotePage() {
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block font-semibold mb-1">Your Vote</label>
+            <label className="block font-semibold mb-2 text-cyan-300">Submission Type</label>
+            <select
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+              className="w-full px-4 py-2 bg-white bg-opacity-20 text-white rounded focus:outline-none focus:ring-2 focus:ring-cyan-400"
+            >
+              <option value="vote">Vote Proposal</option>
+              <option value="celebration">Celebration Story</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block font-semibold mb-2 text-cyan-300">
+              {type === 'vote' ? 'Vote Topic' : 'Celebration Title'}
+            </label>
             <input
               type="text"
-              value={choice}
-              onChange={(e) => setChoice(e.target.value)}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
               required
               className="w-full px-4 py-2 bg-white bg-opacity-20 text-white rounded placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-              placeholder="Enter your preferred prize or feature"
+              placeholder={type === 'vote' ? 'What should we vote on?' : 'What are you celebrating?'}
             />
           </div>
 
           <div>
-            <label className="block font-semibold mb-1">Why this choice?</label>
+            <label className="block font-semibold mb-2 text-cyan-300">Details</label>
             <textarea
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
               required
-              className="w-full px-4 py-2 bg-white bg-opacity-20 text-white rounded placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-              rows={5}
-              placeholder="Tell us why you want this to win!"
+              className="w-full px-4 py-2 bg-white bg-opacity-20 text-white rounded placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-cyan-400 h-40"
+              rows={8}
+              placeholder={
+                type === 'vote' 
+                  ? 'Describe the voting options and details...'
+                  : 'Share your celebration story...'
+              }
             />
           </div>
 
-          <div className="flex justify-center">
+          {/* Submit Button */}
+          <div className="text-center">
             <button
               type="submit"
-              className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-semibold px-6 py-2 rounded-md shadow hover:brightness-110 transition border border-cyan-700"
+              disabled={submitting}
+              className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold px-8 py-3 rounded-full transition disabled:opacity-50"
             >
-              Submit Vote
+              {submitting ? 'Submitting...' : 'Submit'}
             </button>
           </div>
         </form>
 
-        {/* Back Button */}
-        <div className="text-center mt-6">
+        {/* Navigation */}
+        <div className="flex justify-center gap-4 mt-8">
           <Link href="/forums">
-            <span className="inline-block bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-semibold px-6 py-2 rounded-md shadow hover:brightness-110 transition border border-cyan-700">
+            <button className="flex items-center gap-2 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-bold px-6 py-2 rounded-full transition">
+              <FaArrowLeft />
               Back to Forums
-            </span>
+            </button>
           </Link>
         </div>
       </div>

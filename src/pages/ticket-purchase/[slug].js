@@ -44,10 +44,10 @@ const DAILY_COMPETITIONS = ['daily-jackpot', 'everyday-pioneer', 'daily-pi-slice
 export default function TicketPurchasePage() {
   const router = useRouter();
   const { slug } = router.query;
-  const { user, login } = usePiAuth();
+  const { user, login, isAuthenticated } = usePiAuth();
 
   const [comp, setComp] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [sharedBonus, setSharedBonus] = useState(false);
@@ -55,6 +55,9 @@ export default function TicketPurchasePage() {
   const [showSkillQuestion, setShowSkillQuestion] = useState(false);
   const [skillAnswer, setSkillAnswer] = useState('');
   const [liveTicketsSold, setLiveTicketsSold] = useState(0);
+  const [paymentError, setPaymentError] = useState(null);
+  const [stuckPaymentId, setStuckPaymentId] = useState(null);
+  const [recovering, setRecovering] = useState(false);
 
   const isFree = comp?.paymentType === 'free';
   const isDaily = comp?.theme === 'daily';
@@ -209,6 +212,37 @@ export default function TicketPurchasePage() {
   }
 
   const totalPrice = (comp?.entryFee || 0) * quantity;
+  const ticketsSold = liveTicketsSold || comp?.ticketsSold || 0;
+  const totalTickets = comp?.totalTickets || 100;
+  const availableTickets = Math.max(0, totalTickets - ticketsSold);
+  const isSoldOut = ticketsSold >= totalTickets;
+  const isNearlyFull = availableTickets <= totalTickets * 0.1; // Less than 10% remaining
+
+  // Sold out check
+  if (isSoldOut) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] px-4">
+        <div className="max-w-md w-full bg-red-900/20 border-2 border-red-500 rounded-xl shadow-xl p-8 text-center">
+          <div className="text-6xl mb-4">🚫</div>
+          <h1 className="text-2xl font-bold text-red-400 mb-4">Competition Sold Out</h1>
+          <p className="text-white mb-2">
+            <strong>{comp.title}</strong> has sold all {totalTickets.toLocaleString()} tickets.
+          </p>
+          <p className="text-gray-300 mb-6">
+            Check out our other exciting competitions or be the first to know when new competitions launch!
+          </p>
+          <div className="space-y-3">
+            <Link href="/" className="block w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition">
+              Browse Other Competitions
+            </Link>
+            <Link href="/account" className="block w-full py-3 bg-gray-600 hover:bg-gray-700 text-white font-bold rounded-lg transition">
+              View My Tickets
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <main className="min-h-screen px-4 py-10 text-white bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] font-orbitron">
@@ -308,12 +342,23 @@ export default function TicketPurchasePage() {
                 </button>
                 <span className="text-lg font-semibold">{quantity}</span>
                 <button
-                  onClick={() => setQuantity((q) => q + 1)}
-                  className="bg-blue-500 px-4 py-1 rounded-full"
+                  onClick={() => setQuantity((q) => Math.min(availableTickets, q + 1))}
+                  disabled={quantity >= availableTickets}
+                  className="bg-blue-500 px-4 py-1 rounded-full disabled:opacity-50"
                 >
                   +
                 </button>
               </div>
+              {isNearlyFull && availableTickets > 0 && (
+                <div className="text-orange-400 text-sm font-bold mt-2">
+                  ⚠️ Only {availableTickets} tickets remaining!
+                </div>
+              )}
+              {quantity > availableTickets && (
+                <div className="text-red-400 text-sm font-bold mt-2">
+                  ❌ Cannot buy {quantity} tickets - only {availableTickets} available
+                </div>
+              )}
               <p className="text-lg font-bold mt-6">
                 Total {totalPrice.toFixed(2)} π
               </p>

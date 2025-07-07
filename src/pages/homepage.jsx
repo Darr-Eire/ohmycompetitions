@@ -22,15 +22,147 @@ import {
 } from '@data/competitions';
 
 export default function HomePage() {
-  // Filter out all comingSoon competitions from all item arrays combined
-  const liveCompetitions = [
-    ...techItems,
-    ...premiumItems,
-    ...piItems,
-    ...dailyItems,
-    ...freeItems,
-    ...cryptoGiveawaysItems,
-  ].filter(item => !item.comp?.comingSoon);
+  const [liveCompetitions, setLiveCompetitions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch live competition data from API
+  useEffect(() => {
+    const fetchLiveData = async () => {
+      try {
+        setLoading(true);
+        console.log('🔄 Fetching live competition data...');
+        
+        const response = await fetch('/api/competitions/all');
+        if (!response.ok) {
+          throw new Error(`Failed to fetch competitions: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        const liveData = result.data || [];
+        
+        console.log('✅ Fetched live competition data:', {
+          count: liveData.length,
+          sample: liveData.slice(0, 2).map(c => ({
+            slug: c.comp?.slug,
+            ticketsSold: c.comp?.ticketsSold,
+            totalTickets: c.comp?.totalTickets
+          }))
+        });
+
+        // Merge live data with static data
+        const mergedCompetitions = mergeCompetitionData(liveData);
+        setLiveCompetitions(mergedCompetitions);
+        
+      } catch (err) {
+        console.error('❌ Failed to fetch live competition data:', err);
+        setError(err.message);
+        
+        // Fallback to static data
+        const staticCompetitions = [
+          ...techItems,
+          ...premiumItems,
+          ...piItems,
+          ...dailyItems,
+          ...freeItems,
+          ...cryptoGiveawaysItems,
+        ].filter(item => !item.comp?.comingSoon);
+        
+        setLiveCompetitions(staticCompetitions);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLiveData();
+  }, []);
+
+  // Merge live database data with static competition definitions
+  const mergeCompetitionData = (liveData) => {
+    const staticItems = [
+      ...techItems,
+      ...premiumItems,
+      ...piItems,
+      ...dailyItems,
+      ...freeItems,
+      ...cryptoGiveawaysItems,
+    ];
+
+    // Create a map of live data by slug
+    const liveDataMap = {};
+    liveData.forEach(liveComp => {
+      if (liveComp.comp?.slug) {
+        liveDataMap[liveComp.comp.slug] = liveComp;
+      }
+    });
+
+    // Merge static items with live data
+    const mergedItems = staticItems.map(staticItem => {
+      const slug = staticItem.comp?.slug;
+      const liveComp = liveDataMap[slug];
+      
+      if (liveComp) {
+        // Merge live database data with static definitions
+        return {
+          ...staticItem,
+          comp: {
+            ...staticItem.comp,
+            ticketsSold: liveComp.comp.ticketsSold || 0,
+            totalTickets: liveComp.comp.totalTickets || staticItem.comp.totalTickets,
+            status: liveComp.comp.status || staticItem.comp.status,
+            entryFee: liveComp.comp.entryFee || staticItem.comp.entryFee,
+            // Keep other static properties
+          }
+        };
+      }
+      
+      return staticItem;
+    });
+
+    // Add admin-created competitions that don't exist in static data
+    const staticSlugs = new Set(staticItems.map(item => item.comp?.slug).filter(Boolean));
+    const adminOnlyCompetitions = liveData.filter(liveComp => 
+      liveComp.comp?.slug && !staticSlugs.has(liveComp.comp.slug)
+    );
+
+    // Combine static competitions with admin-only competitions
+    const allCompetitions = [...mergedItems, ...adminOnlyCompetitions];
+
+    // Filter out coming soon competitions and return active ones
+    return allCompetitions.filter(item => !item.comp?.comingSoon && item.comp?.status === 'active');
+  };
+
+  // Group competitions by category with live data
+  const getCompetitionsByCategory = (category) => {
+    return liveCompetitions.filter(item => {
+      // Check if competition has the matching theme
+      const theme = item.theme || 'tech'; // Default to tech if no theme
+      
+      if (category === 'tech') return theme === 'tech';
+      if (category === 'premium') return theme === 'premium';
+      if (category === 'pi') return theme === 'pi';
+      if (category === 'daily') return theme === 'daily';
+      if (category === 'free') return theme === 'free';
+      if (category === 'crypto') return theme === 'crypto';
+      
+      return false;
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-cyan-400 mx-auto mb-4"></div>
+          <p className="text-white text-lg">Loading live competition data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    console.warn('⚠️ Using static data due to API error:', error);
+  }
 
   return (
     <>
@@ -42,11 +174,11 @@ export default function HomePage() {
       </div>
 
       <main className="space-y-10">
-        <Section title="Featured Competitions" items={techItems} viewMoreHref="/competitions/featured" />
-        <Section title="Travel & Lifestyle" items={premiumItems} viewMoreHref="/competitions/travel" />
-        <Section title="Pi Giveaways" items={piItems} viewMoreHref="/competitions/pi" extraClass="mt-12" />
-        <Section title="Crypto Giveaways" items={cryptoGiveawaysItems} viewMoreHref="/competitions/crypto-giveaways" />
-        <Section title="Daily Competitions" items={dailyItems} viewMoreHref="/competitions/daily" extraClass="mt-12" />
+        <Section title="Featured Competitions" items={getCompetitionsByCategory('tech')} viewMoreHref="/competitions/featured" />
+        <Section title="Travel & Lifestyle" items={getCompetitionsByCategory('premium')} viewMoreHref="/competitions/travel" />
+        <Section title="Pi Giveaways" items={getCompetitionsByCategory('pi')} viewMoreHref="/competitions/pi" extraClass="mt-12" />
+        <Section title="Crypto Giveaways" items={getCompetitionsByCategory('crypto')} viewMoreHref="/competitions/crypto-giveaways" />
+        <Section title="Daily Competitions" items={getCompetitionsByCategory('daily')} viewMoreHref="/competitions/daily" extraClass="mt-12" />
 
         <section className="w-full bg-white/5 backdrop-blur-lg px-4 sm:px-6 py-8 my-4 border border-cyan-400 rounded-3xl shadow-[0_0_60px_#00ffd577] neon-outline">
           <div className="max-w-7xl mx-auto">

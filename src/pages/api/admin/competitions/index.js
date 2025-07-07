@@ -1,5 +1,5 @@
-import { dbConnect } from 'lib/dbConnect';
-import Competition from 'models/Competition';
+import { dbConnect } from '../../../../lib/dbConnect';
+import Competition from '../../../../models/Competition';
 
 export default async function handler(req, res) {
   try {
@@ -17,7 +17,16 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-      const { slug, entryFee, totalTickets, title, prize, theme, startsAt, endsAt, piAmount } = req.body;
+      const { slug, entryFee, totalTickets, title, prize, theme, startsAt, endsAt, piAmount, description, imageUrl } = req.body;
+      
+      console.log('Received competition data:', req.body);
+      
+      // Validate required fields
+      if (!slug || !title || !prize) {
+        return res.status(400).json({ 
+          message: 'Missing required fields: slug, title, and prize are required.' 
+        });
+      }
       
       // Check if competition with this slug already exists
       const existingCompetition = await Competition.findOne({ 'comp.slug': slug });
@@ -41,11 +50,13 @@ export default async function handler(req, res) {
         },
         title,
         prize,
+        description: description || '',
         href: `/competitions/${slug}`,
-        theme: theme || 'general',
-        imageUrl: '/images/default-prize.png'
+        theme: theme || 'tech',
+        imageUrl: imageUrl || '/images/your.png'
       });
       
+      console.log('Competition created:', competition);
       return res.status(201).json(competition);
     }
 
