@@ -3,13 +3,25 @@
 import { useState } from 'react';
 import { createPiPayment } from '../lib/pi';
 
-export default function BuyTicketButton({ competitionSlug, entryFee, quantity = 1, piUser, onPaymentSuccess }) {
+export default function BuyTicketButton({ competitionSlug, entryFee, quantity = 1, piUser, onPaymentSuccess, endsAt }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Check if competition has ended
+  const isCompetitionEnded = () => {
+    if (!endsAt) return false;
+    return new Date() > new Date(endsAt);
+  };
 
   const handleBuyTicket = async () => {
     if (!piUser) {
       alert('Please login with Pi to enter the competition');
+      return;
+    }
+
+    // Check if competition has ended before processing payment
+    if (isCompetitionEnded()) {
+      alert('This competition has ended. You can no longer purchase tickets.');
       return;
     }
 
@@ -61,18 +73,23 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity = 
     </button>;
   }
 
+  // Check if competition has ended
+  const hasEnded = isCompetitionEnded();
+
   return (
     <div className="w-full">
       <button
         onClick={handleBuyTicket}
-        disabled={loading || !piUser}
+        disabled={loading || !piUser || hasEnded}
         className={`w-full font-bold py-3 px-4 rounded-xl ${
-          loading || !piUser
+          loading || !piUser || hasEnded
             ? 'bg-gray-500 opacity-50 cursor-not-allowed'
             : 'bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600'
         } text-black transition-colors`}
       >
-        {loading ? (
+        {hasEnded ? (
+          'Competition Ended'
+        ) : loading ? (
           <span className="flex items-center justify-center">
             <svg className="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -89,7 +106,13 @@ export default function BuyTicketButton({ competitionSlug, entryFee, quantity = 
         <p className="text-red-500 text-sm mt-2 text-center">{error}</p>
       )}
 
-      {!piUser && (
+      {hasEnded && (
+        <p className="text-sm text-red-400 mt-2 text-center">
+          This competition has ended. No more tickets can be purchased.
+        </p>
+      )}
+
+      {!piUser && !hasEnded && (
         <p className="text-sm text-gray-300 mt-2 text-center">
           Please login with Pi to enter this competition
         </p>

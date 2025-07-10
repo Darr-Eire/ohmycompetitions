@@ -31,7 +31,7 @@ flattenCompetitions.forEach((item) => {
     title: item.title,
     prize: item.prize,
     imageUrl: item.imageUrl,
-    thumbnails: item.thumbnails || [],
+    thumbnail: item.thumbnail || null,
     location: item.location || 'Online',
     date: item.date || 'N/A',
     time: item.time || 'N/A',
@@ -63,7 +63,13 @@ export default function TicketPurchasePage() {
   const isDaily = comp?.theme === 'daily';
 
   const mainImage = comp?.imageUrl;
-  const miniImages = comp?.thumbnails || [];
+  const thumbnailImage = comp?.thumbnail;
+
+  // Helper function to check if URL is external
+  const isExternalUrl = (url) => {
+    if (!url) return false;
+    return url.startsWith('http://') || url.startsWith('https://');
+  };
 
   const fetchCompetition = async (slugParam) => {
     if (!slugParam) return;
@@ -258,6 +264,13 @@ export default function TicketPurchasePage() {
         <div className="space-y-6 text-center">
           {!isDaily && mainImage && (
             <>
+              {isExternalUrl(mainImage) ? (
+                <img
+                  src={mainImage}
+                  alt={comp.title}
+                  className="w-full max-h-64 object-cover rounded-lg border border-blue-500 mx-auto"
+                />
+              ) : (
               <Image
                 src={mainImage}
                 alt={comp.title}
@@ -265,18 +278,26 @@ export default function TicketPurchasePage() {
                 height={300}
                 className="w-full max-h-64 object-cover rounded-lg border border-blue-500 mx-auto"
               />
-              <div className="flex justify-center flex-wrap gap-2 mt-2 px-2">
-                {miniImages.map((img, i) => (
+              )}
+              {thumbnailImage && (
+                <div className="flex justify-center mt-2 px-2">
+                  {isExternalUrl(thumbnailImage) ? (
+                    <img
+                      src={thumbnailImage}
+                      alt="Competition thumbnail"
+                      className="rounded-lg border border-cyan-400 object-cover w-24 h-16 sm:w-32 sm:h-20"
+                    />
+                  ) : (
                   <Image
-                    key={i}
-                    src={img}
-                    alt={`Thumb ${i + 1}`}
+                      src={thumbnailImage}
+                      alt="Competition thumbnail"
                     width={100}
                     height={60}
                     className="rounded-lg border border-cyan-400 object-cover w-24 h-16 sm:w-32 sm:h-20"
                   />
-                ))}
+                  )}
               </div>
+              )}
             </>
           )}
 
@@ -399,7 +420,8 @@ export default function TicketPurchasePage() {
                       entryFee={comp.entryFee}
                       quantity={quantity}
                       piUser={user}
-                      onSuccess={handlePaymentSuccess}
+                      onPaymentSuccess={handlePaymentSuccess}
+                      endsAt={comp.endsAt}
                     />
                   )}
                 </div>

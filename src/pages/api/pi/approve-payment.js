@@ -147,40 +147,26 @@ export default async function handler(req, res) {
       isWithinDateRange: now >= start && now <= end
     });
 
-    // Allow entries even if start date is in the future (within 1 hour)
+    // Check if competition has started
     if (now < start) {
-      const timeDiff = start - now;
-      const hourInMs = 60 * 60 * 1000;
-      
-      if (timeDiff > hourInMs) {
-        console.error('❌ Competition has not started (more than 1 hour):', {
+      console.error('❌ Competition has not started:', {
           slug,
           startsAt: competition.comp.startsAt,
           now: new Date(),
-          timeDifference: timeDiff
+        startTime: new Date(start)
         });
         return res.status(400).json({ error: 'Competition has not started yet' });
-      } else {
-        console.log('🔧 Allowing early entry (within 1 hour of start)');
-      }
     }
 
-    // Allow entries even if end date is past (within 1 hour)
+    // Check if competition has ended (strict enforcement - no grace period)
     if (now > end) {
-      const timeDiff = now - end;
-      const hourInMs = 60 * 60 * 1000;
-      
-      if (timeDiff > hourInMs) {
-        console.error('❌ Competition has ended (more than 1 hour ago):', {
+      console.error('❌ Competition has ended:', {
           slug,
           endsAt: competition.comp.endsAt,
           now: new Date(),
-          timeDifference: timeDiff
+        endTime: new Date(end)
         });
         return res.status(400).json({ error: 'Competition has ended' });
-      } else {
-        console.log('🔧 Allowing late entry (within 1 hour of end)');
-      }
     }
 
     // Verify the payment amount matches (allow multiple tickets)

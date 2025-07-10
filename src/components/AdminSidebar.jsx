@@ -16,7 +16,6 @@ const adminRoutes = [
     items: [
       { name: 'All Competitions', href: '/admin/competitions', icon: '🏆', description: 'Manage competitions' },
       { name: 'Create Competition', href: '/admin/competitions/create', icon: '➕', description: 'Add new competition' },
-      { name: 'Seed Competitions', href: '/admin/seed-competitions', icon: '🌱', description: 'Add predefined competitions' },
     ]
   },
   {
@@ -43,6 +42,7 @@ const adminRoutes = [
     items: [
       { name: 'Main Site', href: '/', icon: '🏠', description: 'Back to website', external: true },
       { name: 'Admin Login', href: '/admin/login', icon: '🔐', description: 'Re-authenticate' },
+      { name: 'Logout', href: '#', icon: '🚪', description: 'Sign out of admin', action: 'logout' },
     ]
   }
 ];
@@ -117,6 +117,13 @@ export default function AdminSidebar({ children }) {
     }
   };
 
+  const handleLogout = () => {
+    if (confirm('Are you sure you want to logout?')) {
+      localStorage.removeItem('adminUser');
+      router.push('/admin/login');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black text-white font-orbitron flex">
       {/* Sidebar */}
@@ -177,6 +184,30 @@ export default function AdminSidebar({ children }) {
                 {category.items.map((item) => {
                   const isActive = isActiveRoute(item.href);
                   const stat = getStatForRoute(item.href);
+                  
+                  // Handle logout action
+                  if (item.action === 'logout') {
+                    return (
+                      <button
+                        key={item.name}
+                        onClick={handleLogout}
+                        className="mx-2 rounded-lg flex items-center px-3 py-2 text-sm transition-all text-gray-300 hover:bg-red-500/20 hover:text-red-300 w-full text-left"
+                      >
+                        <span className="text-lg mr-3">{item.icon}</span>
+                        
+                        {isSidebarOpen && (
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <span className="font-medium">{item.name}</span>
+                            </div>
+                            <p className="text-xs mt-1 text-gray-400">
+                              {item.description}
+                            </p>
+                          </div>
+                        )}
+                      </button>
+                    );
+                  }
                   
                   return (
                     <Link

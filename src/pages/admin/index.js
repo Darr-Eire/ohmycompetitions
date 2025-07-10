@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import axios from 'axios';
 import AdminSidebar from '../../components/AdminSidebar';
+import AdminGuard from '../../components/AdminGuard';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -100,6 +101,7 @@ export default function AdminDashboard() {
   ];
 
   return (
+    <AdminGuard>
     <AdminSidebar>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
@@ -221,5 +223,6 @@ export default function AdminDashboard() {
         </div>
       </div>
     </AdminSidebar>
+    </AdminGuard>
   );
 }

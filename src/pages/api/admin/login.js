@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { connectToDatabase } from '../../../lib/mongodb';
 import User from '../../../models/User';
+import crypto from 'crypto';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -33,11 +34,15 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    // Generate a simple token (in production, use JWT)
+    const token = crypto.randomBytes(32).toString('hex');
+
     // Create session (simplified - you may want to use JWT)
     const adminSession = {
       userId: user._id,
       email: user.email,
       role: user.role,
+      token: token,
       isAdmin: true
     };
 
@@ -50,7 +55,8 @@ export default async function handler(req, res) {
       user: {
         id: user._id,
         email: user.email,
-        role: user.role
+        role: user.role,
+        token: token
       }
     });
 

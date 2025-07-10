@@ -5,11 +5,11 @@ import dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 
 import User from '../src/models/User.js';
-import { connectToDatabase } from '../src/lib/dbConnect.js';
+import { dbConnect } from '../src/lib/dbConnect.js';
 
 async function seedAdmin() {
   try {
-    await connectToDatabase();
+    await dbConnect();
 
     const email = process.env.ADMIN_EMAIL;
     const password = process.env.ADMIN_PASSWORD;

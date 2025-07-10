@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import AdminSidebar from '../../components/AdminSidebar';
+import AdminGuard from '../../components/AdminGuard';
 
 export default function AdminCompetitionsPage() {
   const [competitions, setCompetitions] = useState([]);
@@ -45,6 +46,7 @@ export default function AdminCompetitionsPage() {
   };
 
   return (
+    <AdminGuard>
     <AdminSidebar>
       <div className="space-y-6">
         {/* Page Header */}
@@ -194,5 +196,6 @@ export default function AdminCompetitionsPage() {
         )}
       </div>
     </AdminSidebar>
+    </AdminGuard>
   );
 }

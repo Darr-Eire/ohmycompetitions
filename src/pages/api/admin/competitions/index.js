@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-      const { slug, entryFee, totalTickets, title, prize, theme, startsAt, endsAt, piAmount, description, imageUrl } = req.body;
+      const { slug, entryFee, totalTickets, title, prize, theme, startsAt, endsAt, piAmount, description, imageUrl, thumbnail } = req.body;
       
       console.log('Received competition data:', req.body);
       
@@ -53,7 +53,8 @@ export default async function handler(req, res) {
         description: description || '',
         href: `/competitions/${slug}`,
         theme: theme || 'tech',
-        imageUrl: imageUrl || '/images/your.png'
+        imageUrl: imageUrl || '/images/your.png',
+        thumbnail: thumbnail && thumbnail.trim() !== '' ? thumbnail : null
       });
       
       console.log('Competition created:', competition);

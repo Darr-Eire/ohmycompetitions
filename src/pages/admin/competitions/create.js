@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminSidebar from '../../../components/AdminSidebar';
+import AdminGuard from '../../../components/AdminGuard';
 
 export default function CreateCompetitionPage() {
   const router = useRouter();
@@ -19,7 +20,8 @@ export default function CreateCompetitionPage() {
     startsAt: '',
     endsAt: '',
     status: 'active',
-    imageUrl: ''
+    imageUrl: '',
+    thumbnail: '' // Single thumbnail URL
   });
 
   // Auto-generate slug from title
@@ -90,7 +92,10 @@ export default function CreateCompetitionPage() {
     });
   };
 
+
+
   return (
+    <AdminGuard>
     <AdminSidebar>
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
@@ -391,6 +396,41 @@ export default function CreateCompetitionPage() {
               )}
             </div>
 
+            {/* Thumbnail */}
+            <div>
+              <label className="block text-cyan-300 text-sm font-bold mb-2">
+                Thumbnail Image (Optional)
+              </label>
+              <input
+                type="text"
+                name="thumbnail"
+                value={formData.thumbnail}
+                onChange={handleChange}
+                className="w-full px-4 py-2 bg-black border border-cyan-400 rounded-lg text-white placeholder-gray-400 focus:border-cyan-300 focus:outline-none"
+                placeholder="e.g., /images/playstation1.jpeg or https://example.com/thumb.jpg"
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                Additional image for homepage display. Leave empty to use main image.
+              </p>
+              
+              {/* Thumbnail Preview */}
+              {formData.thumbnail && (
+                <div className="mt-3">
+                  <p className="text-xs text-cyan-400 mb-2">🖼️ Thumbnail Preview:</p>
+                  <div className="w-32 h-24 bg-gray-800 rounded border border-gray-600 overflow-hidden">
+                    <img 
+                      src={formData.thumbnail} 
+                      alt="Thumbnail preview" 
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Action Buttons */}
             <div className="flex gap-4 pt-4">
               <button
@@ -426,5 +466,6 @@ export default function CreateCompetitionPage() {
         </div>
       </div>
     </AdminSidebar>
+    </AdminGuard>
   );
 }

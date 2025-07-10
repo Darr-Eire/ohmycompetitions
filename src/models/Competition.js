@@ -22,6 +22,7 @@ const CompetitionSchema = new mongoose.Schema({
   href: String,
   theme: { type: String, required: true },
   imageUrl: String,
+  thumbnail: String, // Single thumbnail image URL
   winners: [{
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     username: String,

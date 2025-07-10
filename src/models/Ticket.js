@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 const TicketSchema = new mongoose.Schema({
   username: { type: String, required: true },               // Recipient of the ticket
   competitionSlug: { type: String, required: true },
+  competitionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Competition' }, // Reference to competition
   competitionTitle: { type: String, required: true },
   imageUrl: { type: String },
   quantity: { type: Number, default: 1 },

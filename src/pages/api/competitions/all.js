@@ -30,6 +30,7 @@ export default async function handler(req, res) {
         title: 1,
         prize: 1,
         imageUrl: 1,
+        thumbnail: 1,
         theme: 1,
         href: 1
       })
@@ -37,6 +38,7 @@ export default async function handler(req, res) {
 
     // Format the response
     const formattedCompetitions = competitions.map(competition => ({
+      _id: competition._id, // Include MongoDB ObjectId for gifting
       comp: {
         ...competition.comp,
         ticketsSold: competition.comp?.ticketsSold || 0,
@@ -47,7 +49,8 @@ export default async function handler(req, res) {
       },
       title: competition.title,
       prize: competition.prize,
-      imageUrl: competition.imageUrl || '/images/default-prize.png',
+      imageUrl: competition.imageUrl || '/images/your.png',
+      thumbnail: competition.thumbnail || null,
       theme: competition.theme,
       href: competition.href,
       fee: `${competition.comp?.entryFee || 0} π`

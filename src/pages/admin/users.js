@@ -1,6 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import AdminSidebar from '../../components/AdminSidebar';
+import AdminGuard from '../../components/AdminGuard';
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState([]);
@@ -24,6 +25,7 @@ export default function AdminUsersPage() {
   };
 
   return (
+    <AdminGuard>
     <AdminSidebar>
       <div className="space-y-6">
         <div>
@@ -60,5 +62,6 @@ export default function AdminUsersPage() {
         </div>
       </div>
     </AdminSidebar>
+    </AdminGuard>
   );
 }

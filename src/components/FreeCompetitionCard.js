@@ -118,30 +118,30 @@ export default function FreeCompetitionCard({ comp, title, prize, userHandle }) 
         </button>
       ) : (
         <div className="space-y-4">
-          <p className="font-semibold text-green-300">✅ You’ve claimed your free ticket!</p>
+          <p className="font-semibold text-green-300">✅ You've claimed your free ticket!</p>
 
           <div className="bg-white/10 p-3 rounded-lg text-sm">
             <p className="mb-2 text-cyan-300 font-semibold">Refer friends & earn extra entries:</p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center mt-3">
-  <a 
-    href={`https://twitter.com/intent/tweet?text=${shareText}`} 
-    target="_blank" 
-    rel="noopener noreferrer"
-    className="bg-black hover:bg-gray-900 text-white font-semibold py-2 px-4 rounded-lg shadow"
-  >
-    Share on X
-  </a>
+    <a 
+      href={`https://twitter.com/intent/tweet?text=${shareText}`} 
+      target="_blank" 
+      rel="noopener noreferrer"
+      className="bg-black hover:bg-gray-900 text-white font-semibold py-2 px-4 rounded-lg shadow"
+    >
+      Share on X
+    </a>
 
-  <a 
-    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralUrl)}&quote=${encodeURIComponent('Join me on this Pi Competition and claim your free entry! 🎟')}`} 
-    target="_blank" 
-    rel="noopener noreferrer"
-    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow"
-  >
-    Share on Facebook
-  </a>
-</div>
+    <a 
+      href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralUrl)}&quote=${encodeURIComponent('Join me on this Pi Competition and claim your free entry! 🎟')}`} 
+      target="_blank" 
+      rel="noopener noreferrer"
+      className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow"
+    >
+      Share on Facebook
+    </a>
+  </div>
 
 
             <p className="mt-4 text-green-400 font-semibold">

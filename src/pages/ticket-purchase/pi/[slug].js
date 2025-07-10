@@ -269,12 +269,12 @@ export default function PiTicketPage() {
 
         <button
           onClick={handlePayment}
-          disabled={processing || skillAnswer.trim() !== correctAnswer}
+          disabled={processing || skillAnswer.trim() !== correctAnswer || Object.values(timeLeft).every(v => v === 0)}
           className={`w-full mt-6 py-3 rounded-xl font-bold text-black bg-gradient-to-r from-cyan-400 to-blue-500 shadow-lg transition-transform ${
-            processing || skillAnswer.trim() !== correctAnswer ? 'cursor-not-allowed opacity-70' : 'hover:scale-105'
+            processing || skillAnswer.trim() !== correctAnswer || Object.values(timeLeft).every(v => v === 0) ? 'cursor-not-allowed opacity-70' : 'hover:scale-105'
           }`}
         >
-          {processing ? 'Processing...' : 'Pay with Pi'}
+          {Object.values(timeLeft).every(v => v === 0) ? 'Competition Ended' : processing ? 'Processing...' : 'Pay with Pi'}
         </button>
 
         <p className="mt-4 text-center text-white font-semibold">

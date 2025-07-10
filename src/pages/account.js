@@ -465,15 +465,13 @@ export default function Account() {
 </div>
 
       {/* Gift Ticket Modal */}
-      {showGiftModal && (
         <GiftTicketModal 
-          user={user}
+        isOpen={showGiftModal}
           onClose={() => {
             setShowGiftModal(false);
             setMessage('');
           }}
         />
-      )}
     </div>
   );
 }

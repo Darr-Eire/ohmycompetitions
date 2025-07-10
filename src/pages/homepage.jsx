@@ -105,12 +105,17 @@ export default function HomePage() {
         // Merge live database data with static definitions
         return {
           ...staticItem,
+          // Use database thumbnail if available, otherwise keep static imageUrl
+          imageUrl: liveComp.thumbnail || liveComp.imageUrl || staticItem.imageUrl,
+          thumbnail: liveComp.thumbnail,
           comp: {
             ...staticItem.comp,
             ticketsSold: liveComp.comp.ticketsSold || 0,
             totalTickets: liveComp.comp.totalTickets || staticItem.comp.totalTickets,
             status: liveComp.comp.status || staticItem.comp.status,
             entryFee: liveComp.comp.entryFee || staticItem.comp.entryFee,
+            endsAt: liveComp.comp.endsAt || staticItem.comp.endsAt,
+            startsAt: liveComp.comp.startsAt || staticItem.comp.startsAt,
             // Keep other static properties
           }
         };
@@ -262,6 +267,7 @@ function renderCard(item, i, { isDaily, isFree, isPi, isCrypto }) {
       fee={`${(item.comp.entryFee ?? 0).toFixed(2)} π`}
       imageUrl={item.imageUrl}
       endsAt={item.comp.endsAt}
+      disableGift={true}
     />
   );
 }

@@ -1,12 +1,29 @@
 import { ObjectId } from 'mongodb';
 import { connectToDatabase } from '../../../../../lib/mongodb';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../../../../../lib/auth';
+
+// Simple admin authentication helper
+function verifyAdminSession(req) {
+  try {
+    const adminSessionCookie = req.headers.cookie
+      ?.split('; ')
+      .find(row => row.startsWith('admin-session='))
+      ?.split('=')[1];
+
+    if (!adminSessionCookie) {
+      return false;
+    }
+
+    const session = JSON.parse(decodeURIComponent(adminSessionCookie));
+    return session && session.role === 'admin' && session.isAdmin;
+  } catch (error) {
+    console.error('Error verifying admin session:', error);
+    return false;
+  }
+}
 
 export default async function handler(req, res) {
-  const session = await getServerSession(req, res, authOptions);
-
-  if (!session || session.user.role !== 'admin') {
+  // Check admin authentication
+  if (!verifyAdminSession(req)) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
 

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
 import AdminSidebar from '../../components/AdminSidebar';
+import AdminGuard from '../../components/AdminGuard';
 
 export default function AdminForumsPage() {
   const [threads, setThreads] = useState([]);
@@ -102,13 +103,16 @@ export default function AdminForumsPage() {
 
   if (loading) {
     return (
+      <AdminGuard>
       <div className="min-h-screen bg-black text-white p-8">
         <h1 className="text-3xl font-bold mb-6">Loading Forum Threads...</h1>
       </div>
+      </AdminGuard>
     );
   }
 
   return (
+    <AdminGuard>
     <AdminSidebar>
       <div className="space-y-6">
         <div>
@@ -362,5 +366,6 @@ export default function AdminForumsPage() {
         </div>
       </div>
     </AdminSidebar>
+    </AdminGuard>
   );
 }

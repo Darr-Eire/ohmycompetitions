@@ -155,6 +155,7 @@ export default function CryptoTicketPage() {
           competitionSlug={slug}
           entryFee={comp.entryFee}
           quantity={quantity}
+          endsAt={comp.endsAt}
         />
       </div>
     </div>
