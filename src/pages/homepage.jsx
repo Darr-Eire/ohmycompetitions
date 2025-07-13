@@ -175,6 +175,9 @@ export default function HomePage() {
               {dailyComps.length > 0 && (
                 <Section title="Daily Competitions" items={dailyComps} viewMoreHref="/competitions/daily" extraClass="mt-12" />
               )}
+              {freeComps.length > 0 && (
+                <Section title="Free Competitions" items={freeComps} viewMoreHref="/competitions/free" extraClass="mt-12" />
+              )}
             </>
           );
         })()}
