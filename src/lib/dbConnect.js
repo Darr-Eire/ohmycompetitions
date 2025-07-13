@@ -1,5 +1,8 @@
 import mongoose from 'mongoose';
 
+// Disable strictQuery warning for Mongoose 7+
+mongoose.set('strictQuery', false);
+
 let isConnected = false;
 
 export async function dbConnect() {

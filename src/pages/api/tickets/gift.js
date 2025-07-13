@@ -32,8 +32,8 @@ export default async function handler(req, res) {
   }
 
   // Validate quantity
-  if (quantity < 1 || quantity > 10) {
-    return res.status(400).json({ error: 'Quantity must be between 1 and 10' });
+  if (quantity < 1 || quantity > 50) {
+    return res.status(400).json({ error: 'Quantity must be between 1 and 50' });
   }
 
   // Rate limiting

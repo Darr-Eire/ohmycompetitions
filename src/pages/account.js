@@ -227,13 +227,37 @@ export default function Account() {
 
   // Categorize tickets by competition type
   const categorizeTicket = (slug, title) => {
-    if (slug?.includes('ps5') || slug?.includes('xbox') || slug?.includes('nintendo') || title?.includes('Gaming')) return 'tech';
-    if (slug?.includes('dubai') || slug?.includes('holiday') || title?.includes('Travel')) return 'premium';
-    if (slug?.includes('pi-') || title?.includes('Pi ')) return 'pi';
-    if (slug?.includes('daily') || title?.includes('Daily')) return 'daily';
-    if (slug?.includes('btc') || slug?.includes('crypto') || title?.includes('BTC')) return 'crypto';
-    if (slug?.includes('free') || slug?.includes('moon')) return 'free';
-    if (slug?.includes('cash-code') || title?.includes('Cash Code')) return 'cashcode';
+    const lowerSlug = slug?.toLowerCase() || '';
+    const lowerTitle = title?.toLowerCase() || '';
+    
+    // Premium & Travel (check first before tech)
+    if (lowerSlug.includes('dubai') || lowerSlug.includes('holiday') || lowerTitle.includes('travel') ||
+        lowerSlug.includes('penthouse') || lowerTitle.includes('penthouse') ||
+        lowerSlug.includes('weekend') || lowerTitle.includes('weekend') ||
+        lowerSlug.includes('getaway') || lowerTitle.includes('getaway') ||
+        lowerSlug.includes('flight') || lowerTitle.includes('flight') ||
+        lowerSlug.includes('hotel') || lowerTitle.includes('hotel') ||
+        lowerSlug.includes('luxury') || lowerTitle.includes('luxury')) return 'premium';
+    
+    // Tech competitions
+    if (lowerSlug.includes('ps5') || lowerSlug.includes('xbox') || lowerSlug.includes('nintendo') || 
+        lowerTitle.includes('gaming') || lowerTitle.includes('tech')) return 'tech';
+    
+    // Pi competitions
+    if (lowerSlug.includes('pi-') || lowerTitle.includes('pi ')) return 'pi';
+    
+    // Daily competitions
+    if (lowerSlug.includes('daily') || lowerTitle.includes('daily')) return 'daily';
+    
+    // Crypto competitions
+    if (lowerSlug.includes('btc') || lowerSlug.includes('crypto') || lowerTitle.includes('btc')) return 'crypto';
+    
+    // Free competitions
+    if (lowerSlug.includes('free') || lowerSlug.includes('moon')) return 'free';
+    
+    // Pi Cash Code
+    if (lowerSlug.includes('cash-code') || lowerTitle.includes('cash code')) return 'cashcode';
+    
     return 'tech'; // default
   };
 

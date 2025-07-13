@@ -179,7 +179,7 @@ export default async function handler(req, res) {
 
     // Allow payment if it's a valid multiple of the ticket price (within 0.01 tolerance for floating point)
     const tolerance = 0.01;
-    if (Math.abs(expectedAmount - receivedAmount) > tolerance || ticketQuantity < 1 || ticketQuantity > 10) {
+    if (Math.abs(expectedAmount - receivedAmount) > tolerance || ticketQuantity < 1 || ticketQuantity > 50) {
       console.error('❌ Payment amount mismatch:', {
         singleTicketPrice,
         receivedAmount,
@@ -198,11 +198,11 @@ export default async function handler(req, res) {
         }
       });
       return res.status(400).json({ 
-        error: `Payment amount mismatch. Expected multiples of ${singleTicketPrice} π (for 1-10 tickets), Received: ${receivedAmount} π`,
+        error: `Payment amount mismatch. Expected multiples of ${singleTicketPrice} π (for 1-50 tickets), Received: ${receivedAmount} π`,
         details: {
           singleTicketPrice,
           receivedAmount,
-          ticketQuantity: ticketQuantity > 10 ? 'too many' : ticketQuantity < 1 ? 'too few' : ticketQuantity,
+          ticketQuantity: ticketQuantity > 50 ? 'too many' : ticketQuantity < 1 ? 'too few' : ticketQuantity,
           competition: competition.title
         }
       });

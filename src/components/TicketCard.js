@@ -205,16 +205,22 @@ export default function MyTickets({ tickets = [], showFilter = true }) {
     const slug = ticket.competitionSlug?.toLowerCase() || '';
     const title = ticket.competitionTitle?.toLowerCase() || '';
     
-    // Featured & Travel (same card type but different themes)
+    // Premium & Travel (check first before tech)
+    if (slug.includes('dubai') || slug.includes('holiday') || title.includes('travel') ||
+        title.includes('luxury') || title.includes('spa') || title.includes('yacht') ||
+        slug.includes('penthouse') || title.includes('penthouse') || 
+        slug.includes('weekend') || title.includes('weekend') ||
+        slug.includes('getaway') || title.includes('getaway') ||
+        slug.includes('flight') || title.includes('flight') ||
+        slug.includes('hotel') || title.includes('hotel')) {
+      return 'premium';
+    }
+    
+    // Tech competitions
     if (slug.includes('ps5') || slug.includes('xbox') || slug.includes('nintendo') || 
         slug.includes('tv') || slug.includes('macbook') || title.includes('gaming') ||
         title.includes('tech')) {
       return 'tech';
-    }
-    
-    if (slug.includes('dubai') || slug.includes('holiday') || title.includes('travel') ||
-        title.includes('luxury') || title.includes('spa') || title.includes('yacht')) {
-      return 'premium';
     }
     
     // Pi Competitions

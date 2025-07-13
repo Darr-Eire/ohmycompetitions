@@ -3,14 +3,17 @@
 import React, { useState, useEffect } from 'react';
 import GhostWinnerLog from '../components/GhostWinnerLog';
 import ClaimedWinnersLog from '../components/ClaimedWinnersLog';
+import { usePiAuth } from '../context/PiAuthContext';
 
 export default function PiCashCodePage() {
+  const { user, login } = usePiAuth();
   const [codeData, setCodeData] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const ticketPrice = 1.25;
   const totalPrice = (ticketPrice * quantity).toFixed(2);
   const [timeLeft, setTimeLeft] = useState(null);
   const [liveTickets, setLiveTickets] = useState(0);
+  const [sdkReady, setSdkReady] = useState(false);
 
   // Modal state
   const [showSkillModal, setShowSkillModal] = useState(false);
@@ -69,7 +72,8 @@ export default function PiCashCodePage() {
     const script = document.createElement('script');
     script.src = 'https://sdk.minepi.com/pi-sdk.js';
     script.onload = () => {
-              window.Pi.init({ version: '2.0', sandbox: process.env.NEXT_PUBLIC_PI_SANDBOX === 'true' });
+      window.Pi.init({ version: '2.0', sandbox: process.env.NEXT_PUBLIC_PI_SANDBOX === 'true' });
+      setSdkReady(true);
     };
     document.head.appendChild(script);
   }, []);
@@ -86,6 +90,10 @@ export default function PiCashCodePage() {
   };
 
   const openSkillModal = () => {
+    if (!user) {
+      alert('Please login with Pi to purchase tickets');
+      return;
+    }
     setUserAnswer('');
     setIsAnswerCorrect(null);
     setShowSkillModal(true);
@@ -95,21 +103,86 @@ export default function PiCashCodePage() {
     setShowSkillModal(false);
   };
 
-  const handleConfirmPurchase = async () => {
+  const handlePiPayment = async () => {
     if (!validateAnswer()) return;
 
-    try {
-      const res = await fetch('/api/pi-cash-code-purchase', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ weekStart: codeData.weekStart, quantity }),
-      });
+    if (typeof window === 'undefined' || !window.Pi || typeof window.Pi.createPayment !== 'function') {
+      alert('⚠️ Pi SDK not ready. Make sure you are in the Pi Browser.');
+      return;
+    }
 
-      const result = await res.json();
-      setLiveTickets(result.ticketsSold);
-      setShowSkillModal(false);
+    try {
+      window.Pi.createPayment(
+        {
+          amount: parseFloat(totalPrice),
+          memo: `Pi Cash Code Entry Week ${codeData?.weekStart}`,
+          metadata: { 
+            type: 'pi-cash-ticket', 
+            weekStart: codeData?.weekStart, 
+            quantity,
+            userId: user?.uid,
+            username: user?.username
+          },
+        },
+        {
+          onReadyForServerApproval: async (paymentId) => {
+            try {
+              const res = await fetch('/api/pi-cash-code/approve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ paymentId }),
+              });
+              if (!res.ok) throw new Error(await res.text());
+              console.log('[✅] Payment approved');
+            } catch (err) {
+              console.error('[ERROR] Server approval failed:', err);
+              alert('❌ Server approval failed.');
+            }
+          },
+
+          onReadyForServerCompletion: async (paymentId, txid) => {
+            try {
+              const res = await fetch('/api/pi-cash-code/complete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                  paymentId, 
+                  txid, 
+                  weekStart: codeData?.weekStart,
+                  quantity,
+                  userId: user?.uid,
+                  username: user?.username
+                }),
+              });
+              if (!res.ok) throw new Error(await res.text());
+              const data = await res.json();
+              alert(`✅ Ticket purchased! 🎟️ ID: ${data.ticketId}`);
+              setShowSkillModal(false);
+              
+              // Refresh the code data to update ticket count
+              const refreshRes = await fetch('/api/pi-cash-code');
+              const refreshData = await refreshRes.json();
+              setCodeData(refreshData);
+              setLiveTickets(refreshData.ticketsSold || 0);
+            } catch (err) {
+              console.error('[ERROR] Completing payment:', err);
+              alert('❌ Server completion failed.');
+            }
+          },
+
+          onCancel: () => {
+            console.warn('Payment cancelled');
+          },
+
+          onError: (err) => {
+            console.error('Payment error:', err);
+            alert('Payment failed');
+          }
+        }
+      );
     } catch (err) {
-      console.error('Purchase failed:', err);
+      console.error('Payment failed', err);
+      alert('Payment error');
     }
   };
 
@@ -166,12 +239,21 @@ export default function PiCashCodePage() {
 
           <p className="text-cyan-300 mt-2 font-semibold text-sm">Total: {totalPrice} π</p>
 
-          <button
-            onClick={openSkillModal}
-            className="w-full mt-4 py-3 bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold rounded-lg"
-          >
-            Purchase {quantity} Ticket(s)
-          </button>
+          {!user ? (
+            <button
+              onClick={login}
+              className="w-full mt-4 py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-bold rounded-lg"
+            >
+              Login with Pi to Purchase
+            </button>
+          ) : (
+            <button
+              onClick={openSkillModal}
+              className="w-full mt-4 py-3 bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold rounded-lg"
+            >
+              Purchase {quantity} Ticket(s)
+            </button>
+          )}
 
           <section className="mt-8 text-center">
             <h2 className="text-1xl font-semi-bold text-black mb-2">How It Works</h2>
@@ -190,41 +272,40 @@ export default function PiCashCodePage() {
             </div>
           </section>
 
-          <section className="mt-10 space-y-6">
-            <div className="bg-[#0b1120] bg-opacity-50 backdrop-blur-md border border-cyan-400 rounded-xl p-4 shadow-[0_0_20px_#00ffd5aa]">
-              <h2 className="text-xl font-bold text-cyan-300 mb-2">👻 Ghost Winner Log</h2>
-              <GhostWinnerLog />
-            </div>
+          {/* Winners Log */}
+          <div className="mt-8">
+            <ClaimedWinnersLog />
+          </div>
 
-            <div className="bg-[#0b1120] bg-opacity-50 backdrop-blur-md border border-green-400 rounded-xl p-4 shadow-[0_0_20px_#00ffbf88]">
-              <h2 className="text-xl font-bold text-green-300 mb-2">🏅 Claimed Winners</h2>
-              <ClaimedWinnersLog />
-            </div>
-          </section>
+          {/* Ghost Winners Log */}
+          <div className="mt-8">
+            <GhostWinnerLog />
+          </div>
         </div>
       </main>
 
       {/* Skill Question Modal */}
       {showSkillModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 backdrop-blur-sm p-4">
-          <div className="bg-[#101426] rounded-xl p-6 max-w-md w-full text-left relative">
-            <h3 className="text-cyan-300 font-bold text-xl mb-4">Skill Question</h3>
-            <p className="text-white mb-4">{skillQuestion}</p>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#0f172a] border border-cyan-400 rounded-xl p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold text-cyan-300 mb-4">Skill Question</h3>
+            <p className="text-white mb-4">Answer correctly to proceed with purchase:</p>
+            <p className="text-cyan-300 font-bold mb-4">{skillQuestion}</p>
+            
             <input
               type="text"
               value={userAnswer}
-              onChange={(e) => {
-                setUserAnswer(e.target.value);
-                setIsAnswerCorrect(null);
-              }}
-              className="w-full px-3 py-2 rounded-lg border border-cyan-400 bg-[#12182f] text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 mb-3"
-              placeholder="Enter your answer here"
+              onChange={(e) => setUserAnswer(e.target.value)}
+              className="w-full px-4 py-2 bg-black border border-cyan-400 rounded text-white mb-4"
+              placeholder="Enter your answer"
             />
+            
             {isAnswerCorrect === false && (
-              <p className="text-red-500 mb-3 font-semibold">Incorrect answer. Please try again.</p>
+              <p className="text-red-400 text-sm mb-4">Incorrect answer. Please try again.</p>
             )}
+            
             {isAnswerCorrect === true && (
-              <p className="text-green-400 mb-3 font-semibold">Correct! You may proceed.</p>
+              <p className="text-green-400 text-sm mb-4">✅ Correct! Proceeding to payment...</p>
             )}
 
             <div className="flex justify-end gap-4">
@@ -235,7 +316,7 @@ export default function PiCashCodePage() {
                 Cancel
               </button>
               <button
-                onClick={handleConfirmPurchase}
+                onClick={handlePiPayment}
                 disabled={isAnswerCorrect !== true}
                 className={`px-4 py-2 rounded-lg text-black font-bold transition ${
                   isAnswerCorrect === true

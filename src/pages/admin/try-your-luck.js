@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import AdminSidebar from '../../components/AdminSidebar';
+import AdminGuard from '../../components/AdminGuard';
 
 export default function AdminTryYourLuckPage() {
   const [games, setGames] = useState([]);
@@ -112,8 +113,21 @@ export default function AdminTryYourLuckPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-8 font-orbitron">
-      <h1 className="text-3xl font-bold mb-6 text-cyan-400">Admin - Try Your Luck</h1>
+    <AdminGuard>
+      <AdminSidebar>
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold text-cyan-400">🎯 Try Your Luck Management</h1>
+              <p className="text-gray-400 mt-1">Monitor games, stats, and player activity</p>
+            </div>
+            <button
+              onClick={loadData}
+              className="bg-cyan-500 hover:bg-cyan-600 text-black px-4 py-2 rounded-lg font-bold transition"
+            >
+              🔄 Refresh
+            </button>
+          </div>
 
       {/* Tab Navigation */}
       <div className="flex gap-4 mb-6">
@@ -320,6 +334,8 @@ export default function AdminTryYourLuckPage() {
           </div>
         </div>
       )}
-    </div>
+        </div>
+      </AdminSidebar>
+    </AdminGuard>
   );
 } 

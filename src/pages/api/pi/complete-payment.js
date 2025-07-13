@@ -281,8 +281,8 @@ export default async function handler(req, res) {
             slug
           });
 
-          // Validate ticket quantity
-          if (ticketQuantity < 1 || ticketQuantity > 10) {
+          // Validate ticket quantity (increased limit to 50)
+          if (ticketQuantity < 1 || ticketQuantity > 50) {
             console.error('❌ Invalid ticket quantity:', {
               ticketQuantity,
               singleTicketPrice,

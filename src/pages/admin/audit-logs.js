@@ -8,21 +8,49 @@ import AdminSidebar from '../../components/AdminSidebar';
 export default function AdminAuditLogsPage() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [pagination, setPagination] = useState({});
   const router = useRouter();
 
   useEffect(() => {
     async function fetchLogs() {
-      const res = await fetch('/api/admin/audit-logs');
-      if (res.status === 401) {
-        router.push('/');  // redirect if not admin
-        return;
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const res = await fetch('/api/admin/audit-logs');
+        
+        if (res.status === 401) {
+          router.push('/');  // redirect if not admin
+          return;
+        }
+        
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        
+        const data = await res.json();
+        setLogs(data.logs || []);
+        setPagination(data.pagination || {});
+        
+      } catch (err) {
+        console.error('Error fetching audit logs:', err);
+        setError(err.message);
+        setLogs([]);
+      } finally {
+        setLoading(false);
       }
-      const data = await res.json();
-      setLogs(data);
-      setLoading(false);
     }
     fetchLogs();
   }, []);
+
+  // Calculate stats from logs
+  const stats = {
+    total: logs.length,
+    warnings: logs.filter(log => log.status === 'warning').length,
+    critical: logs.filter(log => log.status === 'critical').length,
+    adminActions: logs.filter(log => log.action?.includes('admin')).length
+  };
 
   return (
     <AdminSidebar>
@@ -85,22 +113,30 @@ export default function AdminAuditLogsPage() {
         {/* Audit Log Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-[#0f172a] border border-green-400 rounded-lg p-4 text-center">
-            <div className="text-2xl font-bold text-green-400">0</div>
+            <div className="text-2xl font-bold text-green-400">{stats.total}</div>
             <div className="text-sm text-gray-300">Total Events</div>
           </div>
           <div className="bg-[#0f172a] border border-yellow-400 rounded-lg p-4 text-center">
-            <div className="text-2xl font-bold text-yellow-400">0</div>
+            <div className="text-2xl font-bold text-yellow-400">{stats.warnings}</div>
             <div className="text-sm text-gray-300">Warnings</div>
           </div>
           <div className="bg-[#0f172a] border border-red-400 rounded-lg p-4 text-center">
-            <div className="text-2xl font-bold text-red-400">0</div>
+            <div className="text-2xl font-bold text-red-400">{stats.critical}</div>
             <div className="text-sm text-gray-300">Critical Events</div>
           </div>
           <div className="bg-[#0f172a] border border-cyan-400 rounded-lg p-4 text-center">
-            <div className="text-2xl font-bold text-cyan-400">0</div>
+            <div className="text-2xl font-bold text-cyan-400">{stats.adminActions}</div>
             <div className="text-sm text-gray-300">Admin Actions</div>
           </div>
         </div>
+
+        {/* Error Display */}
+        {error && (
+          <div className="bg-red-500/20 border border-red-400 rounded-lg p-4">
+            <div className="text-red-400 font-bold">❌ Error Loading Audit Logs</div>
+            <div className="text-red-300 text-sm mt-1">{error}</div>
+          </div>
+        )}
 
         {/* Audit Log Table */}
         <div className="bg-[#0f172a] border border-cyan-400 rounded-lg p-6">
@@ -132,8 +168,10 @@ export default function AdminAuditLogsPage() {
                 </thead>
                 <tbody>
                   {logs.map((log, index) => (
-                    <tr key={index} className="border-b border-gray-700">
-                      <td className="py-3 text-gray-300">{log.timestamp}</td>
+                    <tr key={log.id || index} className="border-b border-gray-700">
+                      <td className="py-3 text-gray-300">
+                        {new Date(log.timestamp).toLocaleString()}
+                      </td>
                       <td className="py-3 text-gray-300">{log.user}</td>
                       <td className="py-3 text-gray-300">{log.action}</td>
                       <td className="py-3 text-gray-300">{log.resource}</td>
@@ -160,22 +198,13 @@ export default function AdminAuditLogsPage() {
           <h2 className="text-xl font-bold text-blue-300 mb-4">📤 Export Options</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 p-4 rounded-lg transition">
+            <button 
+              onClick={() => window.open('/api/admin/audit-export', '_blank')}
+              className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 p-4 rounded-lg transition"
+            >
               <div className="text-lg mb-2">📄</div>
               <div className="font-semibold">Export CSV</div>
               <div className="text-sm text-blue-300">Download as spreadsheet</div>
-            </button>
-            
-            <button className="bg-green-500/20 hover:bg-green-500/30 text-green-400 p-4 rounded-lg transition">
-              <div className="text-lg mb-2">📋</div>
-              <div className="font-semibold">Export JSON</div>
-              <div className="text-sm text-green-300">Machine-readable format</div>
-            </button>
-            
-            <button className="bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 p-4 rounded-lg transition">
-              <div className="text-lg mb-2">📊</div>
-              <div className="font-semibold">Generate Report</div>
-              <div className="text-sm text-purple-300">Detailed analysis</div>
             </button>
           </div>
         </div>

@@ -220,7 +220,7 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
             <input
               type="number"
               min="1"
-              max="10"
+              max="50"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
               className="w-full px-3 py-2 bg-black border border-cyan-400 rounded text-white focus:border-cyan-300 focus:outline-none"
