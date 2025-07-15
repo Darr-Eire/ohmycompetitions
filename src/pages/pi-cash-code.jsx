@@ -295,7 +295,16 @@ export default function PiCashCodePage() {
             <input
               type="text"
               value={userAnswer}
-              onChange={(e) => setUserAnswer(e.target.value)}
+            onChange={(e) => {
+  const value = e.target.value;
+  setUserAnswer(value);
+  if (value.trim() === skillAnswer) {
+    setIsAnswerCorrect(true);
+  } else {
+    setIsAnswerCorrect(false);
+  }
+}}
+
               className="w-full px-4 py-2 bg-black border border-cyan-400 rounded text-white mb-4"
               placeholder="Enter your answer"
             />

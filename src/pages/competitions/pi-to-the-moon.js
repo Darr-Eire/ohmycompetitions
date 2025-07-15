@@ -4,19 +4,11 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import '@fontsource/orbitron';
 
-export default function FreeCompetitionCard({ comp, title, prize }) {
+export default function PiToTheMoonPage() {
   const [timeLeft, setTimeLeft] = useState('');
-
-  const endsAt = comp?.endsAt || new Date().toISOString();
-
-  const formattedDate = new Date(endsAt).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-
-  const sold = comp.ticketsSold ?? 0;
-  const total = comp.totalTickets ?? 100;
+  const endsAt = '2025-12-01T23:59:59Z';
+  const total = 10000;
+  const sold = 0;
   const percent = Math.min(100, Math.floor((sold / total) * 100));
 
   useEffect(() => {
@@ -40,11 +32,16 @@ export default function FreeCompetitionCard({ comp, title, prize }) {
     return () => clearInterval(interval);
   }, [endsAt]);
 
+  const formattedDate = new Date(endsAt).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+
   return (
     <section className="w-full py-10 px-4 bg-gradient-to-r from-[#111827] to-[#0f172a] rounded-2xl border border-cyan-400 shadow-[0_0_40px_#00f2ff44] text-white font-orbitron max-w-2xl mx-auto text-center space-y-6">
-
       <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-wide">
-        ✦ {title} ✦
+        ✦ Pi To The Moon ✦
       </h2>
 
       <div className="flex justify-center items-center gap-4 text-sm">
@@ -57,11 +54,14 @@ export default function FreeCompetitionCard({ comp, title, prize }) {
       </div>
 
       <div className="bg-white/5 rounded-lg p-4 text-sm space-y-2">
-        <p><span className="font-semibold text-cyan-300">Prize:</span> {prize}</p>
+        <p><span className="font-semibold text-cyan-300">Prize:</span> 10,000 π</p>
         <p><span className="font-semibold text-cyan-300">Entry Fee:</span> <span className="font-bold">FREE</span></p>
         <p><span className="font-semibold text-cyan-300">Date:</span> {formattedDate}</p>
         <p><span className="font-semibold text-cyan-300">Total Tickets:</span> {total.toLocaleString()}</p>
-        <p><span className="font-semibold text-cyan-300">Location:</span> {comp.location || 'Online Global Draw'}</p>
+        <p><span className="font-semibold text-cyan-300">Location:</span> Online Global Draw</p>
+        <p className="text-cyan-200 italic pt-2">
+          This competition will start soon and is dedicated to early users of Oh My Competitions who made a purchase and helped us launch and grow stronger! 🚀
+        </p>
       </div>
 
       <div className="w-full">
@@ -76,14 +76,13 @@ export default function FreeCompetitionCard({ comp, title, prize }) {
         </p>
       </div>
 
-      {/* View Details button */}
-      <div className="flex justify-center mt-8">
-        <Link
-          href={`/competitions/${comp.slug}`}
-          className="bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold text-lg px-8 py-3 rounded-2xl shadow-[0_0_20px_#00ffd5aa] hover:scale-105 transition-transform duration-200"
+      <div className="flex justify-center mt-6">
+        <button
+          disabled
+          className="bg-cyan-300 text-black font-bold text-lg px-8 py-3 rounded-2xl shadow-[0_0_20px_#00ffd5aa] opacity-70 cursor-not-allowed"
         >
-          View Details
-        </Link>
+          Enter Now
+        </button>
       </div>
 
       <div className="text-center pt-4">

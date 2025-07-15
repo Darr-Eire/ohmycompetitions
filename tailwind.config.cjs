@@ -5,22 +5,30 @@ module.exports = {
     './pages/**/*.{js,jsx,ts,tsx}',
   ],
   theme: {
-    extend: {},
+    extend: {
+      keyframes: {
+        marquee: {
+          '0%': { transform: 'translateX(0%)' },
+          '10%': { transform: 'translateX(0%)' },  // ✨ Hold for ~10% of the animation time
+          '100%': { transform: 'translateX(-100%)' },
+        },
+      },
+      animation: {
+        marquee: 'marquee 25s linear infinite',
+      },
+    },
   },
   plugins: [
     require('@tailwindcss/aspect-ratio'),
-    require('tailwind-scrollbar-hide'), // ✅ Added plugin
+    require('tailwind-scrollbar-hide'),
   ],
   safelist: [
-    // gradients for FUT cards
     'from-blue-600',
     'from-green-500',
     'from-orange-500',
     'from-purple-600',
     'from-gray-800',
     'to-transparent',
-
-    // bg & hover classes for your view-more buttons
     'bg-blue-600',
     'hover:bg-blue-700',
     'bg-green-600',

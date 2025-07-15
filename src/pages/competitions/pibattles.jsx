@@ -35,22 +35,20 @@ const BATTLE_MODES = [
 ];
 
 export default function PiBattlesLobbyPage() {
-
-
   return (
     <main className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] px-4 py-10 text-white font-orbitron">
 
       {/* Coming Soon Banner */}
-      <div className="bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 border border-cyan-400 p-4 text-center text-white font-semibold text-xl rounded-md shadow-lg mb-8">
-        🚨 Pi Battles Are Coming Soon 🚨
-        <p className="text-sm mt-2">💥 Stay tuned for updates and be ready for explosive fun 💥</p>
-      </div>
+     <div className="bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 border border-cyan-400 p-4 text-center text-white font-semibold text-xl rounded-md shadow-lg mb-8">
+  🚨 Pi Battles Coming Soon 🚨
+  <p className="text-sm mt-2">
+     Stay tuned for updates and be ready for explosive fun We’re still building and will be up and running very soon. Have ideas or recommendations? We’d love to hear from you!
+  </p>
+</div>
+
 
       <div className="max-w-3xl mx-auto">
 
-  
-
-        {/* Instructions */}
         <p className="text-white mt-2 text-center">
           Choose your game mode, join live matches, or check past victories.
         </p>
@@ -62,25 +60,18 @@ export default function PiBattlesLobbyPage() {
           </h2>
 
           <div className="space-y-4">
-       {BATTLE_MODES.map(mode => (
-  <Link
-    key={mode.id}
-    href={`/battles/lobby/${mode.id}`}
-    className="block cursor-pointer"
-  >
-   <div
-  className={`p-5 rounded-2xl bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] border border-cyan-400 text-center shadow-[0_0_20px_#00fff055] hover:scale-[1.02] transition-transform duration-200`}
->
-  <h3 className={`text-xl font-bold text-white mb-1 bg-clip-text text-transparent bg-gradient-to-r ${mode.accent}`}>
-    {mode.title}
-  </h3>
-  <p className="text-sm text-white/90 mb-1">{mode.desc}</p>
-  <p className="text-xs text-white/70">{mode.players}</p>
-</div>
-
-  </Link>
-))}
-
+            {BATTLE_MODES.map(mode => (
+              <div
+                key={mode.id}
+                className="p-5 rounded-2xl bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] border border-cyan-400 text-center shadow-[0_0_20px_#00fff055] opacity-60 cursor-not-allowed"
+              >
+                <h3 className={`text-xl font-bold text-white mb-1 bg-clip-text text-transparent bg-gradient-to-r ${mode.color}`}>
+                  {mode.title}
+                </h3>
+                <p className="text-sm text-white/90 mb-1">{mode.desc}</p>
+                <p className="text-xs text-white/70">{mode.players}</p>
+              </div>
+            ))}
           </div>
         </section>
 

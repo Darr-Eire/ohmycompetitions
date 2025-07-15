@@ -4,16 +4,7 @@ import BuyTicketButton from '@components/BuyTicketButton';
 import Link from 'next/link';
 
 const CRYPTO_COMPETITIONS = {
-  'crypto-btc': {
-    title: 'Win Bitcoin (BTC)',
-    prize: '0.01 BTC',
-    entryFee: 0.5,
-    tradingViewSymbol: 'BINANCE:BTCUSDT',
-    date: 'June 2, 2025',
-    time: '12:59 AM UTC',
-    location: 'Online',
-    endsAt: '2025-06-02T00:59:00Z',
-  },
+
   'crypto-eth': {
     title: 'Win Ethereum (ETH)',
     prize: '0.5 ETH',

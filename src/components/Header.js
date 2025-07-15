@@ -28,22 +28,23 @@ export default function Header() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-const competitionCategories = [
-   ['Pi Giveaways', '/competitions/pi'],
-  ['Pi Cash Code', '/pi-cash-code'],
-  ['Pi Battles', '/competitions/pibattles'],
-  ['Featured', '/competitions/featured'],
-  ['Travel', '/competitions/travel'],
-  ['Crypto', '/competitions/crypto-giveaways'],
-  ['Daily', '/competitions/daily'],
 
-];
-
+  const competitionCategories = [
+    
+    ['Pi Giveaways', '/competitions/pi'],
+    ['Pi Cash Code', '/pi-cash-code'],
+    ['Pi Battles', '/competitions/pibattles'],
+    ['Live Now', '/competitions'],
+    ['Featured', '/competitions/featured'],
+    ['Travel', '/competitions/travel'],
+    ['Crypto', '/competitions/crypto-giveaways'],
+    ['Daily', '/competitions/daily'],
+   
+  ];
 
   const navItems = [
     ['Home', '/homepage'],
-     ['My Account', '/account'],
-   
+    ['My Account', '/account'],
   ];
 
   const navExtras = [
@@ -51,7 +52,7 @@ const competitionCategories = [
     ['Forums', '/forums'],
     ['The Future', '/future'],
     ['Help & Support', '/help-support'],
-    ['How We Got Started', '/how-we-got-started'],
+    ['About Us', '/how-we-got-started'],
     ['Partners & Sponsors', '/partners'],
   ];
 
@@ -69,13 +70,16 @@ const competitionCategories = [
         </svg>
       </button>
 
-      <div className="flex-1 text-center">
+      <div className="flex-1 text-center flex flex-col items-center">
         <Link
           href="/homepage"
           className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 text-transparent bg-clip-text drop-shadow"
         >
           OhMyCompetitions
         </Link>
+        {user && (
+          <span className="text-white text-xs mt-1">Welcome {user.username}</span>
+        )}
       </div>
 
       <div className="ml-auto flex items-center gap-2">
@@ -99,12 +103,9 @@ const competitionCategories = [
             </button>
           </>
         ) : (
-          <div className="text-white text-xs flex items-center gap-2">
-            <span>👋 {user.username}</span>
-            <button onClick={logout} className="neon-button text-xs px-2 py-1">
-              Log Out
-            </button>
-          </div>
+          <button onClick={logout} className="neon-button text-xs px-2 py-1">
+            Log Out
+          </button>
         )}
       </div>
 
@@ -126,7 +127,6 @@ const competitionCategories = [
               </li>
             ))}
 
-       
             <li>
               <button
                 onClick={() => setCompDropdownOpen(prev => !prev)}

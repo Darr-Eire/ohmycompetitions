@@ -542,17 +542,67 @@ body {
   transform: scale(1.05);
 }
 
+/* Neon text glow effect */
 .neon-text {
   text-shadow: 0 0 5px #00f2fe, 0 0 10px #00f2fe, 0 0 20px #00f2fe;
 }
+
+/* Input styles using Tailwind @apply */
 .input {
   @apply w-full px-4 py-2 rounded-md bg-black/20 border border-cyan-400 focus:ring-2 focus:ring-cyan-500 outline-none;
 }
+
 /* Hide scrollbar across all browsers */
 .no-scrollbar::-webkit-scrollbar {
   display: none; /* Chrome, Safari */
 }
 .no-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;     /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;    /* Firefox */
 }
+
+/* Custom pulse animation for glowing effects */
+@keyframes customPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(0, 255, 247, 0.4), 0 0 30px rgba(0, 119, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(0, 255, 247, 0.7), 0 0 60px rgba(0, 119, 255, 0.5);
+  }
+}
+
+/* Marquee (scrolling text) styles */
+.marquee-content {
+  display: inline-block;
+  padding-left: 100%; /* Start fully off screen */
+  animation: scroll-marquee 50s linear infinite;
+  white-space: nowrap;
+}
+
+/* Marquee keyframes */
+@keyframes scroll-marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+/* Shimmer text animation */
+@keyframes text-shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.animate-text-shimmer {
+  background-size: 400% 100%;
+  animation: text-shimmer 3s linear infinite;
+}
+
+
+

@@ -41,6 +41,38 @@ flattenCompetitions.forEach((item) => {
 const FREE_TICKET_COMPETITIONS = ['pi-to-the-moon'];
 const DAILY_COMPETITIONS = ['daily-jackpot', 'everyday-pioneer', 'daily-pi-slice'];
 
+// Multiple skill questions array
+const skillQuestions = [
+  { question: "What is 3 + 4?", answer: "7" },
+  { question: "What color is the sky on a clear day?", answer: "blue" },
+  { question: "What is 5 x 6?", answer: "30" },
+  { question: "Type the word 'Pi'", answer: "pi" },
+  { question: "What is 10 - 2?", answer: "8" },
+  { question: "How many legs does a spider have?", answer: "8" },
+  { question: "What color are bananas?", answer: "yellow" },
+  { question: "What is the first letter of the English alphabet?", answer: "a" },
+  { question: "What day comes after Monday?", answer: "tuesday" },
+  { question: "How many days are in a week?", answer: "7" },
+  { question: "What is the capital of France?", answer: "paris" },
+  { question: "What shape has 3 sides?", answer: "triangle" },
+  { question: "What color is grass?", answer: "green" },
+  { question: "What is 3 + 4?", answer: "7" },
+  { question: "What color is the sky on a clear day?", answer: "blue" },
+  { question: "What is 5 x 6?", answer: "30" },
+  { question: "Type the word 'Pi'", answer: "pi" }, // lowercase to match
+  { question: "What is 10 - 2?", answer: "8" },
+  { question: "How many legs does a spider have?", answer: "8" },
+  { question: "What color are bananas?", answer: "yellow" },
+  { question: "What is the first letter of the English alphabet?", answer: "a" },
+  { question: "What day comes after Monday?", answer: "tuesday" },
+  { question: "How many days are in a week?", answer: "7" },
+  { question: "What is the capital of France?", answer: "paris" },
+  { question: "What shape has 3 sides?", answer: "triangle" },
+  { question: "What color is grass?", answer: "green" },
+];
+
+
+
 export default function TicketPurchasePage() {
   const router = useRouter();
   const { slug } = router.query;
@@ -54,10 +86,15 @@ export default function TicketPurchasePage() {
   const [competitionStatus, setCompetitionStatus] = useState('active');
   const [showSkillQuestion, setShowSkillQuestion] = useState(false);
   const [skillAnswer, setSkillAnswer] = useState('');
+  const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [liveTicketsSold, setLiveTicketsSold] = useState(0);
   const [paymentError, setPaymentError] = useState(null);
   const [stuckPaymentId, setStuckPaymentId] = useState(null);
   const [recovering, setRecovering] = useState(false);
+
+  // New state for dynamic competition description
+  const [description, setDescription] = useState('');
+  const [showDetails, setShowDetails] = useState(false);
 
   const isFree = comp?.paymentType === 'free';
   const isDaily = comp?.theme === 'daily';
@@ -76,7 +113,7 @@ export default function TicketPurchasePage() {
 
     try {
       setLoading(true);
-      
+
       // First try to fetch from API (live data)
       try {
         const response = await fetch(`/api/competitions/${slugParam}`);
@@ -96,7 +133,17 @@ export default function TicketPurchasePage() {
       const staticComp = flattenCompetitions.find(c => c.comp.slug === slugParam);
       if (staticComp) {
         console.log('📁 Using static competition data:', staticComp);
-        setComp(staticComp.comp);
+     setComp({
+  ...staticComp.comp,
+  title: staticComp.title,
+  prize: staticComp.prize,
+
+  thumbnail: staticComp.thumbnail,
+  location: staticComp.location,
+  date: staticComp.date,
+  time: staticComp.time,
+});
+
         setLiveTicketsSold(staticComp.comp.ticketsSold || 0);
       } else {
         setError('Competition not found');
@@ -108,6 +155,34 @@ export default function TicketPurchasePage() {
       setLoading(false);
     }
   };
+
+  // Dynamically import the description file based on comp.slug
+  useEffect(() => {
+    if (!comp?.slug) {
+      setDescription('');
+      return;
+    }
+const loadDescription = async () => {
+  try {
+    const descModule = await import(`../../data/descriptions/${comp.slug}.js`);
+    const desc = descModule.default;
+    if (typeof desc === 'string') {
+      setDescription(desc);
+    } else if (desc && typeof desc.description === 'string') {
+      setDescription(desc.description);
+    } else {
+      setDescription('No detailed description available for this competition.');
+    }
+  } catch (e) {
+    console.warn(`Description file not found for slug: ${comp.slug}`);
+    setDescription('No detailed description available for this competition.');
+  }
+};
+
+
+
+    loadDescription();
+  }, [comp?.slug]);
 
   useEffect(() => {
     if (!router.isReady || !slug) return;
@@ -145,28 +220,24 @@ export default function TicketPurchasePage() {
 
   const handlePaymentSuccess = async (result) => {
     console.log('🎉 Payment successful, refreshing competition data:', result);
-    
-    // Update local state immediately for instant feedback
+
     if (result.ticketQuantity) {
       setLiveTicketsSold(prev => prev + result.ticketQuantity);
     }
-    
-    // Refresh full competition data from server
+
     try {
       await fetchCompetition(slug);
-      
-      // Show success message with updated info
-      const ticketText = result.ticketNumber?.toString().includes('-') 
+
+      const ticketText = result.ticketNumber?.toString().includes('-')
         ? `ticket numbers ${result.ticketNumber}`
         : `ticket number ${result.ticketNumber}`;
-      
-      const message = result.competitionStatus === 'completed' 
+
+      const message = result.competitionStatus === 'completed'
         ? `🎉 Success! Your ${ticketText}. This competition is now SOLD OUT!`
         : `🎉 Success! Your ${ticketText}. Updated tickets available!`;
-      
+
       alert(message);
-      
-      // If competition is full, show special message
+
       if (result.competitionStatus === 'completed') {
         setTimeout(() => {
           alert('🚀 This competition is now SOLD OUT! The draw will happen soon.');
@@ -199,6 +270,20 @@ export default function TicketPurchasePage() {
     return () => clearInterval(interval);
   }, [comp]);
 
+  // On clicking proceed, pick a random question and show it
+  const handleShowSkillQuestion = () => {
+    const randomIndex = Math.floor(Math.random() * skillQuestions.length);
+    setSelectedQuestion(skillQuestions[randomIndex]);
+    setSkillAnswer('');
+    setShowSkillQuestion(true);
+  };
+
+  // Validate answer ignoring case and whitespace
+  const isAnswerCorrect = () => {
+    if (!selectedQuestion) return false;
+    return skillAnswer.trim().toLowerCase() === selectedQuestion.answer.toLowerCase();
+  };
+
   if (!router.isReady || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a]">
@@ -224,7 +309,6 @@ export default function TicketPurchasePage() {
   const isSoldOut = ticketsSold >= totalTickets;
   const isNearlyFull = availableTickets <= totalTickets * 0.1; // Less than 10% remaining
 
-  // Sold out check
   if (isSoldOut) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] px-4">
@@ -271,13 +355,13 @@ export default function TicketPurchasePage() {
                   className="w-full max-h-64 object-cover rounded-lg border border-blue-500 mx-auto"
                 />
               ) : (
-              <Image
-                src={mainImage}
-                alt={comp.title}
-                width={600}
-                height={300}
-                className="w-full max-h-64 object-cover rounded-lg border border-blue-500 mx-auto"
-              />
+                <Image
+                  src={mainImage}
+                  alt={comp.title}
+                  width={600}
+                  height={300}
+                  className="w-full max-h-64 object-cover rounded-lg border border-blue-500 mx-auto"
+                />
               )}
               {thumbnailImage && (
                 <div className="flex justify-center mt-2 px-2">
@@ -288,40 +372,80 @@ export default function TicketPurchasePage() {
                       className="rounded-lg border border-cyan-400 object-cover w-24 h-16 sm:w-32 sm:h-20"
                     />
                   ) : (
-                  <Image
+                    <Image
                       src={thumbnailImage}
                       alt="Competition thumbnail"
-                    width={100}
-                    height={60}
-                    className="rounded-lg border border-cyan-400 object-cover w-24 h-16 sm:w-32 sm:h-20"
-                  />
+                      width={100}
+                      height={60}
+                      className="rounded-lg border border-cyan-400 object-cover w-24 h-16 sm:w-32 sm:h-20"
+                    />
                   )}
-              </div>
+                </div>
               )}
             </>
           )}
 
-          <p className="text-white text-2xl font-bold">{comp.prize}</p>
+          <div className="text-center">
+            <p className="text-white text-2xl font-bold">{comp.prize}</p>
 
-          <div className="max-w-md mx-auto text-sm text-white space-y-2">
-            <div className="flex justify-between"><span className="font-semibold">Date</span><span>{new Date(comp.endsAt).toLocaleDateString('en-GB')}</span></div>
-            <div className="flex justify-between"><span className="font-semibold">Start Time</span><span>{new Date(comp.endsAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} UTC</span></div>
-            <div className="flex justify-between"><span className="font-semibold">Location</span><span>{comp.location}</span></div>
-            <div className="flex justify-between"><span className="font-semibold">Entry Fee</span><span>{comp.entryFee.toFixed(2)} π</span></div>
-            <div className="flex justify-between">
-              <span className="font-semibold">Tickets Sold</span>
-              <span className={`${liveTicketsSold >= comp.totalTickets ? 'text-red-400 font-bold' : ''}`}>
-                {liveTicketsSold} / {comp.totalTickets}
-                {liveTicketsSold >= comp.totalTickets && ' (SOLD OUT)'}
-              </span>
-            </div>
-            {liveTicketsSold > 0 && (
-              <div className="flex justify-between text-cyan-400">
-                <span className="font-semibold">Available</span>
-                <span>{Math.max(0, comp.totalTickets - liveTicketsSold)} tickets remaining</span>
+            <button
+              onClick={() => setShowDetails(!showDetails)}
+              className="mt-2 text-sm text-cyan-300 hover:text-white transition underline"
+            >
+              {showDetails ? 'Hide' : 'View'} Competition Details
+            </button>
+
+            {showDetails && (
+              <div className="mt-3 text-sm bg-white/10 border border-cyan-400 rounded-lg p-4 text-left max-w-md mx-auto whitespace-pre-wrap text-white/80">
+                {description}
               </div>
             )}
           </div>
+<div className="max-w-md mx-auto text-sm text-white space-y-2">
+  <div className="flex justify-between">
+    <span className="font-semibold">Starts On</span>
+    <span>
+      {comp.startsAt
+        ? new Date(comp.startsAt).toLocaleDateString('en-GB')
+        : 'TBA'}
+    </span>
+  </div>
+  <div className="flex justify-between">
+    <span className="font-semibold">Draw Takes Place</span>
+    <span>
+      {comp.endsAt
+        ? new Date(comp.endsAt).toLocaleDateString('en-GB')
+        : 'TBA'}
+    </span>
+  </div>
+
+  <div className="flex justify-between">
+    <span className="font-semibold">Entry Fee</span>
+    <span>{comp.entryFee.toFixed(2)} π</span>
+  </div>
+  <div className="flex justify-between">
+    <span className="font-semibold">Max Ticket Purchases</span>
+    <span>
+      {comp.maxTicketsPerUser
+        ? comp.maxTicketsPerUser.toLocaleString()
+        : '10'}
+    </span>
+  </div>
+  <div className="flex justify-between">
+    <span className="font-semibold">Tickets Sold</span>
+    <span className={`${liveTicketsSold >= comp.totalTickets ? 'text-red-400 font-bold' : ''}`}>
+      {liveTicketsSold} / {comp.totalTickets}
+      {liveTicketsSold >= comp.totalTickets && ' (SOLD OUT)'}
+    </span>
+  </div>
+  {liveTicketsSold > 0 && (
+    <div className="flex justify-between text-cyan-400">
+      <span className="font-semibold">Available</span>
+      <span>{Math.max(0, comp.totalTickets - liveTicketsSold)} tickets remaining</span>
+    </div>
+  )}
+</div>
+
 
           {isFree ? (
             <>
@@ -383,13 +507,15 @@ export default function TicketPurchasePage() {
               <p className="text-lg font-bold mt-6">
                 Total {totalPrice.toFixed(2)} π
               </p>
-              <p className="text-white text-sm mt-2">
-                Secure your entry to win <strong>{comp.prize}</strong>.
-              </p>
+<p className="text-white text-sm mt-2">
+  Secure your entry to win <strong>{comp.prize}</strong>.<br />
+  Thank you for participating and good luck! 🚀✨
+</p>
+
 
               {!showSkillQuestion ? (
                 <button
-                  onClick={() => setShowSkillQuestion(true)}
+                  onClick={handleShowSkillQuestion}
                   className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 px-4 rounded-xl mt-6"
                 >
                   Proceed to Payment
@@ -399,7 +525,7 @@ export default function TicketPurchasePage() {
                   <label htmlFor="skill-question" className="block font-semibold mb-1 text-white">
                     Skill Question (Required to Enter):
                   </label>
-                  <p className="mb-2">What is 3 + 4?</p>
+                  <p className="mb-2">{selectedQuestion?.question}</p>
                   <input
                     id="skill-question"
                     type="text"
@@ -409,12 +535,12 @@ export default function TicketPurchasePage() {
                     placeholder="Enter your answer"
                     style={{ maxWidth: '300px' }}
                   />
-                  {skillAnswer.trim() !== '7' && skillAnswer !== '' && (
+                  {!isAnswerCorrect() && skillAnswer !== '' && (
                     <p className="text-sm text-red-400 mt-1">
                       You must answer correctly to proceed.
                     </p>
                   )}
-                  {skillAnswer.trim() === '7' && (
+                  {isAnswerCorrect() && (
                     <BuyTicketButton
                       competitionSlug={slug}
                       entryFee={comp.entryFee}

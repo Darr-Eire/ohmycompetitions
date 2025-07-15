@@ -9,26 +9,37 @@ export default function TryYourLuckPage() {
   const [streak, setStreak] = useState(0)
   const [playedMap, setPlayedMap] = useState({})
   const [resetCountdown, setResetCountdown] = useState('')
-   const games = [
-  {
-    title: 'Match The Pi Code',
-    href: '/try-your-luck/match-code',
-    icon: '🕒',
-    desc: 'Stop the timer at exactly 3.14s to win!',
-    reward: ' You won 0.5π yesterday!',
-    storageKey: 'threeFourteenPlayed',
-  },
-  {
-    title: 'Hack the Vault',
-    href: '/try-your-luck/hack-the-vault',
-    icon: '🔓',
-    desc: 'Guess today’s vault code!',
-    reward: ' You unlocked 1 retry token!',
-    storageKey: 'hackVaultPlayed',
-  },
-  
-];
 
+  const games = [
+    {
+      title: 'Match The Pi Code',
+      href: '/try-your-luck/match-code',
+      icon: '🕒',
+      desc: 'Test your timing skills! Stop the clock at exactly 3.14 seconds to claim a special Pi reward.',
+      storageKey: 'threeFourteenPlayed',
+    },
+    {
+      title: 'Hack the Vault',
+      href: '/try-your-luck/hack-the-vault',
+      icon: '🔓',
+      desc: 'Crack today’s secret code and unlock hidden prizes or extra chances. Will you break in?',
+      storageKey: 'hackVaultPlayed',
+    },
+    {
+      title: 'Mystery Box',
+      href: '/try-your-luck/mystery-box',
+      icon: '🎁',
+      desc: 'Tap to open a surprise box filled with random rewards. Every box is a mystery!',
+      storageKey: 'mysteryBoxPlayed',
+    },
+    {
+      title: 'Pi Spin',
+      href: '/try-your-luck/pi-spin',
+      icon: '🎡',
+      desc: 'Spin the colorful Pi wheel and see where your luck lands — win random prizes and bonuses!',
+      storageKey: 'piSpinPlayed',
+    },
+  ]
 
   useEffect(() => {
     setStreak(getStreak())
@@ -42,13 +53,6 @@ export default function TryYourLuckPage() {
       map[g.storageKey] = Boolean(localStorage.getItem(g.storageKey))
     })
     setPlayedMap(map)
-  }
-
-  function resetGames() {
-    games.forEach((g) => {
-      localStorage.removeItem(g.storageKey)
-    })
-    refreshPlayedMap()
   }
 
   function startCountdown() {
@@ -93,7 +97,7 @@ export default function TryYourLuckPage() {
               and rack up piles of <span className="font-bold">π</span> every day!
             </p>
             <p className="text-lg font-bold text-cyan-300 mb-1">
-              Daily Streak: {streak} days 
+              Daily Streak: {streak} days
             </p>
             <p className="text-sm text-gray-300 mb-4">
               Next reset in: <span className="text-white font-semibold">{resetCountdown}</span>
@@ -106,26 +110,21 @@ export default function TryYourLuckPage() {
               return (
                 <div
                   key={game.href}
-                  className={`bg-gradient-to-r from-[#1e293b] to-[#0f172a] border border-cyan-500 rounded-2xl p-6 text-center shadow-md transition-opacity ${
-                    played ? 'opacity-50 pointer-events-none' : 'opacity-100'
-                  }`}
+                  className="bg-gradient-to-r from-[#1e293b] to-[#0f172a] border border-cyan-500 rounded-2xl p-6 text-center shadow-md transition"
                 >
                   <h2 className="text-2xl font-bold flex items-center justify-center gap-2 mb-2 text-white">
                     <span className="text-3xl">{game.icon}</span>
                     {game.title}
                   </h2>
-                  <p className="mb-2 text-sm text-gray-200">{game.desc}</p>
-                  <p className="mb-4 text-sm text-green-300 italic">{game.reward}</p>
-                  {!played ? (
-                    <Link
-                      href={game.href}
-                      className="bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 text-white font-semibold px-6 py-3 rounded-xl shadow-[0_0_30px_#00fff055] border border-cyan-700 hover:brightness-110 transition w-full mb-2"
-                    >
-                      Play Now
-                    </Link>
-                  ) : (
-                    <p className="text-white text-sm"> Already played today</p>
-                  )}
+                  <p className="mb-4 text-sm text-gray-200">{game.desc}</p>
+
+                  {/* Disabled button */}
+                  <button
+                    disabled
+                    className="bg-gray-600 text-white font-semibold px-6 py-3 rounded-xl border border-gray-500 w-full opacity-60 cursor-not-allowed"
+                  >
+                    Play Now
+                  </button>
                 </div>
               )
             })}
@@ -138,7 +137,6 @@ export default function TryYourLuckPage() {
               Reach out anytime:
             </p>
             <div className="space-y-2">
-    
               <p className="text-sm text-white">
                 X <a href="https://X.com/OhMyComps" target="_blank" className="underline text-cyan-300">@OM_Compitions</a>
               </p>
@@ -149,12 +147,12 @@ export default function TryYourLuckPage() {
           </div>
         </div>
       </main>
-           {/* Terms & Conditions Link */}
-          <div className="mt-14 text-center">
-            <a href="/terms-conditions" className="text-xs text-cyan-400 underline hover:text-cyan-300 transition">
-              View full Terms & Conditions
-            </a>
-          </div>
+
+      <div className="mt-14 text-center">
+        <a href="/terms-conditions" className="text-xs text-cyan-400 underline hover:text-cyan-300 transition">
+          View full Terms & Conditions
+        </a>
+      </div>
     </>
   )
 }

@@ -11,7 +11,7 @@ export default function CryptoGiveawaysPage() {
         <title>Crypto Giveaways | OhMyCompetitions</title>
       </Head>
 
-      <main className="app-background min-h-screen px-4 py-8 text-white">
+      <main className="app-background min-h-screen px-0 py-0 text-white">
         <div className="max-w-screen-lg mx-auto px-4 sm:px-0">
           <h1
             className="
@@ -23,9 +23,10 @@ export default function CryptoGiveawaysPage() {
             Crypto Giveaways
           </h1>
 
-          <p className="text-center text-white text-base sm:text-lg max-w-md mx-auto mb-8">
-            No giveaways are live right now — but don’t worry! Check back soon and be ready to grab your chance to win crypto prizes.
-          </p>
+         <p className="text-center text-white text-base sm:text-lg max-w-md mx-auto mb-8">
+  No giveaways are live right now but don’t worry. Check back soon and be ready to grab your chance to win crypto prizes. We’re always adding new competitions and creating even more winners as time goes on don’t miss your chance to join the excitement
+</p>
+
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-6">
             {cryptoGiveawaysItems.length > 0 ? (

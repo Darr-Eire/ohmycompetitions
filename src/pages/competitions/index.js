@@ -13,7 +13,6 @@ export default function AllCompetitionsPage() {
   const [error, setError] = useState(null);
   const [activeFilter, setActiveFilter] = useState('All');
 
-  // Fetch competitions from database
   useEffect(() => {
     const fetchCompetitions = async () => {
       try {
@@ -23,7 +22,7 @@ export default function AllCompetitionsPage() {
         const response = await fetch('/api/competitions/all', {
           method: 'GET',
           headers: {
-            'Accept': 'application/json',
+            Accept: 'application/json',
             'Content-Type': 'application/json'
           }
         });
@@ -52,18 +51,22 @@ export default function AllCompetitionsPage() {
     fetchCompetitions();
   }, []);
 
-  // Filter competitions by theme
   const getFilteredCompetitions = () => {
     if (activeFilter === 'All') return competitions;
     return competitions.filter(comp => comp.theme?.toLowerCase() === activeFilter.toLowerCase());
   };
 
-  // Get unique themes for filter buttons
   const getAvailableFilters = () => {
     const themes = new Set(competitions.map(comp => comp.theme).filter(Boolean));
-    return ['All', ...Array.from(themes).map(theme => 
-      theme.charAt(0).toUpperCase() + theme.slice(1)
-    )];
+    const formattedThemes = Array.from(themes).map(theme => theme.charAt(0).toUpperCase() + theme.slice(1));
+
+    // Add forced filters even if no competitions (optional, uncomment if desired)
+    // const forced = ['Crypto', 'Pi', 'Free'];
+    // forced.forEach(f => {
+    //   if (!formattedThemes.includes(f)) formattedThemes.push(f);
+    // });
+
+    return ['All', ...formattedThemes];
   };
 
   const renderCompetitionCard = (item) => {
@@ -106,14 +109,17 @@ export default function AllCompetitionsPage() {
   const availableFilters = getAvailableFilters();
 
   return (
-    <main className="app-background min-h-screen px-4 py-2 text-white font-orbitron">
-      {/* Hero banner */}
+    <main className="app-background min-h-screen px-0 py-0 text-white">
       <div className="text-center mb-6 mt-0">
-        <h1 className="text-xl sm:text-xl font-bold text-cyan-300 mb-2">
+        <h1
+          className="text-3xl font-bold text-center mb-4
+          bg-gradient-to-r from-[#00ffd5] to-[#0077ff]
+          bg-clip-text text-transparent"
+        >
           Explore Live Competitions
         </h1>
-        <p className="text-white/80 max-w-md mx-auto text-xs sm:text-sm leading-snug">
-          Enter exclusive competitions powered by Pi. Win tech, crypto, lifestyle experiences and more — new draws every week.
+        <p className="text-center text-white text-base sm:text-lg max-w-md mx-auto mb-8">
+          Enter exclusive competitions powered by Pi. Win tech, crypto, lifestyle experiences, and more — with new draws every week! We’re always adding new competitions and creating even more winners as time goes on — don’t miss your chance to join the excitement and be our next big winner!
         </p>
       </div>
 
@@ -123,7 +129,6 @@ export default function AllCompetitionsPage() {
         </div>
       )}
 
-      {/* Filter bar */}
       {availableFilters.length > 1 && (
         <div className="flex flex-wrap justify-center gap-3 mb-6">
           {availableFilters.map((filter) => (
@@ -142,9 +147,8 @@ export default function AllCompetitionsPage() {
         </div>
       )}
 
-      {/* Grid display */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredCompetitions.map(item => renderCompetitionCard(item))}
+        {filteredCompetitions.map((item) => renderCompetitionCard(item))}
       </div>
 
       {filteredCompetitions.length === 0 && !loading && (

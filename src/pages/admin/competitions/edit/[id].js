@@ -26,73 +26,82 @@ export default function EditCompetition() {
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
-  useEffect(() => {
-    // Check admin auth on component mount
-    const adminUser = localStorage.getItem('adminUser');
-    if (!adminUser) {
-      router.push('/admin/login');
-      return;
-    }
+ useEffect(() => {
+  // Check admin auth on component mount
+  const adminUser = localStorage.getItem('adminUser');
+  if (!adminUser) {
+    router.push('/admin/login');
+    return;
+  }
 
-    if (!id || loaded) return;
+  if (!id || loaded) return;
 
-    async function loadCompetition() {
-      try {
-        const adminData = JSON.parse(localStorage.getItem('adminUser'));
-        const res = await fetch(`/api/admin/competitions/${id}`, {
-          headers: {
-            'Authorization': `Bearer ${adminData.token}`
-          }
-        });
-        const data = await res.json();
-        
-        if (!res.ok) {
-          if (res.status === 401) {
-            router.push('/admin/login');
-            return;
-          }
-          throw new Error(data.message || 'Failed to load competition');
+  async function loadCompetition() {
+    try {
+      const adminData = JSON.parse(localStorage.getItem('adminUser'));
+      const res = await fetch(`/api/admin/competitions/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${adminData.token}`
         }
+      });
+      const data = await res.json();
 
-        // Ensure all form values are strings and handle nested structure
-        setForm({
-          comp: {
-            slug: String(data.comp?.slug || ''),
-            entryFee: String(data.comp?.entryFee || ''),
-            totalTickets: String(data.comp?.totalTickets || ''),
-            piAmount: String(data.comp?.piAmount || ''),
-            paymentType: data.comp?.paymentType || 'pi',
-            status: data.comp?.status || 'active'
-          },
-          title: String(data.title || ''),
-          prize: String(data.prize || ''),
-          theme: String(data.theme || ''),
-          description: String(data.description || '')
-        });
-        setLoaded(true);
-      } catch (err) {
-        console.error('Error loading competition:', err);
-        setError(err.message || 'Failed to load competition');
-        // Reset form to empty strings on error
-        setForm({
-          comp: {
-            slug: '',
-            entryFee: '',
-            totalTickets: '',
-            piAmount: '',
-            paymentType: 'pi',
-            status: 'active'
-          },
-          title: '',
-          prize: '',
-          theme: '',
-          description: ''
-        });
+      if (!res.ok) {
+        if (res.status === 401) {
+          router.push('/admin/login');
+          return;
+        }
+        throw new Error(data.message || 'Failed to load competition');
       }
-    }
 
-    loadCompetition();
-  }, [id, loaded, router]);
+      // Ensure all form values are strings and handle nested structure
+      setForm({
+        comp: {
+          slug: String(data.comp?.slug || ''),
+          entryFee: String(data.comp?.entryFee || ''),
+          totalTickets: String(data.comp?.totalTickets || ''),
+          piAmount: String(data.comp?.piAmount || ''),
+          paymentType: data.comp?.paymentType || 'pi',
+          status: data.comp?.status || 'active',
+          startsAt: data.comp?.startsAt
+            ? new Date(data.comp.startsAt).toISOString().slice(0, 16)
+            : '',
+          endsAt: data.comp?.endsAt
+            ? new Date(data.comp.endsAt).toISOString().slice(0, 16)
+            : '',
+        },
+        title: String(data.title || ''),
+        prize: String(data.prize || ''),
+        theme: String(data.theme || ''),
+        description: String(data.description || '')
+      });
+      setLoaded(true);
+    } catch (err) {
+      console.error('Error loading competition:', err);
+      setError(err.message || 'Failed to load competition');
+      // Reset form to empty strings on error
+      setForm({
+        comp: {
+          slug: '',
+          entryFee: '',
+          totalTickets: '',
+          piAmount: '',
+          paymentType: 'pi',
+          status: 'active',
+          startsAt: '',
+          endsAt: ''
+        },
+        title: '',
+        prize: '',
+        theme: '',
+        description: ''
+      });
+    }
+  }
+
+  loadCompetition();
+}, [id, loaded, router]);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;

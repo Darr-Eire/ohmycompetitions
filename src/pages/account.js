@@ -54,7 +54,7 @@ function EnhancedTicketCard({ ticket, theme, compressed = false }) {
         height={compressed ? 96 : 128}
         className={`w-full object-cover rounded-md ${imageHeight}`}
       />
-      
+
       <div className="grid grid-cols-2 text-xs gap-1">
         <p className="col-span-2 text-cyan-300 font-medium truncate">{ticket.prize}</p>
         <p>🎟 {ticket.quantity}</p>
@@ -62,15 +62,18 @@ function EnhancedTicketCard({ ticket, theme, compressed = false }) {
         <p>🕒 {drawDate.toLocaleDateString()}</p>
         <p>{isActive ? '🟢 Active' : '🔴 Closed'}</p>
       </div>
-      
+
       {!compressed && ticket.ticketNumbers && (
-        <p className="text-[10px] text-gray-400 truncate">
-          Ticket IDs: {ticket.ticketNumbers.join(', ')}
-        </p>
+        <div className="text-[10px] text-gray-300 mt-2 text-left max-h-24 overflow-y-auto whitespace-pre-wrap">
+          <strong>Ticket IDs:</strong>
+          <br />
+          {ticket.ticketNumbers.join(', ')}
+        </div>
       )}
     </div>
   );
 }
+
 
 // Compressed ticket view for when user has many tickets
 function CompressedTicketView({ tickets, theme }) {
