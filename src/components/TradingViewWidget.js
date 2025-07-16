@@ -1,23 +1,35 @@
-function TradingViewWidget({ symbol = "COINBASE:BTCUSD" }) {
-  const symbolMap = {
-    "COINBASE:BTCUSD": "bitcoin",
-    "COINBASE:ETHUSD": "ethereum",
-    "COINBASE:XRPUSD": "xrp",
-    "COINBASE:SOLUSD": "solana",
-    "BINANCE:BNBUSDT": "binance-coin",
-    "BINANCE:DOGEUSDT": "dogecoin",
-  };
+import { useEffect, useRef } from 'react';
 
-  // You can adjust these mappings to match exactly as needed
+export default function TradingViewWidget({ symbol = "COINBASE:BTCUSD" }) {
+  const containerRef = useRef();
 
-  const cryptoName = symbolMap[symbol] || "bitcoin";
+  useEffect(() => {
+    if (!containerRef.current) return;
 
-  return (
-    <iframe
-      src={`https://s.tradingview.com/widgetembed/?frameElementId=tradingview_${cryptoName}&symbol=${symbol}&interval=60&hidesidetoolbar=1&symboledit=1&saveimage=1&toolbarbg=f1f3f6&studies=[]&theme=dark&style=1&timezone=Etc/UTC`}
-      style={{ width: "100%", height: "220px", border: "none" }}
-      allowTransparency={true}
-      scrolling="no"
-    />
-  );
+    const container = containerRef.current;
+    container.innerHTML = '';
+
+    const script = document.createElement("script");
+    script.src = "https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js";
+    script.async = true;
+    script.innerHTML = JSON.stringify({
+      symbol,
+      width: "100%",
+      height: "220",
+      locale: "en",
+      dateRange: "1D",
+      colorTheme: "dark",
+      isTransparent: true,
+      autosize: true,
+      largeChartUrl: "",
+    });
+
+    container.appendChild(script);
+
+    return () => {
+      container.innerHTML = '';
+    };
+  }, [symbol]);
+
+  return <div ref={containerRef} style={{ minHeight: '220px' }} />;
 }

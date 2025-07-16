@@ -106,7 +106,6 @@ export default function TryYourLuckPage() {
 
           <div className="space-y-6">
             {games.map((game) => {
-              const played = playedMap[game.storageKey]
               return (
                 <div
                   key={game.href}
@@ -118,13 +117,13 @@ export default function TryYourLuckPage() {
                   </h2>
                   <p className="mb-4 text-sm text-gray-200">{game.desc}</p>
 
-                  {/* Disabled button */}
-                  <button
-                    disabled
-                    className="bg-gray-600 text-white font-semibold px-6 py-3 rounded-xl border border-gray-500 w-full opacity-60 cursor-not-allowed"
+                  {/* Enabled button */}
+                  <Link
+                    href={game.href}
+                    className="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold px-6 py-3 rounded-xl border border-cyan-500 w-full transition text-center block"
                   >
                     Play Now
-                  </button>
+                  </Link>
                 </div>
               )
             })}

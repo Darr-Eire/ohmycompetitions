@@ -48,78 +48,79 @@ export default function DailyCompetitionCard({ comp, title, prize, fee }) {
   const timerColor = timePercent > 50 ? 'bg-green-400' : timePercent > 20 ? 'bg-yellow-400' : 'bg-red-500'
 
   return (
-    <div className="relative w-full max-w-sm mx-auto p-5 bg-[#0f172a] rounded-xl text-white font-orbitron shadow-xl border-2 border-cyan-400 overflow-hidden">
+    <div className="flex flex-col w-full max-w-xs mx-auto bg-[#0f172a] border-[0.5px] border-cyan-400 rounded-xl shadow-lg text-white font-orbitron overflow-hidden transition-all duration-300 hover:scale-[1.03]">
+      
       {/* Header */}
-      <div className="flex flex-col mb-5 text-center w-full">
-        <h3 className="w-full text-xl font-bold uppercase text-transparent bg-clip-text bg-gradient-to-l from-[#00ffd5] to-[#0077ff] tracking-wider">
+      <div className="flex flex-col text-center p-3 bg-gradient-to-r from-[#00ffd5] via-[#00ccff] to-[#0077ff]">
+        <h3 className="w-full text-base font-bold uppercase text-black truncate">
           {title}
         </h3>
-        <div className="flex justify-between w-full mt-2">
-          <span className={`px-4 py-1.5 rounded-full ${statusLabel === 'LIVE' ? 'bg-gradient-to-r from-[#00ff99] to-[#00cc66] text-black' : 'bg-gradient-to-r from-orange-400 to-orange-500 text-black'} font-bold text-xs shadow-lg animate-pulse`}>
-            {statusLabel}
-          </span>
-          <span className="px-4 py-1.5 rounded-full border border-cyan-400 bg-cyan-600/30 text-white font-semibold text-xs">
-            Draw: {new Date(endsAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-          </span>
-        </div>
       </div>
 
-      {/* Highlight */}
-      <div className="bg-gradient-to-r from-cyan-500/30 via-cyan-400/20 to-cyan-500/30 border border-cyan-400/50 p-5 rounded-xl text-center text-sm font-semibold mb-6 shadow-md">
-        <p className="text-cyan-100 text-base leading-relaxed">
-          {comp?.highlightMessage ? comp.highlightMessage : '🚀 Join now and compete for the Pi prize! 🎉'}
-        </p>
-        <p className="mt-3 text-xs text-cyan-200 font-medium tracking-wide animate-pulse">
-          Only {total - sold} tickets left! 🔥
-        </p>
-        {showCountdown && (
-          <div className="flex justify-center mt-4">
-            <span className={`${timerColor} text-black px-4 py-1.5 rounded-full font-bold text-sm font-mono select-none`}>
-              {timeLeft}
-            </span>
+      {/* Content */}
+      <div className="p-4 flex flex-col flex-grow">
+        <div className="flex flex-col flex-grow justify-between">
+          {/* Highlight */}
+          <div className="bg-gradient-to-r from-cyan-500/30 via-cyan-400/20 to-cyan-500/30 border border-cyan-400/50 p-2 rounded text-center text-sm font-semibold mb-2 shadow-md">
+            <p className="text-cyan-100">
+              {comp?.highlightMessage ? comp.highlightMessage : '🚀 Join now and compete for the Pi prize! 🎉'}
+            </p>
+            <p className="mt-1 text-xs text-cyan-200 font-medium tracking-wide animate-pulse">
+              Only {total - sold} tickets left! 🔥
+            </p>
+
+            {/* Moved Status Banner here */}
+            <div className={`w-full text-center mt-2 px-3 py-1 rounded-full text-xs font-bold shadow 
+              ${statusLabel === 'LIVE'
+                ? 'bg-gradient-to-r from-[#00ff99] to-[#00cc66] text-black animate-pulse'
+                : 'bg-gradient-to-r from-orange-400 to-orange-500 text-black'}`}>
+              {statusLabel}
+            </div>
           </div>
-        )}
-      </div>
 
-      {/* Details Grid */}
-      <div className="grid grid-cols-2 gap-4 text-white text-sm mb-4 max-w-md mx-auto">
-        <p className="font-semibold text-left">🗓 Starts On:</p>
-        <p className="font-semibold text-right tabular-nums">
-          {startsAt ? new Date(startsAt).toLocaleDateString('en-GB') : 'TBA'}
-        </p>
+          {/* Details Grid */}
+          <div className="grid grid-cols-2 gap-1 text-white text-sm mb-3">
+           <p className="font-semibold text-left">🎯 Draw:</p>
+<p className="font-semibold text-right tabular-nums">
+  {endsAt ? new Date(endsAt).toLocaleDateString('en-GB') : 'TBA'}
+</p>
 
-        <p className="font-semibold text-left">🎁 Prize:</p>
-        <p className="font-semibold text-right tabular-nums">{prize}</p>
 
-        <p className="font-semibold text-left">🎟 Entry Fee:</p>
-        <p className="font-semibold text-right tabular-nums">{entryFee.toFixed(2)} π</p>
+            <p className="font-semibold text-left">🎁 Prize:</p>
+            <p className="font-semibold text-right tabular-nums">{prize}</p>
 
-        <p className="font-semibold text-left">🎫 Total Tickets:</p>
-        <p className="font-semibold text-right tabular-nums">{total.toLocaleString()}</p>
+            <p className="font-semibold text-left">🎟 Fee:</p>
+            <p className="font-semibold text-right tabular-nums">
+              {isNaN(entryFee) ? 'TBA' : `${entryFee.toFixed(2)} π`}
+            </p>
 
-        <p className="font-semibold text-left">🔒 Max Purchase:</p>
-        <p className="font-semibold text-right tabular-nums">
-          {comp.maxTicketsPerUser ? comp.maxTicketsPerUser.toLocaleString() : '10'}
-        </p>
-      </div>
+            <p className="font-semibold text-left">🎫 Tickets:</p>
+            <p className="font-semibold text-right tabular-nums">{total.toLocaleString()}</p>
 
-      {/* Progress Bar */}
-      <div className="w-full h-3 bg-gray-800 rounded-full overflow-hidden mb-4">
-        <div
-          className="h-full bg-gradient-to-r from-[#00ffd5] via-blue-400 to-[#0077ff]"
-          style={{ width: `${percent}%` }}
-        />
-      </div>
+            <p className="font-semibold text-left">🔒 Max:</p>
+            <p className="font-semibold text-right tabular-nums">
+              {comp.maxTicketsPerUser ? comp.maxTicketsPerUser.toLocaleString() : '10'}
+            </p>
+          </div>
 
-      <p className="text-center text-xs text-gray-400 mb-6">
-        Sold: <span className="text-white font-semibold">{sold.toLocaleString()}</span> / {total.toLocaleString()} ({percent}%)
-      </p>
+          {/* Progress Bar */}
+          <div>
+            <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden mb-1">
+              <div
+                className="h-full bg-gradient-to-r from-[#00ffd5] via-blue-400 to-[#0077ff]"
+                style={{ width: `${percent}%` }}
+              />
+            </div>
+            <p className="text-center text-xs text-gray-400 mb-3">
+              Sold: <span className="text-white font-semibold">{sold.toLocaleString()}</span> / {total.toLocaleString()} ({percent}%)
+            </p>
+          </div>
+        </div>
 
-      {/* Call to Action */}
-      <div>
+        {/* Call to Action */}
         <Link href={`/ticket-purchase/${comp.slug}`} legacyBehavior>
           <button
-            className="w-full py-3 rounded-lg font-bold bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black transition-transform duration-200 hover:scale-105"
+            className="w-full py-2 rounded-md font-bold text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:from-[#00e6c7] hover:to-[#0066e6] transition-transform duration-200 hover:scale-105 mt-1"
           >
             Enter Now
           </button>

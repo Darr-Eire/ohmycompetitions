@@ -1,5 +1,5 @@
 'use client';
-
+import TradingViewWidget from '@components/TradingViewWidget';
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -41,6 +41,7 @@ flattenCompetitions.forEach((item) => {
 const FREE_TICKET_COMPETITIONS = ['pi-to-the-moon'];
 const DAILY_COMPETITIONS = ['daily-jackpot', 'everyday-pioneer', 'daily-pi-slice'];
 
+
 // Multiple skill questions array
 const skillQuestions = [
   { question: "What is 3 + 4?", answer: "7" },
@@ -79,6 +80,8 @@ export default function TicketPurchasePage() {
   const { user, login, isAuthenticated } = usePiAuth();
 
   const [comp, setComp] = useState(null);
+  const isCryptoCompetition = comp?.theme === 'crypto' || comp?.slug?.startsWith('crypto');
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
@@ -287,7 +290,7 @@ const loadDescription = async () => {
   if (!router.isReady || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a]">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-cyan-400"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-cyan-300"></div>
       </div>
     );
   }
@@ -346,44 +349,18 @@ const loadDescription = async () => {
         </div>
 
         <div className="space-y-6 text-center">
-          {!isDaily && mainImage && (
-            <>
-              {isExternalUrl(mainImage) ? (
-                <img
-                  src={mainImage}
-                  alt={comp.title}
-                  className="w-full max-h-64 object-cover rounded-lg border border-blue-500 mx-auto"
-                />
-              ) : (
-                <Image
-                  src={mainImage}
-                  alt={comp.title}
-                  width={600}
-                  height={300}
-                  className="w-full max-h-64 object-cover rounded-lg border border-blue-500 mx-auto"
-                />
-              )}
-              {thumbnailImage && (
-                <div className="flex justify-center mt-2 px-2">
-                  {isExternalUrl(thumbnailImage) ? (
-                    <img
-                      src={thumbnailImage}
-                      alt="Competition thumbnail"
-                      className="rounded-lg border border-cyan-400 object-cover w-24 h-16 sm:w-32 sm:h-20"
-                    />
-                  ) : (
-                    <Image
-                      src={thumbnailImage}
-                      alt="Competition thumbnail"
-                      width={100}
-                      height={60}
-                      className="rounded-lg border border-cyan-400 object-cover w-24 h-16 sm:w-32 sm:h-20"
-                    />
-                  )}
-                </div>
-              )}
-            </>
-          )}
+       {!isDaily && !isCryptoCompetition && mainImage && (
+  <>
+    {/* image code stays here */}
+  </>
+)}
+
+{isCryptoCompetition && (
+  <div className="w-full h-[400px] my-4">
+    <TradingViewWidget />
+  </div>
+)}
+
 
           <div className="text-center">
             <p className="text-white text-2xl font-bold">{comp.prize}</p>

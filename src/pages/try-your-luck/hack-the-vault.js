@@ -28,9 +28,6 @@ export default function VaultPro() {
       const newCode = Array.from({ length: NUM_DIGITS }, () => Math.floor(Math.random() * 10));
       setCode(newCode);
       
-      // 🚨 DEV TESTING: Show secret code in console
-      console.log('🔓 HACK THE VAULT - Secret Code:', newCode.join(''));
-      console.log('🔓 Individual digits:', newCode);
     }
   }, [status]);
 

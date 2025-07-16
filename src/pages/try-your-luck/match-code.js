@@ -202,17 +202,109 @@ export default function MatchPiGame() {
     setPayoutStatus('')
   }
 
-  const retry = () => {
+  const retry = async () => {
     if (!skillAnswerIsCorrect) {
-      alert('Answer the skill question correctly before retrying.')
-      return
+      alert('Answer the skill question correctly before retrying.');
+      return;
     }
     if (!canRetry) {
-      alert(`Max retries reached (${MAX_RETRIES}).`)
-      return
+      alert(`Max retries reached (${MAX_RETRIES}).`);
+      return;
     }
-    setRetries(r => r + 1)
-    beginNewAttempt()
+
+    // Handle incomplete Pi payments before starting a new one
+    if (typeof window !== 'undefined' && window.Pi && typeof window.Pi.getIncompletePayment === 'function') {
+      try {
+        const incompletePayment = await window.Pi.getIncompletePayment();
+        if (incompletePayment) {
+          if (incompletePayment.transaction && incompletePayment.transaction.txid) {
+            // Try to complete the incomplete payment
+            await fetch('/api/pi/complete-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                paymentId: incompletePayment.identifier,
+                txid: incompletePayment.transaction.txid,
+                slug: 'match-pi-retry',
+                amount: RETRY_PRICE
+              }),
+            });
+            alert('Previous pending payment was found and processed. Please try again.');
+            return;
+          } else {
+            alert('You have a pending payment that cannot be completed automatically. Please open your Pi wallet and cancel the payment, then try again.');
+            return;
+          }
+        }
+      } catch (err) {
+        alert('Error handling previous pending payment. Please try again later.');
+        return;
+      }
+    }
+
+    // Pi payment logic for retry (1π)
+    if (typeof window === 'undefined' || !window.Pi || typeof window.Pi.createPayment !== 'function') {
+      alert('⚠️ Pi SDK not ready.');
+      return;
+    }
+
+    window.Pi.createPayment(
+      {
+        amount: RETRY_PRICE,
+        memo: 'Retry Match Pi Code',
+        metadata: { type: 'match-pi-retry', userId: user?.uid, username: user?.username },
+      },
+      {
+        onReadyForServerApproval: async (paymentId) => {
+          try {
+            const res = await fetch('/api/pi/approve-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                paymentId,
+                slug: 'match-pi-retry',
+                amount: RETRY_PRICE
+              }),
+            });
+            if (!res.ok) throw new Error(await res.text());
+            console.log('✅ Payment approved');
+          } catch (err) {
+            alert('❌ Server approval failed.');
+            throw err; // Prevents payment from proceeding
+          }
+        },
+        onReadyForServerCompletion: async (paymentId, txid) => {
+          try {
+            const res = await fetch('/api/pi/complete-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                paymentId,
+                txid,
+                slug: 'match-pi-retry',
+                amount: RETRY_PRICE
+              }),
+            });
+            const result = await res.json();
+            if (res.ok || (result?.message && result.message.toLowerCase().includes('completed'))) {
+              setRetries(r => r + 1);
+              beginNewAttempt();
+              alert('✅ Payment successful! You can retry now.');
+            } else {
+              alert(result?.error || '❌ Server completion failed.');
+            }
+          } catch (err) {
+            alert('❌ Server completion failed.');
+          }
+        },
+        onCancel: () => {
+          alert('Payment cancelled');
+        },
+        onError: (error) => {
+          alert('Payment failed');
+        },
+      }
+    );
   }
 
   const updateClosestTry = (depth) => {

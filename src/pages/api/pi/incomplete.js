@@ -112,7 +112,6 @@ export default async function handler(req, res) {
       // If the payment is actually completed, try to process it
       if (paymentStatus.status?.transaction_verified && paymentStatus.transaction?.verified) {
         console.log('🔄 Incomplete payment is actually verified, attempting to complete it');
-        
         // Try to complete this payment
         try {
           const completeResponse = await fetch(`${req.headers.origin}/api/pi/complete-payment`, {
@@ -121,7 +120,8 @@ export default async function handler(req, res) {
             body: JSON.stringify({ 
               paymentId: payment.identifier,
               txid: paymentStatus.transaction.txid,
-              slug: slug
+              slug: slug || payment.metadata?.slug || payment.metadata?.competitionSlug || 'match-pi-retry',
+              amount: payment.amount || 1
             })
           });
 
@@ -138,24 +138,12 @@ export default async function handler(req, res) {
         }
       }
 
-      // If we can't complete it, cancel it to allow new payments
-      if (paymentStatus.status && !paymentStatus.status.developer_completed) {
-        try {
-          console.log('🔄 Attempting to cancel incomplete payment');
-          await axios.post(
-            `${PI_API_URL}/${payment.identifier}/cancel`,
-            {},
-            {
-              headers: { 
-                'Authorization': `Key ${PI_API_KEY}`,
-                'Content-Type': 'application/json'
-              }
-            }
-          );
-          console.log('✅ Cancelled incomplete payment');
-        } catch (cancelError) {
-          console.warn('⚠️ Could not cancel incomplete payment:', cancelError);
-        }
+      // If we can't complete it, instruct the user to cancel it from their Pi wallet
+      if (!paymentStatus.transaction || !paymentStatus.transaction.txid) {
+        return res.status(400).json({
+          error: 'pending_payment',
+          message: 'You have a pending payment that cannot be completed automatically. Please open your Pi wallet and cancel the payment, then try again.'
+        });
       }
 
       res.status(200).json({ 

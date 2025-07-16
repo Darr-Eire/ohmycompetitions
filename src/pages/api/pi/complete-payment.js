@@ -70,6 +70,33 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing required parameters' });
     }
 
+    if (slug === 'match-pi-retry') {
+      // Complete the payment directly for retry payments (not tied to a competition)
+      try {
+        // Complete payment with Pi Network
+        const piResponse = await axios.post(
+          `${PI_API_URL}/${paymentId}/complete`,
+          { txid },
+          {
+            headers: {
+              'Authorization': `Key ${PI_API_KEY}`,
+              'Content-Type': 'application/json'
+            },
+            timeout: 30000 // 30 second timeout
+          }
+        );
+
+        // Accept both ok: true and already completed
+        if (piResponse.data?.ok || piResponse.data?.status?.developer_completed) {
+          return res.status(200).json({ message: 'Retry payment completed', status: piResponse.data.status, amount });
+        }
+
+        return res.status(500).json({ error: 'Payment not completed by Pi Network', details: piResponse.data });
+      } catch (err) {
+        return res.status(500).json({ error: 'Failed to complete retry payment', details: err.message });
+      }
+    }
+
     // Get database connection
     const { client, db } = await connectToDatabase();
 

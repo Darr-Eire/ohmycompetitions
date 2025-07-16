@@ -604,5 +604,8 @@ body {
   animation: text-shimmer 3s linear infinite;
 }
 
+.section-tight {
+  margin-top: 1rem; /* or even 0.5rem if needed */
+}
 
 

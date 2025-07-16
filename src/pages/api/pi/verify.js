@@ -2,8 +2,7 @@
 import axios from 'axios';
 import { MongoClient } from 'mongodb';
 
-const MONGODB_URI = process.env.MONGODB_URI;
-
+const MONGODB_URI = 'mongodb+srv://ohmycompetitions:DarrenMongo2025@ohmycompetitions.ffrvvr5.mongodb.net/ohmycompetitions?retryWrites=true&w=majority&appName=ohmycompetitions';
 
 // Create a MongoDB client
 const client = new MongoClient(MONGODB_URI, {

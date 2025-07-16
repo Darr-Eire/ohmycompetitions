@@ -24,7 +24,7 @@ export default function PiCompetitionCard({ comp, title, prize, fee, userHandle 
   const hasEnded = now >= endDate
   const isLive = hasStarted && !hasEnded
 
-  // Check start status on mount and periodically
+  // Check start status
   useEffect(() => {
     const checkStart = () => {
       const currentTime = new Date()
@@ -32,12 +32,11 @@ export default function PiCompetitionCard({ comp, title, prize, fee, userHandle 
     }
 
     checkStart()
-
     const startInterval = setInterval(checkStart, 1000)
     return () => clearInterval(startInterval)
   }, [startDate])
 
-  // Countdown logic (only when hasStarted is true)
+  // Countdown logic
   useEffect(() => {
     if (!endsAt || !hasStarted) return
 
@@ -63,12 +62,24 @@ export default function PiCompetitionCard({ comp, title, prize, fee, userHandle 
     return () => clearInterval(interval)
   }, [endsAt, hasStarted, endDate])
 
-  const entryFee = fee !== undefined ? fee : comp?.entryFee
-  const formattedFee = Number(entryFee) === 0 ? 'Free' : `${Number(entryFee ?? 0).toFixed(2)} π`
+  // Format entry fee
+  let entryFeeValue = fee !== undefined ? fee : comp?.entryFee
+
+  if (entryFeeValue === '' || entryFeeValue === null || entryFeeValue === undefined) {
+    entryFeeValue = NaN
+  }
+
+  const numericFee = Number(entryFeeValue)
+
+  let formattedFee
+  if (!isNaN(numericFee)) {
+    formattedFee = numericFee === 0 ? 'Free' : `${numericFee.toFixed(2)} π`
+  } else {
+    formattedFee = 'N/A'
+  }
 
   const slug = comp?.slug ?? ''
   const comingSoon = comp?.comingSoon || !hasStarted
-  const isDisabled = false // Force button to always be enabled
 
   return (
     <div className="relative w-full max-w-sm mx-auto p-4 bg-[#0f172a] rounded-xl text-white font-orbitron shadow-xl border-2 border-cyan-400 overflow-hidden">

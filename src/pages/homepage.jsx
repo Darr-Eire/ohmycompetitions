@@ -10,7 +10,6 @@ import PiCompetitionCard from '@components/PiCompetitionCard';
 import CryptoGiveawayCard from '@components/CryptoGiveawayCard';
 import CompetitionCard from '@components/CompetitionCard';
 import MiniPrizeCarousel from '@components/MiniPrizeCarousel';
-import PiCashHeroBanner from '@components/PiCashHeroBanner';
 
 import {
   dailyItems,
@@ -74,96 +73,93 @@ export default function HomePage() {
 
     fetchLiveData();
   }, []);
-const mergeCompetitionData = (liveData) => {
-  const staticItems = [
-    ...techItems,
-    ...premiumItems,
-    ...piItems,
-    ...dailyItems,
-    ...freeItems,
-    ...cryptoGiveawaysItems,
-  ];
 
-  const liveDataMap = {};
-  liveData.forEach(liveComp => {
-    if (liveComp.comp?.slug) {
-      liveDataMap[liveComp.comp.slug] = liveComp;
-    }
-  });
+  const mergeCompetitionData = (liveData) => {
+    const staticItems = [
+      ...techItems,
+      ...premiumItems,
+      ...piItems,
+      ...dailyItems,
+      ...freeItems,
+      ...cryptoGiveawaysItems,
+    ];
 
-  const now = new Date();
-
-  const mergedItems = staticItems
-    .map(staticItem => {
-      const slug = staticItem.comp?.slug;
-      const liveComp = liveDataMap[slug];
-
-      const merged = liveComp
-        ? {
-            ...staticItem,
-            imageUrl: liveComp.thumbnail || liveComp.imageUrl || staticItem.imageUrl,
-            thumbnail: liveComp.thumbnail,
-            comp: {
-              ...staticItem.comp,
-              ...liveComp.comp,
-              ticketsSold: liveComp.comp.ticketsSold || 0,
-              totalTickets: liveComp.comp.totalTickets || staticItem.comp.totalTickets,
-              entryFee: liveComp.comp.entryFee || staticItem.comp.entryFee,
-              comingSoon: liveComp.comp.comingSoon ?? staticItem.comp.comingSoon ?? false,
-            },
-          }
-        : staticItem;
-
-      return merged;
-    })
-    .filter(item => {
-      const { endsAt, status, comingSoon } = item.comp || {};
-      const hasEnded = endsAt && new Date(endsAt) < now;
-
-      if (item.theme === 'crypto') return true;
-      if (item.theme === 'tech') return !hasEnded || comingSoon;
-      return status === 'active' && !hasEnded;
+    const liveDataMap = {};
+    liveData.forEach(liveComp => {
+      if (liveComp.comp?.slug) {
+        liveDataMap[liveComp.comp.slug] = liveComp;
+      }
     });
 
-  // Add competitions that exist only in live data
-  const staticSlugs = new Set(staticItems.map(item => item.comp?.slug).filter(Boolean));
-  const adminOnlyCompetitions = liveData.filter(
-    liveComp => liveComp.comp?.slug && !staticSlugs.has(liveComp.comp.slug)
-  );
+    const now = new Date();
 
-  let allMerged = [...mergedItems, ...adminOnlyCompetitions];
+    const mergedItems = staticItems
+      .map(staticItem => {
+        const slug = staticItem.comp?.slug;
+        const liveComp = liveDataMap[slug];
 
-  // 🔍 Log all slugs to help confirm
-  console.log('🧩 All merged slugs:', allMerged.map(i => i.comp?.slug));
+        const merged = liveComp
+          ? {
+              ...staticItem,
+              imageUrl: liveComp.thumbnail || liveComp.imageUrl || staticItem.imageUrl,
+              thumbnail: liveComp.thumbnail,
+              comp: {
+                ...staticItem.comp,
+                ...liveComp.comp,
+                ticketsSold: liveComp.comp.ticketsSold || 0,
+                totalTickets: liveComp.comp.totalTickets || staticItem.comp.totalTickets,
+                entryFee: liveComp.comp.entryFee || staticItem.comp.entryFee,
+                comingSoon: liveComp.comp.comingSoon ?? staticItem.comp.comingSoon ?? false,
+              },
+            }
+          : staticItem;
 
-  // 💥 Automatically move the first OMC slug (flexible to future naming)
-  const omcIndex = allMerged.findIndex(item => item.comp?.slug?.startsWith('omc'));
-  if (omcIndex > -1) {
-    const [omcComp] = allMerged.splice(omcIndex, 1);
-    allMerged = [omcComp, ...allMerged];
-  }
+        return merged;
+      })
+      .filter(item => {
+        const { endsAt, status, comingSoon } = item.comp || {};
+        const hasEnded = endsAt && new Date(endsAt) < now;
+        return status === 'active' && !hasEnded;
+      });
 
-  return allMerged;
-};
+    const staticSlugs = new Set(staticItems.map(item => item.comp?.slug).filter(Boolean));
+    const adminOnlyCompetitions = liveData.filter(
+      liveComp => liveComp.comp?.slug && !staticSlugs.has(liveComp.comp.slug)
+    );
 
+    let allMerged = [...mergedItems, ...adminOnlyCompetitions];
 
+    // 💥 Move admin competitions first
+    allMerged.sort((a, b) => {
+      const aAdmin = !staticSlugs.has(a.comp?.slug);
+      const bAdmin = !staticSlugs.has(b.comp?.slug);
+
+      if (aAdmin && !bAdmin) return -1;
+      if (!aAdmin && bAdmin) return 1;
+
+      return 0;
+    });
+
+    return allMerged;
+  };
 
   const getCompetitionsByCategory = (category) => {
-    return liveCompetitions.filter(item => {
+    const comps = liveCompetitions.filter(item => {
       const theme = item.theme || 'tech';
       return theme === category;
     });
+
+    return comps;
   };
 
   if (loading) {
     return (
-    <div className="w-full py-8 flex flex-col items-center justify-start bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a]">
-  <div className="text-center">
-    <div className="animate-spin rounded-full h-24 w-32 border-t-2 border-b-2 border-cyan-300 mx-auto mb-4"></div>
-    <p className="text-white text-lg">Loading live competition data...</p>
-  </div>
-</div>
-
+      <div className="w-full py-8 flex flex-col items-center justify-start bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-24 w-32 border-t-2 border-b-2 border-cyan-300 mx-auto mb-4"></div>
+          <p className="text-white text-lg">Loading live competition data...</p>
+        </div>
+      </div>
     );
   }
 
@@ -171,16 +167,17 @@ const mergeCompetitionData = (liveData) => {
 
   return (
     <>
-   <div className="w-full bg-cyan-600 text-white overflow-hidden">
+     <div className="w-full bg-cyan-600 text-white overflow-hidden">
   <div className="marquee-content font-bold text-sm sm:text-base whitespace-nowrap">
-    🎉 More competitions coming soon! &nbsp;&nbsp;&nbsp; Our first contests build trust and celebrate early Pi winners. &nbsp;&nbsp;&nbsp; Launch week is 100% non-profit giving back to the Pi community. &nbsp;&nbsp;&nbsp; Which is always our mission. &nbsp;&nbsp;&nbsp; 🚀 Secure your spot in Pi history, win, and inspire others. &nbsp;&nbsp;&nbsp; 🎁 Giving back to Pioneers — all prizes go to you!
+    🌟 OhMyCompetitions is all about building with Pi Network for the Pi community Our launch mouth competitions are 0 profit designed to create trust, celebrate early winners and give back to Pioneers. All prizes go directly to you. We warmly welcome everyone to our app and invite you to add us on Pi Profile (darreire2020 & lyndz2020). More competitions are coming soon across a wide range of exciting categories. Join, win and help shape the future of Pi together! 🌟
   </div>
 </div>
 
 
-      <MiniPrizeCarousel />
+  <div className="section-tight">
+  <MiniPrizeCarousel competitions={liveCompetitions} />
 
-
+</div>
 
 
 
@@ -208,28 +205,25 @@ const mergeCompetitionData = (liveData) => {
         <Section title="Pi Giveaways" items={getCompetitionsByCategory('pi')} viewMoreHref="/competitions/pi" extraClass="mt-12" />
         <Section title="Crypto Giveaways" items={getCompetitionsByCategory('crypto')} viewMoreHref="/competitions/crypto-giveaways" />
 
- <section className="w-full bg-white/5 backdrop-blur-lg px-4 sm:px-6 py-8 my-4 border border-cyan-300 rounded-3xl shadow-[0_0_60px_#00ffd577] neon-outline">
-  <div className="max-w-7xl mx-auto">
-    <h2 className="text-xl sm:text-2xl font-bold text-center text-cyan-300 mb-6 font-orbitron">
-      ✨ Free Competition ✨
-    </h2>
-    <FreeCompetitionCard
-      comp={{
-        slug: 'pi-to-the-moon',
-        endsAt: '2025-12-01T23:59:59Z',
-        ticketsSold: 0,
-        totalTickets: 10000,
-        comingSoon: true,
-        status: 'active',
-      }}
-      title="Pi To The Moon"
-      prize="10,000 π"
-      hideEntryButton // 👈 Add this custom prop (if needed) to hide "Claim Free Entry" button in your card component
-      buttonLabel="View Details" // 👈 Replace "Coming Soon for Early App Users" with "View Details" if your component supports dynamic text
-    />
-  </div>
-</section>
-
+        <section className="w-full bg-white/5 backdrop-blur-lg px-4 sm:px-6 py-8 my-4 border border-cyan-300 rounded-3xl shadow-[0_0_60px_#00ffd577] neon-outline">
+          <div className="max-w-7xl mx-auto">
+            <h2 className="text-xl sm:text-2xl font-bold text-center text-cyan-300 mb-6 font-orbitron">✨ Free Competition ✨</h2>
+            <FreeCompetitionCard
+              comp={{
+                slug: 'pi-to-the-moon',
+                endsAt: '2025-12-01T23:59:59Z',
+                ticketsSold: 0,
+                totalTickets: 10000,
+                comingSoon: true,
+                status: 'active',
+              }}
+              title="Pi To The Moon"
+              prize="10,000 π"
+              hideEntryButton
+              buttonLabel="View Details"
+            />
+          </div>
+        </section>
 
         <TopWinnersCarousel />
 
@@ -299,7 +293,7 @@ function renderCard(item, i, { isDaily, isFree, isPi, isCrypto }) {
       fee={`${(item.comp.entryFee ?? 0).toFixed(2)} π`}
       imageUrl={item.imageUrl}
       endsAt={item.comp.endsAt}
-      disableGift={true}
+      disableGift
     />
   );
 }

@@ -73,6 +73,33 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing required parameters' });
     }
 
+    if (slug === 'match-pi-retry') {
+      // Approve the payment directly for retry payments (not tied to a competition)
+      try {
+        const piResponse = await axios.post(
+          `${PI_API_URL}/${paymentId}/approve`,
+          {},
+          {
+            headers: {
+              'Authorization': `Key ${PI_API_KEY}`,
+              'Content-Type': 'application/json'
+            },
+            timeout: 30000 // 30 second timeout
+          }
+        );
+
+        if (!piResponse.data?.status?.developer_approved) {
+          return res.status(500).json({ error: 'Payment not approved by Pi Network' });
+        }
+
+        // Optionally, store the payment in your DB for record-keeping
+
+        return res.status(200).json({ message: 'Retry payment approved', status: piResponse.data.status, amount });
+      } catch (err) {
+        return res.status(500).json({ error: 'Failed to approve retry payment', details: err.message });
+      }
+    }
+
     // Get database connection
     const { db } = await connectToDatabase();
 

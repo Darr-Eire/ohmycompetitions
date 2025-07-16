@@ -21,90 +21,93 @@ export default function HowWeGotStarted() {
 
           {/* Body */}
           <div className="p-6 space-y-6">
+
             <p className="font-semibold">
-              Welcome, Pioneers! Our journey with Pi Network started just like yours — with a simple invite from a friend... and a bit of curiosity.
+              Hey Pioneers! This is the story of how we went from "What's Pi?" to "Let's give away Pi prizes to the world!" Buckle up.
             </p>
 
             <section>
-              <h2 className="text-xl font-bold gradient-text mt-6">The Day Mining Started</h2>
-              <p className="text-white">
-                One day, a friend said, “Check this out — it’s called Pi Network.” I thought: why not? Next thing you know, I was mining daily. Then my partner. Then my family. Even my neighbor’s dog almost got signed up (not kidding).
+              <h2 className="text-xl font-bold gradient-text mt-6">It All Started With a Ping</h2>
+              <p>
+                One day, a mate says: “Bro, try Pi Network.”  
+                Me: “Sounds like a new pizza place.”  
+                But I joined anyway. Before long, I was mining Pi like it was Pokémon cards in 1999. My partner joined. My family joined. Even the cat tried to tap the phone screen once.
               </p>
-              <p className="text-white">
-                It felt like we were early to something big — like finding Bitcoin at the beginning, but without the hype. I didn’t know what Pi would become, but I knew I wanted to be part of it.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-xl font-bold gradient-text mt-6">The Random Idea That Wouldn’t Go Away</h2>
-              <p className="text-white">
-                One night, it just hit me: <em>“What if there was a fun way to actually use Pi?”</em>  
-                Not just stack it, but spin it, win it, compete with it.  
-                A full-blown competitions app — built just for Pioneers.
-              </p>
-              <p className="text-white">
-                That spark turned into a scribbled note. That note became a prototype. That prototype? It became a mission.
+              <p>
+                It felt like being early to a secret party no hype, no noise, just quiet belief that someday, it would matter.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-bold gradient-text mt-6">Learning the Hard Way</h2>
-              <p className="text-white">
-                The only problem? I had no clue how to build a real app. So I did what every mad founder does — I learned everything from scratch.  
-                Late nights. YouTube tutorials. Crashed code. Broken logic. StackOverflow tabs everywhere.
+              <h2 className="text-xl font-bold gradient-text mt-6">That Annoying Idea You Can’t Unsee</h2>
+              <p>
+                One night, mid-coffee and too many late YouTube videos, the lightbulb went off: <em>“What if we didn’t just stack Pi? What if we spun it, played with it, and maybe even lost a few along the way?”</em>
               </p>
-              <p className="text-white">
-                Half the time I didn’t even know if it would work. But every bug fixed, every feature built — it got us closer to launch.
+              <p>
+                That idea haunted me. So I scribbled a note. That turned into a wild sketch. That sketch turned into... well, lots of late nights, pizza boxes, and questionable sanity.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-bold gradient-text mt-6">Learning Curve or Rollercoaster?</h2>
+              <p>
+                Did I know how to code an app? Nope.  
+                Did that stop me? Also nope.
+              </p>
+              <p>
+                I dove into the deep end bug after bug, crash after crash. My browser had more StackOverflow tabs open than stars in the sky. But every late-night victory felt like winning a Pi jackpot.
               </p>
             </section>
 
             <section>
               <h2 className="text-xl font-bold gradient-text mt-6">The Birth of OhMyCompetitions</h2>
-              <p className="text-white">
-                I didn’t want just another dApp. I wanted a Pi-powered experience that made people excited to come back every day.  
-                Competitions. Giveaways. Mini-games. Real utility. That’s what OhMyCompetitions became — and it’s still growing.
+              <p>
+                We didn’t want just another boring dApp. We wanted something that made you jump out of bed, yell "Let's win some Pi!" and annoy your neighbors (sorry, neighbors).
+              </p>
+              <p>
+                Games. Giveaways. Challenges. Real Pi utility. OhMyCompetitions was born and it refuses to sleep.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-bold gradient-text mt-6">The First Win</h2>
-              <p className="text-white">
-                When Pi Login finally worked... it was surreal. Not because of the button — but because all the parts came together.  
-                Frontend. Backend. SDK auth. A real user session. It felt like a rocket finally clearing the launchpad.
+              <h2 className="text-xl font-bold gradient-text mt-6">The First "Whoa" Moment</h2>
+              <p>
+                When Pi Login finally worked? Pure magic. Not just because it worked (though that was a miracle), but because everything connected, frontend, backend and that one button that almost gave me a heart attack.
               </p>
-              <p className="text-white">
-                That one success made it real. This wasn’t a side project anymore. It was Pi in motion.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-xl font-bold gradient-text mt-6">Where We Are Now</h2>
-              <p className="text-white">
-                Months later — here we are. Real Pi prizes. Real users. A growing community.  
-                And we’re just getting warmed up.
-              </p>
-              <p className="text-white">
-                OhMyCompetitions is now more than an idea. It’s a home for Pi-powered entertainment — built <strong>by Pioneers, for Pioneers.</strong>
+              <p>
+                That day, it went from “crazy idea” to “we’re actually doing this.” I nearly Pi-danced in my living room.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-bold gradient-text mt-6">Where We’re Headed</h2>
-              <p className="text-white">
-                We’re building toward something bigger: full tournaments, decentralized prize pools, merchant partnerships — and maybe even a Pi-powered arcade.
+              <h2 className="text-xl font-bold gradient-text mt-6">Where We Are Today</h2>
+              <p>
+                Real Pi prizes. Real players. Real community.  
+                And we’re just warming up.
               </p>
-              <p className="text-white">
-                Our mission? To become the most trusted competition platform in the Pi ecosystem — open to all Pioneers, developers, creators, and dreamers.
-              </p>
-              <p className="text-white">
-                The journey is just beginning.
+              <p>
+                OhMyCompetitions is no longer just an idea on my head it’s a living, breathing Pi playground. Built <strong>by Pioneers, for Pioneers.</strong>
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-bold gradient-text mt-6">A Final Thank You</h2>
-              <p className="text-white">
-                To everyone who believed, played, tested, or just cheered us on — thank you. We built this for you. And we’re just getting started.
+              <h2 className="text-xl font-bold gradient-text mt-6">Our Future? Even Wilder</h2>
+              <p>
+                We’re dreaming big global tournaments, merchant partners, even a full Pi-powered arcade (imagine).
+              </p>
+              <p>
+                Our mission become the most trusted, most fun, and most community-powered competition platform in the Pi universe.
+              </p>
+              <p>
+                We’re just getting started. The question is Are You In?
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-bold gradient-text mt-6">Thank You for the Ride</h2>
+              <p>
+                To every early tester, every friend who believed, and every Pioneer who cheered from the sidelines thank you.  
+                We built this for you. And we’re only scratching the surface.
               </p>
             </section>
 
