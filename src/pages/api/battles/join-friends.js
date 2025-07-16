@@ -1,4 +1,4 @@
-import dbConnect from 'lib/dbConnect';
+import { dbConnect } from 'lib/dbConnect';
 import FriendsOnlyBattle from 'models/FriendsOnlyBattle';
 
 export default async function handler(req, res) {

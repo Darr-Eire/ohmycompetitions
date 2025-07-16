@@ -1,4 +1,4 @@
-import dbConnect from 'lib/dbConnect';
+import { dbConnect } from 'lib/dbConnect';
 import Prize from 'models/Prize';
 
 export default async function handler(req, res) {

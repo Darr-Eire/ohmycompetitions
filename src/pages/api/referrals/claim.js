@@ -1,5 +1,5 @@
 // /pages/api/referrals/claim.js
-import dbConnect from 'lib/dbConnect';
+import { dbConnect } from 'lib/dbConnect';
 import Referral from 'models/Referral';
 
 
