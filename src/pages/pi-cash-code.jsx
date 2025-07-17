@@ -271,16 +271,6 @@ export default function PiCashCodePage() {
               </div>
             </div>
           </section>
-
-          {/* Winners Log */}
-          <div className="mt-8">
-            <ClaimedWinnersLog />
-          </div>
-
-          {/* Ghost Winners Log */}
-          <div className="mt-8">
-            <GhostWinnerLog />
-          </div>
         </div>
       </main>
 

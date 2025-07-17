@@ -109,10 +109,11 @@ export default function PiCompetitionCard({ comp, title, prize, fee, userHandle 
 
       {/* Core details */}
       <div className="text-center space-y-3 text-sm text-white">
+         <p>Total Entries: <strong>{(comp?.ticketsSold ?? 0).toLocaleString()}</strong></p>
      <p>Multiple Winners</p>
 
         <p>Entry Fee: {formattedFee}</p>
-        <p>Total Entries: <strong>{(comp?.ticketsSold ?? 0).toLocaleString()}</strong></p>
+       
         {hasStarted && (
           <p className="font-mono text-lg">{timeLeft}</p>
         )}

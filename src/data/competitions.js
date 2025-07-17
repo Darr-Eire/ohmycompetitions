@@ -284,6 +284,53 @@ export const piItems = [
   },
 ];
 
+export const launchWeekItems = [
+  {
+    comp: {
+      slug: 'omc-launch-week-pi-pioneers',
+      title: 'OMC Launch Week Pi Pioneers',
+      entryFee: 0.20,
+      startsAt: '2025-08-01T00:00:00.000Z',
+      endsAt: '2025-08-08T00:00:00.000Z',
+      totalTickets: 2500,
+      maxTicketsPerUser: 10,
+      theme: 'daily',
+      imageUrl: '/images/your.png',
+    },
+    title: 'OMC Launch Week Pi Pioneers',
+    prize: 'Win 500 Pi',
+  },
+  {
+    comp: {
+      slug: 'omc-launch-week-pi-giveaway',
+      title: 'OMC Launch Week Pi Giveaway',
+      entryFee: 1.00,
+      startsAt: '2025-08-01T00:00:00.000Z',
+      endsAt: '2025-08-07T00:00:00.000Z',
+      totalTickets: 1000,
+      maxTicketsPerUser: 10,
+      theme: 'daily',
+      imageUrl: '/images/your.png',
+    },
+    title: 'OMC Launch Week Pi Giveaway',
+    prize: 'Win 1000 Pi',
+  },
+  {
+    comp: {
+      slug: 'omc-launch-week-pi-power',
+      title: 'OMC Launch Week Pi Power',
+      entryFee: 0.50,
+      startsAt: '2025-08-01T00:00:00.000Z',
+      endsAt: '2025-08-04T00:00:00.000Z',
+      totalTickets: 500,
+      maxTicketsPerUser: 10,
+      theme: 'daily',
+      imageUrl: '/images/your.png',
+    },
+    title: 'OMC Launch Week Pi Power',
+    prize: 'Win 250 Pi',
+  },
+];
 
 export const dailyItems = [
   
@@ -368,7 +415,7 @@ export const cryptoGiveawaysItems = [
       status: 'active',
       comingSoon: true,
     },
-    title: 'Win 2 ETH',
+    title: 'Win ETH',
     href: '/crypto/crypto-eth',
     token: 'ETH',
     imageUrl: '/images/crypto-eth.png',
@@ -385,7 +432,7 @@ export const cryptoGiveawaysItems = [
       status: 'active',
       comingSoon: true,
     },
-    title: 'Win 1000 XRP',
+    title: 'Win XRP',
     href: '/crypto/crypto-xrp',
     token: 'XRP',
     imageUrl: '/images/crypto-xrp.png',
@@ -402,7 +449,7 @@ export const cryptoGiveawaysItems = [
       status: 'active',
       comingSoon: true,
     },
-    title: 'Win 10 SOL',
+    title: 'Win SOL',
     href: '/crypto/crypto-sol',
     token: 'SOL',
     imageUrl: '/images/crypto-sol.png',
@@ -419,7 +466,7 @@ export const cryptoGiveawaysItems = [
       status: 'active',
       comingSoon: true,
     },
-    title: 'Win 2 BNB',
+    title: 'Win BNB',
     href: '/crypto/crypto-bnb',
     token: 'BNB',
     imageUrl: '/images/crypto-bnb.png',
@@ -436,7 +483,7 @@ export const cryptoGiveawaysItems = [
       status: 'active',
       comingSoon: true,
     },
-    title: 'Win 10,000 DOGE',
+    title: 'Win DOGE',
     href: '/crypto/crypto-doge',
     token: 'DOGE',
     imageUrl: '/images/crypto-doge.png',

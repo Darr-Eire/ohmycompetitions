@@ -51,7 +51,7 @@ export default function FreeCompetitionCard({ comp, title, prize }) {
         <span className="bg-white/10 px-3 py-1 rounded-full text-cyan-200 font-medium">
           📅 {formattedDate}
         </span>
-        <span className="bg-yellow-300 text-black font-bold px-3 py-1 rounded-full animate-pulse">
+        <span className="bg-gradient-to-r from-orange-400 to-orange-500 text-black font-bold px-3 py-1 rounded-full animate-pulse">
           Coming Soon
         </span>
       </div>

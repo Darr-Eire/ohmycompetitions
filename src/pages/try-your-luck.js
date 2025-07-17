@@ -119,18 +119,13 @@ export default function TryYourLuckPage() {
 
                   {/* Enabled button */}
 <Link
-  href={playedMap[game.storageKey] ? "#" : game.href}
-  onClick={(e) => {
-    if (playedMap[game.storageKey]) {
-      e.preventDefault(); // prevent navigation
-    }
-  }}
-  className={`bg-cyan-600 hover:bg-cyan-700 text-white font-semibold px-6 py-3 rounded-xl border border-cyan-500 w-full transition text-center block ${
-    playedMap[game.storageKey] ? 'opacity-50 cursor-not-allowed' : ''
-  }`}
+  href="#"
+  onClick={(e) => e.preventDefault()}
+  className="bg-cyan-600 text-white font-semibold px-6 py-3 rounded-xl border border-cyan-500 w-full text-center block opacity-50 cursor-not-allowed"
 >
   Play Now
 </Link>
+
 
 
                 </div>

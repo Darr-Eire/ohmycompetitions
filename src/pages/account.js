@@ -47,13 +47,15 @@ function EnhancedTicketCard({ ticket, theme, compressed = false }) {
         <span className={`text-xs font-medium ${statusColor} mt-1 block`}>{statusLabel}</span>
       </div>
       
-      <Image
-        src={ticket.imageUrl || '/images/default-prize.png'}
-        alt="Prize"
-        width={300}
-        height={compressed ? 96 : 128}
-        className={`w-full object-cover rounded-md ${imageHeight}`}
-      />
+     <Image
+  src={ticket.imageUrl || '/images/default-prize.png'}
+  alt={ticket.prize || 'Prize'}
+  width={300}
+  height={compressed ? 96 : 128}
+  className={`w-full object-cover rounded-md ${imageHeight}`}
+  unoptimized
+/>
+
 
       <div className="grid grid-cols-2 text-xs gap-1">
         <p className="col-span-2 text-cyan-300 font-medium truncate">{ticket.prize}</p>

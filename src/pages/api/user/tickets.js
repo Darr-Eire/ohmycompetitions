@@ -18,17 +18,13 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Find the user first to get their UID
     const user = await User.findOne({ username }).lean();
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Find tickets directly by username (for gifted tickets)
     const giftedTickets = await Ticket.find({ username }).lean();
-    
-    // Find user's purchased tickets via Entry model using both username and UID
-    // Handle both piUserId and uid field names for backward compatibility
+
     const userPiId = user.piUserId || user.uid;
     const userEntries = await Entry.find({ 
       $or: [
@@ -38,8 +34,6 @@ export default async function handler(req, res) {
       ]
     }).lean();
 
-    // ENHANCED: Get all completed payments by this user from the payments collection
-    // Connect directly to MongoDB for payments collection (which uses raw MongoDB, not Mongoose)
     const { MongoClient } = require('mongodb');
     const MONGODB_URI = process.env.MONGO_DB_URL;
     
@@ -49,7 +43,7 @@ export default async function handler(req, res) {
         const client = new MongoClient(MONGODB_URI);
         await client.connect();
         const db = client.db();
-        
+
         userPayments = await db.collection('payments').find({
           $and: [
             { status: 'completed' },
@@ -62,15 +56,14 @@ export default async function handler(req, res) {
             }
           ]
         }).toArray();
-        
+
         await client.close();
       } catch (paymentError) {
         console.error('Error fetching payments:', paymentError);
         userPayments = [];
       }
     }
-    
-    // Get competition details for better data
+
     const competitionIds = [
       ...new Set([
         ...giftedTickets.map(t => t.competitionId).filter(Boolean),
@@ -78,36 +71,33 @@ export default async function handler(req, res) {
       ])
     ];
 
-    // ENHANCED: Also get competitions by slug from payments
     const competitionSlugs = [
       ...new Set([
         ...userPayments.map(p => p.competitionSlug).filter(Boolean)
       ])
     ];
-    
+
     const competitions = await Competition.find({ 
       $or: [
         { _id: { $in: competitionIds } },
         { 'comp.slug': { $in: competitionSlugs } }
       ]
     }).lean();
-    
+
     const competitionMap = competitions.reduce((acc, comp) => {
       acc[comp._id.toString()] = comp;
-      acc[comp.comp.slug] = comp; // Also index by slug
+      acc[comp.comp.slug] = comp;
       return acc;
     }, {});
-    
-    // Combine and format all tickets with enhanced data
+
     const allTickets = [
-      // Gifted tickets
       ...giftedTickets.map(ticket => {
         const comp = competitionMap[ticket.competitionId?.toString()];
         return {
           competitionTitle: ticket.competitionTitle || comp?.title || 'Unknown Competition',
           competitionSlug: ticket.competitionSlug || comp?.comp?.slug,
           prize: comp?.prize || ticket.competitionTitle || 'Prize',
-          entryFee: 0, // Gifted tickets show 0 fee
+          entryFee: 0,
           quantity: ticket.quantity || 1,
           drawDate: comp?.comp?.endsAt || ticket.purchasedAt,
           endsAt: comp?.comp?.endsAt || ticket.purchasedAt,
@@ -116,11 +106,11 @@ export default async function handler(req, res) {
           gifted: true,
           giftedBy: ticket.giftedBy,
           earned: false,
-          purchasedAt: ticket.purchasedAt
+          purchasedAt: ticket.purchasedAt,
+          theme: comp?.theme || comp?.comp?.theme || 'daily'
         };
       }),
-      
-      // User entries (purchased tickets from Entry model)
+
       ...userEntries.map(entry => {
         const comp = competitionMap[entry.competitionId?.toString()];
         return {
@@ -136,11 +126,11 @@ export default async function handler(req, res) {
           gifted: false,
           giftedBy: null,
           earned: entry.earned || comp?.comp?.entryFee === 0 || false,
-          purchasedAt: entry.createdAt
+          purchasedAt: entry.createdAt,
+          theme: comp?.theme || comp?.comp?.theme || 'daily'
         };
       }),
 
-      // ENHANCED: User payments (actual Pi purchases from payments collection)
       ...userPayments.map(payment => {
         const comp = competitionMap[payment.competitionSlug];
         const ticketNumbers = payment.ticketNumber ? 
@@ -167,18 +157,16 @@ export default async function handler(req, res) {
           earned: false,
           purchasedAt: payment.completedAt || payment.createdAt,
           paymentId: payment.paymentId,
-          piTransaction: payment.txid
+          piTransaction: payment.txid,
+          theme: comp?.theme || comp?.comp?.theme || 'daily'
         };
       })
     ];
 
-    // Remove duplicates based on ticket numbers or payment IDs
     const uniqueTickets = allTickets.filter((ticket, index, self) => {
       if (ticket.paymentId) {
-        // For Pi payments, ensure unique by paymentId
         return self.findIndex(t => t.paymentId === ticket.paymentId) === index;
       } else if (ticket.ticketNumbers?.length > 0) {
-        // For other tickets, ensure unique by ticket numbers
         return self.findIndex(t => 
           JSON.stringify(t.ticketNumbers) === JSON.stringify(ticket.ticketNumbers)
         ) === index;
@@ -186,7 +174,6 @@ export default async function handler(req, res) {
       return true;
     });
 
-    // Sort by purchase date (newest first)
     uniqueTickets.sort((a, b) => new Date(b.purchasedAt) - new Date(a.purchasedAt));
 
     console.log(`✅ Found ${uniqueTickets.length} tickets for user ${username}:`, {
@@ -194,7 +181,7 @@ export default async function handler(req, res) {
       entries: userEntries.length,
       payments: userPayments.length,
       total: uniqueTickets.length,
-      userPiId: userPiId // Add this for debugging
+      userPiId: userPiId
     });
 
     res.status(200).json(uniqueTickets);

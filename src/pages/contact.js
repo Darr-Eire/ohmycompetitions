@@ -43,7 +43,7 @@ export default function ContactPage() {
 </div>
 
         <p className="mb-6 text-center">
-          Have a question, feedback, or need help? Fill out the form below or email us at <span className="underline">ohmycompetitionsgmail.com</span>.
+          Have a question, feedback, or need help? Fill out the form below or email us at <span className="underline">ohmycompetitions@gmail.com</span>.
         </p>
         <form className="space-y-4">
           <input

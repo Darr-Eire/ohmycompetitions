@@ -2,9 +2,12 @@
 
 import Head from 'next/head'
 import DailyCompetitionCard from '@components/DailyCompetitionCard'
-import { dailyItems } from '../../data/competitions'
+import { dailyItems, launchWeekItems } from '../../data/competitions'
 
 export default function DailyCompetitionsPage() {
+const allDailyCompetitions = [...launchWeekItems, ...dailyItems];
+
+
   return (
     <>
       <Head>
@@ -13,13 +16,7 @@ export default function DailyCompetitionsPage() {
 
       <main className="app-background min-h-screen px-0 py-0 text-white">
         <div className="max-w-screen-lg mx-auto px-4 sm:px-0">
-          <h1
-            className="
-              text-3xl font-bold text-center mb-4
-              bg-gradient-to-r from-[#00ffd5] to-[#0077ff]
-              bg-clip-text text-transparent
-            "
-          >
+          <h1 className="text-3xl font-bold text-center mb-4 bg-gradient-to-r from-[#00ffd5] to-[#0077ff] bg-clip-text text-transparent">
             Daily Competitions
           </h1>
 
@@ -29,14 +26,14 @@ export default function DailyCompetitionsPage() {
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {dailyItems.map(item => (
+            {allDailyCompetitions.map(item => (
               <DailyCompetitionCard
                 key={item.comp.slug}
                 comp={item.comp}
                 title={item.title}
                 prize={item.prize}
                 fee={`${item.comp.entryFee.toFixed(2)} π`}
-                disabled={true} // <-- set this to true to disable
+                disabled={true}
               />
             ))}
           </div>
