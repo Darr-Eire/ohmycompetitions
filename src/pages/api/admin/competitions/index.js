@@ -42,8 +42,9 @@ export default async function handler(req, res) {
           entryFee: parseFloat(entryFee) || 0, 
           totalTickets: parseInt(totalTickets) || 100, 
           ticketsSold: 0,
-          startsAt: startsAt || new Date().toISOString(),
-          endsAt: endsAt || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+         startsAt: startsAt ? new Date(startsAt) : new Date(),
+endsAt: endsAt ? new Date(endsAt) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+
           paymentType: entryFee > 0 ? 'pi' : 'free',
           piAmount: parseFloat(piAmount) || parseFloat(entryFee) || 0,
           status: 'active'

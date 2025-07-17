@@ -197,7 +197,7 @@ export default function PiCashCodePage() {
           <h1 className="text-3xl sm:text-4xl font-bold text-cyan-300 animate-glow-float">Pi Cash Code</h1>
 
           <div className="bg-[#101426] border-2 border-cyan-400 rounded-xl px-6 py-3 text-2xl font-mono text-cyan-300 tracking-widest shadow-[0_0_20px_#00ffd5aa]">
-            {showCode ? (codeData?.code || '????-????') : 'Code drops soon 🔒'}
+            {showCode ? (codeData?.code || '????-????') : 'Code Drops Soon 🔒'}
           </div>
 
           <div className="bg-black border border-cyan-400 text-cyan-300 text-lg font-bold px-4 py-2 rounded-lg shadow-[0_0_15px_#00f0ff88]">
@@ -314,7 +314,7 @@ export default function PiCashCodePage() {
             )}
             
             {isAnswerCorrect === true && (
-              <p className="text-green-400 text-sm mb-4">✅ Correct! Proceeding to payment...</p>
+              <p className="text-cyan-300 text-sm mb-4">✅ Correct! Proceeding to payment...</p>
             )}
 
             <div className="flex justify-end gap-4">

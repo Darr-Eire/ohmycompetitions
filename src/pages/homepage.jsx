@@ -143,14 +143,23 @@ export default function HomePage() {
     return allMerged;
   };
 
-  const getCompetitionsByCategory = (category) => {
-    const comps = liveCompetitions.filter(item => {
-      const theme = item.theme || 'tech';
-      return theme === category;
-    });
+ const getCompetitionsByCategory = (category) => {
+  return liveCompetitions.filter(item => {
+    const theme = item.theme || 'tech';
 
-    return comps;
-  };
+    // Only filter out non-admin for 'daily'
+    if (category === 'daily') {
+      const isFromStatic =
+        [...techItems, ...premiumItems, ...piItems, ...dailyItems, ...freeItems, ...cryptoGiveawaysItems]
+          .some(staticItem => staticItem.comp?.slug === item.comp?.slug);
+
+      return theme === category && !isFromStatic;
+    }
+
+    // Allow all others (static + admin)
+    return theme === category;
+  });
+};
 
   if (loading) {
     return (
@@ -226,15 +235,21 @@ export default function HomePage() {
         </section>
 
         <TopWinnersCarousel />
-
-        <div className="flex justify-center mt-8">
-          <div className="grid grid-cols-2 gap-4 w-full max-w-md px-4 py-6 bg-gradient-to-r from-cyan-300 to-blue-500 rounded-xl shadow-lg text-black text-center text-sm sm:text-base">
-            <Stat label="Winners" value="44,000+" />
-            <Stat label="Total Pi Won" value="106,400 π" />
-            <Stat label="Donated to Charity" value="15,000 π" />
-            <Stat label="User Rated" value="5★" />
-          </div>
-        </div>
+<div className="mt-6 px-4">
+  <div className="bg-[#0a1024]/90 border border-cyan-700 rounded-xl px-4 py-6 shadow-[0_0_20px_#00fff055] text-center text-sm">
+    <h2 className="text-lg font-bold text-cyan-300 mb-2">Our Vision for 2026: Impact Through Innovation</h2>
+    <p className="text-white/80 mb-3 leading-relaxed">
+      By the end of 2026, OhMyCompetitions aims to reach these community-first milestones,
+      powered by the Pi Network and supported by Pioneers like you.
+    </p>
+    <ul className="text-cyan-200 space-y-1 font-medium">
+      <li>🌍 Over <strong>100,000+ winners</strong> across the globe</li>
+      <li>💰 <strong>500,000 π</strong> in distributed Pi prizes</li>
+      <li>🎗 <strong>25,000 π</strong> donated to Pi causes & communities</li>
+      <li>⭐ Maintained <strong>5★</strong> user-rated experience</li>
+    </ul>
+  </div>
+</div>
       </main>
     </>
   );
@@ -317,17 +332,18 @@ function TopWinnersCarousel() {
   const current = winners[index];
 
   return (
-    <div className="max-w-md mx-auto mt-12 bg-white/10 backdrop-blur-lg rounded-xl shadow-lg p-6 text-white text-center">
-      <h2 className="text-2xl font-bold mb-4">Top Winners</h2>
+    <div className="max-w-md mx-auto mt-12 bg-[#0a1024]/90 border border-cyan-500 backdrop-blur-lg rounded-xl shadow-[0_0_40px_#00fff055] p-6 text-white text-center">
+      <h2 className="text-2xl font-bold text-cyan-300 mb-4 font-orbitron">Top Winners</h2>
       <div className="flex justify-center items-center mb-4">
-        <Image src={current.image} alt={current.name} width={120} height={120} className="rounded-full border-4 border-blue-500" />
+        <Image src={current.image} alt={current.name} width={120} height={120} className="rounded-full border-4 border-cyan-400 shadow-lg" />
       </div>
       <h3 className="text-xl font-semibold">{current.name}</h3>
-      <p className="text-blue-300">{current.prize}</p>
+      <p className="text-cyan-200">{current.prize}</p>
       <p className="text-sm text-white/70">{current.date}</p>
     </div>
   );
 }
+
 
 function Stat({ label, value }) {
   return (

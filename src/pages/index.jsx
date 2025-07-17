@@ -11,12 +11,13 @@ export default function IndexPage() {
     { icon: '🎮', text: 'Mini Games' },
   ];
 
-  const stats = [
-    { label: 'Winners', value: '44,000+' },
-    { label: 'Total Won', value: '106,400 π' },
-    { label: 'Donated', value: '15,000 π' },
-    { label: 'User Rated', value: '5 ★' },
-  ];
+const stats = [
+  { label: 'Total Winners', value: '100,000+' },
+  { label: 'Pi Distributed', value: '250,000 π' },
+  { label: 'Donated to Causes', value: '25,000 π' },
+  { label: 'User Satisfaction', value: '4.9 ★' },
+];
+
 
   return (
     <div className="min-h-screen bg-[#0a1024] text-white flex items-center justify-center px-4 py-6">
@@ -47,15 +48,21 @@ export default function IndexPage() {
           ))}
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-4 text-center bg-[#0a1024]/80 border border-cyan-400 rounded-xl px-4 py-4 shadow-lg text-xs">
-          {stats.map((s, i) => (
-            <div key={i}>
-              <div className="text-base font-bold text-cyan-300">{s.value}</div>
-              <div className="text-white/80">{s.label}</div>
-            </div>
-          ))}
-        </div>
+{/* 2026 Vision Section */}
+<div className="bg-[#0a1024]/90 border border-cyan-700 rounded-xl px-4 py-6 shadow-[0_0_20px_#00fff055] text-center text-sm mt-2">
+  <h2 className="text-lg font-bold text-cyan-300 mb-2">Our Vision for 2026: Impact Through Innovation</h2>
+  <p className="text-white/80 mb-3 leading-relaxed">
+    By the end of 2026, OhMyCompetitions aims to reach these community-first milestones,
+    powered by the Pi Network and supported by Pioneers like you.
+  </p>
+  <ul className="text-cyan-200 space-y-1 font-medium">
+    <li>🌍 Over <strong>100,000+ winners</strong> across the globe</li>
+    <li>💰 <strong>500,000 π</strong> in distributed Pi prizes</li>
+    <li>🎗 <strong>25,000 π</strong> donated to pi causes & communities</li>
+    <li>⭐ Maintained <strong>5★</strong> user-rated experience</li>
+  </ul>
+</div>
+
 
         {/* CTA Button */}
         <Link

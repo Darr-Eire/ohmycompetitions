@@ -11,7 +11,8 @@ export default function AllCompetitionsPage() {
   const [competitions, setCompetitions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeFilter, setActiveFilter] = useState('All');
+const [activeFilter, setActiveFilter] = useState('Daily');
+
 
   useEffect(() => {
     const fetchCompetitions = async () => {
@@ -66,7 +67,8 @@ export default function AllCompetitionsPage() {
     //   if (!formattedThemes.includes(f)) formattedThemes.push(f);
     // });
 
-    return ['All', ...formattedThemes];
+ return formattedThemes;
+
   };
 
   const renderCompetitionCard = (item) => {
@@ -119,7 +121,7 @@ export default function AllCompetitionsPage() {
           Explore Live Competitions
         </h1>
         <p className="text-center text-white text-base sm:text-lg max-w-md mx-auto mb-8">
-          Enter exclusive competitions powered by Pi. Win tech, crypto, lifestyle experiences, and more — with new draws every week! We’re always adding new competitions and creating even more winners as time goes on — don’t miss your chance to join the excitement and be our next big winner!
+          Enter exclusive competitions powered by Pi. Win tech, Pi, crypto, lifestyle experiences and more with new draws every week! We’re always adding new competitions and creating even more winners as time goes on so don’t miss your chance to join the excitement and be our next big winner!
         </p>
       </div>
 
@@ -147,7 +149,9 @@ export default function AllCompetitionsPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+
         {filteredCompetitions.map((item) => renderCompetitionCard(item))}
       </div>
 

@@ -22,55 +22,61 @@ export default function CompetitionCard({
   const [timeLeft, setTimeLeft] = useState('');
   const [status, setStatus] = useState('UPCOMING');
   const [showGiftModal, setShowGiftModal] = useState(false);
+const [showCountdown, setShowCountdown] = useState(false);
+useEffect(() => {
+  if (!endsAt || comp?.comingSoon) {
+    setTimeLeft('');
+    setStatus('COMING SOON');
+    setShowCountdown(false);
+    return;
+  }
 
-  useEffect(() => {
-    if (!endsAt || comp?.comingSoon) {
+  const interval = setInterval(() => {
+    const now = Date.now();
+    const start = new Date(comp?.comp?.startsAt || comp?.startsAt).getTime();
+    const end = new Date(endsAt).getTime();
+
+    if (now < start) {
       setTimeLeft('');
-      setStatus('COMING SOON');
+      setStatus('UPCOMING');
+      setShowCountdown(false);
       return;
     }
 
-    const interval = setInterval(() => {
-      const now = Date.now();
-      const start = new Date(comp?.comp?.startsAt || comp?.startsAt).getTime();
-      const end = new Date(endsAt).getTime();
+    let diff = end - now;
 
-      // Check if competition hasn't started yet
-      if (now < start) {
-        setTimeLeft('');
-        setStatus('UPCOMING');
-        return;
-      }
+    if (diff <= 0) {
+      setTimeLeft('');
+      setStatus('ENDED');
+      setShowCountdown(false);
+      clearInterval(interval);
+      return;
+    }
 
-      let diff = end - now;
+    const oneDay = 24 * 60 * 60 * 1000;
+    setShowCountdown(diff <= oneDay); // ✅ SHOW countdown only when < 24h left
 
-      if (diff <= 0) {
-        setTimeLeft('');
-        setStatus('ENDED');
-        clearInterval(interval);
-        return;
-      }
+    const days = Math.floor(diff / oneDay);
+    diff -= days * oneDay;
+    const hrs = Math.floor(diff / (1000 * 60 * 60));
+    diff -= hrs * (1000 * 60 * 60);
+    const mins = Math.floor(diff / (1000 * 60));
+    diff -= mins * (1000 * 60);
+    const secs = Math.floor(diff / 1000);
 
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      diff -= days * (1000 * 60 * 60 * 24);
-      const hrs = Math.floor(diff / (1000 * 60 * 60));
-      diff -= hrs * (1000 * 60 * 60);
-      const mins = Math.floor(diff / (1000 * 60));
-      diff -= mins * (1000 * 60);
-      const secs = Math.floor(diff / 1000);
+    let timeStr = '';
+    if (days > 0) timeStr += `${days}D `;
+    if (hrs > 0 || days > 0) timeStr += `${hrs}H `;
+    if (mins > 0 || hrs > 0 || days > 0) timeStr += `${mins}M `;
+    if (days === 0 && hrs === 0) timeStr += `${secs}S`;
 
-      let timeStr = '';
-      if (days > 0) timeStr += `${days}D `;
-      if (hrs > 0 || days > 0) timeStr += `${hrs}H `;
-      if (mins > 0 || hrs > 0 || days > 0) timeStr += `${mins}M `;
-      if (days === 0 && hrs === 0) timeStr += `${secs}S`;
+    setTimeLeft(timeStr.trim());
+    setStatus('LIVE NOW');
+  }, 1000);
 
-      setTimeLeft(timeStr.trim());
-      setStatus('LIVE NOW');
-    }, 1000);
+  return () => clearInterval(interval);
+}, [endsAt, comp?.comingSoon, comp?.comp?.startsAt, comp?.startsAt]);
 
-    return () => clearInterval(interval);
-  }, [endsAt, comp?.comingSoon, comp?.comp?.startsAt, comp?.startsAt]);
 
   const sold = comp?.comp?.ticketsSold || comp?.ticketsSold || 0;
   const total = comp?.comp?.totalTickets || comp?.totalTickets || 100;
@@ -150,14 +156,35 @@ export default function CompetitionCard({
             <span>{prize}</span>
           </div>
 
-          <div className="flex justify-between">
-            <span className="text-cyan-300 font-semibold">Starts:</span>
-            <span>
-              {(comp?.comp?.startsAt || comp?.startsAt)
-                ? new Date(comp.comp?.startsAt || comp.startsAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-                : 'TBA'}
-            </span>
-          </div>
+         <div className="flex justify-between">
+  <span className="text-cyan-300 font-semibold">Starts:</span>
+  <span>
+    {(comp?.comp?.startsAt || comp?.startsAt)
+      ? new Date(comp.comp?.startsAt || comp.startsAt).toLocaleString(undefined, {
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+      : 'TBA'}
+  </span>
+</div>
+
+{/* ✅ Real Draw Date */}
+<div className="flex justify-between mt-1">
+  <span className="text-cyan-300 font-semibold">Draw Date:</span>
+  <span>
+    {(comp?.comp?.endsAt || comp?.endsAt)
+      ? new Date(comp.comp?.endsAt || comp.endsAt).toLocaleString(undefined, {
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+      : 'TBA'}
+  </span>
+</div>
+
 
           <div className="flex justify-between">
             <span className="text-cyan-300 font-semibold">Entry Fee:</span>

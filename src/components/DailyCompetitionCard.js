@@ -63,7 +63,7 @@ export default function DailyCompetitionCard({ comp, title, prize, fee }) {
           {/* Highlight */}
           <div className="bg-gradient-to-r from-cyan-500/30 via-cyan-400/20 to-cyan-500/30 border border-cyan-400/50 p-2 rounded text-center text-sm font-semibold mb-2 shadow-md">
             <p className="text-cyan-100">
-              {comp?.highlightMessage ? comp.highlightMessage : '🚀 Join now and compete for the Pi prize! 🎉'}
+              {comp?.highlightMessage ? comp.highlightMessage : 'Join now and compete for the Pi prize!'}
             </p>
             <p className="mt-1 text-xs text-cyan-200 font-medium tracking-wide animate-pulse">
               Only {total - sold} tickets left! 🔥
@@ -79,25 +79,31 @@ export default function DailyCompetitionCard({ comp, title, prize, fee }) {
           </div>
 
           {/* Details Grid */}
-          <div className="grid grid-cols-2 gap-1 text-white text-sm mb-3">
-           <p className="font-semibold text-left">🎯 Draw:</p>
-<p className="font-semibold text-right tabular-nums">
-  {endsAt ? new Date(endsAt).toLocaleDateString('en-GB') : 'TBA'}
-</p>
+ <div className="grid grid-cols-2 gap-1 text-white text-sm mb-3">
+  <p className="font-semibold text-left">Starts</p>
+  <p className="font-semibold text-right tabular-nums">
+    {startsAt ? new Date(startsAt).toLocaleDateString('en-GB') : 'TBA'}
+  </p>
+
+  <p className="font-semibold text-left">Draw</p>
+  <p className="font-semibold text-right tabular-nums">
+    {endsAt ? new Date(endsAt).toLocaleDateString('en-GB') : 'TBA'}
+  </p>
 
 
-            <p className="font-semibold text-left">🎁 Prize:</p>
+
+            <p className="font-semibold text-left"> Prize</p>
             <p className="font-semibold text-right tabular-nums">{prize}</p>
 
-            <p className="font-semibold text-left">🎟 Fee:</p>
+            <p className="font-semibold text-left"> Fee</p>
             <p className="font-semibold text-right tabular-nums">
               {isNaN(entryFee) ? 'TBA' : `${entryFee.toFixed(2)} π`}
             </p>
 
-            <p className="font-semibold text-left">🎫 Tickets:</p>
+            <p className="font-semibold text-left"> Tickets</p>
             <p className="font-semibold text-right tabular-nums">{total.toLocaleString()}</p>
 
-            <p className="font-semibold text-left">🔒 Max:</p>
+            <p className="font-semibold text-left"> Max Per User</p>
             <p className="font-semibold text-right tabular-nums">
               {comp.maxTicketsPerUser ? comp.maxTicketsPerUser.toLocaleString() : '10'}
             </p>

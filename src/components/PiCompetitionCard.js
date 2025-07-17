@@ -109,7 +109,8 @@ export default function PiCompetitionCard({ comp, title, prize, fee, userHandle 
 
       {/* Core details */}
       <div className="text-center space-y-3 text-sm text-white">
-        <p>Winner Takes All</p>
+     <p>Multiple Winners</p>
+
         <p>Entry Fee: {formattedFee}</p>
         <p>Total Entries: <strong>{(comp?.ticketsSold ?? 0).toLocaleString()}</strong></p>
         {hasStarted && (
@@ -155,11 +156,13 @@ export default function PiCompetitionCard({ comp, title, prize, fee, userHandle 
         {slug ? (
           <Link href={`/ticket-purchase/pi/${slug}`} legacyBehavior>
             <a>
-              <button
-                className="w-full py-3 rounded-lg font-bold text-black shadow bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:from-[#00e6c7] hover:to-[#0066e6]"
-              >
-                Enter Now
-              </button>
+        <button
+  disabled
+  className="w-full py-3 rounded-lg font-bold bg-cyan-500 text-white opacity-60 cursor-not-allowed"
+>
+  Coming Soon
+</button>
+
             </a>
           </Link>
         ) : (

@@ -3,7 +3,7 @@
 import React from 'react';
 
 
-  const selectedCompetitions = [
+const selectedCompetitions = [
   {
     _id: '686c32e3494582332d2d652c',
     comp: {
@@ -16,7 +16,7 @@ import React from 'react';
       paymentType: 'pi',
       piAmount: 0.4,
       status: 'active',
-      prizePool: 2.8,
+      prizePool: 220, // 0.4 * 1100 * 0.5
       title: 'PS5 Bundle',
       prize: 'PlayStation 5',
       href: '/competitions/ps5-bundle-giveaway',
@@ -25,50 +25,72 @@ import React from 'react';
     },
   },
   {
-    _id: '686c32e3494582332d2d652d',
+    _id: '6878ec52b448fa6d97ae1b6e',
     comp: {
-      slug: '55-inch-tv-giveaway',
-      entryFee: 0.45,
-      totalTickets: 1500,
-      ticketsSold: 1,
-      startsAt: '2025-06-16T11:30:00Z',
-      endsAt: '2025-08-16T11:30:00Z',
-      paymentType: 'pi',
-      piAmount: 0.45,
-      status: 'active',
-      prizePool: 0.225,
-      title: '55″ Smart TV',
-      prize: '55″ Smart TV',
-      href: '/competitions/55-inch-tv-giveaway',
-      imageUrl: '/images/tv.jpg',
-      theme: 'tech',
-    },
-  },
-
- 
-  {
-    _id: '6875b0ed24da567558b1572e',
-    comp: {
-      slug: 'omc-launch-week-500-pi',
-      entryFee: 1,
+      slug: 'omc-launch-week-pi-pioneers',
+      entryFee: 0.3,
       totalTickets: 1000,
-      ticketsSold: 11,
-      startsAt: '2025-07-15T01:37:49.297Z',
-      endsAt: '2025-07-16T00:00',
+      ticketsSold: 0,
+      startsAt: '2025-07-17T00:00:00Z',
+      endsAt: '2025-07-30T00:00:00Z',
       paymentType: 'pi',
-      piAmount: 0.5,
+      piAmount: 0.3,
       status: 'active',
-      prizePool: 5.5,
-      title: 'OMC Launch Week 500 Pi',
-      description: 'OMC 500 Pi Giveway',
+      prizePool: 150, // 0.3 * 1000 * 0.5
+      title: 'OMC Launch Week Pi Pioneers',
+      description: '',
       prize: '500',
-      href: '/competitions/omc-launch-week-500-pi',
-      imageUrl: '/images/pi5.png',
+      href: '/competitions/omc-launch-week-pi-pioneers',
+      imageUrl: '/images/pi3.png',
       theme: 'daily',
     },
   },
- 
+  {
+    _id: '6878ef398a488879fa19dcdd',
+    comp: {
+      slug: 'omc-launch-week-pi-giveaway',
+      entryFee: 0.4,
+      totalTickets: 1000,
+      ticketsSold: 0,
+      startsAt: '2025-07-17T00:00:00Z',
+      endsAt: '2025-08-01T00:00:00Z',
+      paymentType: 'pi',
+      piAmount: 0.4,
+      status: 'active',
+      prizePool: 200, // 0.4 * 1000 * 0.5
+      title: 'OMC Launch Week Pi Giveaway',
+      description: '',
+      prize: '1000',
+      href: '/competitions/omc-launch-week-pi-giveaway',
+      imageUrl: '/images/pi1.png',
+      theme: 'daily',
+    },
+  },
+  {
+    _id: '6878efad8a488879fa19dce6',
+    comp: {
+      slug: 'omc-launch-week-pi-power',
+      entryFee: 0.5,
+      totalTickets: 1000,
+      ticketsSold: 0,
+      startsAt: '2025-07-17T00:00:00Z',
+      endsAt: '2025-08-05T00:00:00Z',
+      paymentType: 'pi',
+      piAmount: 0.5,
+      status: 'active',
+      prizePool: 250, // 0.5 * 1000 * 0.5
+      title: 'OMC Launch Week Pi Power',
+      description: '',
+      prize: '250',
+      href: '/competitions/omc-launch-week-pi-power',
+      imageUrl: '/images/pi2.png',
+      theme: 'daily',
+    },
+  },
 ];
+
+
+
 
 
 

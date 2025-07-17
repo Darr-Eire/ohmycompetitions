@@ -118,12 +118,21 @@ export default function TryYourLuckPage() {
                   <p className="mb-4 text-sm text-gray-200">{game.desc}</p>
 
                   {/* Enabled button */}
-                  <Link
-                    href={game.href}
-                    className="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold px-6 py-3 rounded-xl border border-cyan-500 w-full transition text-center block"
-                  >
-                    Play Now
-                  </Link>
+<Link
+  href={playedMap[game.storageKey] ? "#" : game.href}
+  onClick={(e) => {
+    if (playedMap[game.storageKey]) {
+      e.preventDefault(); // prevent navigation
+    }
+  }}
+  className={`bg-cyan-600 hover:bg-cyan-700 text-white font-semibold px-6 py-3 rounded-xl border border-cyan-500 w-full transition text-center block ${
+    playedMap[game.storageKey] ? 'opacity-50 cursor-not-allowed' : ''
+  }`}
+>
+  Play Now
+</Link>
+
+
                 </div>
               )
             })}

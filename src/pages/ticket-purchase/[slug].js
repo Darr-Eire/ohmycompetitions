@@ -55,12 +55,11 @@ const skillQuestions = [
   { question: "What day comes after Monday?", answer: "tuesday" },
   { question: "How many days are in a week?", answer: "7" },
   { question: "What is the capital of France?", answer: "paris" },
-  { question: "What shape has 3 sides?", answer: "triangle" },
   { question: "What color is grass?", answer: "green" },
   { question: "What is 3 + 4?", answer: "7" },
   { question: "What color is the sky on a clear day?", answer: "blue" },
   { question: "What is 5 x 6?", answer: "30" },
-  { question: "Type the word 'Pi'", answer: "pi" }, // lowercase to match
+  { question: "Type the word 'pi'", answer: "pi" },
   { question: "What is 10 - 2?", answer: "8" },
   { question: "How many legs does a spider have?", answer: "8" },
   { question: "What color are bananas?", answer: "yellow" },
@@ -68,18 +67,31 @@ const skillQuestions = [
   { question: "What day comes after Monday?", answer: "tuesday" },
   { question: "How many days are in a week?", answer: "7" },
   { question: "What is the capital of France?", answer: "paris" },
-  { question: "What shape has 3 sides?", answer: "triangle" },
   { question: "What color is grass?", answer: "green" },
 ];
 
+const DetailRow = ({ label, value, highlight = false }) => (
+  <div className="flex justify-between">
+    <span className="font-semibold">{label}</span>
+    <span className={highlight ? 'text-red-400 font-bold' : ''}>{value}</span>
+  </div>
+);
 
 
 export default function TicketPurchasePage() {
   const router = useRouter();
-  const { slug } = router.query;
+   const slugArray = router.query.slug || []; // could be ['1000-pi-giveaway'] or ['pi', '1000-pi-giveaway']
+  const slug = Array.isArray(slugArray) ? slugArray[slugArray.length - 1] : slugArray;
+
   const { user, login, isAuthenticated } = usePiAuth();
+ 
+
+
+
 
   const [comp, setComp] = useState(null);
+  const miniImages = comp?.thumbnails || [];
+
   const isCryptoCompetition = comp?.theme === 'crypto' || comp?.slug?.startsWith('crypto');
 
   const [loading, setLoading] = useState(false);
@@ -337,213 +349,234 @@ const loadDescription = async () => {
     );
   }
 
-  return (
-    <main className="min-h-screen px-4 py-10 text-white bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] font-orbitron">
-      <div className="max-w-xl mx-auto bg-white/5 backdrop-blur-lg border border-cyan-400 rounded-2xl shadow-[0_0_60px_#00ffd577] p-6">
-        <div className="bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-500 p-[2px] rounded-xl mb-4">
-          <div className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] rounded-lg px-4 py-3 font-orbitron">
-            <h1 className="text-center text-white text-2xl sm:text-3xl font-extrabold tracking-wide uppercase drop-shadow-md">
-              {comp.title}
-            </h1>
-          </div>
-        </div>
-
-        <div className="space-y-6 text-center">
-       {!isDaily && !isCryptoCompetition && mainImage && (
-  <>
-    {/* image code stays here */}
-  </>
-)}
-
-{isCryptoCompetition && (
-  <div className="w-full h-[400px] my-4">
-    <TradingViewWidget />
-  </div>
-)}
-
-
-          <div className="text-center">
-            <p className="text-white text-2xl font-bold">{comp.prize}</p>
-
-            <button
-              onClick={() => setShowDetails(!showDetails)}
-              className="mt-2 text-sm text-cyan-300 hover:text-white transition underline"
-            >
-              {showDetails ? 'Hide' : 'View'} Competition Details
-            </button>
-
-            {showDetails && (
-              <div className="mt-3 text-sm bg-white/10 border border-cyan-400 rounded-lg p-4 text-left max-w-md mx-auto whitespace-pre-wrap text-white/80">
-                {description}
-              </div>
-            )}
-          </div>
-<div className="max-w-md mx-auto text-sm text-white space-y-2">
-  <div className="flex justify-between">
-    <span className="font-semibold">Starts On</span>
-    <span>
-      {comp.startsAt
-        ? new Date(comp.startsAt).toLocaleDateString('en-GB')
-        : 'TBA'}
-    </span>
-  </div>
-  <div className="flex justify-between">
-    <span className="font-semibold">Draw Takes Place</span>
-    <span>
-      {comp.endsAt
-        ? new Date(comp.endsAt).toLocaleDateString('en-GB')
-        : 'TBA'}
-    </span>
-  </div>
-
-  <div className="flex justify-between">
-    <span className="font-semibold">Entry Fee</span>
-    <span>{comp.entryFee.toFixed(2)} π</span>
-  </div>
-  <div className="flex justify-between">
-    <span className="font-semibold">Max Ticket Purchases</span>
-    <span>
-      {comp.maxTicketsPerUser
-        ? comp.maxTicketsPerUser.toLocaleString()
-        : '10'}
-    </span>
-  </div>
-  <div className="flex justify-between">
-    <span className="font-semibold">Tickets Sold</span>
-    <span className={`${liveTicketsSold >= comp.totalTickets ? 'text-red-400 font-bold' : ''}`}>
-      {liveTicketsSold} / {comp.totalTickets}
-      {liveTicketsSold >= comp.totalTickets && ' (SOLD OUT)'}
-    </span>
-  </div>
-  {liveTicketsSold > 0 && (
-    <div className="flex justify-between text-cyan-400">
-      <span className="font-semibold">Available</span>
-      <span>{Math.max(0, comp.totalTickets - liveTicketsSold)} tickets remaining</span>
-    </div>
-  )}
+return (
+  <main className="min-h-screen px-4 py-10 text-white bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] font-orbitron">
+    <div className="max-w-xl mx-auto bg-white/5 backdrop-blur-lg border border-cyan-400 rounded-2xl shadow-[0_0_60px_#00ffd577] p-6">
+      
+     <div className="mb-6 border-2 border-cyan-400 rounded-xl p-4 shadow-[0_0_40px_#00fff766] bg-[#0f172a]">
+  <h1 className="text-center text-cyan-300 text-2xl sm:text-3xl font-extrabold uppercase tracking-widest drop-shadow-md">
+    {comp.title}
+  </h1>
 </div>
 
 
-          {isFree ? (
-            <>
-              <p className="text-cyan-300 font-semibold text-lg">Free Ticket Claimed: {quantity}/2</p>
-              <button
-                onClick={claimFreeTicket}
-                disabled={quantity >= (sharedBonus ? 2 : 1)}
-                className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 px-4 rounded-xl mb-3"
-              >
-                Claim Free Ticket
-              </button>
-              {!sharedBonus && (
-                <button
-                  onClick={handleShare}
-                  className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold py-3 px-4 rounded-xl"
-                >
-                  Share for Bonus Ticket
-                </button>
-              )}
-            </>
-          ) : (
-            <>
-              {!user && (
-                <div className="text-sm bg-red-600 p-3 rounded-lg font-semibold">
-                  Please{' '}
-                  <button onClick={login} className="underline text-cyan-200">
-                    log in
-                  </button>{' '}
-                  with Pi to buy tickets.
-                </div>
-              )}
-              <div className="flex justify-center gap-4 mt-4">
-                <button
-                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  disabled={quantity <= 1}
-                  className="bg-blue-500 px-4 py-1 rounded-full disabled:opacity-50"
-                >
-                  −
-                </button>
-                <span className="text-lg font-semibold">{quantity}</span>
-                <button
-                  onClick={() => setQuantity((q) => Math.min(availableTickets, q + 1))}
-                  disabled={quantity >= availableTickets}
-                  className="bg-blue-500 px-4 py-1 rounded-full disabled:opacity-50"
-                >
-                  +
-                </button>
-              </div>
-              {isNearlyFull && availableTickets > 0 && (
-                <div className="text-orange-400 text-sm font-bold mt-2">
-                  ⚠️ Only {availableTickets} tickets remaining!
-                </div>
-              )}
-              {quantity > availableTickets && (
-                <div className="text-red-400 text-sm font-bold mt-2">
-                  ❌ Cannot buy {quantity} tickets - only {availableTickets} available
-                </div>
-              )}
-              <p className="text-lg font-bold mt-6">
-                Total {totalPrice.toFixed(2)} π
-              </p>
-<p className="text-white text-sm mt-2">
-  Secure your entry to win <strong>{comp.prize}</strong>.<br />
-  Thank you for participating and good luck! 🚀✨
-</p>
+      <div className="space-y-6 text-center">
 
-
-              {!showSkillQuestion ? (
-                <button
-                  onClick={handleShowSkillQuestion}
-                  className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 px-4 rounded-xl mt-6"
-                >
-                  Proceed to Payment
-                </button>
-              ) : (
-                <div className="mt-6 max-w-md mx-auto text-center">
-                  <label htmlFor="skill-question" className="block font-semibold mb-1 text-white">
-                    Skill Question (Required to Enter):
-                  </label>
-                  <p className="mb-2">{selectedQuestion?.question}</p>
-                  <input
-                    id="skill-question"
-                    type="text"
-                    className="w-full px-4 py-2 rounded-lg bg-[#0f172a]/60 border border-cyan-500 text-white focus:outline-none focus:ring-2 focus:ring-cyan-400 mx-auto"
-                    value={skillAnswer}
-                    onChange={(e) => setSkillAnswer(e.target.value)}
-                    placeholder="Enter your answer"
-                    style={{ maxWidth: '300px' }}
-                  />
-                  {!isAnswerCorrect() && skillAnswer !== '' && (
-                    <p className="text-sm text-red-400 mt-1">
-                      You must answer correctly to proceed.
-                    </p>
-                  )}
-                  {isAnswerCorrect() && (
-                    <BuyTicketButton
-                      competitionSlug={slug}
-                      entryFee={comp.entryFee}
-                      quantity={quantity}
-                      piUser={user}
-                      onPaymentSuccess={handlePaymentSuccess}
-                      endsAt={comp.endsAt}
-                    />
-                  )}
-                </div>
-              )}
-            </>
-          )}
-
-          <div className="mt-6 text-xs text-white flex flex-col items-center space-y-2">
-            <Link
-              href="/terms-conditions"
-              className="underline hover:text-cyan-400"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Terms & Conditions
-            </Link>
+{/* Image and Thumbnails */}
+{!isDaily && !isCryptoCompetition && mainImage && (
+  <div className="space-y-6 text-center">
+    <Image
+      src={mainImage}
+      alt={comp.title}
+      width={600}
+      height={300}
+      className="w-fit max-h-64 object-cover rounded-lg border border-blue-500 mx-auto"
+    />
+    
+    {miniImages?.length > 0 && (
+      <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mt-4 px-2 place-items-center">
+        {miniImages.map((img, i) => (
+          <div
+            key={i}
+            className="relative w-20 h-16 sm:w-28 sm:h-20 rounded-lg border border-cyan-400 overflow-hidden"
+          >
+            <Image
+              src={img}
+              alt={`Thumbnail ${i + 1}`}
+              fill
+              className="object-fit"
+              sizes="(max-width: 640px) 96px, 112px"
+            />
           </div>
+        ))}
+      </div>
+    )}
+  </div>
+)}
+
+        
+
+        {/* Crypto Widget */}
+        {isCryptoCompetition && (
+          <div className="w-full h-[400px] my-4">
+            <TradingViewWidget />
+          </div>
+        )}
+
+        {/* Prize & Toggle */}
+        <p className="text-white text-2xl font-bold">{comp.prize}</p>
+        <button
+          onClick={() => setShowDetails(!showDetails)}
+          className="mt-2 text-sm text-cyan-300 hover:text-white transition underline"
+        >
+          {showDetails ? 'Hide' : 'View'} Competition Details
+        </button>
+
+        {/* Competition Description */}
+        {showDetails && (
+          <div className="mt-3 text-sm bg-white/10 border border-cyan-400 rounded-lg p-4 text-left max-w-md mx-auto whitespace-pre-wrap text-white/80">
+            {description}
+          </div>
+        )}
+
+        {/* Details Grid */}
+        <div className="max-w-md mx-auto text-sm text-white space-y-2">
+          <DetailRow label="Starts On" value={comp.startsAt ? new Date(comp.startsAt).toLocaleDateString('en-GB') : 'TBA'} />
+          <DetailRow label="Draw Takes Place" value={comp.endsAt ? new Date(comp.endsAt).toLocaleDateString('en-GB') : 'TBA'} />
+          <DetailRow label="Entry Fee" value={`${comp.entryFee.toFixed(2)} π`} />
+
+<DetailRow
+  label="Total Tickets"
+  value={`${comp.totalTickets?.toLocaleString() || 'N/A'}`}
+/>
+
+
+
+
+          <DetailRow 
+            label="Tickets Sold" 
+            value={`${liveTicketsSold} / ${comp.totalTickets}${liveTicketsSold >= comp.totalTickets ? ' (SOLD OUT)' : ''}`}
+            highlight={liveTicketsSold >= comp.totalTickets}
+          />
+          {liveTicketsSold > 0 && (
+            <DetailRow 
+              label="Available" 
+              value={`${Math.max(0, comp.totalTickets - liveTicketsSold)} tickets remaining`} 
+              highlight
+            />
+            
+          )}
+                    <DetailRow label="Max Ticket Purchases" value={comp.maxTicketsPerUser?.toLocaleString() || '10'} />
+
+        </div>
+
+        {/* Free or Paid Entry */}
+        {isFree ? (
+          <>
+            <p className="text-cyan-300 font-semibold text-lg">Free Ticket Claimed: {quantity}/2</p>
+            <button
+              onClick={claimFreeTicket}
+              disabled={quantity >= (sharedBonus ? 2 : 1)}
+              className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 px-4 rounded-xl mb-3"
+            >
+              Claim Free Ticket
+            </button>
+            {!sharedBonus && (
+              <button
+                onClick={handleShare}
+                className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold py-3 px-4 rounded-xl"
+              >
+                Share for Bonus Ticket
+              </button>
+            )}
+          </>
+        ) : (
+          <>
+            {!user && (
+              <div className="text-sm bg-red-600 p-3 rounded-lg font-semibold">
+                Please{' '}
+                <button onClick={login} className="underline text-cyan-200">
+                  log in
+                </button>{' '}
+                with Pi to buy tickets.
+              </div>
+            )}
+
+            {/* Ticket Quantity Selector */}
+            <div className="flex justify-center gap-4 mt-4">
+              <button
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                disabled={quantity <= 1}
+                className="bg-blue-500 px-4 py-1 rounded-full disabled:opacity-50"
+              >
+                −
+              </button>
+              <span className="text-lg font-semibold">{quantity}</span>
+              <button
+                onClick={() => setQuantity((q) => Math.min(availableTickets, q + 1))}
+                disabled={quantity >= availableTickets}
+                className="bg-blue-500 px-4 py-1 rounded-full disabled:opacity-50"
+              >
+                +
+              </button>
+            </div>
+
+            {/* Warnings */}
+            {isNearlyFull && availableTickets > 0 && (
+              <div className="text-orange-400 text-sm font-bold mt-2">
+                ⚠️ Only {availableTickets} tickets remaining!
+              </div>
+            )}
+            {quantity > availableTickets && (
+              <div className="text-red-400 text-sm font-bold mt-2">
+                ❌ Cannot buy {quantity} tickets - only {availableTickets} available
+              </div>
+            )}
+
+            {/* Payment Summary */}
+            <p className="text-lg font-bold mt-6">Total {totalPrice.toFixed(2)} π</p>
+            <p className="text-white text-sm mt-2">
+              Secure your entry to win <strong>{comp.prize}</strong>.<br />
+              Thank you for participating and good luck! 🚀✨
+            </p>
+
+            {/* Skill Question */}
+            {!showSkillQuestion ? (
+              <button
+                onClick={handleShowSkillQuestion}
+                className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 px-4 rounded-xl mt-6"
+              >
+                Proceed to Payment
+              </button>
+            ) : (
+              <div className="mt-6 max-w-md mx-auto text-center">
+                <label htmlFor="skill-question" className="block font-semibold mb-1 text-white">
+                  Skill Question (Required to Enter):
+                </label>
+                <p className="mb-2">{selectedQuestion?.question}</p>
+                <input
+                  id="skill-question"
+                  type="text"
+                  className="w-full px-4 py-2 rounded-lg bg-[#0f172a]/60 border border-cyan-500 text-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                  value={skillAnswer}
+                  onChange={(e) => setSkillAnswer(e.target.value)}
+                  placeholder="Enter your answer"
+                  style={{ maxWidth: '300px' }}
+                />
+                {!isAnswerCorrect() && skillAnswer !== '' && (
+                  <p className="text-sm text-red-400 mt-1">
+                    You must answer correctly to proceed.
+                  </p>
+                )}
+                {isAnswerCorrect() && (
+                  <BuyTicketButton
+                    competitionSlug={slug}
+                    entryFee={comp.entryFee}
+                    quantity={quantity}
+                    piUser={user}
+                    onPaymentSuccess={handlePaymentSuccess}
+                    endsAt={comp.endsAt}
+                  />
+                )}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Footer Links */}
+        <div className="mt-6 text-xs text-white flex flex-col items-center space-y-2">
+          <Link
+            href="/terms-conditions"
+            className="underline hover:text-cyan-400"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Terms & Conditions
+          </Link>
         </div>
       </div>
-    </main>
-  );
+    </div>
+  </main>
+);
+
 }
