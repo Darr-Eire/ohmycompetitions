@@ -84,15 +84,6 @@ export default function IndexPage() {
         Let’s Go
       </Link>
     </div>
-
-    {/* Social Icons - outside border */}
-    <div className="flex justify-center gap-4 text-xl pt-1">
-      <Link href="https://twitter.com" target="_blank"><FaXTwitter className="hover:text-cyan-400 transition" /></Link>
-      <Link href="https://facebook.com" target="_blank"><FaFacebookF className="hover:text-cyan-400 transition" /></Link>
-      <Link href="https://discord.com" target="_blank"><FaDiscord className="hover:text-cyan-400 transition" /></Link>
-      <Link href="https://instagram.com" target="_blank"><FaInstagram className="hover:text-cyan-400 transition" /></Link>
-    </div>
-
   </div>
 </div>
 
