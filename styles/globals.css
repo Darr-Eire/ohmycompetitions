@@ -605,6 +605,19 @@ body {
 }
 
 .section-tight {
-  margin-top: 1rem; /* or even 0.5rem if needed */
+  margin-top: 0.25rem; /* was 1rem, even tighter spacing */
+}
+
+@keyframes fullPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.07);
+  }
+}
+
+.pulse-button {
+  animation: fullPulse 1.4s ease-in-out infinite;
 }
 

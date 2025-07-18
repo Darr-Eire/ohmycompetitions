@@ -177,7 +177,10 @@ export default function MiniPrizeCarousel() {
   }
 
   return (
-    <div className="w-full px-2 mt-2">
+  
+<div className="w-full px-2 mt-0 mb-2 section-tight">
+
+
       <h3 className="text-cyan-300 font-orbitron font-semibold text-center mb-2 text-lg select-none">
         Live Competitions
       </h3>

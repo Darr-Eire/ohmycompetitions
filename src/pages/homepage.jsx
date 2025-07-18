@@ -179,19 +179,21 @@ export default function HomePage() {
 
   return (
     <>
-     <div className="w-full bg-cyan-600 text-[#0f172a] overflow-hidden">
-  <div className="marquee-content font-bold text-sm sm:text-base whitespace-nowrap">
-    OhMyCompetitions is all about building with Pi Network for the Pi community, Our launch mouth competitions are zero profit designed to create trust, celebrate early winners and give back to Pioneers. All prizes go directly to you. We warmly welcome everyone to our app and invite you to add us on Pi Profile (darreire2020 & Lyndz2020). More competitions are coming soon across a wide range of exciting categories. Join, win and help shape the future of Pi together!
+<div className="w-full space-y-1"> {/* shared wrapper with tight spacing */}
+  {/* Welcome message */}
+  <div className="text-center text-cyan-300 text-md sm:text-base font-medium font-orbitron">
+    Welcome Pioneers let the competitions begin
+  </div>
+
+  {/* Marquee */}
+  <div className="bg-cyan-600 text-[#0f172a] overflow-hidden">
+    <div className="marquee-content font-bold text-md sm:text-base whitespace-nowrap">
+      OhMyCompetitions is all about building with Pi Network for the Pi community. Our launch month competitions are zero profit—designed to create trust, celebrate early winners, and give back to Pioneers. All prizes go directly to you. Add us on Pi Profile (darreire2020 & Lyndz2020). More competitions are coming soon across a wide range of exciting categories. Join, win and help shape the future of Pi together!
+    </div>
   </div>
 </div>
-
-
-  <div className="section-tight">
-  <MiniPrizeCarousel competitions={liveCompetitions} />
-
-</div>
-
-
+  {/* Mini carousel */}
+  <MiniPrizeCarousel />
 
       <div className="mt-6 mb-8 flex justify-center">
         <Link

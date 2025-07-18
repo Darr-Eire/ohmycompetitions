@@ -350,14 +350,13 @@ const loadDescription = async () => {
   }
 
 return (
-  <main className="min-h-screen px-4 py-10 text-white bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] font-orbitron">
-    <div className="max-w-xl mx-auto bg-white/5 backdrop-blur-lg border border-cyan-400 rounded-2xl shadow-[0_0_60px_#00ffd577] p-6">
-      
-     <div className="mb-6 border-2 border-cyan-400 rounded-xl p-4 shadow-[0_0_40px_#00fff766] bg-[#0f172a]">
-  <h1 className="text-center text-cyan-300 text-2xl sm:text-3xl font-extrabold uppercase tracking-widest drop-shadow-md">
-    {comp.title}
-  </h1>
+ <main className="min-h-screen px-4 py-4 text-white bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] font-orbitron">
+  <div className="max-w-xl mx-auto bg-[#0f172a]/70 backdrop-blur-lg border-2 border-cyan-400 rounded-2xl shadow-[0_0_30px_#00ffd5cc] p-2">
+<div className="relative bg-gradient-to-r from-[#00ffd5] to-[#0077ff] rounded-t-xl text-[#0f172a] py-3 px-0 text-center font-bold text-lg sm:text-2xl tracking-wider shadow-[0_4px_20px_#00fff770] uppercase">
+  {comp.title}
 </div>
+
+
 
 
       <div className="space-y-6 text-center">
@@ -403,21 +402,14 @@ return (
           </div>
         )}
 
-        {/* Prize & Toggle */}
-        <p className="text-white text-2xl font-bold">{comp.prize}</p>
-        <button
-          onClick={() => setShowDetails(!showDetails)}
-          className="mt-2 text-sm text-cyan-300 hover:text-white transition underline"
-        >
-          {showDetails ? 'Hide' : 'View'} Competition Details
-        </button>
+{/* Prize */}
+<p className="text-cyan-300 text-lg font-semibold backdrop-blur-md bg-white/10 border border-cyan-300 rounded-lg px-4 py-2 shadow-md">
+   {comp.prize}
+</p>
 
-        {/* Competition Description */}
-        {showDetails && (
-          <div className="mt-3 text-sm bg-white/10 border border-cyan-400 rounded-lg p-4 text-left max-w-md mx-auto whitespace-pre-wrap text-white/80">
-            {description}
-          </div>
-        )}
+
+
+
 
         {/* Details Grid */}
         <div className="max-w-md mx-auto text-sm text-white space-y-2">
@@ -449,6 +441,20 @@ return (
                     <DetailRow label="Max Ticket Purchases" value={comp.maxTicketsPerUser?.toLocaleString() || '10'} />
 
         </div>
+{/* View More Details Toggle - moved below all details */}
+<div className="mt-4 text-center">
+  <button
+    onClick={() => setShowDetails(!showDetails)}
+    className="text-sm text-cyan-300 hover:text-white transition underline"
+  >
+    {showDetails ? 'Hide' : 'View'} Competition Details
+  </button>
+</div>
+{showDetails && (
+  <div className="mt-4 text-sm bg-white/10 border border-cyan-400 rounded-lg p-4 text-left max-w-md mx-auto whitespace-pre-wrap text-white/80">
+    {description || 'No detailed description available for this competition.'}
+  </div>
+)}
 
         {/* Free or Paid Entry */}
         {isFree ? (
@@ -473,9 +479,9 @@ return (
         ) : (
           <>
             {!user && (
-              <div className="text-sm bg-red-600 p-3 rounded-lg font-semibold">
+              <div className="text-sm bg-cyan-500 p-3 rounded-lg font-semibold">
                 Please{' '}
-                <button onClick={login} className="underline text-cyan-200">
+                <button onClick={login} className="text-white">
                   log in
                 </button>{' '}
                 with Pi to buy tickets.

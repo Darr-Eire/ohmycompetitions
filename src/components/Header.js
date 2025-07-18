@@ -114,9 +114,10 @@ if (user) finalNavItems.splice(1, 0, ['My Account', '/account']);
       {menuOpen && (
         <nav
           ref={menuRef}
-          className="absolute top-full left-2 mt-2 w-60 rounded-lg shadow-xl backdrop-blur-md bg-[#0f172acc] border border-cyan-700 animate-fade-in max-h-[80vh] overflow-y-auto"
+          className="absolute top-full left-2 mt-2 w-60 rounded-lg shadow-xl bg-[#0f172a] border border-cyan-700 animate-fade-in max-h-[80vh] overflow-y-auto"
+
         >
-          <ul className="flex flex-col font-orbitron text-xs">
+          <ul className="flex flex-col font-orbitron text-sm">
         {finalNavItems.map(([label, href]) => (
   <li key={href}>
     <Link
