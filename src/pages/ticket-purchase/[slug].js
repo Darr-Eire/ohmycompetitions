@@ -6,6 +6,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import BuyTicketButton from '@components/BuyTicketButton';
 import { usePiAuth } from '../../context/PiAuthContext';
+import descriptions from '../../data/descriptions';
+
 import {
   techItems,
   premiumItems,
@@ -44,31 +46,28 @@ const DAILY_COMPETITIONS = ['daily-jackpot', 'everyday-pioneer', 'daily-pi-slice
 
 // Multiple skill questions array
 const skillQuestions = [
-  { question: "What is 3 + 4?", answer: "7" },
-  { question: "What color is the sky on a clear day?", answer: "blue" },
-  { question: "What is 5 x 6?", answer: "30" },
-  { question: "Type the word 'Pi'", answer: "pi" },
-  { question: "What is 10 - 2?", answer: "8" },
-  { question: "How many legs does a spider have?", answer: "8" },
-  { question: "What color are bananas?", answer: "yellow" },
-  { question: "What is the first letter of the English alphabet?", answer: "a" },
-  { question: "What day comes after Monday?", answer: "tuesday" },
-  { question: "How many days are in a week?", answer: "7" },
-  { question: "What is the capital of France?", answer: "paris" },
-  { question: "What color is grass?", answer: "green" },
-  { question: "What is 3 + 4?", answer: "7" },
-  { question: "What color is the sky on a clear day?", answer: "blue" },
-  { question: "What is 5 x 6?", answer: "30" },
-  { question: "Type the word 'pi'", answer: "pi" },
-  { question: "What is 10 - 2?", answer: "8" },
-  { question: "How many legs does a spider have?", answer: "8" },
-  { question: "What color are bananas?", answer: "yellow" },
-  { question: "What is the first letter of the English alphabet?", answer: "a" },
-  { question: "What day comes after Monday?", answer: "tuesday" },
-  { question: "How many days are in a week?", answer: "7" },
-  { question: "What is the capital of France?", answer: "paris" },
-  { question: "What color is grass?", answer: "green" },
+  { question: "What is 2 + 2?", answer: "4" },
+  { question: "What is 5 - 3?", answer: "2" },
+  { question: "What is 10 ÷ 2?", answer: "5" },
+  { question: "What is 3 x 3?", answer: "9" },
+  { question: "What is 7 + 1?", answer: "8" },
+  { question: "What is 6 - 4?", answer: "2" },
+  { question: "What is 9 - 6?", answer: "3" },
+  { question: "What is 4 x 2?", answer: "8" },
+  { question: "What is 12 ÷ 4?", answer: "3" },
+  { question: "What is 1 + 1?", answer: "2" },
+  { question: "What is 8 ÷ 2?", answer: "4" },
+  { question: "What is 6 + 3?", answer: "9" },
+  { question: "What is 15 - 5?", answer: "10" },
+  { question: "What is 0 + 7?", answer: "7" },
+  { question: "What is 9 x 1?", answer: "9" },
+  { question: "What is 10 - 1?", answer: "9" },
+  { question: "What is 3 + 5?", answer: "8" },
+  { question: "What is 2 x 6?", answer: "12" },
+  { question: "What is 14 ÷ 2?", answer: "7" },
+  { question: "What is 7 - 2?", answer: "5" }
 ];
+
 
 const DetailRow = ({ label, value, highlight = false }) => (
   <div className="flex justify-between">
@@ -172,32 +171,24 @@ export default function TicketPurchasePage() {
   };
 
   // Dynamically import the description file based on comp.slug
-  useEffect(() => {
-    if (!comp?.slug) {
-      setDescription('');
-      return;
-    }
-const loadDescription = async () => {
-  try {
-    const descModule = await import(`../../data/descriptions/${comp.slug}.js`);
-    const desc = descModule.default;
-    if (typeof desc === 'string') {
-      setDescription(desc);
-    } else if (desc && typeof desc.description === 'string') {
-      setDescription(desc.description);
-    } else {
-      setDescription('No detailed description available for this competition.');
-    }
-  } catch (e) {
-    console.warn(`Description file not found for slug: ${comp.slug}`);
-    setDescription('No detailed description available for this competition.');
+useEffect(() => {
+  if (!comp?.slug) return;
+
+  const desc = descriptions[comp.slug];
+
+  if (typeof desc === 'string') {
+    setDescription(desc);
+  } else if (desc?.description) {
+    setDescription(desc.description); // ✅ fix here
+  } else {
+    setDescription('No detailed description available.');
   }
-};
+}, [comp?.slug]);
 
 
 
-    loadDescription();
-  }, [comp?.slug]);
+
+
 
   useEffect(() => {
     if (!router.isReady || !slug) return;
@@ -403,7 +394,7 @@ return (
         )}
 
 {/* Prize */}
-<p className="text-cyan-300 text-lg font-semibold backdrop-blur-md bg-white/10 border border-cyan-300 rounded-lg px-4 py-2 shadow-md">
+<p className="text-cyan-300 text-xl font-semibold backdrop-blur-md bg-white/10 border border-cyan-300 rounded-lg px-4 py-2 shadow-md">
    {comp.prize}
 </p>
 
@@ -441,7 +432,7 @@ return (
                     <DetailRow label="Max Ticket Purchases" value={comp.maxTicketsPerUser?.toLocaleString() || '10'} />
 
         </div>
-{/* View More Details Toggle - moved below all details */}
+        {/* View More Details Toggle - below details */}
 <div className="mt-4 text-center">
   <button
     onClick={() => setShowDetails(!showDetails)}
@@ -450,11 +441,14 @@ return (
     {showDetails ? 'Hide' : 'View'} Competition Details
   </button>
 </div>
+
 {showDetails && (
-  <div className="mt-4 text-sm bg-white/10 border border-cyan-400 rounded-lg p-4 text-left max-w-md mx-auto whitespace-pre-wrap text-white/80">
-    {description || 'No detailed description available for this competition.'}
+  <div className="mt-2 bg-white/10 p-4 rounded-lg border border-cyan-400 text-sm whitespace-pre-wrap leading-relaxed">
+    <h2 className="text-center text-lg font-bold mb-2 text-cyan-300">Competition Details</h2>
+    <p>{description}</p>
   </div>
 )}
+
 
         {/* Free or Paid Entry */}
         {isFree ? (

@@ -211,7 +211,8 @@ export default function PiTicketPage() {
         {showDetails && (
           <div className="mt-4 bg-white/10 p-4 rounded-lg border border-cyan-400 text-sm whitespace-pre-wrap leading-relaxed">
             <h2 className="text-center text-lg font-bold mb-2 text-cyan-300">Competition Details</h2>
-            <p>{competition.description || 'No additional details available.'}</p>
+            <p>{description || 'No additional details available.'}</p>
+
           </div>
         )}
 
