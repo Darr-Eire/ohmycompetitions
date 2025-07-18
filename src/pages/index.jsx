@@ -22,7 +22,8 @@ export default function IndexPage() {
   ];
 
   return (
-    <div className="min-h-[110vh] bg-[#0a1024] text-white flex items-center justify-center px-4 py-8">
+  <div className="min-h-[110vh] bg-[#0a1024] text-white flex justify-center px-4 pt-10 pb-8">
+
       <div className="w-full max-w-sm bg-[#0f1b33] border border-cyan-400 rounded-2xl p-6 shadow-[0_0_30px_#00f0ff66] flex flex-col gap-6">
 
         {/* Title + Description */}
