@@ -37,7 +37,8 @@ export default function TravelPage() {
 
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-12 gap-y-16 mt-8">
+
             {premiumItems.map((item, index) => (
               <CompetitionCard
                 key={item.comp?.slug || index}

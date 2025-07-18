@@ -10,36 +10,8 @@ export default function TryYourLuckPage() {
   const [playedMap, setPlayedMap] = useState({})
   const [resetCountdown, setResetCountdown] = useState('')
 
-  const games = [
-    {
-      title: 'Match The Pi Code',
-      href: '/try-your-luck/match-code',
-      icon: '🕒',
-      desc: 'Test your timing skills! Stop the clock at exactly 3.14 seconds to claim a special Pi reward.',
-      storageKey: 'threeFourteenPlayed',
-    },
-    {
-      title: 'Hack the Vault',
-      href: '/try-your-luck/hack-the-vault',
-      icon: '🔓',
-      desc: 'Crack today’s secret code and unlock hidden prizes or extra chances. Will you break in?',
-      storageKey: 'hackVaultPlayed',
-    },
-    {
-      title: 'Mystery Box',
-      href: '/try-your-luck/mystery-box',
-      icon: '🎁',
-      desc: 'Tap to open a surprise box filled with random rewards. Every box is a mystery!',
-      storageKey: 'mysteryBoxPlayed',
-    },
-    {
-      title: 'Pi Spin',
-      href: '/try-your-luck/pi-spin',
-      icon: '🎡',
-      desc: 'Spin the colorful Pi wheel and see where your luck lands — win random prizes and bonuses!',
-      storageKey: 'piSpinPlayed',
-    },
-  ]
+ import { miniGames as games } from '@data/minigames';
+
 
   useEffect(() => {
     setStreak(getStreak())
@@ -139,14 +111,20 @@ export default function TryYourLuckPage() {
               We're building more games! Got a fun idea or a cultural favourite from your country?
               Reach out anytime:
             </p>
-            <div className="space-y-2">
-              <p className="text-sm text-white">
-                X <a href="https://X.com/OhMyComps" target="_blank" className="underline text-cyan-300">@OM_Compitions</a>
-              </p>
-              <p className="text-sm text-white">
-                Instagram: <a href="https://instagram.com/ohmycompetitions" target="_blank" className="underline text-cyan-300">@ohmycompetitions</a>
-              </p>
-            </div>
+<div className="space-y-2">
+  <p className="text-sm text-white">
+    X: <a href="https://x.com/OhMyComps" target="_blank" className="underline text-cyan-300">@OM_Compitions</a>
+  </p>
+  <p className="text-sm text-white">
+    Instagram: <a href="https://instagram.com/ohmycompetitions" target="_blank" className="underline text-cyan-300">@ohmycompetitions</a>
+  </p>
+  <p className="text-sm text-white">
+    Facebook: <a href="https://www.facebook.com/profile.php?id=61577406478876" target="_blank" rel="noopener noreferrer" className="underline text-cyan-300">Oh My Competitions</a>
+  </p>
+</div>
+
+
+
           </div>
         </div>
       </main>

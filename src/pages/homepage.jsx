@@ -10,6 +10,7 @@ import PiCompetitionCard from '@components/PiCompetitionCard';
 import CryptoGiveawayCard from '@components/CryptoGiveawayCard';
 import CompetitionCard from '@components/CompetitionCard';
 import MiniPrizeCarousel from '@components/MiniPrizeCarousel';
+import { miniGames } from '@data/minigames';
 
 import {
   dailyItems,
@@ -19,6 +20,8 @@ import {
   freeItems,
   cryptoGiveawaysItems,
 } from '@data/competitions';
+;
+
 
 export default function HomePage() {
   const [liveCompetitions, setLiveCompetitions] = useState([]);
@@ -332,6 +335,7 @@ function TopWinnersCarousel() {
   const current = winners[index];
 
   return (
+  
     <div className="max-w-md mx-auto mt-12 bg-[#0a1024]/90 border border-cyan-500 backdrop-blur-lg rounded-xl shadow-[0_0_40px_#00fff055] p-6 text-white text-center">
       <h2 className="text-2xl font-bold text-cyan-300 mb-4 font-orbitron">Top Winners</h2>
       <div className="flex justify-center items-center mb-4">

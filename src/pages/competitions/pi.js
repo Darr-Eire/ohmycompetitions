@@ -22,7 +22,8 @@ export default function PiCompetitionsPage() {
           <span className="font-semibold">1.6 π</span> per entry — grab your chance to win big! We’re always adding new competitions and creating even more winners as time goes on — don’t miss your chance to join the excitement!
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-16 mt-8">
+
           {piItems.map((item) => (
             <PiCompetitionCard key={item.comp.slug} {...item} fee={`${item.comp.entryFee.toFixed(2)} π`} />
           ))}

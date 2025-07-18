@@ -6,14 +6,13 @@ import { FaXTwitter, FaFacebookF, FaDiscord, FaInstagram } from 'react-icons/fa6
 
 export default function IndexPage() {
   const features = [
-  { icon: '💎', text: 'Daily Competitions' },
-  { icon: '📲', text: 'Pi Cash Code' },
-  { icon: '🎁', text: 'Crypto Giveaways' },
-  { icon: '⚔️', text: 'Pi Battles' },
-  { icon: '🎮', text: 'Mini Games' },
-  { icon: '🚀', text: 'More to Come...' },
-];
-
+    { icon: '💎', text: 'Daily Competitions' },
+    { icon: '📲', text: 'Pi Cash Code' },
+    { icon: '🎁', text: 'Crypto Giveaways' },
+    { icon: '⚔️', text: 'Pi Battles' },
+    { icon: '🎮', text: 'Mini Games' },
+    { icon: '🚀', text: 'More to Come...' },
+  ];
 
   const stats = [
     { label: 'Total Winners', value: '100,000+' },
@@ -23,15 +22,15 @@ export default function IndexPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a1024] text-white flex items-center justify-center px-3 py-4">
-      <div className="w-full max-w-sm bg-[#0f1b33] border border-cyan-400 rounded-2xl p-4 shadow-[0_0_30px_#00f0ff66] flex flex-col gap-4">
+    <div className="min-h-[110vh] bg-[#0a1024] text-white flex items-center justify-center px-4 py-8">
+      <div className="w-full max-w-sm bg-[#0f1b33] border border-cyan-400 rounded-2xl p-6 shadow-[0_0_30px_#00f0ff66] flex flex-col gap-6">
 
         {/* Title + Description */}
         <div className="text-center">
-          <h1 className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-transparent bg-clip-text tracking-wide mb-1">
+          <h1 className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-transparent bg-clip-text tracking-wide mb-2">
             Oh My Competitions
           </h1>
-          <p className="text-white/80 text-xs sm:text-sm leading-snug">
+          <p className="text-white/80 text-sm sm:text-base leading-snug">
             Built for Pi Network Pioneers by Pioneers.<br />
             Next-gen crypto competitions. Real Pi prizes.<br />
             100% fair. 100% community. 100% Pi.
@@ -39,7 +38,7 @@ export default function IndexPage() {
         </div>
 
         {/* Feature Icons */}
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-3">
           {features.map((f, i) => (
             <div
               key={i}
@@ -52,12 +51,12 @@ export default function IndexPage() {
         </div>
 
         {/* 2026 Vision Section */}
-        <div className="bg-[#0a1024]/90 border border-cyan-700 rounded-lg px-3 py-4 shadow-[0_0_15px_#00fff033] text-center text-xs">
-          <h2 className="text-base font-bold text-cyan-300 mb-1">Our Vision for 2026</h2>
-          <p className="text-white/80 mb-2 leading-snug">
+        <div className="bg-[#0a1024]/90 border border-cyan-700 rounded-lg px-4 py-5 shadow-[0_0_15px_#00fff033] text-center text-xs sm:text-sm">
+          <h2 className="text-base font-bold text-cyan-300 mb-2">Our Vision for 2026</h2>
+          <p className="text-white/80 mb-3 leading-snug">
             Powered by the Pi Network and supported by Pioneers like you.
           </p>
-          <ul className="text-cyan-200 space-y-0.5 font-medium text-xs">
+          <ul className="text-cyan-200 space-y-1 font-medium">
             <li>🌍 100,000+ global winners</li>
             <li>💰 500,000 π in Pi prizes</li>
             <li>🎗 25,000 π donated</li>
@@ -68,7 +67,7 @@ export default function IndexPage() {
         {/* CTA Button */}
         <Link
           href="/homepage"
-          className="block bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold py-2 rounded-md shadow-md hover:scale-105 transition text-center text-xs"
+          className="block bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold py-3 rounded-md shadow-md hover:scale-105 transition text-center text-sm"
         >
           Let’s Go
         </Link>
