@@ -31,10 +31,10 @@ export default function Header() {
 
   const competitionCategories = [
     
-    ['Pi Giveaways', '/competitions/pi'],
+    ['Pi Competitions', '/competitions/pi'],
     ['Pi Cash Code', '/pi-cash-code'],
     ['Pi Battles', '/competitions/pibattles'],
-    ['Live Now', '/competitions'],
+    ['Live Now', '/competitions/live-now'],
     ['Featured', '/competitions/featured'],
     ['Travel', '/competitions/travel'],
     ['Crypto', '/competitions/crypto-giveaways'],
@@ -50,9 +50,9 @@ export default function Header() {
   const navExtras = [
     ['Try Your Luck', '/try-your-luck'],
     ['Forums', '/forums'],
-    ['The Future', '/future'],
-    ['Help & Support', '/help-support'],
     ['About Us', '/how-we-got-started'],
+    ['Help & Support', '/help-support'],
+    ['Upcoming Features', '/future'],
     ['Partners & Sponsors', '/partners'],
   ];
 

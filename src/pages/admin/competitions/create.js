@@ -76,6 +76,16 @@ export default function CreateCompetitionPage({ descriptions = [] }) {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => {
+      const ImageOption = ({ label, path }) => (
+  <button
+    type="button"
+    onClick={() => handleChange({ target: { name: 'imageUrl', value: path } })}
+    className="p-2 bg-gray-800 hover:bg-gray-700 rounded text-left transition"
+  >
+    {label}
+  </button>
+);
+
       const newData = {
         ...prev,
         [name]: value
@@ -89,6 +99,17 @@ export default function CreateCompetitionPage({ descriptions = [] }) {
       return newData;
     });
   };
+const ImageOption = ({ label, path }) => (
+  <button
+    type="button"
+    onClick={() =>
+      handleChange({ target: { name: 'imageUrl', value: path } })
+    }
+    className="p-2 bg-gray-800 hover:bg-gray-700 rounded text-left transition"
+  >
+    {label}
+  </button>
+);
 
   return (
     <AdminGuard>
@@ -282,17 +303,27 @@ export default function CreateCompetitionPage({ descriptions = [] }) {
               </div>
 
               {/* Description Dropdown */}
-              <div>
-                <label className="block text-cyan-300 text-sm font-bold mb-2">Description (optional)</label>
-                <select
-                  className="w-full px-4 py-2 mb-2 bg-black border border-cyan-400 rounded-lg text-white focus:border-cyan-300 focus:outline-none"
-                >
-                  <option value="">Select a preset description (view only)</option>
-                  {descriptions.map((desc, idx) => (
-                    <option key={idx} value={desc}>{desc.slice(0, 50)}...</option>
-                  ))}
-                </select>
-              </div>
+            <div>
+  <label className="block text-cyan-300 text-sm font-bold mb-2">
+    Description (optional)
+  </label>
+
+  <select
+    className="w-full px-4 py-2 mb-2 bg-black border border-cyan-400 rounded-lg text-white focus:border-cyan-300 focus:outline-none"
+  >
+    <option value="">Select a preset description (view only)</option>
+    {descriptions.map((desc, idx) => (
+      <option key={idx} value={desc}>{desc.slice(0, 50)}...</option>
+    ))}
+  </select>
+
+  <textarea
+    placeholder="Write your own description here..."
+    className="w-full px-4 py-2 bg-black border border-cyan-400 rounded-lg text-white focus:border-cyan-300 focus:outline-none"
+    rows={4}
+  />
+</div>
+
 
                     {/* Image URL and buttons */}
        {/* Image URL */}
@@ -314,29 +345,44 @@ export default function CreateCompetitionPage({ descriptions = [] }) {
               
              {/* Available Images Preview */}
 <div className="mt-3">
-  <p className="text-xs text-cyan-400 mb-2">📸 Quick select from available images:</p>
+  <p className="text-sm text-cyan-400 mb-2">Quick select from available images:</p>
+
+  {/* Tech */}
+  <p className="text-cyan-300 text-xs font-semibold mt-4 mb-1">🎮 Tech/Featured</p>
   <div className="grid grid-cols-3 gap-2 text-xs">
-    <button type="button" onClick={() => handleChange({ target: { name: 'imageUrl', value: '/images/playstation.jpeg' } })} className="p-2 bg-gray-800 hover:bg-gray-700 rounded text-left transition">🎮 PlayStation</button>
-    <button type="button" onClick={() => handleChange({ target: { name: 'imageUrl', value: '/images/xbox.jpeg' } })} className="p-2 bg-gray-800 hover:bg-gray-700 rounded text-left transition">🎯 Xbox</button>
-    <button type="button" onClick={() => handleChange({ target: { name: 'imageUrl', value: '/images/nintendo.png' } })} className="p-2 bg-gray-800 hover:bg-gray-700 rounded text-left transition">🎲 Nintendo</button>
-    <button type="button" onClick={() => handleChange({ target: { name: 'imageUrl', value: '/images/tv.jpg' } })} className="p-2 bg-gray-800 hover:bg-gray-700 rounded text-left transition">📺 Smart TV</button>
-    <button type="button" onClick={() => handleChange({ target: { name: 'imageUrl', value: '/images/airpods.png' } })} className="p-2 bg-gray-800 hover:bg-gray-700 rounded text-left transition">🎧 AirPods</button>
-    <button type="button" onClick={() => handleChange({ target: { name: 'imageUrl', value: '/images/macbook.jpeg' } })} className="p-2 bg-gray-800 hover:bg-gray-700 rounded text-left transition">💻 MacBook</button>
-    <button type="button" onClick={() => handleChange({ target: { name: 'imageUrl', value: '/images/iphone.jpeg' } })} className="p-2 bg-gray-800 hover:bg-gray-700 rounded text-left transition">📱 iPhone</button>
-    <button type="button" onClick={() => handleChange({ target: { name: 'imageUrl', value: '/images/gopro.png' } })} className="p-2 bg-gray-800 hover:bg-gray-700 rounded text-left transition">📷 GoPro</button>
-    <button type="button" onClick={() => handleChange({ target: { name: 'imageUrl', value: '/images/chair.png' } })} className="p-2 bg-gray-800 hover:bg-gray-700 rounded text-left transition">🪑 Gaming Chair</button>
-    <button type="button" onClick={() => handleChange({ target: { name: 'imageUrl', value: '/images/weekend.jpeg' } })} className="p-2 bg-gray-800 hover:bg-gray-700 rounded text-left transition">🏖️ Weekend</button>
-    <button type="button" onClick={() => handleChange({ target: { name: 'imageUrl', value: '/images/dubai-luxury-holiday.png' } })} className="p-2 bg-gray-800 hover:bg-gray-700 rounded text-left transition">🌴 Dubai Holiday</button>
-    <button type="button" onClick={() => handleChange({ target: { name: 'imageUrl', value: '/images/spa.jpeg' } })} className="p-2 bg-gray-800 hover:bg-gray-700 rounded text-left transition">💆 Spa</button>
-    <button type="button" onClick={() => handleChange({ target: { name: 'imageUrl', value: '/images/hotel.jpeg' } })} className="p-2 bg-gray-800 hover:bg-gray-700 rounded text-left transition">🏨 Hotel Stay</button>
-    <button type="button" onClick={() => handleChange({ target: { name: 'imageUrl', value: '/images/bitcoin.png' } })} className="p-2 bg-gray-800 hover:bg-gray-700 rounded text-left transition">💰 Bitcoin</button>
-    <button type="button" onClick={() => handleChange({ target: { name: 'imageUrl', value: '/images/pi.png' } })} className="p-2 bg-gray-800 hover:bg-gray-700 rounded text-left transition">🟠 Pi</button>
-    <button type="button" onClick={() => handleChange({ target: { name: 'imageUrl', value: '/images/xrp.png' } })} className="p-2 bg-gray-800 hover:bg-gray-700 rounded text-left transition">💧 XRP</button>
-    <button type="button" onClick={() => handleChange({ target: { name: 'imageUrl', value: '/images/air.png' } })} className="p-2 bg-gray-800 hover:bg-gray-700 rounded text-left transition">💨 Air</button>
-    <button type="button" onClick={() => handleChange({ target: { name: 'imageUrl', value: '/images/viture.png' } })} className="p-2 bg-gray-800 hover:bg-gray-700 rounded text-left transition">🕶️ Viture</button>
-    <button type="button" onClick={() => handleChange({ target: { name: 'imageUrl', value: '/images/scooter.png' } })} className="p-2 bg-gray-800 hover:bg-gray-700 rounded text-left transition">🛴 Scooter</button>
+    <ImageOption label="PlayStation" path="/images/playstation.jpeg" />
+    <ImageOption label="Xbox" path="/images/xbox.jpeg" />
+    <ImageOption label="Nintendo" path="/images/nintendo.png" />
+    <ImageOption label="MacBook" path="/images/macbook.jpeg" />
+    <ImageOption label="iPhone" path="/images/iphone.jpeg" />
+    <ImageOption label="AirPods" path="/images/airpods.png" />
+    <ImageOption label="GoPro" path="/images/gopro.png" />
+    <ImageOption label="Viture" path="/images/viture.png" />
+   <ImageOption label="Smart TV" path="/images/tv.jpg" />
+    <ImageOption label="Gaming Chair" path="/images/chair.png" />
+     <ImageOption label="Scooter" path="/images/scooter.png" />
+  </div>
+
+
+
+  {/* Travel */}
+  <p className="text-cyan-300 text-xs font-semibold mt-4 mb-1">🌴 Travel</p>
+  <div className="grid grid-cols-3 gap-2 text-xs">
+    <ImageOption label="Weekend" path="/images/weekend.jpeg" />
+    <ImageOption label="Dubai Holiday" path="/images/dubai-luxury-holiday.png" />
+    <ImageOption label="Spa" path="/images/spa.jpeg" />
+    <ImageOption label="Hotel Stay" path="/images/hotel.jpeg" />
+  </div>
+
+  {/* Crypto*/}
+  <p className="text-cyan-300 text-xs font-semibold mt-4 mb-1">💰 Crypto</p>
+  <div className="grid grid-cols-3 gap-2 text-xs">
+    <ImageOption label="Bitcoin" path="/images/bitcoin.png" />
+    <ImageOption label="Pi" path="/images/pi.png" />
+    <ImageOption label="XRP" path="/images/xrp.png" />
   </div>
 </div>
+
 
 
 

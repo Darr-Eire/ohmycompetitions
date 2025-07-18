@@ -46,9 +46,9 @@ export default function PiToTheMoonPage() {
 
       <div className="flex justify-center items-center gap-4 text-sm">
         <span className="bg-white/10 px-3 py-1 rounded-full text-cyan-200 font-medium">
-          📅 {formattedDate}
+           {formattedDate}
         </span>
-        <span className="bg-yellow-300 text-black font-bold px-3 py-1 rounded-full animate-pulse">
+        <span className="bg-gradient-to-r from-orange-400 to-orange-500 px-3 py-1 rounded-full animate-pulse">
           Coming Soon
         </span>
       </div>
@@ -60,7 +60,7 @@ export default function PiToTheMoonPage() {
         <p><span className="font-semibold text-cyan-300">Total Tickets:</span> {total.toLocaleString()}</p>
         <p><span className="font-semibold text-cyan-300">Location:</span> Online Global Draw</p>
         <p className="text-cyan-200 italic pt-2">
-          This competition will start soon and is dedicated to early users of Oh My Competitions who made a purchase and helped us launch and grow stronger! 🚀
+          This competition will start soon and is dedicated to early users of Oh My Competitions who made a purchase and helped us launch and grow stronger!
         </p>
       </div>
 

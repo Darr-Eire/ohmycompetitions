@@ -19,7 +19,7 @@ export default function PiCompetitionsPage() {
 
         <p className="text-center text-white text-base sm:text-lg max-w-md mx-auto mb-8">
           Join exciting Pi competitions starting from just{' '}
-          <span className="font-semibold">1.6 π</span> per entry — grab your chance to win big! We’re always adding new competitions and creating even more winners as time goes on — don’t miss your chance to join the excitement!
+          <span className="font-semibold">1.6 π</span> per entry grab your chance to win big! We’re always adding new competitions and creating even more winners as time goes on don’t miss your chance to join the excitement!
         </p>
 
        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-16 mt-8">

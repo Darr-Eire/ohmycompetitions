@@ -97,9 +97,9 @@ export default function CryptoGiveawayCard({
 
   return (
     <div className="relative rounded-xl bg-gradient-to-br from-[#0f172a] to-[#1e293b] shadow-xl border border-cyan-600/20 overflow-hidden transition-all duration-300 max-w-sm mx-auto">
-      {/* HOT Badge */}
-      <div className="absolute top-2 right-2 z-10 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded shadow animate-pulse">
-        🔥 HOT
+      {/* Coming Soon Badge */}
+      <div className="absolute top-2 right-2 z-10 bg-gradient-to-r from-orange-400 to-orange-500 text-sm font-bold px-2 py-1 rounded shadow animate-pulse">
+        Coming Soon
       </div>
 
       {/* Line Chart Header */}

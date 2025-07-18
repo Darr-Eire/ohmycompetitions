@@ -21,7 +21,7 @@ export default function DailyCompetitionsPage() {
 
           <p className="text-center text-white text-base sm:text-lg max-w-md mx-auto mb-10">
             Try your luck in our daily competitions starting from as little as{' '}
-            <span className="font-semibold">0.31 π</span> per entry! We’re always adding new competitions and creating even more winners as time goes on — don’t miss your chance to join the excitement!
+            <span className="font-semibold">0.31 π</span> per entry We’re always adding new competitions and creating even more winners as time goes on don’t miss your chance to join the excitement!
           </p>
 
      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-16 mt-8">
