@@ -40,6 +40,9 @@ export default function Footer() {
         <Link href="/privacy-policy" legacyBehavior>
           <a>Privacy Policy</a>
         </Link>
+        <Link href="/help-support" legacyBehavior>
+          <a>Help & Support</a>
+        </Link>
       </div>
 
       {/* Copyright */}

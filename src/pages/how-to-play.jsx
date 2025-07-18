@@ -10,95 +10,128 @@ import {
 
 export default function HowToPlay() {
   return (
-   <main className="app-background min-h-screen flex justify-center px-4 text-white">
+    <main className="app-background min-h-screen flex justify-center px-4 text-white">
       <div className="competition-card max-w-3xl w-full bg-white bg-opacity-10 rounded-2xl shadow-lg">
-        {/* Banner */}
-      <div className="competition-top-banner title-gradient text-white">
-  How To Play
-</div>
+        
+        {/* Header */}
+        <div className="competition-top-banner title-gradient text-white text-center py-5 text-2xl sm:text-3xl font-extrabold uppercase tracking-wide">
+          How to Play & Win
+        </div>
 
         {/* Body */}
-        <div className="p-6 space-y-6">
-          <p>
-            Welcome to <span className="text-white font-semibold">OhMyCompetitions</span> — Where your Pi turns into real prizes every single day.
+        <div className="p-6 space-y-8 text-sm sm:text-base leading-relaxed">
+
+          {/* Intro */}
+          <p className="text-white/90 text-center">
+             Welcome to <span className="font-semibold text-white">OhMyCompetitions</span> — the ultimate Pi-powered platform where your entries could win real rewards every single day.
           </p>
 
-          {/* Getting Started */}
+          {/* Step 1 */}
           <section>
-            <h2 className="text-lg font-bold gradient-text mt-6 mb-2">Getting Started</h2>
-            <ul className="list-disc list-inside space-y-4 text-white">
-              <li>Log in using your Pi credentials.</li>
-              <li>Verify your Pi Wallet connection for secure transactions.</li>
+            <h2 className="text-lg font-bold gradient-text mb-3"> Step 1: Log In & Secure Your Account</h2>
+            <ul className="list-disc list-inside space-y-3 text-white/90">
+              <li>Go to <strong>ohmycompetitions.com</strong> or open the app(must be within the pi browser).</li>
+              <li>Click <strong>Login</strong> in the top right corner.</li>
+              <li>Select <strong>“Login with Pi”</strong> and approve the request in the Pi Browser.</li>
+              <li>Once logged in, your wallet is connected and ready to go.</li>
             </ul>
           </section>
 
-          {/* Entering Competitions */}
+          {/* Step 2 */}
           <section>
-            <h2 className="text-lg font-bold gradient-text mt-6 mb-2">How To Enter Competitions</h2>
-            <ul className="list-disc list-inside space-y-4 text-white">
-              <li>Browse competitions on the homepage or competitions page.</li>
-              <li>Select the competition you wish to enter.</li>
-              <li>Pay the entry fee directly using your Pi wallet.</li>
-              <li>Your entry will be confirmed instantly and shown in "My Entries".</li>
+            <h2 className="text-lg font-bold gradient-text mb-3"> Step 2: Enter Competitions</h2>
+            <ul className="list-disc list-inside space-y-3 text-white/90">
+              <li>Browse live, upcoming, or themed competitions on the homepage.</li>
+              <li>Click any competition card to view details like prize, draw time, tickets, and fee.</li>
+              <li>Click <strong>“Enter Now”</strong> and choose how many tickets to buy.</li>
+              <li>Confirm payment using your Pi wallet once complete, your entry is locked and shown in your account.</li>
             </ul>
           </section>
 
-          {/* Draw & Winners */}
+          {/* Step 3 */}
           <section>
-            <h2 className="text-lg font-bold gradient-text mt-6 mb-2">Winning & Prize Draws</h2>
-            <ul className="list-disc list-inside space-y-4 text-white">
-              <li>Each competition has a countdown timer displayed clearly.</li>
-              <li>Winners are drawn automatically and fairly via random selection.</li>
-              <li>Notifications will be sent instantly when winners are picked.</li>
-              <li>Prizes will be delivered either as Pi transfers or real-world items depending on the competition type.</li>
+            <h2 className="text-lg font-bold gradient-text mb-3">Step 3: Track Entries</h2>
+            <ul className="list-disc list-inside space-y-3 text-white/90">
+              <li>Go to <strong>My Account → My Tickets</strong> to track your competitions.</li>
+              <li>See your tickets, draw dates, and competition status.</li>
+              <li>Check ticket history and winning status any time.</li>
             </ul>
           </section>
 
-          {/* Bonus Features */}
+          {/* Step 4 */}
+        <section>
+  <h2 className="text-lg font-bold gradient-text mb-3"> Step 4: Pi Cash Code</h2>
+  <ul className="list-disc list-inside space-y-4 text-white/90">
+    <li>
+      <strong>Pi Cash Code:</strong> Every day, a secret Pi Cash Code is hidden across the site. Find it and enter it to unlock bonus Pi or extra tickets — no entry fee required.
+    </li>
+    <li>
+      New codes are revealed daily and remain active for <strong>exactly 31 hours and 4 minutes</strong>. Miss it, and the prize resets so don’t delay!
+    </li>
+    <li>
+      Codes drop across our site, Discord, and social media. Stay sharp every code is a fresh chance to win.
+    </li>
+  </ul>
+
+</section>
+
+
+          {/* Step 5 */}
           <section>
-            <h2 className="text-lg font-bold gradient-text mt-6 mb-2">Daily Bonus Games</h2>
-            <ul className="list-disc list-inside space-y-4 text-white">
-              <li><strong>Spin The Wheel:</strong> Daily spins for bonus Pi and prizes.</li>
-              <li><strong>Pi Cash Code:</strong> Weekly jackpot codes for huge rollover prizes.</li>
-              <li><strong>Scratch & Win:</strong> Instant scratch cards for extra entries.</li>
+            <h2 className="text-lg font-bold gradient-text mb-3"> Step 5: Win & Claim Prizes</h2>
+            <ul className="list-disc list-inside space-y-3 text-white/90">
+              <li>Each competition has a visible countdown to draw time.</li>
+              <li>Winners are picked instantly via our random & fair draw system.</li>
+              <li>You’ll receive an in-app alert (and email if subscribed) when you win.</li>
+              <li>Prizes are sent as Pi (instantly) or delivered physically for real-world items.</li>
             </ul>
           </section>
 
-          {/* Fair Play */}
+          {/* Trust */}
           <section>
-            <h2 className="text-lg font-bold gradient-text mt-6 mb-2">Fair Play & Security</h2>
-            <ul className="list-disc list-inside space-y-4 text-white">
-              <li>All draws are transparent, timestamped, and verifiable.</li>
-              <li>Multiple entries allowed (where applicable), no bots or automation permitted.</li>
-              <li>All Pi transactions secured through the official Pi SDK integration.</li>
+            <h2 className="text-lg font-bold gradient-text mb-3"> Fair Play & Transparency</h2>
+            <ul className="list-disc list-inside space-y-3 text-white/90">
+              <li>Every draw is timestamped, logged, and verifiable.</li>
+              <li>No bots. No manipulation. One account = one chance per draw.</li>
+              <li>All transactions are processed through the official Pi SDK.</li>
             </ul>
           </section>
 
           {/* Support */}
-          <section>
-            <h2 className="text-center text-lg font-semibold gradient-text mt-6 mb-2">Need Help?</h2>
-            <p className="text-center">
-              Visit our <Link href="/help-support" className="gradient-text underline">Help & Support</Link> center for full assistance.
+          <section className="text-center">
+            <h2 className="text-lg font-semibold gradient-text mb-2"> Need Help?</h2>
+            <p className="text-white/90">
+              Visit our <Link href="/help-support" className="gradient-text underline font-semibold">Help & Support</Link> center available 24/7.
             </p>
           </section>
 
-          {/* Connect */}
-          <section>
-            <h2 className="text-center text-lg font-semibold gradient-text mt-8 mb-2">Connect with Us</h2>
-            <div className="flex justify-center space-x-4 mb-4">
+          {/* Social */}
+          <section className="text-center">
+            <h2 className="text-lg font-semibold gradient-text mt-8 mb-3">🌍 Stay Connected</h2>
+            <p className="text-white/80 mb-2">Follow us for surprise codes, announcements and exclusive giveaways</p>
+            <div className="flex justify-center space-x-5 mb-4">
               {[FaTwitter, FaFacebookF, FaInstagram, FaDiscord].map((Icon, idx) => (
                 <a
                   key={idx}
                   href="#"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white hover:text-gray-300 transition"
+                  className="text-white hover:text-cyan-300 transition"
                 >
                   <Icon size={24} />
                 </a>
               ))}
             </div>
           </section>
+
+          {/* CTA */}
+          <div className="text-center mt-10">
+            <Link href="/competitions/live-now">
+              <span className="inline-block bg-cyan-500 text-black font-bold px-6 py-3 rounded-xl shadow hover:bg-cyan-400 transition text-lg">
+                View Live Competitions
+              </span>
+            </Link>
+          </div>
         </div>
       </div>
     </main>

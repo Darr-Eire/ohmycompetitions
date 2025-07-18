@@ -42,10 +42,10 @@ export default function Header() {
    
   ];
 
-  const navItems = [
-    ['Home', '/homepage'],
-    ['My Account', '/account'],
-  ];
+ const navItems = [
+  ['Home', '/homepage'],
+  ['How It Play', '/how-to-play'],
+];
 
   const navExtras = [
     ['Try Your Luck', '/try-your-luck'],
@@ -57,6 +57,8 @@ export default function Header() {
   ];
 
   if (user) navExtras.push(['Pi Code', '/competition']);
+const finalNavItems = [...navItems];
+if (user) finalNavItems.splice(1, 0, ['My Account', '/account']);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] border-b border-cyan-700 px-3 py-1.5 flex items-center shadow-md backdrop-blur-md">
@@ -115,17 +117,18 @@ export default function Header() {
           className="absolute top-full left-2 mt-2 w-60 rounded-lg shadow-xl backdrop-blur-md bg-[#0f172acc] border border-cyan-700 animate-fade-in max-h-[80vh] overflow-y-auto"
         >
           <ul className="flex flex-col font-orbitron text-xs">
-            {navItems.map(([label, href]) => (
-              <li key={href}>
-                <Link
-                  href={href}
-                  className="block w-full px-4 py-2 text-white hover:bg-cyan-600 hover:text-black transition"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  {label}
-                </Link>
-              </li>
-            ))}
+        {finalNavItems.map(([label, href]) => (
+  <li key={href}>
+    <Link
+      href={href}
+      className="block w-full px-4 py-2 text-white hover:bg-cyan-600 hover:text-black transition"
+      onClick={() => setMenuOpen(false)}
+    >
+      {label}
+    </Link>
+  </li>
+))}
+
 
             <li>
               <button
