@@ -4,13 +4,13 @@ import Head from 'next/head'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { getStreak } from 'lib/streak'
-
+import { miniGames as games } from '@data/minigames';
 export default function TryYourLuckPage() {
   const [streak, setStreak] = useState(0)
   const [playedMap, setPlayedMap] = useState({})
   const [resetCountdown, setResetCountdown] = useState('')
 
- import { miniGames as games } from '@data/minigames';
+ 
 
 
   useEffect(() => {
