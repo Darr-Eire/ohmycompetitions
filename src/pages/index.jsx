@@ -11,7 +11,8 @@ export default function IndexPage() {
     { icon: '🎁', text: 'Crypto Giveaways' },
     { icon: '⚔️', text: 'Pi Battles' },
     { icon: '🎮', text: 'Mini Games' },
-    { icon: '🚀', text: 'More to Come...' },
+    { icon: '🧩', text: 'Mystery Features Coming' },
+
   ];
 
   const stats = [
@@ -40,15 +41,50 @@ export default function IndexPage() {
 
         {/* Feature Icons */}
         <div className="grid grid-cols-2 gap-3">
-          {features.map((f, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-2 bg-[#0a1024] border border-cyan-500 p-2 rounded-md shadow-[0_0_15px_#00f0ff44]"
-            >
-              <span className="text-lg">{f.icon}</span>
-              <span className="text-xs">{f.text}</span>
-            </div>
-          ))}
+       {[
+{
+    icon: '💎',
+    text: 'Daily Competitions',
+    href: '/competitions/daily', // matches daily.js
+  },
+  {
+    icon: '📲',
+    text: 'Pi Cash Code',
+    href: '/pi-cash-code', // matches pi-cash-code.jsx
+  },
+  {
+    icon: '🎁',
+    text: 'Pi Giveaways',
+    href: '/competitions/pi', // matches pi.js
+  },
+  {
+    icon: '⚔️',
+    text: 'Pi Battles',
+    href: '/competitions/pibattles', // matches pibattles.jsx
+  },
+  {
+    icon: '🎮',
+    text: 'Mini Games',
+    href: '/try-your-luck', // matches try-your-luck.js
+  },
+  {
+    icon: '🧩',
+    text: 'Mystery Features Coming',
+    href: '/future', // matches future.js
+  },
+
+
+].map((f, i) => (
+  <Link
+    key={i}
+    href={f.href}
+    className="flex items-center gap-2 bg-[#0a1024] border border-cyan-500 p-2 rounded-md shadow-[0_0_15px_#00f0ff44] hover:border-cyan-300 transition"
+  >
+    <span className="text-lg">{f.icon}</span>
+    <span className="text-xs text-white">{f.text}</span>
+  </Link>
+))}
+
         </div>
 
         {/* 2026 Vision Section */}

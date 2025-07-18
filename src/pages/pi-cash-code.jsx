@@ -196,17 +196,52 @@ export default function PiCashCodePage() {
         <div className="backdrop-blur-lg border border-cyan-400 neon-outline text-white p-6 sm:p-8 rounded-2xl text-center space-y-6 shadow-[0_0_40px_#00ffd5aa] max-w-3xl w-full mx-auto mt-6 relative overflow-hidden">
           <h1 className="text-3xl sm:text-4xl font-bold text-cyan-300 animate-glow-float">Pi Cash Code</h1>
 
-          <div className="bg-[#101426] border-2 border-cyan-400 rounded-xl px-6 py-3 text-2xl font-mono text-cyan-300 tracking-widest shadow-[0_0_20px_#00ffd5aa]">
-            {showCode ? (codeData?.code || '????-????') : 'Code Drops Soon 🔒'}
-          </div>
 
-          <div className="bg-black border border-cyan-400 text-cyan-300 text-lg font-bold px-4 py-2 rounded-lg shadow-[0_0_15px_#00f0ff88]">
-            Current Prize Pool: {codeData?.prizePool?.toLocaleString() || 'Loading...'} π
-          </div>
+{/* Code Block + Overlay + Prize Section */}
+<div className="w-full max-w-md mx-auto flex flex-col items-center space-y-6 mt-8 mb-10">
 
-          <div className="bg-black text-cyan-400 font-semibold mt-2 rounded-lg py-2">
-            Tickets Sold: {liveTickets}
-          </div>
+  {/* Code Display */}
+  <div className="relative w-full">
+    <div
+      className={`relative text-center font-mono text-2xl sm:text-3xl px-8 py-6 rounded-2xl transition-all duration-700 ease-in-out overflow-hidden
+        ${showCode
+          ? 'text-cyan-300 border-2 border-cyan-400 shadow-[0_0_30px_#00ffd5aa]'
+          : 'text-lime-400 border-2 border-cyan-700 blur-[1px] brightness-90 grayscale shadow-[inset_0_0_20px_#00ffd544]'}
+      `}
+    >
+      {!showCode && (
+        <div className="absolute inset-0 pointer-events-none z-0 animate-pulse">
+          <div className="absolute top-0 left-1/3 w-1 h-full bg-cyan-400/10 blur-md" />
+          <div className="absolute top-0 left-2/3 w-1 h-full bg-cyan-500/10 blur-md" />
+        </div>
+      )}
+      <span className="relative z-10 tracking-widest select-none">
+        {showCode ? codeData?.code || '????-????' : ''}
+      </span>
+    </div>
+
+    {!showCode && (
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none z-20">
+        <p className="text-cyan-300 text-sm sm:text-base font-semibold uppercase tracking-wider animate-pulse">
+          Code Locked
+        </p>
+        <p className="text-[11px] sm:text-xs text-cyan-400 mt-1">Releasing soon. Stay sharp.</p>
+      </div>
+    )}
+  </div>
+
+  {/* Prize Pool */}
+  <div className="border-2 border-cyan-400 text-cyan-300 text-lg font-semibold px-6 py-4 rounded-xl shadow-[0_0_20px_#00ffd5aa] w-full text-center">
+    Current Prize Pool: {codeData?.prizePool?.toLocaleString() || 'Loading...'} π
+  </div>
+
+  {/* Tickets Sold */}
+  <div className="border-2 border-cyan-400 text-cyan-300 text-lg font-semibold px-6 py-4 rounded-xl shadow-[0_0_20px_#00ffd5aa] w-full text-center">
+    Tickets Sold: {liveTickets}
+  </div>
+</div>
+
+
 
           {timeLeft && (
             <div className="mt-6 flex gap-2 justify-center">
