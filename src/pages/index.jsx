@@ -27,10 +27,10 @@ export default function IndexPage() {
               Oh My Competitions
             </h1>
             <p className="text-white/80 text-sm sm:text-base leading-snug">
-              Built for Pi Network Pioneers by Pioneers.<br />
-              Next-gen crypto competitions. Real Pi prizes.<br />
-              100% fair. 100% community. 100% Pi.
-            </p>
+              Built by Pioneers. Powered by Pi.<br />
+              Real rewards. Real winners. Real community.<br />
+              100% fair. 100% Pi.        
+             </p>
           </div>
 
           {/* Feature Icons */}
