@@ -324,85 +324,112 @@ const ImageOption = ({ label, path }) => (
   />
 </div>
 
+{/* Image URL and buttons */}
+<div>
+  <label className="block text-cyan-300 text-sm font-bold mb-2">
+    Competition Image
+  </label>
+  <input
+    type="text"
+    name="imageUrl"
+    value={formData.imageUrl}
+    onChange={handleChange}
+    className="w-full px-4 py-2 bg-black border border-cyan-400 rounded-lg text-white placeholder-gray-400 focus:border-cyan-300 focus:outline-none"
+    placeholder="e.g., /images/playstation.png or https://example.com/image.jpg"
+  />
+  <p className="text-xs text-gray-400 mt-1">
+    Use existing images from /public/images/ folder or provide external URL. Leave empty for default image.
+  </p>
 
-                    {/* Image URL and buttons */}
-       {/* Image URL */}
-            <div>
-              <label className="block text-cyan-300 text-sm font-bold mb-2">
-                Competition Image
-              </label>
-              <input
-                type="text"
-                name="imageUrl"
-                value={formData.imageUrl}
-                onChange={handleChange}
-                className="w-full px-4 py-2 bg-black border border-cyan-400 rounded-lg text-white placeholder-gray-400 focus:border-cyan-300 focus:outline-none"
-                placeholder="e.g., /images/playstation.jpeg or https://example.com/image.jpg"
-              />
-              <p className="text-xs text-gray-400 mt-1">
-                Use existing images from /public/images/ folder or provide external URL. Leave empty for default image.
-              </p>
-              
-             {/* Available Images Preview */}
-<div className="mt-3">
-  <p className="text-sm text-cyan-400 mb-2">Quick select from available images:</p>
+  {/* Available Images Preview */}
+  <div className="mt-3">
+    <p className="text-sm text-cyan-400 mb-2">Quick select from available images:</p>
 
-  {/* Tech */}
-  <p className="text-cyan-300 text-xs font-semibold mt-4 mb-1">🎮 Tech/Featured</p>
-  <div className="grid grid-cols-3 gap-2 text-xs">
-    <ImageOption label="PlayStation" path="/images/playstation.jpeg" />
-    <ImageOption label="Xbox" path="/images/xbox.jpeg" />
-    <ImageOption label="Nintendo" path="/images/nintendo.png" />
-    <ImageOption label="MacBook" path="/images/macbook.jpeg" />
-    <ImageOption label="iPhone" path="/images/iphone.jpeg" />
-    <ImageOption label="AirPods" path="/images/airpods.png" />
-    <ImageOption label="GoPro" path="/images/gopro.png" />
-    <ImageOption label="Viture" path="/images/viture.png" />
-   <ImageOption label="Smart TV" path="/images/tv.jpg" />
-    <ImageOption label="Gaming Chair" path="/images/chair.png" />
-     <ImageOption label="Scooter" path="/images/scooter.png" />
-  </div>
+    {/* Tech / Featured */}
+    <p className="text-cyan-300 text-xs font-semibold mt-4 mb-1">🎮 Tech / Featured</p>
+    <div className="grid grid-cols-3 gap-2 text-xs">
+      <ImageOption label="PlayStation" path="/images/playstation.png" />
+      <ImageOption label="PlayStation 5" path="/images/playstation1.png" />
+      <ImageOption label="PS5 Digital" path="/images/playstation2.png" />
+      <ImageOption label="Xbox" path="/images/xbox.png" />
+      <ImageOption label="Xbox Series S" path="/images/xbox1.png" />
+      <ImageOption label="Fortnite Xbox" path="/images/xbox3.png" />
+      <ImageOption label="Game Pass 12 Month" path="/images/xbox4.png" />
+      <ImageOption label="Nintendo Switch" path="/images/nintendo.png" />
+      <ImageOption label="MacBook" path="/images/macbook.png" />
+      <ImageOption label="iPhone" path="/images/iphone.png" />
+      <ImageOption label="AirPods" path="/images/airpods.png" />
+      <ImageOption label="Smart TV" path="/images/tv.png" />
+      <ImageOption label="Gaming Chair" path="/images/chair.png" />
+      <ImageOption label="Scooter" path="/images/scooter.png" />
+      <ImageOption label="Match Day" path="/images/matchday.png" />
+      <ImageOption label="Viture" path="/images/viture.png" />
+      <ImageOption label="Ray-Ban 1" path="/images/rayban1.png" />
+      <ImageOption label="Bundle" path="/images/bundle.png" />
+    </div>
 
+    {/* Daily Competitions */}
+    <p className="text-cyan-300 text-xs font-semibold mt-4 mb-1">🗓️ Daily Competitions</p>
+    <div className="grid grid-cols-3 gap-2 text-xs">
+      <ImageOption label="Pi Giveaway" path="/images/pi1.png" />
+      <ImageOption label="Pi Power" path="/images/pi2.png" />
+      <ImageOption label="Pi Giveaway Alt" path="/images/pi3.png" />
+      <ImageOption label="Early Pioneers" path="/images/pi4.png" />
+      <ImageOption label="500 Pi Giveaway" path="/images/pi5.png" />
+    </div>
 
+    {/* Travel */}
+    <p className="text-cyan-300 text-xs font-semibold mt-4 mb-1">🌴 Travel</p>
+    <div className="grid grid-cols-3 gap-2 text-xs">
+      <ImageOption label="Dubai Holiday" path="/images/dubai-luxury-holiday.png" />
+      <ImageOption label="Hotel Stay" path="/images/hotel.png" />
+      <ImageOption label="Spa Retreat" path="/images/spa.png" />
+      <ImageOption label="Weekend Getaway" path="/images/weekend.png" />
+      <ImageOption label="First Class" path="/images/first.png" />
+    </div>
 
-  {/* Travel */}
-  <p className="text-cyan-300 text-xs font-semibold mt-4 mb-1">🌴 Travel</p>
-  <div className="grid grid-cols-3 gap-2 text-xs">
-    <ImageOption label="Weekend" path="/images/weekend.jpeg" />
-    <ImageOption label="Dubai Holiday" path="/images/dubai-luxury-holiday.png" />
-    <ImageOption label="Spa" path="/images/spa.jpeg" />
-    <ImageOption label="Hotel Stay" path="/images/hotel.jpeg" />
-  </div>
+    {/* Crypto */}
+    <p className="text-cyan-300 text-xs font-semibold mt-4 mb-1">💰 Crypto</p>
+    <div className="grid grid-cols-3 gap-2 text-xs">
+      <ImageOption label="Bitcoin" path="/images/bitcoin.png" />
+      <ImageOption label="Ethereum" path="/images/ethereum.png" />
+      <ImageOption label="Litecoin" path="/images/litecoin.png" />
+      <ImageOption label="Ripple" path="/images/ripple.png" />
+      <ImageOption label="XRP" path="/images/xrp.png" />
+      <ImageOption label="Pi Network" path="/images/pi.png" />
+      <ImageOption label="BNB" path="/images/bnb.png" />
+      <ImageOption label="SUI" path="/images/sui.png" />
+      <ImageOption label="HBAR" path="/images/hbar.png" />
+      <ImageOption label="SOL" path="/images/sol.png" />
+      <ImageOption label="GT Token" path="/images/gt.png" />
+    </div>
 
-  {/* Crypto*/}
-  <p className="text-cyan-300 text-xs font-semibold mt-4 mb-1">💰 Crypto</p>
-  <div className="grid grid-cols-3 gap-2 text-xs">
-    <ImageOption label="Bitcoin" path="/images/bitcoin.png" />
-    <ImageOption label="Pi" path="/images/pi.png" />
-    <ImageOption label="XRP" path="/images/xrp.png" />
+    {/* Promo */}
+    <p className="text-cyan-300 text-xs font-semibold mt-4 mb-1">📢 Promo</p>
+    <div className="grid grid-cols-3 gap-2 text-xs">
+      <ImageOption label="Sponsor Banner" path="/images/sponsor-banner.png" />
+      <ImageOption label="Your Logo" path="/images/your logo.png" />
+    </div>
+
+    {/* Image Preview */}
+    {formData.imageUrl && (
+      <div className="mt-3">
+        <p className="text-xs text-cyan-400 mb-2">🖼️ Preview:</p>
+        <div className="w-32 h-24 bg-gray-800 rounded border border-gray-600 overflow-hidden">
+          <img
+            src={formData.imageUrl}
+            alt="Competition preview"
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.target.style.display = 'none';
+            }}
+          />
+        </div>
+      </div>
+    )}
   </div>
 </div>
 
-
-
-
-              {/* Image Preview */}
-              {formData.imageUrl && (
-                <div className="mt-3">
-                  <p className="text-xs text-cyan-400 mb-2">🖼️ Preview:</p>
-                  <div className="w-32 h-24 bg-gray-800 rounded border border-gray-600 overflow-hidden">
-                    <img 
-                      src={formData.imageUrl} 
-                      alt="Competition preview" 
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
 
 
               {/* Action Buttons */}
