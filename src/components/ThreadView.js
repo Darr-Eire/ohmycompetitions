@@ -5,10 +5,10 @@ import dynamic from 'next/dynamic'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
-// ✅ emoji-mart Picker (SSR-safe)
-const Picker = dynamic(() => import('emoji-mart').then(mod => mod.Picker), {
+const Picker = dynamic(() => import('@emoji-mart/react'), {
   ssr: false,
 })
+
 
 export default function ThreadView({ thread, isAdmin = false }) {
   const [upvotes, setUpvotes] = useState(thread.upvotes?.length || 0)
@@ -18,11 +18,14 @@ export default function ThreadView({ thread, isAdmin = false }) {
   const [loading, setLoading] = useState(false)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
 
-  useEffect(() => {
-    fetch(`/api/forums/replies?threadId=${thread._id}`)
-      .then(res => res.json())
-      .then(setReplies)
-  }, [thread._id])
+ useEffect(() => {
+  fetch(`/api/forums/replies?threadId=${thread._id}`)
+    .then(res => res.json())
+    .then(data => {
+      setReplies(Array.isArray(data) ? data : data.replies || [])
+    })
+}, [thread._id])
+
 
   const toggleUpvote = async () => {
     const res = await fetch('/api/forums/upvote', {
@@ -86,9 +89,11 @@ export default function ThreadView({ thread, isAdmin = false }) {
       </div>
 
       {thread.body && (
-        <ReactMarkdown remarkPlugins={[remarkGfm]} className="prose prose-invert text-white">
-          {thread.body}
-        </ReactMarkdown>
+        <div className="prose prose-invert text-white">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {thread.body}
+          </ReactMarkdown>
+        </div>
       )}
 
       <div className="text-sm text-gray-300">
@@ -113,9 +118,11 @@ export default function ThreadView({ thread, isAdmin = false }) {
               <div className="text-sm text-gray-400">
                 {new Date(reply.createdAt).toLocaleString()}
               </div>
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {reply.body}
-              </ReactMarkdown>
+              <div className="prose prose-invert text-white">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {reply.body}
+                </ReactMarkdown>
+              </div>
               {isAdmin && (
                 <button
                   onClick={() => deleteReply(reply._id)}
@@ -155,7 +162,8 @@ export default function ThreadView({ thread, isAdmin = false }) {
 
         {showEmojiPicker && (
           <div className="mt-2">
-            <Picker onEmojiSelect={handleEmojiSelect} theme="dark" />
+           <Picker onEmojiSelect={handleEmojiSelect} theme="dark" />
+
           </div>
         )}
       </div>
