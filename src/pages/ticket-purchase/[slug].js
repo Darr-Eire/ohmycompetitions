@@ -349,9 +349,6 @@ return (
   {comp.title}
 </div>
 
-
-
-
       <div className="space-y-6 text-center">
 
 {/* Image and Thumbnails */}
@@ -362,7 +359,7 @@ return (
       alt={comp.title}
       width={600}
       height={300}
-      className="w-fit max-h-64 object-cover rounded-lg border border-blue-500 mx-auto"
+      className="w-full max-h-56 object-cover rounded-lg border border-blue-500 mx-auto"
     />
     
     {miniImages?.length > 0 && (
@@ -385,20 +382,27 @@ return (
     )}
   </div>
 )}
-
-        
-
         {/* Crypto Widget */}
         {isCryptoCompetition && (
           <div className="w-full h-[400px] my-4">
             <TradingViewWidget />
           </div>
         )}
+ {competitionStatus === 'active' && (
+   <div className="text-lg font-bold text-black bg-gradient-to-r from-green-500 to-green-700 px-6 py-2 rounded-full shadow-lg animate-pulse tracking-wide uppercase">
+  Live Now
+</div>
 
-{/* Prize */}
-<p className="text-cyan-300 text-xl font-semibold backdrop-blur-md bg-white/10 border border-cyan-300 rounded-lg px-4 py-2 shadow-md">
-   {comp.prize}
-</p>
+  )}
+{/* Prize and LIVE banner below */}
+<div className="text-center space-y-3">
+  <p className="text-cyan-300 text-xl font-semibold backdrop-blur-md bg-white/10 border border-cyan-300 rounded-lg px-6 py-2 shadow-md inline-block">
+    {comp.prize}
+  </p>
+
+ 
+</div>
+
 
 
 
@@ -468,10 +472,7 @@ return (
                 with Pi to buy tickets.
               </div>
             )}
- <p className="text-cyan-300 text-sm mt-2">
-              Secure your entry to {comp.prize}<br />
-              Thank you for participating and good luck
-            </p>
+
              <p className="text-lg text font-bold mt-6">Total  {totalPrice.toFixed(2)} π</p>
             {/* Ticket Quantity Selector */}
             <div className="flex justify-center gap-4 mt-4">
@@ -504,7 +505,6 @@ return (
               </div>
             )}
 
-            {/* Payment Summary */}
            
            
 
@@ -516,6 +516,11 @@ return (
     >
       Proceed to Payment
     </button>
+     {/* Payment Summary */}
+            <p className="text-cyan-300 text-sm mt-2">
+              Secure your entry to {comp.prize}<br />
+              Thank you for participating and good luck
+            </p>
 
     {user?.username && (
       <button
