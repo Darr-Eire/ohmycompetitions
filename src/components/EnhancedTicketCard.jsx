@@ -80,25 +80,21 @@ function EnhancedTicketCard({ ticket, theme = 'tech', compressed = false }) {
         <p><span className="text-gray-400">🎯</span> {isActive ? 'Active' : 'Closed'}</p>
       </div>
 
-{!compressed && ticket.ticketNumbers && ticket.ticketNumbers.length > 0 && (
-  <div className="border-t border-gray-600 pt-2">
-    <div className="text-[10px] text-white max-h-24 overflow-y-auto">
-      <strong className="text-cyan-400 block mb-1">🎫 Ticket IDs:</strong>
-      <div className="flex flex-wrap gap-x-2 gap-y-1">
-        {ticket.ticketNumbers.map((id, i) => (
-          <span
-            key={i}
-            className="bg-cyan-900/40 border border-cyan-400 text-cyan-300 px-2 py-[2px] rounded-full"
-          >
-            {id}
-          </span>
-        ))}
-      </div>
-    </div>
-  </div>
-)}
-
-
+      {!compressed && ticket.ticketNumbers && ticket.ticketNumbers.length > 0 && (
+        <div className="border-t border-gray-600 pt-2">
+          <div className="text-[10px] text-white max-h-24 overflow-y-auto">
+            <strong className="text-cyan-400 block mb-1">🎫 Ticket IDs:</strong>
+            <div className="flex flex-wrap gap-x-2 gap-y-1">
+              {ticket.ticketNumbers.map((id, i) => (
+                <span
+                  key={i}
+                  className="bg-cyan-900/40 border border-cyan-400 text-cyan-300 px-2 py-[2px] rounded-full"
+                >
+                  {id}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
@@ -167,27 +163,26 @@ function CompressedTicketView({ tickets, theme }) {
         Latest: {representativeTicket.competitionTitle}
       </div>
 
- {expanded ? (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-    {tickets.map((ticket, index) => (
-      <EnhancedTicketCard
-        key={index}
-        ticket={ticket}
-        theme={theme}
-        compressed={true}
-      />
-    ))}
-  </div>
-) : (
-  <div className="flex justify-center">
-    <EnhancedTicketCard
-      ticket={representativeTicket}
-      theme={theme}
-      compressed={true}
-    />
-  </div>
-)}
-
+      {expanded ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {tickets.map((ticket, index) => (
+            <EnhancedTicketCard
+              key={index}
+              ticket={ticket}
+              theme={theme}
+              compressed={true}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="flex justify-center">
+          <EnhancedTicketCard
+            ticket={representativeTicket}
+            theme={theme}
+            compressed={true}
+          />
+        </div>
+      )}
     </div>
   );
 }
