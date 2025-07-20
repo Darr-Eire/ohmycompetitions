@@ -303,15 +303,15 @@ export default function MyTickets({ tickets = [], showFilter = true }) {
           onChange={(e) => setFilter(e.target.value)}
         >
           <option value="all">All Tickets</option>
-          <option value="active">Active Competitions</option>
-          <option value="completed">Completed Competitions</option>
-          <option value="gifted">Gifted to Me</option>
-          <option value="earned">Earned/Free</option>
-          <option value="tech">Featured Competitions</option>
-          <option value="premium">Travel Competitions</option>
-          <option value="pi">Pi Competitions</option>
-          <option value="daily">Daily Competitions</option>
-          <option value="crypto">Crypto Giveaways</option>
+          <option value="active">Active </option>
+          <option value="completed">Completed</option>
+          <option value="gifted">Gifted</option>
+          <option value="earned">Free</option>
+          <option value="tech">Featured</option>
+          <option value="premium">Travel</option>
+          <option value="pi">Pi</option>
+          <option value="daily">Daily</option>
+          <option value="crypto">Crypto</option>
           <option value="free">Free Tickets</option>
           <option value="cashcode">Pi Cash Code</option>
         </select>

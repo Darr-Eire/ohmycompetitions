@@ -7,6 +7,7 @@ import Image from 'next/image';
 import BuyTicketButton from '@components/BuyTicketButton';
 import { usePiAuth } from '../../context/PiAuthContext';
 import descriptions from '../../data/descriptions';
+import GiftTicketModal from '@components/GiftTicketModal';
 
 import {
   techItems,
@@ -105,6 +106,7 @@ export default function TicketPurchasePage() {
   const [paymentError, setPaymentError] = useState(null);
   const [stuckPaymentId, setStuckPaymentId] = useState(null);
   const [recovering, setRecovering] = useState(false);
+  const [showGiftModal, setShowGiftModal] = useState(false);
 
   // New state for dynamic competition description
   const [description, setDescription] = useState('');
@@ -432,22 +434,7 @@ return (
                     <DetailRow label="Max Ticket Purchases" value={comp.maxTicketsPerUser?.toLocaleString() || '10'} />
 
         </div>
-        {/* View More Details Toggle - below details */}
-<div className="mt-4 text-center">
-  <button
-    onClick={() => setShowDetails(!showDetails)}
-    className="text-sm text-cyan-300 hover:text-white transition underline"
-  >
-    {showDetails ? 'Hide' : 'View'} Competition Details
-  </button>
-</div>
 
-{showDetails && (
-  <div className="mt-2 bg-white/10 p-4 rounded-lg border border-cyan-400 text-sm whitespace-pre-wrap leading-relaxed">
-    <h2 className="text-center text-lg font-bold mb-2 text-cyan-300">Competition Details</h2>
-    <p>{description}</p>
-  </div>
-)}
 
 
         {/* Free or Paid Entry */}
@@ -481,7 +468,11 @@ return (
                 with Pi to buy tickets.
               </div>
             )}
-
+ <p className="text-cyan-300 text-sm mt-2">
+              Secure your entry to {comp.prize}<br />
+              Thank you for participating and good luck
+            </p>
+             <p className="text-lg text font-bold mt-6">Total  {totalPrice.toFixed(2)} π</p>
             {/* Ticket Quantity Selector */}
             <div className="flex justify-center gap-4 mt-4">
               <button
@@ -514,57 +505,97 @@ return (
             )}
 
             {/* Payment Summary */}
-            <p className="text-lg font-bold mt-6">Total {totalPrice.toFixed(2)} π</p>
-            <p className="text-white text-sm mt-2">
-              Secure your entry to win <strong>{comp.prize}</strong>.<br />
-              Thank you for participating and good luck! 🚀✨
-            </p>
+           
+           
 
-            {/* Skill Question */}
-            {!showSkillQuestion ? (
-              <button
-                onClick={handleShowSkillQuestion}
-                className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 px-4 rounded-xl mt-6"
-              >
-                Proceed to Payment
-              </button>
-            ) : (
-              <div className="mt-6 max-w-md mx-auto text-center">
-                <label htmlFor="skill-question" className="block font-semibold mb-1 text-white">
-                  Skill Question (Required to Enter):
-                </label>
-                <p className="mb-2">{selectedQuestion?.question}</p>
-                <input
-                  id="skill-question"
-                  type="text"
-                  className="w-full px-4 py-2 rounded-lg bg-[#0f172a]/60 border border-cyan-500 text-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                  value={skillAnswer}
-                  onChange={(e) => setSkillAnswer(e.target.value)}
-                  placeholder="Enter your answer"
-                  style={{ maxWidth: '300px' }}
-                />
-                {!isAnswerCorrect() && skillAnswer !== '' && (
-                  <p className="text-sm text-red-400 mt-1">
-                    You must answer correctly to proceed.
-                  </p>
-                )}
-                {isAnswerCorrect() && (
-                  <BuyTicketButton
-                    competitionSlug={slug}
-                    entryFee={comp.entryFee}
-                    quantity={quantity}
-                    piUser={user}
-                    onPaymentSuccess={handlePaymentSuccess}
-                    endsAt={comp.endsAt}
-                  />
-                )}
-              </div>
+          {!showSkillQuestion ? (
+  <>
+    <button
+      onClick={handleShowSkillQuestion}
+      className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 px-4 rounded-xl mt-6"
+    >
+      Proceed to Payment
+    </button>
+
+    {user?.username && (
+      <button
+        onClick={(e) => {
+          e.preventDefault();
+          setShowGiftModal(true);
+        }}
+        className="w-full mt-6 py-3 px-4 rounded-xl font-bold text-black bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 transition"
+
+      >
+        🎁 Gift a Ticket
+      </button>
+    )}
+  </>
+) : (
+
+         <div className="mt-6 max-w-md mx-auto text-center">
+  <label htmlFor="skill-question" className="block font-semibold mb-1 text-white">
+    Skill Question (Required to Enter):
+  </label>
+  <p className="mb-2">{selectedQuestion?.question}</p>
+  <input
+    id="skill-question"
+    type="text"
+    className="w-full px-4 py-2 rounded-lg bg-[#0f172a]/60 border border-cyan-500 text-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
+    value={skillAnswer}
+    onChange={(e) => setSkillAnswer(e.target.value)}
+    placeholder="Enter your answer"
+    style={{ maxWidth: '300px' }}
+  />
+  
+  {/* Show warning if answer is wrong */}
+  {!isAnswerCorrect() && skillAnswer !== '' && (
+    <p className="text-sm text-red-400 mt-1">
+      You must answer correctly to proceed.
+    </p>
+  )}
+
+  {/* Show Buy Ticket Button if answer is correct */}
+  {isAnswerCorrect() && (
+    <>
+      <BuyTicketButton
+        competitionSlug={slug}
+        entryFee={comp.entryFee}
+        quantity={quantity}
+        piUser={user}
+        onPaymentSuccess={handlePaymentSuccess}
+        endsAt={comp.endsAt}
+      />
+
+    </>
+  )}
+</div>
+
             )}
           </>
         )}
+  <GiftTicketModal
+  isOpen={showGiftModal}
+  onClose={() => setShowGiftModal(false)}
+  preselectedCompetition={comp}
+/>
+        {/* View More Details Toggle - below details */}
+<div className="mt-4 text-center">
+  <button
+    onClick={() => setShowDetails(!showDetails)}
+    className="text-sm text-cyan-300 hover:text-cyan-300 transition"
+  >
+    {showDetails ? 'Hide' : 'View'} Competition Details
+  </button>
+</div>
 
+{showDetails && (
+  <div className="mt-2 bg-white/10 p-4 rounded-lg border border-cyan-400 text-sm whitespace-pre-wrap leading-relaxed">
+    <h2 className="text-center text-lg font-bold mb-2 text-cyan-300">Competition Details</h2>
+    <p>{description}</p>
+  </div>
+)}
         {/* Footer Links */}
-        <div className="mt-6 text-xs text-white flex flex-col items-center space-y-2">
+        <div className="mt-6 text-xs text-cyan-300 flex flex-col items-center space-y-2">
           <Link
             href="/terms-conditions"
             className="underline hover:text-cyan-400"
@@ -576,6 +607,8 @@ return (
         </div>
       </div>
     </div>
+  
+
   </main>
 );
 

@@ -40,55 +40,57 @@ function EnhancedTicketCard({ ticket, theme, compressed = false }) {
   const cardWidth = compressed ? 'w-48' : 'w-64';
   const imageHeight = compressed ? 'h-24' : 'h-32';
 
-  return (
-    <div className={`${cardWidth} bg-[#1e293b] text-white border-2 rounded-xl shadow-lg p-3 space-y-2 shrink-0 ${themeStyles[theme] || themeStyles.tech}`}>
-      <div className="text-center">
-        <h3 className="text-sm font-bold truncate">{ticket.competitionTitle}</h3>
-        <span className={`text-xs font-medium ${statusColor} mt-1 block`}>{statusLabel}</span>
-      </div>
-      
-     <Image
-  src={ticket.imageUrl || '/images/default-prize.png'}
-  alt={ticket.prize || 'Prize'}
-  width={300}
-  height={compressed ? 96 : 128}
-  className={`w-full object-cover rounded-md ${imageHeight}`}
-  unoptimized
-/>
-
-
-      <div className="grid grid-cols-2 text-xs gap-1">
-        <p className="col-span-2 text-cyan-300 font-medium truncate">{ticket.prize}</p>
-        <p>🎟 {ticket.quantity}</p>
-        <p>💰 {(ticket.entryFee || 0).toFixed(2)} π</p>
-        <p>🕒 {drawDate.toLocaleDateString()}</p>
-        <p>{isActive ? '🟢 Active' : '🔴 Closed'}</p>
-      </div>
-
-      {!compressed && ticket.ticketNumbers && (
-        <div className="text-[10px] text-gray-300 mt-2 text-left max-h-24 overflow-y-auto whitespace-pre-wrap">
-          <strong>Ticket IDs:</strong>
-          <br />
-          {ticket.ticketNumbers.join(', ')}
-        </div>
-      )}
+return (
+  <div className={`${cardWidth} bg-[#1e293b] text-white border-2 rounded-xl shadow-lg p-3 space-y-2 shrink-0 ${themeStyles[theme] || themeStyles.tech}`}>
+    <div className="text-center">
+      <h3 className="text-sm font-bold truncate">{ticket.competitionTitle}</h3>
+      <span className={`text-xs font-medium ${statusColor} mt-1 block`}>{statusLabel}</span>
     </div>
-  );
+
+    <Image
+      src={ticket.imageUrl || '/images/pi2.png'}
+      alt={ticket.prize || 'Prize'}
+      width={300}
+      height={compressed ? 96 : 128}
+      className={`w-full object-cover rounded-md ${imageHeight}`}
+      unoptimized
+    />
+
+    <div className="grid grid-cols-2 text-xs gap-1">
+      <p className="col-span-2 text-cyan-300 font-medium truncate">{ticket.prize}</p>
+      <p>🎟 {ticket.quantity}</p>
+      <p>💰 {(ticket.entryFee || 0).toFixed(2)} π</p>
+      <p>🕒 {drawDate.toLocaleDateString()}</p>
+      <p>{isActive ? '🟢 Active' : '🔴 Closed'}</p>
+    </div>
+
+   {!compressed && ticket.ticketNumbers && ticket.ticketNumbers.length > 0 && (
+  <div className="text-[10px] text-gray-300 mt-2 text-left max-h-24 overflow-y-auto break-words whitespace-pre-wrap leading-relaxed">
+    <strong>Ticket IDs:</strong>
+    <div className="mt-1">
+      {ticket.ticketNumbers.join(', ')}
+    </div>
+  </div>
+)}
+
+  </div>
+);
 }
 
 
 // Compressed ticket view for when user has many tickets
 function CompressedTicketView({ tickets, theme }) {
   const [expanded, setExpanded] = useState(false);
+
+  if (!tickets || tickets.length === 0) return null;
+
   const ticketCount = tickets.length;
   const totalQuantity = tickets.reduce((sum, t) => sum + (t.quantity || 0), 0);
-  
-  if (ticketCount === 0) return null;
-
   const representativeTicket = tickets[0];
+
   const themeStyles = {
     tech: 'border-blue-500',
-    premium: 'border-purple-500', 
+    premium: 'border-purple-500',
     pi: 'border-yellow-500',
     daily: 'border-green-500',
     crypto: 'border-orange-500',
@@ -96,45 +98,50 @@ function CompressedTicketView({ tickets, theme }) {
     cashcode: 'border-pink-500'
   };
 
+  const themeLabel = theme.charAt(0).toUpperCase() + theme.slice(1);
+
   return (
-    <div className={`bg-[#1e293b] border-2 ${themeStyles[theme] || themeStyles.tech} rounded-xl p-4 space-y-3`}>
+    <div className={`bg-[#1e293b] border-2 ${themeStyles[theme] || themeStyles.tech} rounded-2xl p-4 shadow-md space-y-4`}>
+      {/* Header */}
       <div className="flex justify-between items-center">
-        <h3 className="text-sm font-bold text-white">
-          {theme.charAt(0).toUpperCase() + theme.slice(1)} Tickets ({ticketCount})
-        </h3>
+        <div>
+          <h3 className="text-white font-bold text-base">{themeLabel} Tickets</h3>
+          <p className="text-xs text-gray-400">
+            🎟 Total: {totalQuantity} | 🎯 Entries: {ticketCount} | 🏆 Latest: {representativeTicket.competitionTitle}
+          </p>
+        </div>
         <button
           onClick={() => setExpanded(!expanded)}
-          className="text-cyan-400 text-xs hover:text-cyan-300"
+          className="text-cyan-400 text-sm font-semibold hover:text-cyan-300 transition-all"
         >
-          {expanded ? 'Show Less' : 'Show All'}
+          {expanded ? '− Collapse' : '+ Expand'}
         </button>
       </div>
-      
-      <div className="text-xs text-gray-300">
-        Total Tickets: {totalQuantity} | Latest: {representativeTicket.competitionTitle}
-      </div>
 
+      {/* Ticket Cards */}
       {expanded ? (
-        <div className="flex overflow-x-auto space-x-3 pb-2">
+        <div className="flex overflow-x-auto space-x-3 pb-1 scrollbar-thin scrollbar-thumb-cyan-600">
           {tickets.map((ticket, index) => (
-            <EnhancedTicketCard 
-              key={index} 
-              ticket={ticket} 
-              theme={theme} 
+            <EnhancedTicketCard
+              key={index}
+              ticket={ticket}
+              theme={theme}
               compressed={true}
             />
           ))}
         </div>
       ) : (
-        <EnhancedTicketCard 
-          ticket={representativeTicket} 
-          theme={theme} 
+        <EnhancedTicketCard
+          ticket={representativeTicket}
+          theme={theme}
           compressed={true}
         />
       )}
     </div>
   );
 }
+
+
 
 export default function Account() {
   const { user, loginWithPi } = usePiAuth();
@@ -329,7 +336,19 @@ export default function Account() {
 
 
   const filteredTickets = getFilteredTickets();
-  const groupedTickets = groupTicketsByTheme(filteredTickets);
+  // Expand each ticket into individual entries per ticketNumber
+const splitTickets = filteredTickets.flatMap(ticket => 
+  ticket.ticketNumbers?.length
+    ? ticket.ticketNumbers.map((id) => ({
+        ...ticket,
+        quantity: 1,
+        ticketNumbers: [id], // keep one per card
+      }))
+    : [ticket]
+);
+
+const groupedTickets = groupTicketsByTheme(splitTickets);
+
 
   // Show login prompt if not authenticated
   if (!user) {
@@ -337,7 +356,7 @@ export default function Account() {
       <div className="bg-[#1e293b] min-h-screen max-w-md mx-auto p-4 text-white flex flex-col items-center justify-center space-y-6">
         <div className="text-center space-y-4">
           <h1 className="text-2xl font-bold">Account Dashboard</h1>
-          <p className="text-gray-400">Please log in with Pi to view your account</p>
+          <p className="text-cyan-300">Please log in with Pi to view your account</p>
           <button
             onClick={loginWithPi}
             className="bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 px-6 rounded-xl hover:brightness-110 transition-all"

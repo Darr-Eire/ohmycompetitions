@@ -120,8 +120,8 @@ const [activeFilter, setActiveFilter] = useState('Daily');
         >
           Explore Live Competitions
         </h1>
-        <p className="text-center text-white text-base sm:text-lg max-w-md mx-auto mb-8">
-          Enter exclusive competitions powered by Pi. Win tech, Pi, crypto, lifestyle experiences and more with new draws every week! We’re always adding new competitions and creating even more winners as time goes on so don’t miss your chance to join the excitement and be our next big winner!
+        <p className="text-center text-cyan-300 text-base sm:text-lg max-w-md mx-auto mb-8">
+          Enter exclusive Pi powered competitions to win tech, crypto, lifestyle prizes and more. New draws weekly don’t miss your chance to join the fun and become our next big winner
         </p>
       </div>
 

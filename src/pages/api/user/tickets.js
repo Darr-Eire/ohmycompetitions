@@ -133,14 +133,16 @@ export default async function handler(req, res) {
 
       ...userPayments.map(payment => {
         const comp = competitionMap[payment.competitionSlug];
-        const ticketNumbers = payment.ticketNumber ? 
-          (payment.ticketNumber.toString().includes('-') ? 
-            payment.ticketNumber.split('-').map((n, i, arr) => 
-              arr.length === 2 ? `T${parseInt(arr[0]) + i}` : `T${n}`
-            ) : 
-            [`T${payment.ticketNumber}`]
-          ) : 
-          [`P${payment.paymentId.slice(-6)}`];
+       const ticketNumbers = Array.isArray(payment.ticketNumbers)
+  ? payment.ticketNumbers
+  : payment.ticketNumber?.toString().includes('-')
+    ? (() => {
+        const [start, end] = payment.ticketNumber.split('-').map(n => parseInt(n));
+        return Array.from({ length: end - start + 1 }, (_, i) => `T${start + i}`);
+      })()
+    : payment.ticketNumber
+      ? [`T${payment.ticketNumber}`]
+      : [`P${payment.paymentId.slice(-6)}`];
 
         return {
           competitionTitle: comp?.title || payment.competitionSlug || 'Competition',

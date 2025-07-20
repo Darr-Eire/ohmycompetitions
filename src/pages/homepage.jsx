@@ -182,7 +182,7 @@ export default function HomePage() {
 <div className="w-full space-y-1"> {/* shared wrapper with tight spacing */}
   {/* Welcome message */}
   <div className="text-center text-cyan-300 text-1xl sm:text-base font-medium font-orbitron">
-   ☘️ Céad Míle Fáilte Pioneers let the competitions begin ☘️
+   ☘️ Céad Míle Fáilte Let The Competitions Begin ☘️
   </div>
 
   {/* Marquee */}

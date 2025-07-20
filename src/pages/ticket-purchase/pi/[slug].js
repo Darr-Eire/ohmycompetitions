@@ -3,46 +3,28 @@
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePiAuth } from 'context/PiAuthContext'; // Adjust path if needed
+import { usePiAuth } from 'context/PiAuthContext';
+import { piItems } from '../../../data/competitions';
+import GiftTicketModal from '@components/GiftTicketModal';
 
-const piCompetitions = {
-  'pi-giveaway-10k': {
-    title: '10,000 Pi Giveaway',
-    prize: '10,000 π',
-    piAmount: 2.2,
-    date: 'July 31, 2025',
-    time: '12:00 AM UTC',
-    endsAt: '2025-08-21T00:00:00Z',
-    location: 'Online',
-    totalTickets: 5200,
-    ticketsSold: 0,
-    description: `🎉 Win 10,000 Pi Coins! Limited to 5,200 entries.\n\n🏆 Prize: 10,000 π\n📅 Ends: August 21\n💸 Entry fee: 2.2 π\n📍 Online\n\nInvite friends to boost your luck!`,
-  },
-  'pi-giveaway-5k': {
-    title: '5,000 Pi Giveaway',
-    prize: '5,000 π',
-    piAmount: 1.8,
-    date: 'July 31, 2025',
-    time: '12:00 AM UTC',
-    endsAt: '2025-08-21T00:00:00Z',
-    location: 'Online',
-    totalTickets: 2900,
-    ticketsSold: 0,
-    description: `🎁 Big drop: 5,000 π!\n\nOnly 2,900 entries available.\n\n📆 Ends August 21\n💰 Entry Fee: 1.8 π\n📍 Join from anywhere.\n\nDon’t miss it!`,
-  },
-  'pi-giveaway-2.5k': {
-    title: '2,500 Pi Giveaway',
-    prize: '2,500 π',
-    piAmount: 1.6,
-    date: 'July 31, 2025',
-    time: '12:00 AM UTC',
-    endsAt: '2025-08-21T00:00:00Z',
-    location: 'Online',
-    totalTickets: 1600,
-    ticketsSold: 0,
-    description: `🚀 Win 2,500 π!\n\n🎟️ Only 1,600 tickets.\n📅 Ends August 21.\n💸 Entry: 1.6 π.\n\nAct fast and good luck Pioneer!`,
-  },
-};
+const piCompetitions = {};
+piItems.forEach((item) => {
+  piCompetitions[item.comp.slug] = {
+    ...item.comp,
+    title: item.title,
+    prize: item.prize,
+    description: item.comp.description || item.description || '',
+    imageUrl: item.imageUrl,
+    thumbnail: item.thumbnail || null,
+    location: item.location || 'Online',
+    date: item.date || 'N/A',
+    time: item.time || 'N/A',
+    totalTickets: item.comp.totalTickets,
+    ticketsSold: item.comp.ticketsSold || 0,
+    piAmount: item.comp.entryFee || item.piAmount || 1.0,
+    endsAt: item.comp.endsAt,
+  };
+});
 
 export default function PiTicketPage() {
   const router = useRouter();
@@ -57,6 +39,7 @@ export default function PiTicketPage() {
   const [skillAnswer, setSkillAnswer] = useState('');
   const [showDetails, setShowDetails] = useState(false);
   const [showSkillQuestion, setShowSkillQuestion] = useState(false);
+  const [showGiftModal, setShowGiftModal] = useState(false);
   const correctAnswer = '9';
 
   useEffect(() => {
@@ -162,11 +145,7 @@ export default function PiTicketPage() {
 
   if (!slug) return null;
   if (!competition) {
-    return (
-      <p className="text-white text-center mt-12 font-orbitron">
-        Competition not found.
-      </p>
-    );
+    return <p className="text-white text-center mt-12 font-orbitron">Competition not found.</p>;
   }
 
   const isAnswerCorrect = () => skillAnswer.trim() === correctAnswer;
@@ -174,9 +153,7 @@ export default function PiTicketPage() {
   return (
     <div className="bg-[#0b1120] min-h-screen flex flex-col justify-center items-center px-6 py-10 font-orbitron text-white">
       <div className="max-w-md w-full bg-[#0d1424] border border-blue-500 rounded-xl shadow-xl p-8">
-        <h1 className="text-3xl font-bold text-cyan-400 text-center mb-6">
-          {competition.title}
-        </h1>
+        <h1 className="text-3xl font-bold text-cyan-400 text-center mb-6">{competition.title}</h1>
 
         <section className="text-white text-base space-y-3">
           {[
@@ -196,9 +173,7 @@ export default function PiTicketPage() {
         </section>
 
         {showTimer && (
-          <p className="text-center text-yellow-400 font-bold text-lg mt-4">
-            ⏰ {timerText}
-          </p>
+          <p className="text-center text-yellow-400 font-bold text-lg mt-4">⏰ {timerText}</p>
         )}
 
         <button
@@ -211,8 +186,7 @@ export default function PiTicketPage() {
         {showDetails && (
           <div className="mt-4 bg-white/10 p-4 rounded-lg border border-cyan-400 text-sm whitespace-pre-wrap leading-relaxed">
             <h2 className="text-center text-lg font-bold mb-2 text-cyan-300">Competition Details</h2>
-            <p>{description || 'No additional details available.'}</p>
-
+            <p>{competition.description || 'No additional details available.'}</p>
           </div>
         )}
 
@@ -221,16 +195,12 @@ export default function PiTicketPage() {
             onClick={() => setQuantity(q => Math.max(1, q - 1))}
             disabled={quantity <= 1}
             className="bg-blue-600 text-white px-5 py-2 rounded-full font-bold disabled:opacity-50"
-          >
-            −
-          </button>
+          >−</button>
           <span className="text-xl font-bold">{quantity}</span>
           <button
             onClick={() => setQuantity(q => q + 1)}
             className="bg-blue-600 text-white px-5 py-2 rounded-full font-bold"
-          >
-            +
-          </button>
+          >+</button>
         </div>
 
         <p className="text-center text-lg font-bold mt-6">
@@ -238,12 +208,23 @@ export default function PiTicketPage() {
         </p>
 
         {!showSkillQuestion ? (
-          <button
-            onClick={() => setShowSkillQuestion(true)}
-            className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 rounded-xl mt-6"
-          >
-            Proceed to Payment
-          </button>
+          <div className="flex flex-col space-y-4 mt-6">
+            <button
+              onClick={() => setShowSkillQuestion(true)}
+              className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 rounded-xl"
+            >
+              Proceed to Payment
+            </button>
+
+            {user?.username && (
+              <button
+                onClick={() => setShowGiftModal(true)}
+                className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 rounded-xl"
+              >
+                🎁 Gift a Ticket
+              </button>
+            )}
+          </div>
         ) : (
           <div className="mt-6 max-w-md mx-auto text-center">
             <label htmlFor="skill-question" className="block font-semibold mb-1">
@@ -277,6 +258,12 @@ export default function PiTicketPage() {
             )}
           </div>
         )}
+
+        <GiftTicketModal
+          isOpen={showGiftModal}
+          onClose={() => setShowGiftModal(false)}
+          preselectedCompetition={competition}
+        />
 
         <p className="mt-4 text-center font-semibold">
           Pioneers, this is your chance to win big and help grow the Pi ecosystem!
