@@ -1,260 +1,226 @@
+// /ticket-purchase/pi/[slug].js
 'use client';
 
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePiAuth } from 'context/PiAuthContext';
-import { piItems } from '../../../data/competitions';
 import GiftTicketModal from '@components/GiftTicketModal';
+import BuyTicketButton from '@components/BuyTicketButton';
+import { piItems } from '../../../data/competitions';
+import descriptions from '../../../data/descriptions';
 
-const piCompetitions = {};
-piItems.forEach((item) => {
-  piCompetitions[item.comp.slug] = {
-    ...item.comp,
-    title: item.title,
-    prize: item.prize,
-    description: item.comp.description || item.description || '',
-    imageUrl: item.imageUrl,
-    thumbnail: item.thumbnail || null,
-    location: item.location || 'Online',
-    date: item.date || 'N/A',
-    time: item.time || 'N/A',
-    totalTickets: item.comp.totalTickets,
-    ticketsSold: item.comp.ticketsSold || 0,
-    piAmount: item.comp.entryFee || item.piAmount || 1.0,
-    endsAt: item.comp.endsAt,
-  };
-});
+const skillQuestions = [
+  { question: "What is 2 + 2?", answer: "4" },
+  { question: "What is 3 x 3?", answer: "9" },
+  { question: "What is 10 - 5?", answer: "5" },
+  { question: "Type the word 'Pi'", answer: "pi" },
+  { question: "What is 12 ÷ 4?", answer: "3" },
+];
+
+const DetailRow = ({ label, value, highlight }) => (
+  <div className="flex justify-between text-sm">
+    <span className="text-white">{label}</span>
+    <span className={highlight ? 'text-red-400 font-bold' : ''}>{value}</span>
+  </div>
+);
 
 export default function PiTicketPage() {
   const router = useRouter();
   const { slug } = router.query;
-  const competition = piCompetitions[slug];
-  const { user, loginWithPi } = usePiAuth();
+  const { user } = usePiAuth();
 
+  const [competition, setCompetition] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
-  const [showTimer, setShowTimer] = useState(false);
-  const [timerText, setTimerText] = useState('');
-  const [processing, setProcessing] = useState(false);
-  const [skillAnswer, setSkillAnswer] = useState('');
-  const [showDetails, setShowDetails] = useState(false);
   const [showSkillQuestion, setShowSkillQuestion] = useState(false);
+  const [skillAnswer, setSkillAnswer] = useState('');
+  const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [showGiftModal, setShowGiftModal] = useState(false);
-  const correctAnswer = '9';
+  const [description, setDescription] = useState('');
+  const [showDetails, setShowDetails] = useState(false);
+  const [status, setStatus] = useState('active');
+  const [liveTicketsSold, setLiveTicketsSold] = useState(0);
 
   useEffect(() => {
-    if (!competition) return;
+    if (!slug) return;
+    const found = piItems.find((c) => c.comp.slug === slug);
+    if (found) {
+      setCompetition({
+  ...found.comp,
+  title: found.title,
+  prize: found.prize,
+  description: found.comp.description || found.description || '',
+  imageUrl: found.imageUrl,
+  thumbnail: found.thumbnail,
+  totalTickets: found.comp.totalTickets,
+  ticketsSold: found.comp.ticketsSold || 0,
+  piAmount: found.comp.entryFee || found.piAmount || 1.0,
+  location: found.location || 'Online',
+  date: found.date || 'TBA',
+  time: found.time || 'TBA',
+  endsAt: found.comp.endsAt,
+  prizeBreakdown: found.comp.prizeBreakdown || null,
+  maxPerUser: found.comp.maxPerUser || null, // ✅ Add this line
+});
 
-    const updateTimer = () => {
-      const diffMs = new Date(competition.endsAt).getTime() - Date.now();
-      if (diffMs <= 0) {
-        setShowTimer(false);
-        setTimerText('Ended');
-        return;
-      }
-      const diffHours = diffMs / (1000 * 60 * 60);
-      if (diffHours <= 24) {
-        setShowTimer(true);
-        const hrs = Math.floor(diffMs / (1000 * 60 * 60));
-        const mins = Math.floor((diffMs / (1000 * 60)) % 60);
-        setTimerText(`${hrs}h ${mins}m left`);
-      } else {
-        setShowTimer(false);
-      }
-    };
+      setLiveTicketsSold(found.comp.ticketsSold || 0);
+      const desc = descriptions[slug];
+      setDescription(typeof desc === 'string' ? desc : desc?.description || '');
+    }
+    setLoading(false);
+  }, [slug]);
 
-    updateTimer();
-    const interval = setInterval(updateTimer, 60000);
+  useEffect(() => {
+    if (!competition?.endsAt) return;
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const end = new Date(competition.endsAt).getTime();
+      setStatus(now > end ? 'ended' : 'active');
+    }, 1000);
     return () => clearInterval(interval);
   }, [competition]);
 
-  const handlePayment = async () => {
-    if (!competition) return;
+  const isAnswerCorrect = () =>
+    skillAnswer.trim().toLowerCase() === selectedQuestion?.answer.toLowerCase();
 
-    if (!user) {
-      alert('Please login with Pi to enter.');
-      loginWithPi();
-      return;
-    }
-
-    const total = competition.piAmount * quantity;
-    if (total <= 0) return alert('Invalid ticket quantity or price.');
-    if (skillAnswer.trim() !== correctAnswer) return alert('Incorrect answer to the skill question.');
-
-    setProcessing(true);
-
-    try {
-      if (!window?.Pi?.createPayment) {
-        alert('⚠️ Pi SDK not ready');
-        setProcessing(false);
-        return;
-      }
-
-      if (!window.Pi.currentUser?.accessToken) {
-        console.log('🔄 Re-authenticating...');
-        await loginWithPi();
-      }
-
-      window.Pi.createPayment({
-        amount: total.toFixed(8),
-        memo: `Entry to ${competition.title}`,
-        metadata: {
-          type: 'pi-competition-entry',
-          competitionSlug: slug,
-          quantity,
-        },
-        onReadyForServerApproval: async (paymentId) => {
-          const res = await fetch('/api/payments/approve', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ paymentId, slug, amount: total }),
-          });
-          if (!res.ok) throw new Error(await res.text());
-        },
-        onReadyForServerCompletion: async (paymentId, txid) => {
-          try {
-            const res = await fetch('/api/payments/complete', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ paymentId, txid, slug }),
-            });
-            if (!res.ok) throw new Error(await res.text());
-            alert('✅ Entry confirmed! Good luck!');
-          } catch (err) {
-            console.error('Error completing payment:', err);
-            alert('❌ Server completion failed.');
-          } finally {
-            setProcessing(false);
-          }
-        },
-        onCancel: () => {
-          setProcessing(false);
-        },
-        onError: (err) => {
-          console.error('❌ Payment error:', err);
-          alert('❌ Payment failed.');
-          setProcessing(false);
-        },
-      });
-    } catch (err) {
-      console.error('❌ Error:', err);
-      alert('❌ Something went wrong.');
-      setProcessing(false);
-    }
+  const handleShowSkillQuestion = () => {
+    const random = skillQuestions[Math.floor(Math.random() * skillQuestions.length)];
+    setSelectedQuestion(random);
+    setSkillAnswer('');
+    setShowSkillQuestion(true);
   };
 
-  if (!slug) return null;
-  if (!competition) {
-    return <p className="text-white text-center mt-12 font-orbitron">Competition not found.</p>;
+  if (loading || !competition) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-white">Loading...</div>
+    );
   }
 
-  const isAnswerCorrect = () => skillAnswer.trim() === correctAnswer;
+  const available = Math.max(0, competition.totalTickets - liveTicketsSold);
+  const totalPrice = (competition.piAmount * quantity).toFixed(2);
+  const isSoldOut = available <= 0;
 
   return (
-    <div className="bg-[#0b1120] min-h-screen flex flex-col justify-center items-center px-6 py-10 font-orbitron text-white">
-      <div className="max-w-md w-full bg-[#0d1424] border border-blue-500 rounded-xl shadow-xl p-8">
-        <h1 className="text-3xl font-bold text-cyan-400 text-center mb-6">{competition.title}</h1>
+    <main className="min-h-screen px-4 py-10 bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-orbitron">
+      <div className="max-w-xl mx-auto bg-[#0f172a]/80 border-2 border-cyan-400 rounded-2xl shadow-[0_0_30px_#00ffd5cc] p-6 space-y-6">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-center text-cyan-300 uppercase tracking-wider">
+          {competition.title}
+        </h1>
 
-        <section className="text-white text-base space-y-3">
-          {[
-            ['Prize', competition.prize],
-            ['Entry Fee', `${competition.piAmount} π`],
-            ['Total Tickets', competition.totalTickets.toLocaleString()],
-            ['Tickets Sold', competition.ticketsSold.toLocaleString()],
-            ['Location', competition.location],
-            ['Date', competition.date],
-            ['Time', competition.time],
-          ].map(([label, value]) => (
-            <div key={label} className="flex justify-between">
-              <span className="font-semibold">{label}</span>
-              <span>{value}</span>
-            </div>
-          ))}
-        </section>
+     
 
-        {showTimer && (
-          <p className="text-center text-yellow-400 font-bold text-lg mt-4">⏰ {timerText}</p>
-        )}
-
-        <button
-          onClick={() => setShowDetails(!showDetails)}
-          className="mt-2 text-sm text-cyan-300 hover:text-white underline block mx-auto"
-        >
-          {showDetails ? 'Hide' : 'View'} Competition Details
-        </button>
-
-        {showDetails && (
-          <div className="mt-4 bg-white/10 p-4 rounded-lg border border-cyan-400 text-sm whitespace-pre-wrap leading-relaxed">
-            <h2 className="text-center text-lg font-bold mb-2 text-cyan-300">Competition Details</h2>
-            <p>{competition.description || 'No additional details available.'}</p>
+{competition?.prizeBreakdown && (
+  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+        <div className="bg-white/5 p-4 rounded-lg text-center border border-cyan-400">
+      <p className="text-cyan-300 font-bold">
+         1<span className="text-xs align-super">st</span>
+      </p>
+      <p className="text-cyan-300">{competition.prizeBreakdown.first}</p>
+    </div>
+       <div className="bg-white/5 p-4 rounded-lg text-center border border-cyan-400">
+      <p className="text-cyan-300 font-bold">
+         2<span className="text-xs align-super">nd</span>
+      </p>
+      <p className="text-cyan-300">{competition.prizeBreakdown.second}</p>
+    </div>
+    <div className="bg-white/5 p-4 rounded-lg text-center border border-cyan-400">
+      <p className="text-cyan-300 font-bold">
+         3<span className="text-xs align-super">rd</span>
+      </p>
+      <p className="text-cyan-300">{competition.prizeBreakdown.third}</p>
+    </div>
+  </div>
+)}
+  {status === 'active' && (
+          <div className="text-lg font-bold text-black bg-gradient-to-r from-green-500 to-green-700 px-6 py-2 rounded-full shadow-lg animate-pulse text-center">
+            Live Now
           </div>
         )}
+<div className="space-y-2">
+  <DetailRow label="Entry Fee" value={`${competition.piAmount} π`} />
+  <DetailRow label="Prize" value={competition.prize} />
+  <DetailRow label="Start Date" value={new Date(competition.startsAt).toLocaleDateString()} />
+  <DetailRow label="Draw Date" value={new Date(competition.endsAt).toLocaleDateString()} />
 
-        <div className="flex justify-center items-center gap-4 mt-6">
+  
+ 
+
+  <DetailRow
+    label="Tickets Sold"
+    value={`${liveTicketsSold} / ${competition.totalTickets}`}
+    highlight={isSoldOut}
+  />
+  <DetailRow
+    label="Available"
+    value={`${available} tickets remaining`}
+    highlight={available <= 10}
+  />
+  {competition.maxPerUser && (
+    <DetailRow label="Max Per User" value={competition.maxPerUser} />
+  )}
+</div>
+
+
+
+        <div className="flex items-center justify-center gap-4 mt-4">
           <button
-            onClick={() => setQuantity(q => Math.max(1, q - 1))}
+            onClick={() => setQuantity((q) => Math.max(1, q - 1))}
             disabled={quantity <= 1}
-            className="bg-blue-600 text-white px-5 py-2 rounded-full font-bold disabled:opacity-50"
-          >−</button>
+            className="bg-cyan-600 hover:bg-cyan-500 px-4 py-1 rounded-full font-bold disabled:opacity-50"
+          >
+            −
+          </button>
           <span className="text-xl font-bold">{quantity}</span>
           <button
-            onClick={() => setQuantity(q => q + 1)}
-            className="bg-blue-600 text-white px-5 py-2 rounded-full font-bold"
-          >+</button>
+            onClick={() => setQuantity((q) => Math.min(available, q + 1))}
+            disabled={quantity >= available}
+            className="bg-cyan-600 hover:bg-cyan-500 px-4 py-1 rounded-full font-bold"
+          >
+            +
+          </button>
         </div>
 
-        <p className="text-center text-lg font-bold mt-6">
-          Total: {(competition.piAmount * quantity).toFixed(2)} π
-        </p>
+        <p className="text-center text-lg font-bold">Total: {totalPrice} π</p>
 
         {!showSkillQuestion ? (
-          <div className="flex flex-col space-y-4 mt-6">
+          <div className="flex flex-col gap-4 mt-4">
             <button
-              onClick={() => setShowSkillQuestion(true)}
+              onClick={handleShowSkillQuestion}
               className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 rounded-xl"
             >
               Proceed to Payment
             </button>
-
             {user?.username && (
               <button
                 onClick={() => setShowGiftModal(true)}
-                className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 rounded-xl"
+                className="w-full border border-cyan-400 text-cyan-300 py-3 rounded-xl font-bold hover:bg-cyan-400 hover:text-black"
               >
                 🎁 Gift a Ticket
               </button>
             )}
           </div>
         ) : (
-          <div className="mt-6 max-w-md mx-auto text-center">
-            <label htmlFor="skill-question" className="block font-semibold mb-1">
-              Skill Question (Required to Enter):
-            </label>
-            <p className="mb-2">What is 4 + 5?</p>
+          <div className="text-center space-y-3">
+            <p className="font-semibold">{selectedQuestion?.question}</p>
             <input
-              id="skill-question"
               type="text"
-              className="w-full px-4 py-2 rounded-lg bg-[#0f172a]/60 border border-cyan-500 text-white focus:outline-none focus:ring-2 focus:ring-cyan-400 mx-auto"
               value={skillAnswer}
               onChange={(e) => setSkillAnswer(e.target.value)}
+              className="w-full px-4 py-2 bg-[#0f172a] border border-cyan-500 text-white rounded-lg text-center"
               placeholder="Enter your answer"
-              style={{ maxWidth: '300px' }}
             />
-            {!isAnswerCorrect() && skillAnswer !== '' && (
-              <p className="text-sm text-red-400 mt-1">
-                You must answer correctly to proceed.
-              </p>
+            {!isAnswerCorrect() && skillAnswer && (
+              <p className="text-sm text-red-400">❌ Incorrect answer.</p>
             )}
             {isAnswerCorrect() && (
-              <button
-                onClick={handlePayment}
-                disabled={processing}
-                className={`w-full mt-4 py-3 rounded-xl font-bold text-black bg-gradient-to-r from-cyan-400 to-blue-500 shadow-lg transition-transform ${
-                  processing ? 'cursor-not-allowed opacity-70' : 'hover:scale-105'
-                }`}
-              >
-                {processing ? 'Processing...' : 'Pay with Pi'}
-              </button>
+              <BuyTicketButton
+                competitionSlug={slug}
+                entryFee={competition.piAmount}
+                quantity={quantity}
+                piUser={user}
+                endsAt={competition.endsAt}
+              />
             )}
           </div>
         )}
@@ -265,19 +231,31 @@ export default function PiTicketPage() {
           preselectedCompetition={competition}
         />
 
-        <p className="mt-4 text-center font-semibold">
-          Pioneers, this is your chance to win big and help grow the Pi ecosystem!
-        </p>
-
         <div className="text-center mt-4">
-          <p className="text-sm">
+          <button
+            onClick={() => setShowDetails(!showDetails)}
+            className="text-sm text-white hover:underline"
+          >
+            {showDetails ? 'Hide' : 'View'} Competition Details
+          </button>
+        </div>
+
+        {showDetails && (
+          <div className="mt-2 bg-white/10 p-4 rounded-lg border border-cyan-400 text-sm whitespace-pre-wrap leading-relaxed">
+            <h2 className="text-center text-lg font-bold mb-2 text-cyan-300">Competition Details</h2>
+            <p>{description}</p>
+          </div>
+        )}
+
+        <div className="text-center text-sm mt-6">
+          <p>
             By entering, you agree to our{' '}
-            <Link href="/terms-conditions" className="text-cyan-400 underline hover:text-cyan-300 transition-colors">
-              Terms &amp; Conditions
+            <Link href="/terms-conditions" className="underline text-cyan-400 hover:text-cyan-300">
+              Terms & Conditions
             </Link>.
           </p>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

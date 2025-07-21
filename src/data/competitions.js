@@ -35,20 +35,30 @@ export const techItems = [
     ],
     theme: 'tech',
   },
-  {
-    comp: { slug: 'xbox-one-bundle',comingSoon: true },
-    totalTickets:0,
-    title: 'Xbox One',
-    prize: 'Xbox One + Game Pass',
-    href: '/competitions/xbox-one-bundle',
-    imageUrl: '/images/xbox.jpeg',
-    thumbnails: [
-      '/images/xbox1.jpeg',
-      '/images/xbox2.jpeg',
-      '/images/xbox3.jpeg',
-    ],
-    theme: 'tech',
+  
+{
+  comp: {
+    slug: 'xbox-one-bundle',
+    entryFee: 0.55,
+    totalTickets: 1200,
+    ticketsSold: 0,
+    startsAt: '2025-07-21T00:24:00Z',
+    endsAt: '2025-09-01T23:23:00Z',
+    paymentType: 'pi',
+    piAmount: 0.55,
   },
+  title: 'Xbox One Bundle',
+  prize: 'Xbox One + Game Pass',
+  href: '/competitions/xbox-one-bundle',
+  imageUrl: '/images/xbox1.jpeg',
+  thumbnails: [
+    '/images/xbox1.jpeg',
+    '/images/xbox2.jpeg',
+    '/images/xbox3.jpeg',
+  ],
+  theme: 'tech',
+},
+
   {
     comp: {slug: 'nintendo-switch',comingSoon: true },
     totalTickets:0,
@@ -237,11 +247,16 @@ export const piItems = [
       startsAt: '2025-09-26T00:00:00Z',
       endsAt: '2025-10-26T00:00:00Z',
       status: 'active',
+      prizeBreakdown: {
+        first: '5,000 π',
+        second: '3,000 π',
+        third: '2,000 π',
+      },
     },
     title: 'Win 10,000 Pi',
     prize: '10,000 π',
-    href: '/competitions/pi-giveaway-10k',
     imageUrl: '/images/100000.png',
+    href: '/competitions/pi-giveaway-10k',
     theme: 'pi',
   },
   {
@@ -250,9 +265,14 @@ export const piItems = [
       entryFee: 1.8,
       totalTickets: 2900,
       ticketsSold: 0,
-     startsAt: '2025-08-25T00:00:00Z',
+      startsAt: '2025-08-25T00:00:00Z',
       endsAt: '2025-09-25T00:00:00Z',
       status: 'active',
+      prizeBreakdown: {
+        first: '2,500 π',
+        second: '1,500 π',
+        third: '1,000 π',
+      },
     },
     title: 'Win 5,000 Pi',
     prize: '5,000 π',
@@ -269,6 +289,11 @@ export const piItems = [
       startsAt: '2025-07-25T00:00:00Z',
       endsAt: '2025-08-25T00:00:00Z',
       status: 'active',
+      prizeBreakdown: {
+        first: '1,250 π',
+        second: '750 π',
+        third: '500 π',
+      },
     },
     title: 'Win 2,500 Pi',
     prize: '2,500 π',
@@ -277,6 +302,7 @@ export const piItems = [
     theme: 'pi',
   },
 ];
+
 
 export const launchWeekItems = [
   {

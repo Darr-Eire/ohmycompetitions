@@ -193,14 +193,19 @@ export default function PiCashCodePage() {
   return (
     <>
       <main className="flex justify-center items-start min-h-screen bg-transparent font-orbitron pt-6">
-        <div className="backdrop-blur-lg border border-cyan-400 neon-outline text-white p-6 sm:p-8 rounded-2xl text-center space-y-6 shadow-[0_0_40px_#00ffd5aa] max-w-3xl w-full mx-auto mt-6 relative overflow-hidden">
+        <div className="backdrop-blur-lg border border-cyan-300 neon-outline text-white p-6 sm:p-8 rounded-2xl text-center space-y-6 shadow-[0_0_40px_#00ffd5aa] max-w-3xl w-full mx-auto mt-6 relative overflow-hidden">
           <h1 className="text-3xl sm:text-4xl font-bold text-cyan-300 animate-glow-float">Pi Cash Code</h1>
 
 
 {/* Code Block + Overlay + Prize Section */}
 <div className="w-full max-w-md mx-auto flex flex-col items-center space-y-6 mt-8 mb-10">
 
-  {/* Code Display */}
+ 
+  {/* Prize Pool */}
+  <div className="border-2 border-cyan-400 text-cyan-300 text-lg font-semibold px-6 py-4 rounded-xl shadow-[0_0_20px_#00ffd5aa] w-full text-center">
+    Current Prize Pool: {codeData?.prizePool?.toLocaleString() || 'Loading...'} π
+  </div>
+ {/* Code Display */}
   <div className="relative w-full">
     <div
       className={`relative text-center font-mono text-2xl sm:text-3xl px-8 py-6 rounded-2xl transition-all duration-700 ease-in-out overflow-hidden
@@ -228,11 +233,6 @@ export default function PiCashCodePage() {
         <p className="text-[11px] sm:text-xs text-cyan-400 mt-1">Releasing soon. Stay sharp.</p>
       </div>
     )}
-  </div>
-
-  {/* Prize Pool */}
-  <div className="border-2 border-cyan-400 text-cyan-300 text-lg font-semibold px-6 py-4 rounded-xl shadow-[0_0_20px_#00ffd5aa] w-full text-center">
-    Current Prize Pool: {codeData?.prizePool?.toLocaleString() || 'Loading...'} π
   </div>
 
   {/* Tickets Sold */}
@@ -277,7 +277,7 @@ export default function PiCashCodePage() {
           {!user ? (
             <button
               onClick={login}
-              className="w-full mt-4 py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-bold rounded-lg"
+              className="w-full mt-4 py-3 bg-cyan-300 text-black font-bold rounded-lg"
             >
               Login with Pi to Purchase
             </button>
@@ -312,7 +312,7 @@ export default function PiCashCodePage() {
       {/* Skill Question Modal */}
       {showSkillModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#0f172a] border border-cyan-400 rounded-xl p-6 max-w-md w-full">
+          <div className="bg-[#0f172a] border border-cyan-300 rounded-xl p-6 max-w-md w-full">
             <h3 className="text-xl font-bold text-cyan-300 mb-4">Skill Question</h3>
             <p className="text-white mb-4">Answer correctly to proceed with purchase:</p>
             <p className="text-cyan-300 font-bold mb-4">{skillQuestion}</p>

@@ -40,8 +40,13 @@ export default function PiCompetitionCard({
   const isNearlyFull = remaining <= total * 0.25
   const isGiftable = status === 'LIVE NOW' && !isSoldOut && !!slug
 
-  const entryFee = fee ?? comp?.entryFee ?? comp?.comp?.entryFee ?? 'N/A'
-  const formattedFee = Number(entryFee) === 0 ? 'Free' : !isNaN(entryFee) ? `${Number(entryFee).toFixed(2)} π` : 'N/A'
+ const rawFee = fee ?? comp?.entryFee ?? comp?.comp?.entryFee;
+const formattedFee =
+  typeof rawFee === 'number' && !isNaN(rawFee)
+    ? rawFee === 0
+      ? 'Free'
+      : `${rawFee.toFixed(2)} π`
+    : 'N/A';
 
   // ✅ Top Countries Data
   const topCountries = [
@@ -178,18 +183,22 @@ export default function PiCompetitionCard({
         {/* CTA Buttons */}
         <div className="space-y-2 mt-4">
           {slug ? (
-            <Link href={`/ticket-purchase/pi/${slug}`}>
-              <button
-                disabled={status !== 'LIVE NOW'}
-                className={`w-full py-2 rounded-md font-bold text-black ${
-                  status === 'LIVE NOW'
-                    ? 'bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:brightness-110'
-                    : 'bg-gray-400 cursor-not-allowed'
-                }`}
-              >
-                {status === 'LIVE NOW' ? 'Enter Now' : 'Coming Soon'}
-              </button>
-            </Link>
+     <Link href={`/ticket-purchase/pi/${slug}`}>
+<Link href={`/ticket-purchase/pi/${slug}`}>
+  <button
+    disabled={status === 'ENDED' || isSoldOut}
+    className={`w-full py-2 rounded-md font-bold text-black ${
+      status === 'ENDED' || isSoldOut
+        ? 'bg-gray-400 cursor-not-allowed'
+        : 'bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:brightness-110'
+    }`}
+  >
+    {isSoldOut ? 'Sold Out' : status === 'ENDED' ? 'Closed' : 'Enter Now'}
+  </button>
+</Link>
+
+</Link>
+
           ) : (
             <button className="w-full py-2 bg-gray-500 text-white rounded-md cursor-not-allowed" disabled>
               Not Available

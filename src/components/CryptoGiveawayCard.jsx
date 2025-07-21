@@ -15,13 +15,11 @@ export default function CryptoGiveawayCard({
   const widgetRef = useRef(null)
   const comingSoon = comp?.comingSoon === true
 
-  // Timer states
   const [timeLeft, setTimeLeft] = useState('')
   const [status, setStatus] = useState('UPCOMING')
 
   useEffect(() => {
     if (!widgetRef.current) return
-
     widgetRef.current.innerHTML = ''
 
     const script = document.createElement('script')
@@ -43,7 +41,6 @@ export default function CryptoGiveawayCard({
     widgetRef.current.appendChild(script)
   }, [token])
 
-  // Countdown timer effect
   useEffect(() => {
     if (comingSoon) {
       setTimeLeft('')
@@ -54,7 +51,7 @@ export default function CryptoGiveawayCard({
     const interval = setInterval(() => {
       const now = Date.now()
       const end = new Date(endsAt).getTime()
-      let diff = end - now
+      const diff = end - now
 
       if (diff <= 0) {
         setTimeLeft('')
@@ -63,24 +60,18 @@ export default function CryptoGiveawayCard({
         return
       }
 
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-      diff -= days * (1000 * 60 * 60 * 24)
+      const d = Math.floor(diff / (1000 * 60 * 60 * 24))
+      const h = Math.floor((diff / (1000 * 60 * 60)) % 24)
+      const m = Math.floor((diff / (1000 * 60)) % 60)
+      const s = Math.floor((diff / 1000) % 60)
 
-      const hrs = Math.floor(diff / (1000 * 60 * 60))
-      diff -= hrs * (1000 * 60 * 60)
+      let t = ''
+      if (d > 0) t += `${d}d `
+      if (h > 0 || d > 0) t += `${h}h `
+      if (m > 0 || h > 0 || d > 0) t += `${m}m `
+      if (d === 0 && h === 0) t += `${s}s`
 
-      const mins = Math.floor(diff / (1000 * 60))
-      diff -= mins * (1000 * 60)
-
-      const secs = Math.floor(diff / 1000)
-
-      let timeStr = ''
-      if (days > 0) timeStr += `${days}d `
-      if (hrs > 0 || days > 0) timeStr += `${hrs}h `
-      if (mins > 0 || hrs > 0 || days > 0) timeStr += `${mins}m `
-      if (days === 0 && hrs === 0) timeStr += `${secs}s`
-
-      setTimeLeft(timeStr.trim())
+      setTimeLeft(t.trim())
       setStatus('LIVE')
     }, 1000)
 
@@ -95,33 +86,63 @@ export default function CryptoGiveawayCard({
     minute: '2-digit',
   })
 
+  const startDate = new Date(comp?.startsAt || endsAt).toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+
+  const drawDate = new Date(endsAt).toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+
   return (
     <div className="relative rounded-xl bg-gradient-to-br from-[#0f172a] to-[#1e293b] shadow-xl border border-cyan-600/20 overflow-hidden transition-all duration-300 max-w-sm mx-auto">
-      {/* Coming Soon Badge */}
-      <div className="absolute top-2 right-2 z-10 bg-gradient-to-r from-orange-400 to-orange-500 text-sm font-bold px-2 py-1 rounded shadow animate-pulse">
-        Coming Soon
-      </div>
+      {/* Optional Badge */}
+      {comingSoon && (
+        <div className="absolute top-2 right-2 z-10 bg-gradient-to-r from-orange-400 to-orange-500 text-sm font-bold px-2 py-1 rounded shadow animate-pulse">
+          Coming Soon
+        </div>
+      )}
 
-      {/* Line Chart Header */}
+      {/* Chart Header */}
       <div className="w-full -mt-1 -mx-4 overflow-hidden">
         <div ref={widgetRef} className="w-full h-[200px]" />
       </div>
 
       {/* Competition Info */}
-      <div className="p-4 text-center space-y-2">
-        <h3 className="text-lg font-bold text-white">{title}</h3>
-        <p className="text-sm text-gray-300">{prize}</p>
-        <p className="text-sm text-white font-semibold">
-          Entry Fee: {comingSoon ? 'TBA' : fee}
-        </p>
-        <p className="text-xs text-white">
-          Total Tickets: {comingSoon ? 'TBA' : totalTickets.toLocaleString()}
-        </p>
-        <p className="text-xs text-white">
-          {status === 'LIVE' ? `Ends in: ${timeLeft}` : comingSoon ? 'TBA' : formattedEndDate}
-        </p>
+      <div className="p-4 space-y-3 text-sm text-white font-orbitron">
+        <h3 className="text-lg font-bold text-center text-cyan-300">{title}</h3>
+        <p className="text-center text-gray-300 text-sm">{prize}</p>
 
-        {/* CTA */}
+        <div className="space-y-1">
+          <div className="flex justify-between">
+            <span className="text-cyan-300">Entry Fee:</span>
+            <span>{comingSoon ? 'TBA' : fee}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-cyan-300">Total Tickets:</span>
+            <span>{comingSoon ? 'TBA' : totalTickets.toLocaleString()}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-cyan-300">Start Date:</span>
+            <span>{comingSoon ? 'TBA' : startDate}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-cyan-300">Draw Date:</span>
+            <span>{comingSoon ? 'TBA' : drawDate}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-cyan-300">
+              {status === 'LIVE' ? 'Ends In:' : comingSoon ? 'Status:' : 'Draws:'}
+            </span>
+            <span>{status === 'LIVE' ? timeLeft : comingSoon ? 'Coming Soon' : formattedEndDate}</span>
+          </div>
+        </div>
+
+        {/* Call To Action */}
         {comingSoon ? (
           <button
             disabled
@@ -132,7 +153,7 @@ export default function CryptoGiveawayCard({
         ) : (
           <Link
             href={href || (comp?.slug ? `/competitions/${comp.slug}` : '#')}
-            className="inline-block px-5 py-2 mt-2 rounded-md bg-cyan-500 text-black font-semibold shadow hover:bg-cyan-400 transition"
+            className="inline-block w-full py-2 mt-3 rounded-md bg-gradient-to-r from-cyan-400 to-cyan-600 text-black font-bold shadow hover:brightness-110 transition"
           >
             Enter Now
           </Link>
@@ -141,3 +162,5 @@ export default function CryptoGiveawayCard({
     </div>
   )
 }
+
+  

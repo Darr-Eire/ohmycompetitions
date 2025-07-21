@@ -6,7 +6,6 @@ export default function PrivacyPolicy() {
   return (
     <main className="page text-white">
       <div className="competition-card max-w-3xl w-full mx-auto">
-
         {/* Title */}
         <div className="competition-top-banner text-center text-xl sm:text-2xl font-bold my-4 !text-cyan-300">
           Privacy Policy
@@ -17,7 +16,6 @@ export default function PrivacyPolicy() {
 
         {/* Body */}
         <div className="p-6 space-y-6 text-center">
-
           <p className="text-white">
             This Privacy Policy ("Policy") explains how OhMyCompetitions ("we", "us", "our") collects, uses, shares, and protects your personal information. We are committed to protecting your privacy and complying with all applicable privacy and data protection laws worldwide, including GDPR, CCPA, and Pi Network guidelines.
           </p>
@@ -69,19 +67,18 @@ export default function PrivacyPolicy() {
                 'You can manage or disable cookies in your browser settings; however, some platform functionalities may be affected.'
               ]
             },
-           {
-  title: '6. Your Rights and Choices',
-  points: [
-    'You have the right to access, correct, update, or request deletion of your personal data.',
-    'EU/EEA residents have additional rights under GDPR, including data portability and the right to restrict or object to processing.',
-    'California residents have specific rights under CCPA, including the right to know, delete, and opt-out of certain uses of personal information.',
-    <>
-      To exercise these rights, please email us at{' '}
-      <span className="text-cyan-300">ohmycompetitions@gmail.com</span>.
-    </>
-  ]
-},
-
+            {
+              title: '6. Your Rights and Choices',
+              points: [
+                'You have the right to access, correct, update, or request deletion of your personal data.',
+                'EU/EEA residents have additional rights under GDPR, including data portability and the right to restrict or object to processing.',
+                'California residents have specific rights under CCPA, including the right to know, delete, and opt-out of certain uses of personal information.',
+                <>
+                  To exercise these rights, please email us at{' '}
+                  <span className="text-cyan-300">ohmycompetitions@gmail.com</span>.
+                </>
+              ]
+            },
             {
               title: '7. Data Retention',
               points: [
@@ -145,7 +142,6 @@ export default function PrivacyPolicy() {
               </button>
             </Link>
           </div>
-
         </div>
       </div>
     </main>

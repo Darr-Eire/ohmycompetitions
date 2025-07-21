@@ -25,7 +25,7 @@ export default function TopWinnersCarousel() {
 
   return (
     <div className="bg-white bg-opacity-10 backdrop-blur-lg rounded-xl shadow-lg p-6 text-white text-center max-w-md mx-auto">
-      <h2 className="text-2xl font-bold mb-4">🏆 Top Winners</h2>
+      <h2 className="text-2xl font-bold mb-4"> Top Winners</h2>
       <div className="flex flex-col items-center">
         <Image
           src={current.image}

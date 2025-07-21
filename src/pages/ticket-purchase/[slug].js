@@ -600,15 +600,13 @@ return (
   </div>
 )}
         {/* Footer Links */}
-        <div className="mt-6 text-xs text-cyan-300 flex flex-col items-center space-y-2">
-          <Link
-            href="/terms-conditions"
-            className="underline hover:text-cyan-400"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Terms & Conditions
-          </Link>
+          <div className="text-center mt-4">
+          <p className="text-sm">
+            By entering, you agree to our{' '}
+            <Link href="/terms-conditions" className="text-cyan-400 underline hover:text-cyan-300 transition-colors">
+              Terms &amp; Conditions
+            </Link>.
+          </p>
         </div>
       </div>
     </div>
