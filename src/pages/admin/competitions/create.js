@@ -385,6 +385,7 @@ const ImageOption = ({ label, path }) => (
 {/* Daily */}
 <p className="text-cyan-300 text-xs font-semibold mt-4 mb-1">📆 Daily</p>
 <div className="grid grid-cols-3 gap-2 text-xs">
+    <ImageOption label="Pi 4" path="/images/pi4.png" />
   <ImageOption label="Pi 3" path="/images/pi3.png" />
   <ImageOption label="Pi 2" path="/images/pi2.png" />
   <ImageOption label="Pi 1" path="/images/pi1.png" />

@@ -104,48 +104,55 @@ export default function PiTicketPage() {
   return (
     <main className="min-h-screen px-4 py-10 bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-orbitron">
       <div className="max-w-xl mx-auto bg-[#0f172a]/80 border-2 border-cyan-400 rounded-2xl shadow-[0_0_30px_#00ffd5cc] p-6 space-y-6">
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-center text-cyan-300 uppercase tracking-wider">
-          {competition.title}
-        </h1>
-
-     
-
-{competition?.prizeBreakdown && (
-  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
-        <div className="bg-white/5 p-4 rounded-lg text-center border border-cyan-400">
-      <p className="text-cyan-300 font-bold">
-         1<span className="text-xs align-super">st</span>
-      </p>
-      <p className="text-cyan-300">{competition.prizeBreakdown.first}</p>
-    </div>
-       <div className="bg-white/5 p-4 rounded-lg text-center border border-cyan-400">
-      <p className="text-cyan-300 font-bold">
-         2<span className="text-xs align-super">nd</span>
-      </p>
-      <p className="text-cyan-300">{competition.prizeBreakdown.second}</p>
-    </div>
-    <div className="bg-white/5 p-4 rounded-lg text-center border border-cyan-400">
-      <p className="text-cyan-300 font-bold">
-         3<span className="text-xs align-super">rd</span>
-      </p>
-      <p className="text-cyan-300">{competition.prizeBreakdown.third}</p>
-    </div>
-  </div>
-)}
-  {status === 'active' && (
-          <div className="text-lg font-bold text-black bg-gradient-to-r from-green-500 to-green-700 px-6 py-2 rounded-full shadow-lg animate-pulse text-center">
-            Live Now
-          </div>
-        )}
+   <h1 className="text-center text-cyan-300 text-xl sm:text-2xl font-bold border border-cyan-400 rounded-xl px-4 py-2 shadow-[0_0_20px_#00ffd5aa] bg-white/5">
+  {competition.title}
+</h1>
 <div className="space-y-2">
+
+  {/* Prize Breakdown Section */}
+  {competition.prizeBreakdown ? (
+    <div className="w-full mt-6">
+
+      <div className="grid grid-cols-3 gap-3 w-full max-w-md mx-auto px-2">
+        {/* 1st Prize */}
+        <div className="bg-white/5 p-3 rounded-lg text-center border border-cyan-400 shadow-[0_0_12px_#00ffd5aa]">
+          <p className="text-cyan-300 font-bold text-base leading-tight">
+            1<span className="text-xs align-super">st</span>
+          </p>
+          <p className="text-cyan-300 text-sm font-semibold mt-1">
+            {competition.prizeBreakdown.first}
+          </p>
+        </div>
+        {/* 2nd Prize */}
+        <div className="bg-white/5 p-3 rounded-lg text-center border border-cyan-400 shadow-[0_0_12px_#00ffd5aa]">
+          <p className="text-cyan-300 font-bold text-base leading-tight">
+            2<span className="text-xs align-super">nd</span>
+          </p>
+          <p className="text-cyan-300 text-sm font-semibold mt-1">
+            {competition.prizeBreakdown.second}
+          </p>
+        </div>
+        {/* 3rd Prize */}
+        <div className="bg-white/5 p-3 rounded-lg text-center border border-cyan-400 shadow-[0_0_12px_#00ffd5aa]">
+          <p className="text-cyan-300 font-bold text-base leading-tight">
+            3<span className="text-xs align-super">rd</span>
+          </p>
+          <p className="text-cyan-300 text-sm font-semibold mt-1">
+            {competition.prizeBreakdown.third}
+          </p>
+        </div>
+      </div>
+    </div>
+  ) : (
+    <DetailRow label="Prize" value={competition.prize} />
+  )}
+
+  {/* Entry & Date Info */}
   <DetailRow label="Entry Fee" value={`${competition.piAmount} π`} />
-  <DetailRow label="Prize" value={competition.prize} />
   <DetailRow label="Start Date" value={new Date(competition.startsAt).toLocaleDateString()} />
   <DetailRow label="Draw Date" value={new Date(competition.endsAt).toLocaleDateString()} />
 
-  
- 
-
+  {/* Ticket Info */}
   <DetailRow
     label="Tickets Sold"
     value={`${liveTicketsSold} / ${competition.totalTickets}`}
@@ -160,8 +167,6 @@ export default function PiTicketPage() {
     <DetailRow label="Max Per User" value={competition.maxPerUser} />
   )}
 </div>
-
-
 
         <div className="flex items-center justify-center gap-4 mt-4">
           <button
