@@ -123,7 +123,7 @@ const formattedFee =
         </div>
 
         {/* Title */}
-        <h3 className="text-2xl sm:text-3xl font-black uppercase text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-center mb-3">
+        <h3 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-center mb-3">
           {title || comp?.title}
         </h3>
 
