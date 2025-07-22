@@ -1,7 +1,7 @@
 const axios = require('axios');
 
 // Configuration
-const BASE_URL = 'https://ae07-111-68-97-206.ngrok-free.app'; // Change this to your server URL
+const BASE_URL = 'https://0e5168d0d549.ngrok-free.app'; // Change this to your server URL
 const TEST_USER_UID = 'b172eb2c-7e7d-4c81-8111-4a9f11ddb2d0'; // The user UID from your logs
 
 const headers = {

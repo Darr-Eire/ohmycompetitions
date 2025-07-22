@@ -117,7 +117,7 @@ export const techItems = [
 
 ];
 
-
+export const dailyItems = [];
  
 export const premiumItems = [
   {
@@ -352,7 +352,7 @@ export const launchWeekItems = [
   },
 ];
 
-export const dailyItems = [];
+
 
 
 

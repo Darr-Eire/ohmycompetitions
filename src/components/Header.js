@@ -47,14 +47,16 @@ export default function Header() {
   ['How It Play', '/how-to-play'],
 ];
 
-  const navExtras = [
-    ['Try Your Luck', '/try-your-luck'],
-    ['Forums', '/forums'],
-    ['About Us', '/how-we-got-started'],
-    ['Help & Support', '/help-support'],
-    ['Upcoming Features', '/future'],
-    ['Partners & Sponsors', '/partners'],
-  ];
+const navExtras = [
+  ['Try Your Luck', '/try-your-luck'],
+  ['Forums', '/forums'],
+  ['Results', '/competitions/results'],
+  ['About Us', '/how-we-got-started'],
+  ['Help & Support', '/help-support'],
+  ['Upcoming Features', '/future'],
+  ['Partners & Sponsors', '/partners'],
+];
+
 
   if (user) navExtras.push(['Pi Code', '/competition']);
 const finalNavItems = [...navItems];
