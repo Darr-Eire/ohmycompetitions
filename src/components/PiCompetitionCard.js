@@ -104,10 +104,8 @@ const formattedFee =
   return (
     <>
       <div className="relative w-full max-w-sm mx-auto p-4 bg-[#0f172a] rounded-xl text-white font-orbitron shadow-xl border-2 border-cyan-400 overflow-hidden">
-        {/* Decorative Backgrounds */}
-        <div className="absolute inset-0 opacity-10 bg-[url('/images/glow-pi.png')] bg-center bg-no-repeat bg-contain pointer-events-none" />
-        <div className="absolute inset-0 bg-[url('/images/worldmap.svg')] bg-cover opacity-5 pointer-events-none" />
-
+     
+  
         {/* Header */}
         <div className="flex justify-between items-center text-sm mb-2 z-10 relative">
           <span className="px-3 py-1 rounded-full border border-cyan-400 bg-cyan-600/30 text-white font-semibold">

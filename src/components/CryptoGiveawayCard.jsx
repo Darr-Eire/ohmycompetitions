@@ -18,29 +18,36 @@ export default function CryptoGiveawayCard({
   const [timeLeft, setTimeLeft] = useState('')
   const [status, setStatus] = useState('UPCOMING')
 
+  // ✅ Chart Widget Mount
   useEffect(() => {
     if (!widgetRef.current) return
     widgetRef.current.innerHTML = ''
 
-    const script = document.createElement('script')
-    script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js'
-    script.async = true
-    script.innerHTML = JSON.stringify({
-      symbol: `BINANCE:${token}USDT`,
-      width: '100%',
-      height: '200',
-      locale: 'en',
-      dateRange: '1D',
-      colorTheme: 'dark',
-      trendLineColor: '#00FF00',
-      underLineColor: 'rgba(0, 255, 0, 0.15)',
-      isTransparent: true,
-      autosize: true,
+    // Ensure stable rendering
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        const script = document.createElement('script')
+        script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js'
+        script.async = true
+        script.type = 'text/javascript'
+        script.text = JSON.stringify({
+          symbol: `BINANCE:${token}USDT`,
+          width: '100%',
+          height: '200',
+          locale: 'en',
+          dateRange: '1D',
+          colorTheme: 'dark',
+          trendLineColor: '#00FF00',
+          underLineColor: 'rgba(0, 255, 0, 0.15)',
+          isTransparent: true,
+          autosize: true,
+        })
+        widgetRef.current?.appendChild(script)
+      }, 0)
     })
-
-    widgetRef.current.appendChild(script)
   }, [token])
 
+  // ✅ Countdown Timer
   useEffect(() => {
     if (comingSoon) {
       setTimeLeft('')
@@ -109,7 +116,11 @@ export default function CryptoGiveawayCard({
 
       {/* Chart Header */}
       <div className="w-full -mt-1 -mx-4 overflow-hidden">
-        <div ref={widgetRef} className="w-full h-[200px]" />
+        <div
+          ref={widgetRef}
+          className="w-full h-[200px]"
+          style={{ minHeight: '200px', display: 'block' }}
+        />
       </div>
 
       {/* Competition Info */}
@@ -162,5 +173,3 @@ export default function CryptoGiveawayCard({
     </div>
   )
 }
-
-  
