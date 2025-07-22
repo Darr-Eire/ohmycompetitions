@@ -98,7 +98,7 @@ export default function TermsConditions() {
                 'Your data will never be sold or shared with advertisers.',
                 <>
                   Please refer to our{' '}
-                  <Link href="/privacy-policy" className="text-blue-400 underline">
+                  <Link href="/privacy-policy" className="text-cyan-300">
                     Privacy Policy
                   </Link>{' '}
                   for comprehensive details on how we handle your data.
@@ -169,7 +169,7 @@ export default function TermsConditions() {
               points: [
                 <>
                   For help, support, or questions, email{' '}
-                  <span className="text-blue-400">ohmycompetitions@gmail.com</span> or message us via Pi usernames:{' '}
+                  <span className="text-cyan-300">ohmycompetitions@gmail.com</span> or message us via Pi usernames:{' '}
                   <span className="text-cyan-300">darreire2020</span> and{' '}
                   <span className="text-cyan-300">Lyndz2020</span>.
                 </>
@@ -186,14 +186,15 @@ export default function TermsConditions() {
             </div>
           ))}
 
-          {/* Back Home Button */}
-          <div className="text-center mt-8">
-            <Link href="/">
-              <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded">
-                Back to Home
-              </button>
-            </Link>
-          </div>
+       {/* Support Page Button */}
+<div className="text-center mt-8">
+  <Link href="/help-support">
+    <button className="bg-cyan-300 hover:bg-cyan-300 text-black font-semibold py-2 px-6 rounded">
+      Contact Support
+    </button>
+  </Link>
+</div>
+
         </div>
       </div>
     </main>

@@ -21,7 +21,7 @@ export default function TravelPage() {
     <div className="max-w-screen-lg mx-auto px-4 sm:px-0">
           <h1
             className="
-              text-3xl font-bold text-center mb-4
+              text-2xl font-bold text-center mb-4
               bg-gradient-to-r from-[#00ffd5] to-[#0077ff]
               bg-clip-text text-transparent
             "

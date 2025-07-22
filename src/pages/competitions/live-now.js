@@ -11,8 +11,7 @@ export default function AllCompetitionsPage() {
   const [competitions, setCompetitions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-const [activeFilter, setActiveFilter] = useState('Daily');
-
+  const [activeFilter, setActiveFilter] = useState('All');
 
   useEffect(() => {
     const fetchCompetitions = async () => {
@@ -28,15 +27,10 @@ const [activeFilter, setActiveFilter] = useState('Daily');
           }
         });
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch competitions');
-        }
+        if (!response.ok) throw new Error('Failed to fetch competitions');
 
         const result = await response.json();
-
-        if (!result.success) {
-          throw new Error(result.error || 'Failed to fetch competitions');
-        }
+        if (!result.success) throw new Error(result.error || 'Failed to fetch competitions');
 
         console.log('✅ Competitions loaded from database:', result.data.length);
         setCompetitions(result.data);
@@ -59,16 +53,10 @@ const [activeFilter, setActiveFilter] = useState('Daily');
 
   const getAvailableFilters = () => {
     const themes = new Set(competitions.map(comp => comp.theme).filter(Boolean));
-    const formattedThemes = Array.from(themes).map(theme => theme.charAt(0).toUpperCase() + theme.slice(1));
-
-    // Add forced filters even if no competitions (optional, uncomment if desired)
-    // const forced = ['Crypto', 'Pi', 'Free'];
-    // forced.forEach(f => {
-    //   if (!formattedThemes.includes(f)) formattedThemes.push(f);
-    // });
-
- return formattedThemes;
-
+    const formattedThemes = Array.from(themes).map(
+      theme => theme.charAt(0).toUpperCase() + theme.slice(1)
+    );
+    return ['All', ...formattedThemes];
   };
 
   const renderCompetitionCard = (item) => {
@@ -82,7 +70,7 @@ const [activeFilter, setActiveFilter] = useState('Daily');
       endsAt: item.comp?.endsAt,
     };
 
-    switch (item.theme) {
+    switch (item.theme?.toLowerCase()) {
       case 'pi':
         return <PiCompetitionCard {...props} />;
       case 'daily':
@@ -96,6 +84,28 @@ const [activeFilter, setActiveFilter] = useState('Daily');
     }
   };
 
+  const renderGroupedCompetitions = () => {
+    const grouped = competitions.reduce((acc, comp) => {
+      const theme = comp.theme || 'Other';
+      if (!acc[theme]) acc[theme] = [];
+      acc[theme].push(comp);
+      return acc;
+    }, {});
+
+    return Object.entries(grouped).map(([theme, comps]) => (
+      <div key={theme} className="mb-12">
+      <h2 className="text-2xl font-bold text-cyan-300 mb-4 capitalize text-center">{theme} Competitions</h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-16">
+          {comps.map((item) => renderCompetitionCard(item))}
+        </div>
+      </div>
+    ));
+  };
+
+  const filteredCompetitions = getFilteredCompetitions();
+  const availableFilters = getAvailableFilters();
+
   if (loading) {
     return (
       <main className="app-background min-h-screen p-4 text-white flex items-center justify-center">
@@ -107,21 +117,15 @@ const [activeFilter, setActiveFilter] = useState('Daily');
     );
   }
 
-  const filteredCompetitions = getFilteredCompetitions();
-  const availableFilters = getAvailableFilters();
-
   return (
     <main className="app-background min-h-screen px-0 py-0 text-white">
       <div className="text-center mb-6 mt-0">
-        <h1
-          className="text-3xl font-bold text-center mb-4
-          bg-gradient-to-r from-[#00ffd5] to-[#0077ff]
-          bg-clip-text text-transparent"
-        >
+        <h1 className="text-2xl font-bold bg-gradient-to-r from-[#00ffd5] to-[#0077ff] bg-clip-text text-transparent mb-4">
           Explore Live Competitions
         </h1>
-        <p className="text-center text-cyan-300 text-base sm:text-lg max-w-md mx-auto mb-8">
-          Enter exclusive Pi powered competitions to win tech, crypto, lifestyle prizes and more. New draws weekly don’t miss your chance to join the fun and become our next big winner
+        <p className="text-center text-white text-base sm:text-lg max-w-md mx-auto mb-8">
+          Enter exclusive Pi powered competitions to win tech, crypto, lifestyle prizes and more.
+          New draws weekly – don’t miss your chance to join the fun and become our next big winner!
         </p>
       </div>
 
@@ -131,7 +135,7 @@ const [activeFilter, setActiveFilter] = useState('Daily');
         </div>
       )}
 
-      {availableFilters.length > 1 && (
+      {availableFilters.length > 0 && (
         <div className="flex flex-wrap justify-center gap-3 mb-6">
           {availableFilters.map((filter) => (
             <button
@@ -149,12 +153,13 @@ const [activeFilter, setActiveFilter] = useState('Daily');
         </div>
       )}
 
-   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-16 mt-8">
-
-
-
-        {filteredCompetitions.map((item) => renderCompetitionCard(item))}
-      </div>
+      {activeFilter === 'All' ? (
+        <div className="mt-8">{renderGroupedCompetitions()}</div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-16 mt-8">
+          {filteredCompetitions.map((item) => renderCompetitionCard(item))}
+        </div>
+      )}
 
       {filteredCompetitions.length === 0 && !loading && (
         <div className="text-center text-gray-400 mt-12">
