@@ -117,7 +117,7 @@ export const techItems = [
 
 ];
 
-export const dailyItems = [];
+
  
 export const premiumItems = [
   {
@@ -235,7 +235,7 @@ status: 'active',
 },
 
 ];
-
+export const dailyItems = [];
 
 export const piItems = [
   {

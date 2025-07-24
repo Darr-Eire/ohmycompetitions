@@ -11,6 +11,7 @@ import CryptoGiveawayCard from '@components/CryptoGiveawayCard';
 import CompetitionCard from '@components/CompetitionCard';
 import MiniPrizeCarousel from '@components/MiniPrizeCarousel';
 import { miniGames } from '@data/minigames';
+import TutorialOverlay from 'components/TutorialOverlay';
 
 import {
   dailyItems,
@@ -194,6 +195,7 @@ export default function HomePage() {
 </div>
   {/* Mini carousel */}
   <MiniPrizeCarousel />
+  
 
       <div className="mt-6 mb-8 flex justify-center">
         <Link

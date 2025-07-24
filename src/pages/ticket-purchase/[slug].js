@@ -80,7 +80,7 @@ const DetailRow = ({ label, value, highlight = false }) => (
 
 export default function TicketPurchasePage() {
   const router = useRouter();
-   const slugArray = router.query.slug || []; // could be ['1000-pi-giveaway'] or ['pi', '1000-pi-giveaway']
+   const slugArray = router.query.slug || []; 
   const slug = Array.isArray(slugArray) ? slugArray[slugArray.length - 1] : slugArray;
 
   const { user, login, isAuthenticated } = usePiAuth();
@@ -147,6 +147,8 @@ export default function TicketPurchasePage() {
 
       // Fallback to static data
       const staticComp = flattenCompetitions.find(c => c.comp.slug === slugParam);
+        const description = staticComp?.comp?.description || staticComp?.description;
+
       if (staticComp) {
         console.log('📁 Using static competition data:', staticComp);
      setComp({
@@ -181,17 +183,11 @@ useEffect(() => {
   if (typeof desc === 'string') {
     setDescription(desc);
   } else if (desc?.description) {
-    setDescription(desc.description); // ✅ fix here
+    setDescription(desc.description);
   } else {
     setDescription('No detailed description available.');
   }
 }, [comp?.slug]);
-
-
-
-
-
-
   useEffect(() => {
     if (!router.isReady || !slug) return;
 
@@ -315,7 +311,7 @@ useEffect(() => {
   const totalTickets = comp?.totalTickets || 100;
   const availableTickets = Math.max(0, totalTickets - ticketsSold);
   const isSoldOut = ticketsSold >= totalTickets;
-  const isNearlyFull = availableTickets <= totalTickets * 0.1; // Less than 10% remaining
+  const isNearlyFull = availableTickets <= totalTickets * 0.1; 
 
   if (isSoldOut) {
     return (
@@ -351,38 +347,44 @@ return (
 
       <div className="space-y-6 text-center">
 
-{/* Image and Thumbnails */}
 {!isDaily && !isCryptoCompetition && mainImage && (
   <div className="space-y-6 text-center">
+    {/* Main Image */}
+    <div className="w-full max-w-[600px] mx-auto aspect-[3/2] relative border border-blue-500 rounded-lg overflow-hidden">
+      <Image
+        src={mainImage}
+        alt={comp.title}
+        fill
+        className="object-contain"
+        sizes="(max-width: 768px) 100vw, 600px"
+      />
+    </div>
+
+  
+  {/* Two smaller images under the main image */}
+<div className="flex justify-center gap-4 mt-4">
+  <div className="w-[48%] max-w-[280px] aspect-[3/2] relative border border-cyan-400 rounded-lg overflow-hidden">
     <Image
-      src={mainImage}
-      alt={comp.title}
-      width={600}
-      height={300}
-      className="w-full max-h-56 object-cover rounded-lg border border-blue-500 mx-auto"
+      src="/images/playstation2.jpeg" 
+      alt="Small Image 1"
+      fill
+      className="object-contain"
+      sizes="(max-width: 768px) 50vw, 280px"
     />
-    
-    {miniImages?.length > 0 && (
-      <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mt-4 px-2 place-items-center">
-        {miniImages.map((img, i) => (
-          <div
-            key={i}
-            className="relative w-20 h-16 sm:w-28 sm:h-20 rounded-lg border border-cyan-400 overflow-hidden"
-          >
-            <Image
-              src={img}
-              alt={`Thumbnail ${i + 1}`}
-              fill
-              className="object-fit"
-              sizes="(max-width: 640px) 96px, 112px"
-            />
-          </div>
-        ))}
-      </div>
-    )}
+  </div>
+  <div className="w-[48%] max-w-[280px] aspect-[3/2] relative border border-cyan-400 rounded-lg overflow-hidden">
+    <Image
+      src="/images/playstation1.jpeg" 
+      alt="Small Image 2"
+      fill
+      className="object-contain"
+      sizes="(max-width: 768px) 50vw, 280px"
+    />
+  </div>
+</div>
   </div>
 )}
-        {/* Crypto Widget */}
+ {/* Crypto Widget */}
         {isCryptoCompetition && (
           <div className="w-full h-[400px] my-4">
             <TradingViewWidget />
@@ -399,14 +401,7 @@ return (
   <p className="text-cyan-300 text-xl font-semibold backdrop-blur-md bg-white/10 border border-cyan-300 rounded-lg px-6 py-2 shadow-md inline-block">
     {comp.prize}
   </p>
-
- 
 </div>
-
-
-
-
-
 
         {/* Details Grid */}
         <div className="max-w-md mx-auto text-sm text-white space-y-2">
@@ -418,11 +413,8 @@ return (
   label="Total Tickets"
   value={`${comp.totalTickets?.toLocaleString() || 'N/A'}`}
 />
-
-
-
-
-          <DetailRow 
+   <DetailRow label="Max Ticket Purchases" value={comp.maxTicketsPerUser?.toLocaleString() || '10'} />
+<DetailRow 
             label="Tickets Sold" 
             value={`${liveTicketsSold} / ${comp.totalTickets}${liveTicketsSold >= comp.totalTickets ? ' (SOLD OUT)' : ''}`}
             highlight={liveTicketsSold >= comp.totalTickets}
@@ -435,8 +427,6 @@ return (
             />
             
           )}
-                    <DetailRow label="Max Ticket Purchases" value={comp.maxTicketsPerUser?.toLocaleString() || '10'} />
-
         </div>
 
 
@@ -463,15 +453,7 @@ return (
           </>
         ) : (
           <>
-            {!user && (
-              <div className="text-sm bg-cyan-500 p-3 rounded-lg font-semibold">
-                Please{' '}
-                <button onClick={login} className="text-white">
-                  log in
-                </button>{' '}
-                with Pi to buy tickets.
-              </div>
-            )}
+          
 
              <p className="text-lg text font-bold mt-6">Total  {totalPrice.toFixed(2)} π</p>
             {/* Ticket Quantity Selector */}
@@ -493,23 +475,39 @@ return (
               </button>
             </div>
 
-            {/* Warnings */}
-            {isNearlyFull && availableTickets > 0 && (
-              <div className="text-orange-400 text-sm font-bold mt-2">
-                ⚠️ Only {availableTickets} tickets remaining!
-              </div>
-            )}
-            {quantity > availableTickets && (
-              <div className="text-red-400 text-sm font-bold mt-2">
-                ❌ Cannot buy {quantity} tickets - only {availableTickets} available
-              </div>
-            )}
+           {/* Warnings */}
+{isNearlyFull && availableTickets > 0 && (
+  <div className="text-cyan-300 text-sm font-bold mt-2">
+    ⚠️ Only {availableTickets} tickets remaining!
+  </div>
+)}
+{quantity > availableTickets && (
+  <div className="text-cyan-300 text-sm font-bold mt-2">
+    ❌ Cannot buy {quantity} tickets - only {availableTickets} available
+  </div>
+)}
+
 
            
            
 
-          {!showSkillQuestion ? (
+ {!showSkillQuestion ? (
   <>
+  
+
+    {/* Login Message */}
+    {!user && (
+      <div  className="bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-2 px-4 rounded-xl">
+        Please{' '}
+        <button
+          onClick={login}
+        >
+          log in
+        </button>{' '}
+        with Pi to buy tickets.
+      </div>
+    )}
+     {/* Proceed Button */}
     <button
       onClick={handleShowSkillQuestion}
       className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 px-4 rounded-xl mt-6"
@@ -517,7 +515,7 @@ return (
       Proceed to Payment
     </button>
      {/* Payment Summary */}
-            <p className="text-cyan-300 text-sm mt-2">
+            <p className="text-white text-sm mt-2">
               Secure your entry to {comp.prize}<br />
               Thank you for participating and good luck
             </p>
