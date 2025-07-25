@@ -120,56 +120,56 @@ export const techItems = [
 
  
 export const premiumItems = [
-  {
-    comp: {
-      slug: 'dubai-luxury-holiday',
-      entryFee: 2,
-      totalTickets: 4000,
-      ticketsSold: 0,
-      startsAt: null, // optional or remove if not needed
-      endsAt: '2025-12-15T13:06:55Z',              
-      paymentType: 'pi',
-      piAmount: 2.5,
-     comingSoon: true,
-status: 'active',  // added
-    },
-    title: 'Dubai Luxury Holiday',
-    href: '/competitions/dubai-luxury-holiday',
-    prize: '7-Day Dubai Trip',
-    imageUrl: '/images/dubai-luxury-holiday.jpg',
-    theme: 'premium',
-  },
-  {
-    comp: {
-      slug: 'penthouse-stay',
-      entryFee: 0.75,
-      totalTickets: 3000,
-      ticketsSold: 0,
-  startsAt: null, // optional or remove if not needed           
-      endsAt: '2025-10-10T21:00:00Z',
-      paymentType: 'pi',
-      piAmount: 15,
-     comingSoon: true,
-status: 'active',  // added
-    },
-    title: 'Penthouse Stay',
-    href: '/competitions/penthouse-stay',
-    prize: 'Penthouse Hotel Stay of your choice',
-    imageUrl: '/images/hotel.jpeg',
-    theme: 'premium',
-  },
  {
   comp: {
-    slug: 'first-class-flight',
-    entryFee: 1,
-    totalTickets: 2500,
+    slug: 'dubai-luxury-holiday',
+    entryFee: null,
+    totalTickets: null,
     ticketsSold: 0,
-    startsAt: null, // or remove this line if handled elsewhere
-    endsAt: null,   // or remove this line if handled elsewhere
+    startsAt: null,
+    endsAt: '',
     paymentType: 'pi',
-    piAmount: 2,
-   comingSoon: true,
-status: 'active'
+    piAmount: null,
+    comingSoon: true,
+    status: 'active',
+  },
+  title: 'Dubai Luxury Holiday',
+  href: '/competitions/dubai-luxury-holiday',
+  prize: '7-Day Dubai Trip',
+  imageUrl: '/images/dubai-luxury-holiday.jpg',
+  theme: 'premium',
+},
+{
+  comp: {
+    slug: 'penthouse-stay',
+    entryFee: null,
+    totalTickets: null,
+    ticketsSold: 0,
+    startsAt: null,
+    endsAt: '',
+    paymentType: 'pi',
+    piAmount: null,
+    comingSoon: true,
+    status: 'active',
+  },
+  title: 'Penthouse Stay',
+  href: '/competitions/penthouse-stay',
+  prize: 'Penthouse Hotel Stay of your choice',
+  imageUrl: '/images/hotel.jpeg',
+  theme: 'premium',
+},
+{
+  comp: {
+    slug: 'first-class-flight',
+    entryFee: null,
+    totalTickets: null,
+    ticketsSold: null,
+    startsAt: null,
+    endsAt: '',
+    paymentType: 'pi',
+    piAmount: null,
+    comingSoon: true,
+    status: 'active',
   },
   title: 'First Class Flight',
   prize: 'Return flights to anywhere in the world',
@@ -178,24 +178,22 @@ status: 'active'
   thumbnails: [
     '/images/first1.jpeg',
     '/images/first2.jpeg',
-    '/images/first3.jpeg'
+    '/images/first3.jpeg',
   ],
   theme: 'premium',
 },
-
-  
 {
   comp: {
     slug: 'weekend-getaway',
-    entryFee: 2.5,
-    totalTickets: 4000,
+    entryFee: null,
+    totalTickets: null,
     ticketsSold: 0,
-   startsAt: null, // optional or remove if not needed
-    endsAt: '2025-08-01T22:00:00Z',
+    startsAt: null,
+    endsAt: '',
     paymentType: 'pi',
-    piAmount: 12,
-   comingSoon: true,
-status: 'active',
+    piAmount: null,
+    comingSoon: true,
+    status: 'active',
   },
   title: 'Weekend Getaway',
   prize: '3,000 Pi Travel Voucher',
@@ -204,23 +202,22 @@ status: 'active',
   thumbnails: [
     '/images/weekend1.jpeg',
     '/images/weekend2.jpeg',
-    '/images/weekend3.jpeg'
+    '/images/weekend3.jpeg',
   ],
   theme: 'premium',
 },
-
 {
   comp: {
     slug: 'spa-day-package',
-    entryFee: 1.2,
-    totalTickets: 3000,
+    entryFee: null,
+    totalTickets: null,
     ticketsSold: 0,
-    startsAt: null, // optional or remove if not needed
-    endsAt: '2025-06-05T22:00:00Z',
+    startsAt: null,
+    endsAt: '',
     paymentType: 'pi',
-    piAmount: 1.2,
-  comingSoon: true,
-status: 'active',
+    piAmount: null,
+    comingSoon: true,
+    status: 'active',
   },
   title: 'Spa Day Package',
   prize: 'Luxury Spa Experience',
@@ -229,15 +226,17 @@ status: 'active',
   thumbnails: [
     '/images/spa1.jpeg',
     '/images/spa2.jpeg',
-    '/images/spa3.jpeg'
+    '/images/spa3.jpeg',
   ],
   theme: 'premium',
 },
+
 
 ];
 export const dailyItems = [];
 
 export const piItems = [
+   
   {
     comp: {
       slug: 'pi-giveaway-10k',
@@ -265,8 +264,8 @@ export const piItems = [
       entryFee: 1.8,
       totalTickets: 2900,
       ticketsSold: 0,
-      startsAt: '2025-08-25T00:00:00Z',
-      endsAt: '2025-09-25T00:00:00Z',
+      startsAt: '2025-08-08T00:00:00Z',
+      endsAt: '2025-09-01T00:00:00Z',
       status: 'active',
       prizeBreakdown: {
         first: '2,500 π',
@@ -280,14 +279,14 @@ export const piItems = [
     imageUrl: '/images/50000.png',
     theme: 'pi',
   },
-  {
+   {
     comp: {
       slug: 'pi-giveaway-2.5k',
       entryFee: 1.6,
       totalTickets: 1600,
       ticketsSold: 0,
-      startsAt: '2025-07-25T00:00:00Z',
-      endsAt: '2025-08-25T00:00:00Z',
+      startsAt: '2025-08-07T00:00:00Z',
+      endsAt: '2025-09-14T00:00:00Z',
       status: 'active',
       prizeBreakdown: {
         first: '1,250 π',
@@ -301,6 +300,7 @@ export const piItems = [
     imageUrl: '/images/25000.png',
     theme: 'pi',
   },
+
 ];
 
 
@@ -357,21 +357,23 @@ export const launchWeekItems = [
 
 
 export const freeItems = [
-  {
-    comp: {
-      slug: 'pi-to-the-moon',
-      entryFee: 0,
-      totalTickets: 20000,
-      ticketsSold: 0,
-      startsAt: '2025-08-20T18:00:00Z',
-      endsAt: '2025-08-31T18:00:00Z',
-      location: 'Online Global Draw',
-    },
-    title: 'Pi To The Moon',
-    prize: '10,000 π',
-    href: '/competitions/pi-to-the-moon',
-    theme: 'free',
+
+{
+  comp: {
+    slug: 'pi-to-the-moon',
+    entryFee: 0,
+    totalTickets: 5000,
+    ticketsSold: 0,
+    startsAt: '',
+    endsAt: '2025-08-31T18:00:00Z',
+    location: 'Online Global Draw',
   },
+  title: 'Pi To The Moon',
+  prize: '10,000 π',
+  href: '/competitions/pi-to-the-moon',
+  theme: 'free',
+},
+
 ];
 export const cryptoGiveawaysItems = [
   {

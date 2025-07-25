@@ -26,27 +26,6 @@ const selectedCompetitions = [
     },
   },
   {
-    _id: '687d7ac59c8f45807d0affee',
-    comp: {
-      slug: 'xbox-one-bundle',
-      entryFee: 0.55,
-      totalTickets: 1200,
-      ticketsSold: 0,
-      startsAt: '2025-07-20T00:00:00Z',
-      endsAt: '2025-08-20T00:00:00Z',
-      paymentType: 'pi',
-      piAmount: 0.55,
-      status: 'active',
-      prizePool: 660,
-      title: 'Xbox One Bundle',
-      description: '',
-      prize: 'Win A Xbox One Bundle',
-      href: '/competitions/xbox-one-bundle',
-      imageUrl: '/images/xbox.jpeg',
-      theme: 'tech',
-    },
-  },
-  {
     _id: '687d7d759c8f45807d0affff',
     comp: {
       slug: 'omc-launch-week-pi-power',

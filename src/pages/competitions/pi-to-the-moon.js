@@ -6,13 +6,18 @@ import '@fontsource/orbitron';
 
 export default function PiToTheMoonPage() {
   const [timeLeft, setTimeLeft] = useState('');
-  const endsAt = '2025-12-01T23:59:59Z';
-  const total = 10000;
+
+  // Competition data
+  const startsAt = ''; // TBA
+  const endsAt = '2025-08-31T18:00:00Z';
+  const total = 5000;
   const sold = 0;
   const percent = Math.min(100, Math.floor((sold / total) * 100));
 
+  // Countdown
   useEffect(() => {
     if (!endsAt) return;
+
     const end = new Date(endsAt).getTime();
 
     const interval = setInterval(() => {
@@ -32,11 +37,13 @@ export default function PiToTheMoonPage() {
     return () => clearInterval(interval);
   }, [endsAt]);
 
-  const formattedDate = new Date(endsAt).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
+  const formattedDate = endsAt
+    ? new Date(endsAt).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      })
+    : 'TBA';
 
   return (
     <section className="w-full py-10 px-4 bg-gradient-to-r from-[#111827] to-[#0f172a] rounded-2xl border border-cyan-400 shadow-[0_0_40px_#00f2ff44] text-white font-orbitron max-w-2xl mx-auto text-center space-y-6">
@@ -46,7 +53,7 @@ export default function PiToTheMoonPage() {
 
       <div className="flex justify-center items-center gap-4 text-sm">
         <span className="bg-white/10 px-3 py-1 rounded-full text-cyan-200 font-medium">
-           {formattedDate}
+          {formattedDate}
         </span>
         <span className="bg-gradient-to-r from-orange-400 to-orange-500 px-3 py-1 rounded-full animate-pulse">
           Coming Soon
@@ -55,8 +62,9 @@ export default function PiToTheMoonPage() {
 
       <div className="bg-white/5 rounded-lg p-4 text-sm space-y-2">
         <p><span className="font-semibold text-cyan-300">Prize:</span> 10,000 π</p>
-        <p><span className="font-semibold text-cyan-300">Entry Fee:</span> <span className="font-bold">FREE</span></p>
-        <p><span className="font-semibold text-cyan-300">Date:</span> {formattedDate}</p>
+        <p><span className="font-semibold text-cyan-300">Entry Fee:</span> <span>Free</span></p>
+        <p><span className="font-semibold text-cyan-300">Start:</span> TBA</p>
+        <p><span className="font-semibold text-cyan-300">Draw Date:</span> TBA</p>
         <p><span className="font-semibold text-cyan-300">Total Tickets:</span> {total.toLocaleString()}</p>
         <p><span className="font-semibold text-cyan-300">Location:</span> Online Global Draw</p>
         <p className="text-cyan-200 italic pt-2">

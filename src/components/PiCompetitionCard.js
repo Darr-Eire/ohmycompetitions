@@ -19,7 +19,8 @@ export default function PiCompetitionCard({
 
   // ✅ State
   const [timeLeft, setTimeLeft] = useState('')
-  const [status, setStatus] = useState('UPCOMING')
+const [status, setStatus] = useState('')
+
   const [showGiftModal, setShowGiftModal] = useState(false)
   const [showCountdown, setShowCountdown] = useState(false)
   const [showAllCountries, setShowAllCountries] = useState(false)
@@ -63,43 +64,48 @@ const formattedFee =
   ]
 
   // ✅ Countdown Timer
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const now = Date.now()
-      const start = startsAt.getTime()
-      const end = endsAt.getTime()
+useEffect(() => {
+  const updateTimer = () => {
+    const now = Date.now()
+    const start = startsAt.getTime()
+    const end = endsAt.getTime()
 
-      if (now < start) {
-        setStatus('UPCOMING')
-        setTimeLeft('')
-        setShowCountdown(false)
-        return
-      }
+    if (now < start) {
+      setStatus('UPCOMING')
+      setTimeLeft('')
+      setShowCountdown(false)
+      return
+    }
 
-      const diff = end - now
-      if (diff <= 0) {
-        setStatus('ENDED')
-        setTimeLeft('')
-        setShowCountdown(false)
-        clearInterval(interval)
-        return
-      }
+    const diff = end - now
+    if (diff <= 0) {
+      setStatus('ENDED')
+      setTimeLeft('')
+      setShowCountdown(false)
+      return
+    }
 
-      setStatus('LIVE NOW')
-      setShowCountdown(diff < 24 * 60 * 60 * 1000)
+    setStatus('LIVE NOW')
+    setShowCountdown(diff < 24 * 60 * 60 * 1000)
 
-      const d = Math.floor(diff / (1000 * 60 * 60 * 24))
-      const h = Math.floor((diff / (1000 * 60 * 60)) % 24)
-      const m = Math.floor((diff / (1000 * 60)) % 60)
-      const s = Math.floor((diff / 1000) % 60)
+    const d = Math.floor(diff / (1000 * 60 * 60 * 24))
+    const h = Math.floor((diff / (1000 * 60 * 60)) % 24)
+    const m = Math.floor((diff / (1000 * 60)) % 60)
+    const s = Math.floor((diff / 1000) % 60)
 
-      setTimeLeft(
-        `${d > 0 ? `${d}D ` : ''}${h > 0 ? `${h}H ` : ''}${m}M ${d === 0 && h === 0 ? `${s}S` : ''}`
-      )
-    }, 1000)
+    setTimeLeft(
+      `${d > 0 ? `${d}D ` : ''}${h > 0 ? `${h}H ` : ''}${m}M ${
+        d === 0 && h === 0 ? `${s}S` : ''
+      }`
+    )
+  }
 
-    return () => clearInterval(interval)
-  }, [startsAt, endsAt])
+  updateTimer() // ⬅️ Call immediately on mount
+  const interval = setInterval(updateTimer, 1000)
+
+  return () => clearInterval(interval)
+}, [startsAt, endsAt])
+
 
   return (
     <>
@@ -160,11 +166,26 @@ const formattedFee =
         {/* Details */}
         <div className="text-sm space-y-2">
           <p className="flex justify-between"><span className="text-cyan-300">Prize:</span><span>{prize}</span></p>
-          <p className="flex justify-between"><span className="text-cyan-300">Entry Fee:</span><span>{formattedFee}</span></p>
-          <p className="flex justify-between"><span className="text-cyan-300">Start:</span><span>{startsAt.toLocaleDateString()}</span></p>
-          <p className="flex justify-between"><span className="text-cyan-300">Draw Date:</span><span>{endsAt.toLocaleDateString()}</span></p>
-          <p className="flex justify-between"><span className="text-cyan-300">Tickets:</span><span>{sold.toLocaleString()} / {total.toLocaleString()}</span></p>
-        </div>
+
+  <p className="flex justify-between">
+    <span className="text-cyan-300">Entry Fee:</span>
+    <span>{status === 'UPCOMING' ? 'TBA' : formattedFee}</span>
+  </p>
+  <p className="flex justify-between">
+  <span className="text-cyan-300">Start:</span>
+  <span>{status === 'UPCOMING' ? 'TBA' : startsAt.toLocaleDateString()}</span>
+</p>
+
+  <p className="flex justify-between">
+    <span className="text-cyan-300">Draw Date:</span>
+    <span>{status === 'UPCOMING' ? 'TBA' : endsAt.toLocaleDateString()}</span>
+  </p>
+  <p className="flex justify-between">
+    <span className="text-cyan-300">Tickets:</span>
+    <span>{status === 'UPCOMING' ? 'TBA' : `${sold.toLocaleString()} / ${total.toLocaleString()}`}</span>
+  </p>
+</div>
+
 
         {/* Progress Bar */}
         <div className="my-3 h-2 w-full bg-gray-700 rounded-full overflow-hidden">
@@ -177,44 +198,50 @@ const formattedFee =
             style={{ width: `${Math.min(soldOutPercentage, 100)}%` }}
           />
         </div>
+ {/* CTA Buttons */}
+<div className="space-y-2 mt-4">
+  {slug ? (
+    <Link href={`/ticket-purchase/pi/${slug}`}>
+      <button
+        disabled={status === 'ENDED' || isSoldOut || status === 'UPCOMING'}
+        className={`w-full py-2 rounded-md font-bold text-black ${
+          status === 'ENDED' || isSoldOut || status === 'UPCOMING'
+            ? 'bg-gradient-to-r from-[#00ffd5] to-[#0077ff] opacity-60 cursor-not-allowed font-bold text-black shadow mt-2"'
+            : 'bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:brightness-110'
+        }`}
+      >
+        {isSoldOut
+          ? 'Sold Out'
+          : status === 'ENDED'
+          ? 'Closed'
+          : status === 'UPCOMING'
+          ? 'Coming Soon'
+          : 'Enter Now'}
+      </button>
+    </Link>
+  ) : (
+    <button
+      className="w-full py-2 bg-gray-500 text-white rounded-md cursor-not-allowed"
+      disabled
+    >
+      Not Available
+    </button>
+  )}
 
-        {/* CTA Buttons */}
-        <div className="space-y-2 mt-4">
-          {slug ? (
-     <Link href={`/ticket-purchase/pi/${slug}`}>
-<Link href={`/ticket-purchase/pi/${slug}`}>
-  <button
-    disabled={status === 'ENDED' || isSoldOut}
-    className={`w-full py-2 rounded-md font-bold text-black ${
-      status === 'ENDED' || isSoldOut
-        ? 'bg-gray-400 cursor-not-allowed'
-        : 'bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:brightness-110'
-    }`}
-  >
-    {isSoldOut ? 'Sold Out' : status === 'ENDED' ? 'Closed' : 'Enter Now'}
-  </button>
-</Link>
+  {/* Disable Gift Button during UPCOMING too */}
+  {isGiftable && !disableGift && user?.username && status !== 'UPCOMING' && (
+    <button
+      onClick={(e) => {
+        e.preventDefault();
+        setShowGiftModal(true);
+      }}
+      className="w-full py-2 border border-cyan-400 text-cyan-400 rounded-md hover:bg-cyan-400 hover:text-black font-bold"
+    >
+      🎁 Gift Ticket
+    </button>
+  )}
+</div>
 
-</Link>
-
-          ) : (
-            <button className="w-full py-2 bg-gray-500 text-white rounded-md cursor-not-allowed" disabled>
-              Not Available
-            </button>
-          )}
-
-          {isGiftable && !disableGift && user?.username && (
-            <button
-              onClick={(e) => {
-                e.preventDefault()
-                setShowGiftModal(true)
-              }}
-              className="w-full py-2 border border-cyan-400 text-cyan-400 rounded-md hover:bg-cyan-400 hover:text-black font-bold"
-            >
-              🎁 Gift Ticket
-            </button>
-          )}
-        </div>
       </div>
 
       {/* Gift Modal */}

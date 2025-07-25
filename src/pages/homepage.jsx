@@ -221,25 +221,30 @@ export default function HomePage() {
         <Section title="Pi Giveaways" items={getCompetitionsByCategory('pi')} viewMoreHref="/competitions/pi" extraClass="mt-12" />
         <Section title="Crypto Giveaways" items={getCompetitionsByCategory('crypto')} viewMoreHref="/competitions/crypto-giveaways" />
 
-        <section className="w-full bg-white/5 backdrop-blur-lg px-4 sm:px-6 py-8 my-4 border border-cyan-300 rounded-3xl shadow-[0_0_60px_#00ffd577] neon-outline">
-          <div className="max-w-7xl mx-auto">
-            <h2 className="text-xl sm:text-2xl font-bold text-center text-cyan-300 mb-6 font-orbitron">✨ Free Competition ✨</h2>
-            <FreeCompetitionCard
-              comp={{
-                slug: 'pi-to-the-moon',
-                endsAt: '2025-12-01T23:59:59Z',
-                ticketsSold: 0,
-                totalTickets: 10000,
-                comingSoon: true,
-                status: 'active',
-              }}
-              title="Pi To The Moon"
-              prize="10,000 π"
-              hideEntryButton
-              buttonLabel="View Details"
-            />
-          </div>
-        </section>
+       <section className="w-full bg-white/5 backdrop-blur-lg px-4 sm:px-6 py-8 my-4 border border-cyan-300 rounded-3xl shadow-[0_0_60px_#00ffd577] neon-outline">
+  <div className="max-w-7xl mx-auto">
+    <h2 className="text-xl sm:text-2xl font-bold text-center text-cyan-300 mb-6 font-orbitron">
+      ✨ Free Competition ✨
+    </h2>
+
+    <FreeCompetitionCard
+      comp={{
+        slug: 'pi-to-the-moon',
+        startsAt: '', // 👈 Will show as TBA
+        endsAt: '',   // 👈 Will also show as TBA
+        ticketsSold: 0,
+        totalTickets: 5000,
+        comingSoon: true,
+        status: 'active',
+      }}
+      title="Pi To The Moon"
+      prize="10,000 π"
+      hideEntryButton
+      buttonLabel="View Details"
+    />
+  </div>
+</section>
+
 
         <TopWinnersCarousel />
 <div className="mt-6 px-4">
@@ -322,42 +327,52 @@ function renderCard(item, i, { isDaily, isFree, isPi, isCrypto }) {
 
 function TopWinnersCarousel() {
   const winners = [
-    { name: 'Jack Jim', prize: 'Matchday Tickets', date: 'March 26th', image: '/images/winner2.png' },
-    { name: 'Shanahan', prize: 'Playstation 5', date: 'February 14th', image: '/images/winner2.png' },
-    { name: 'Emily Rose', prize: 'Luxury Car', date: 'January 30th', image: '/images/winner2.png' },
-    { name: 'John Doe', prize: '10,000 Pi', date: 'December 15th', image: '/images/winner2.png' },
+ 
   ];
+
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
+    if (winners.length === 0) return;
+
     const interval = setInterval(() => {
       setIndex((prev) => (prev + 1) % winners.length);
     }, 5000);
+
     return () => clearInterval(interval);
   }, [winners.length]);
+
+  if (winners.length === 0) {
+    return (
+      <div className="max-w-md mx-auto mt-12 bg-[#0a1024]/90 border border-cyan-500 backdrop-blur-lg rounded-xl shadow-[0_0_40px_#00fff055] p-6 text-white text-center font-orbitron">
+        <h2 className="text-2xl font-bold text-cyan-300 mb-4">Top Winners</h2>
+     <p className="text-white/80 italic">
+  Be the first to make history no winners yet, but your name could be the one they remember
+</p>
+
+      </div>
+    );
+  }
 
   const current = winners[index];
 
   return (
-  
-    <div className="max-w-md mx-auto mt-12 bg-[#0a1024]/90 border border-cyan-500 backdrop-blur-lg rounded-xl shadow-[0_0_40px_#00fff055] p-6 text-white text-center">
-      <h2 className="text-2xl font-bold text-cyan-300 mb-4 font-orbitron">Top Winners</h2>
+    <div className="max-w-md mx-auto mt-12 bg-[#0a1024]/90 border border-cyan-500 backdrop-blur-lg rounded-xl shadow-[0_0_40px_#00fff055] p-6 text-white text-center font-orbitron">
+      <h2 className="text-2xl font-bold text-cyan-300 mb-4">Top Winners</h2>
+
       <div className="flex justify-center items-center mb-4">
-        <Image src={current.image} alt={current.name} width={120} height={120} className="rounded-full border-4 border-cyan-400 shadow-lg" />
+        <Image
+          src={current.image || '/images/default-avatar.png'}
+          alt={current.name || 'Winner'}
+          width={120}
+          height={120}
+          className="rounded-full border-4 border-cyan-400 shadow-lg"
+        />
       </div>
-      <h3 className="text-xl font-semibold">{current.name}</h3>
-      <p className="text-cyan-200">{current.prize}</p>
-      <p className="text-sm text-white/70">{current.date}</p>
-    </div>
-  );
-}
 
-
-function Stat({ label, value }) {
-  return (
-    <div>
-      <div className="text-xl font-bold">{value}</div>
-      <div>{label}</div>
+      <h3 className="text-xl font-semibold">{current.name || 'Anonymous'}</h3>
+      <p className="text-cyan-200">{current.prize || 'Surprise Prize'}</p>
+      <p className="text-sm text-white/70">{current.date || 'TBA'}</p>
     </div>
   );
 }

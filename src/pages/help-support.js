@@ -14,13 +14,13 @@ const faqSections = [
   title: 'General Frequently Asked Questions',
   items: [
     ['How does Oh My Competitions work?', 
-     'You sign in using your Pi account, choose a competition, and either enter for free or use Pi to buy tickets. Winners are picked at random after the countdown ends, and Pi prizes are paid out via the official Pi SDK. Bonus games, daily streaks, and referral rewards also boost your chances!'],
+     'You sign in using your Pi account, choose a competition and either enter for free or use Pi to buy tickets. Winners are picked at random after the countdown ends and Pi prizes are paid out via the official Pi SDK. Bonus games, daily streaks and referral rewards also boost your chances!'],
     ['How do I enter competitions?', 
      'Click the “Enter Now” button on any competition. If it’s a Pi competition, you’ll be asked to confirm a small Pi payment through the Pi Network SDK.'],
     ['Is joining free?', 
      'Yes! We offer a mix of free and paid competitions. Free entries are open to all users, while premium entries require a small Pi entry fee.'],
     ['How do I pay with Pi?', 
-     'Simply click to enter a competition that requires Pi, and you’ll be prompted to confirm the transaction through the official Pi payment popup. Make sure you\'re logged into your Pi Wallet.'],
+     'Simply click to enter a competition that requires Pi and you’ll be prompted to confirm the transaction through the official Pi payment popup. Make sure you\'re logged into your Pi Wallet.'],
     ['Where are my tickets?', 
      'You can view all your active and past tickets on the “My Entries” page, accessible after logging in.'],
     ['How are winners chosen?', 
@@ -28,7 +28,7 @@ const faqSections = [
     ['Can I try again if I don’t win?', 
      'Yes! You can enter multiple competitions weekly, including retrying mini-games and challenges like the 3.14 Stopwatch game.'],
     ['Is the platform decentralized?', 
-     'We are actively building toward decentralization. Our payment system is already integrated with the Pi Network, and future updates will use smart contracts for prize verification and randomness.'],
+     'We are actively building toward decentralization. Our payment system is already integrated with the Pi Network and future updates will use smart contracts for prize verification and randomness.'],
     ['Is my Pi safe?', 
      'Yes. All payments go through the official Pi Network SDK. We never store your private keys or Pi wallet data.'],
     ['How do I contact support?', 
@@ -42,16 +42,16 @@ const faqSections = [
      'Anyone with a Pi account can play! Whether you’re a casual Pioneer or a seasoned Pi believer, OMC is open to players worldwide. All you need is a verified Pi login to get started.'],
 
     ['Is this legit or just another Pi scam?', 
-     'Great question. OMC is 100% powered by the official Pi Network SDK. All payments are made through Pi’s secure wallet, and every winner is verifiable on the app — no bots, no fake giveaways, no false promises.'],
+     'Great question. OMC is 100% powered by the official Pi Network SDK. All payments are made through Pi’s secure wallet and every winner is verifiable on the app — no bots, no fake giveaways, no false promises.'],
 
     ['How are winners picked?', 
      'All draws use a fair randomization process. We don’t control the outcome — it’s automated and verified. Once the timer ends, winners are chosen transparently and shown publicly.'],
 
     ['What makes OMC different from other Pi apps?', 
-     'We don’t just hand out Pi — we build hype, community, and real value. From Try Your Luck games and Pi Cash Code to referral bonuses and high-stakes giveaways, OMC creates an engaging, fair experience for everyone.'],
+     'We don’t just hand out Pi — we build hype, community and real value. From Try Your Luck games and Pi Cash Code to referral bonuses and high-stakes giveaways, OMC creates an engaging, fair experience for everyone.'],
 
     ['Can I win without spending Pi?', 
-     'Yes! We offer free daily games, mystery draws, and social competitions. Every Pioneer, no matter how much Pi you have, can win something — even instantly.'],
+     'Yes! We offer free daily games, mystery draws and social competitions. Every Pioneer, no matter how much Pi you have, can win something — even instantly.'],
 
     ['How do I know if a competition is live?', 
      'Each competition shows a live countdown and ticket availability. If it’s live, you’ll see an “Enter Now” button. You can also filter by “Live,” “Upcoming,” and “Closed” competitions.'],
@@ -63,13 +63,13 @@ const faqSections = [
      'Use your referral link on the dashboard to share with friends. When they join and enter their first comp, you both get free entries. More invites = more rewards.'],
 
     ['How is my Pi protected?', 
-     'Your Pi never touches our servers. All transactions use the official Pi payment SDK, and we never access your wallet keys or private info. We prioritize security, fairness, and transparency.'],
+     'Your Pi never touches our servers. All transactions use the official Pi payment SDK and we never access your wallet keys or private info. We prioritize security, fairness and transparency.'],
 
     ['Do I need to install anything?', 
      'No app install is required. Just visit ohmycompetitions.com from any device and sign in using your Pi account — that’s it. Mobile-optimized and ready to go.'],
 
     ['What are “Try Your Luck” games?', 
-     'These are free daily mini-games like “Match The Pi Code” and “Hack The Vault.” They’re fun, fast, and can reward you instantly with Pi, bonus entries, or even hidden prize drops.'],
+     'These are free daily mini-games like “Match The Pi Code” and “Hack The Vault.” They’re fun, fast and can reward you instantly with Pi, bonus entries, or even hidden prize drops.'],
 
     ['Can I win more than once?', 
      'Absolutely. We’ve had users win multiple times across different draws and mini-games. As long as you stay active, you stay eligible.'],
@@ -84,7 +84,7 @@ const faqSections = [
      'For physical prizes, if we can’t ship to your country, we’ll offer an alternative prize or Pi equivalent instead — we’ll always make it fair.'],
 
     ['Do competitions ever get cancelled?', 
-     'Very rarely. If we ever need to cancel a comp, all Pi entries are refunded automatically, and the reason is transparently shown on the competition page.']
+     'Very rarely. If we ever need to cancel a comp, all Pi entries are refunded automatically and the reason is transparently shown on the competition page.']
   ]
 },
 
@@ -94,13 +94,13 @@ const faqSections = [
   title: 'Pi Cash Code — FAQ',
   items: [
     ['What is Pi Cash Code?', 
-     'Pi Cash Code is a weekly high-stakes giveaway where one lucky Piioneer is randomly selected to claim a Pi prize — but only if they submit the correct secret code in time. It’s fast, intense, and 100% real.'],
+     'Pi Cash Code is a weekly high-stakes giveaway where one lucky Piioneer is randomly selected to claim a Pi prize — but only if they submit the correct secret code in time. It’s fast, intense and 100% real.'],
     
     ['How does it work?', 
-     'Every week, we pick one winner randomly from all eligible participants. A unique secret code is revealed, and the chosen winner must enter it on the Pi Cash Code page within a strict time window.'],
+     'Every week, we pick one winner randomly from all eligible participants. A unique secret code is revealed and the chosen winner must enter it on the Pi Cash Code page within a strict time window.'],
 
     ['When does it happen?', 
-     'The secret code is revealed every **Monday at 3:14 PM GMT**, and the winning Piioneer is selected the following **Friday at 3:14 PM GMT**. Keep your notifications on — your name could come up!'],
+     'The secret code is revealed every **Monday at 3:14 PM GMT** and the winning Piioneer is selected the following **Friday at 3:14 PM GMT**. Keep your notifications on — your name could come up!'],
 
     ['How long do I have to claim?', 
      'You have **exactly 31 minutes and 4 seconds** (a nod to 3.14 Pi) to enter the secret code after the winner announcement. If you’re the winner, a special input box will appear for you to submit it.'],
@@ -121,7 +121,7 @@ const faqSections = [
      'Yes! Every week is a new chance. As long as you remain active and engaged, you’re always eligible to be chosen again.'],
 
     ['Is it really random?', 
-     'Yes — winners are picked using a transparent and tamper-proof randomization process, and the code claim mechanism is triggered directly through the app’s backend for fairness.'],
+     'Yes — winners are picked using a transparent and tamper-proof randomization process and the code claim mechanism is triggered directly through the app’s backend for fairness.'],
   ]
 },
 
@@ -145,7 +145,7 @@ const faqSections = [
      'Yes — digital Pi prizes can be claimed globally. For physical items, we’ll work with you to arrange shipping or an equivalent payout where possible.'],
 
     ['Where can I track my winnings?', 
-     'Your full history — including tickets, entries, wins, and prize status — can be viewed in your "My Entries" dashboard anytime you’re logged in.'],
+     'Your full history — including tickets, entries, wins and prize status — can be viewed in your "My Entries" dashboard anytime you’re logged in.'],
   ]
 },
 
@@ -208,7 +208,6 @@ export default function HelpSupport() {
             <h2 className="text-lg font-bold gradient-text mt-6 mb-2">Contact Information</h2>
             <ul className="flex flex-col gap-3 text-white">
               <li className="flex justify-between flex-wrap"><strong>Email</strong><span className="text-right">ohmycompetitions@gmail.com</span></li>
-              <li className="flex justify-between flex-wrap"><strong>Phone</strong><span className="text-right">+353 87 1365782</span></li>
               <li className="flex justify-between flex-wrap"><strong>Address</strong><span className="text-right">Dublin, Ireland</span></li>
               <li className="flex justify-between flex-wrap"><strong>Pi Username</strong><span className="text-right">@darreire2020</span></li>
               <li className="flex justify-between flex-wrap"><strong>Instagram</strong><a href="https://instagram.com/_ohmycompetitions" target="_blank" rel="noopener noreferrer" className="text-blue-300 hover:underline text-right">OhMyCompetitions</a></li>

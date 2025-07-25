@@ -65,7 +65,7 @@ export default function DailyCompetitionCard({ comp, title, prize, fee }) {
             <p className="text-cyan-100">
               {comp?.highlightMessage ? comp.highlightMessage : 'Join now and compete for the Pi prize!'}
             </p>
-            <p className="mt-1 text-xs text-cyan-200 font-medium tracking-wide animate-pulse">
+            <p className="mt-1 text-sm text-cyan-300 font-medium tracking-wide animate-pulse">
               Only {total - sold} tickets left! 🔥
             </p>
 
