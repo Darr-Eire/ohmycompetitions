@@ -44,13 +44,14 @@ export default function Header() {
 
  const navItems = [
   ['Home', '/homepage'],
-  ['How To Play', '/how-to-play'],
+
 ];
 
 const navExtras = [
   ['Try Your Luck', '/try-your-luck'],
   ['Forums', '/forums'],
   ['Results', '/competitions/results'],
+  ['How To Play', '/how-to-play'],
   ['About Us', '/how-we-got-started'],
  
   ['Upcoming Features', '/upcoming-features'],

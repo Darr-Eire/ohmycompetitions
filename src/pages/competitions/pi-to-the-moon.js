@@ -89,7 +89,7 @@ export default function PiToTheMoonPage() {
           disabled
           className="bg-cyan-300 text-black font-bold text-lg px-8 py-3 rounded-2xl shadow-[0_0_20px_#00ffd5aa] opacity-70 cursor-not-allowed"
         >
-          Enter Now
+          Coming Soon
         </button>
       </div>
 
