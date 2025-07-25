@@ -180,7 +180,7 @@ export default function HomePage() {
 
   return (
     <>
-<div className="w-full space-y-2"> {/* shared wrapper with tight spacing */}
+<div className="w-full space-y-8"> {/* shared wrapper with tight spacing */}
   {/* Welcome message */}
   <div className="text-center text-cyan-300 text-1xl sm:text-base font-medium font-orbitron">
    ☘️ Céad Míle Fáilte Let The Competitions Begin ☘️
