@@ -180,7 +180,7 @@ export default function HomePage() {
 
   return (
     <>
-<div className="w-full space-y-1"> {/* shared wrapper with tight spacing */}
+<div className="w-full space-y-2"> {/* shared wrapper with tight spacing */}
   {/* Welcome message */}
   <div className="text-center text-cyan-300 text-1xl sm:text-base font-medium font-orbitron">
    ☘️ Céad Míle Fáilte Let The Competitions Begin ☘️
@@ -189,7 +189,7 @@ export default function HomePage() {
   {/* Marquee */}
   <div className="overflow-hidden bg-transparent">
   <div className="marquee-content text-cyan-300 text-md sm:text-base font-medium font-orbitron">
-      Oh My Competitions is all about building with Pi Network for the Pi community. Our launch month competitions are zero profit designed to create trust, celebrate early winners and give back to Pioneers. All prizes go directly to you. Add us on Pi Profile (darreire2020 & Lyndz2020) More competitions are coming soon across a wide range of exciting categories. Join, win and help shape the future of Pi together
+      Oh My Competitions is all about building with Pi Network for the Pi community. Our OMC launch competitions are zero profit designed to create trust, celebrate early winners and give back to Pioneers. All prizes go directly to you. Add us on Pi Profile (darreire2020 & Lyndz2020) More competitions are coming soon across a wide range of exciting categories. Join, win and help shape the future of Pi together
     </div>
   </div>
 </div>

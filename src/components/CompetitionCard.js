@@ -186,29 +186,36 @@ useEffect(() => {
 </div>
 
 
-          <div className="flex justify-between">
-            <span className="text-cyan-300 font-semibold">Entry Fee:</span>
-            <span>{fee}</span>
-          </div>
+       <div className="flex justify-between">
+  <span className="text-cyan-300 font-semibold">Entry Fee:</span>
+  <span>{status === 'COMING SOON' ? 'TBA' : fee}</span>
+</div>
 
-          <div className="flex justify-between">
-            <span className="text-cyan-300 font-semibold">Total Tickets:</span>
-            <span>{total.toLocaleString()}</span>
-          </div>
+
+       <div className="flex justify-between">
+  <span className="text-cyan-300 font-semibold">Total Tickets:</span>
+  <span>{status === 'COMING SOON' ? 'TBA' : total.toLocaleString()}</span>
+</div>
+
 
           {/* Enhanced Ticket Information */}
           <div className="space-y-2">
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-400">Tickets</span>
               <div className="text-right">
-                <span className={`text-sm font-semibold ${
-                  isSoldOut ? 'text-red-400' : 
-                  isLowStock ? 'text-orange-400' : 
-                  isNearlyFull ? 'text-yellow-400' : 
-                  'text-gray-300'
-                }`}>
-                  {sold.toLocaleString()} / {total.toLocaleString()}
-                </span>
+              {status === 'COMING SOON' ? (
+  <span className="text-sm font-semibold text-gray-300">TBA</span>
+) : (
+  <span className={`text-sm font-semibold ${
+    isSoldOut ? 'text-red-400' : 
+    isLowStock ? 'text-orange-400' : 
+    isNearlyFull ? 'text-yellow-400' : 
+    'text-gray-300'
+  }`}>
+    {sold.toLocaleString()} / {total.toLocaleString()}
+  </span>
+)}
+
                 {isSoldOut && (
                   <div className="text-xs text-red-400 font-bold">SOLD OUT</div>
                 )}
@@ -226,17 +233,22 @@ useEffect(() => {
             </div>
             
             {/* Progress bar */}
-            <div className="w-full bg-gray-700 rounded-full h-2">
-              <div 
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  isSoldOut ? 'bg-red-500' :
-                  isLowStock ? 'bg-orange-500' :
-                  isNearlyFull ? 'bg-yellow-500' :
-                  'bg-blue-500'
-                }`}
-                style={{ width: `${Math.min(soldOutPercentage, 100)}%` }}
-              />
-            </div>
+          <div className="w-full bg-gray-700 rounded-full h-2">
+  {status === 'COMING SOON' ? (
+    <div className="h-2 w-[20%] bg-gray-400 rounded-full animate-pulse" />
+  ) : (
+    <div 
+      className={`h-2 rounded-full transition-all duration-300 ${
+        isSoldOut ? 'bg-red-500' :
+        isLowStock ? 'bg-orange-500' :
+        isNearlyFull ? 'bg-yellow-500' :
+        'bg-blue-500'
+      }`}
+      style={{ width: `${Math.min(soldOutPercentage, 100)}%` }}
+    />
+  )}
+</div>
+
           </div>
         </div>
 

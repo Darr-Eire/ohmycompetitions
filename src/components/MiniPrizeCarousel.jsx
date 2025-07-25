@@ -116,7 +116,7 @@ export default function MiniPrizeCarousel() {
   const containerRef = useRef(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const liveCompetitions = selectedCompetitions.filter(
+  const liveCompetitions = (selectedCompetitions || []).filter(
     (item) => item.comp?.status === 'active'
   );
 
@@ -162,32 +162,55 @@ export default function MiniPrizeCarousel() {
         ref={containerRef}
         className="flex justify-center gap-3 transition-all duration-500"
       >
-        {displayItems.map((item) => (
-         <Link
-  key={item._id}
-  href="/competitions/live-now"
-  className="w-[100px] bg-[#0f172a] border border-cyan-400 rounded-lg shadow text-white text-center font-orbitron px-2 py-2 text-[10px] leading-tight space-y-1 hover:opacity-90 transition"
->
-  <img
-    src={item.comp.imageUrl}
-    alt={item.comp.title}
-    className="w-full h-[70px] object-cover rounded-md mb-1"
-  />
-  <div className="font-bold text-[11px] text-cyan-300 truncate">
-    {item.comp.title}
-  </div>
-  <div className="text-[10px]">
-    Draw: <span className="text-white">{formatDate(item.comp.endsAt)}</span>
-  </div>
-  <div className="text-[10px]">
-    Fee: <span className="text-white">{item.comp.entryFee.toFixed(2)} π</span>
-  </div>
-  <div className="text-[10px]">
-    Sold: <span className="text-white">{item.comp.ticketsSold.toLocaleString()}</span>
-  </div>
-</Link>
+        {displayItems.map((item) => {
+          const isDaily = item.comp?.theme === 'daily';
+          const hasImage = !!item.comp?.imageUrl && !isDaily;
+          const daysLeft = getDaysLeft(item.comp.endsAt);
 
-        ))}
+          return (
+            <Link
+              key={item._id}
+              href="/competitions/live-now"
+              className="w-[100px] bg-[#0f172a] border border-cyan-400 rounded-lg shadow text-white text-center font-orbitron px-2 py-2 text-[10px] leading-tight space-y-1 hover:opacity-90 transition"
+            >
+              {hasImage ? (
+                <img
+                  src={item.comp.imageUrl}
+                  alt={item.comp.title}
+                  className="w-full h-[70px] object-cover rounded-md mb-1"
+                />
+              ) : (
+                <div className="h-[70px] mb-1 flex flex-col justify-center items-center rounded-md bg-[#0f172a] text-center px-2 py-1 shadow-inner border border-cyan-400">
+                  <span className="text-[9px] text-cyan-300 uppercase tracking-wider font-medium">
+                    Daily Prize
+                  </span>
+                  <span className="text-[16px] font-extrabold text-cyan-400 leading-tight animate-pulse">
+                    {item.comp.prizePool} π
+                  </span>
+                  <span className="text-[9px] text-cyan-300 uppercase tracking-widest font-light">
+                    Up for Grabs
+                  </span>
+                </div>
+              )}
+
+              <div className="font-bold text-[11px] text-cyan-300 truncate">
+                {item.comp.title}
+              </div>
+
+              <div>
+                Draw: <span className="text-white">{formatDate(item.comp.endsAt)}</span>
+              </div>
+
+              <div>
+                Fee: <span className="text-white">{item.comp.entryFee.toFixed(2)} π</span>
+              </div>
+
+              <div>
+                Sold: <span className="text-white">{item.comp.ticketsSold.toLocaleString()}</span>
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );
@@ -201,4 +224,13 @@ function formatDate(dateStr) {
     month: 'short',
     year: 'numeric',
   });
+}
+
+function getDaysLeft(endDateStr) {
+  if (!endDateStr) return '?';
+  const now = new Date();
+  const end = new Date(endDateStr);
+  const diffTime = end - now;
+  const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return daysLeft > 0 ? daysLeft : 0;
 }

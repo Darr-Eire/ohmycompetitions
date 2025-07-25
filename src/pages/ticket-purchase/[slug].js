@@ -411,22 +411,27 @@ return (
 
 <DetailRow
   label="Total Tickets"
-  value={`${comp.totalTickets?.toLocaleString() || 'N/A'}`}
+  value={competitionStatus === 'upcoming' ? 'TBA' : `${comp.totalTickets?.toLocaleString() || 'N/A'}`}
+/><DetailRow
+  label="Max Ticket Purchases"
+  value={competitionStatus === 'upcoming' ? 'TBA' : comp.maxTicketsPerUser?.toLocaleString() || '10'}
 />
-   <DetailRow label="Max Ticket Purchases" value={comp.maxTicketsPerUser?.toLocaleString() || '10'} />
 <DetailRow 
-            label="Tickets Sold" 
-            value={`${liveTicketsSold} / ${comp.totalTickets}${liveTicketsSold >= comp.totalTickets ? ' (SOLD OUT)' : ''}`}
-            highlight={liveTicketsSold >= comp.totalTickets}
-          />
-          {liveTicketsSold > 0 && (
-            <DetailRow 
-              label="Available" 
-              value={`${Math.max(0, comp.totalTickets - liveTicketsSold)} tickets remaining`} 
-              highlight
-            />
-            
-          )}
+  label="Tickets Sold" 
+  value={competitionStatus === 'upcoming'
+    ? 'TBA'
+    : `${liveTicketsSold} / ${comp.totalTickets}${liveTicketsSold >= comp.totalTickets ? ' (SOLD OUT)' : ''}`
+  }
+  highlight={competitionStatus !== 'upcoming' && liveTicketsSold >= comp.totalTickets}
+/>
+{competitionStatus !== 'upcoming' && liveTicketsSold > 0 && (
+  <DetailRow 
+    label="Available" 
+    value={`${Math.max(0, comp.totalTickets - liveTicketsSold)} tickets remaining`} 
+    highlight
+  />
+)}
+
         </div>
 
 
