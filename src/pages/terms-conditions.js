@@ -29,7 +29,7 @@ export default function TermsConditions() {
             {
               title: '2. Pi-Only Economy',
               points: [
-                'All entries, prizes, and transactions are exclusively in Pi cryptocurrency.',
+                'All entries, prizes and transactions are exclusively in Pi cryptocurrency.',
                 'We do not accept or facilitate any fiat currency (USD, EUR, GBP, etc.).',
                 'Any mention of prize value is indicative and not a fiat or cash guarantee.'
               ]

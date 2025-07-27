@@ -63,7 +63,7 @@ export default function FuturePage() {
             <h2 className="text-xl font-bold gradient-text mb-4">Growing the Community</h2>
             <ul className="list-disc list-inside space-y-2 text-white">
               <li><strong>Friend Referrals:</strong> Invite your friends and get rewarded!</li>
-              <li><strong>Pi Leaderboards:</strong> Track top players, ticket buyers, and daily winners.</li>
+              <li><strong>Pi Leaderboards:</strong> Track top players, ticket buyers and daily winners.</li>
               <li><strong>Partnering with Pi Projects:</strong> Work together with other Pi apps and businesses.</li>
               <li><strong>You Vote, We Listen:</strong> Players decide the future competitions and features!</li>
             </ul>
@@ -73,13 +73,13 @@ export default function FuturePage() {
        <section>
   <h2 className="text-xl font-bold gradient-text mb-4">Q1 2026 Roadmap</h2>
   <ul className="list-disc list-inside space-y-2 text-white">
-    <li><strong>Live Draw Events:</strong> Real-time draws streamed in-app with countdowns, animations, and live chat reactions.</li>
+    <li><strong>Live Draw Events:</strong> Real-time draws streamed in-app with countdowns, animations and live chat reactions.</li>
     <li><strong>Regional Competitions:</strong> Localized competitions by country (Nigeria, India, Philippines, etc.) with unique prizes.</li>
     <li><strong>Sponsored Competitions:</strong> Official partner competitions with real-world products and Pi-backed entry fees.</li>
     <li><strong>Scratch Card Games:</strong> Tap-to-reveal instant win games with visual effects and surprise rarity tiers.</li>
     <li><strong>Pi Bomb Royale </strong> Elimination-based game mode with fast reflex rounds and a growing Pi prize pool.</li>
     <li><strong>Creator Competitions:</strong> Let verified users host their own draws using provided tools and prize pools.</li>
-    <li><strong>Real-Time Leaderboards:</strong> Track top winners, biggest earners, and streak champions — globally and locally.</li>
+    <li><strong>Real-Time Leaderboards:</strong> Track top winners, biggest earners and streak champions — globally and locally.</li>
     <li><strong>Scratch Card wars:</strong> Compete in real-time scratch-offs vs other users. Highest score wins the Pi pot.</li>
     <li><strong>Merchant Prize Integration:</strong> Pi-friendly businesses contribute real goods for draws or direct prize shop rewards.</li>
   </ul>

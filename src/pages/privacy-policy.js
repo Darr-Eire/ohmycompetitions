@@ -17,16 +17,16 @@ export default function PrivacyPolicy() {
         {/* Body */}
         <div className="p-6 space-y-6 text-center">
           <p className="text-white">
-            This Privacy Policy ("Policy") explains how OhMyCompetitions ("we", "us", "our") collects, uses, shares, and protects your personal information. We are committed to protecting your privacy and complying with all applicable privacy and data protection laws worldwide, including GDPR, CCPA, and Pi Network guidelines.
+            This Privacy Policy ("Policy") explains how OhMyCompetitions ("we", "us", "our") collects, uses, shares and protects your personal information. We are committed to protecting your privacy and complying with all applicable privacy and data protection laws worldwide, including GDPR, CCPA and Pi Network guidelines.
           </p>
 
           {[
             {
               title: '1. Information We Collect',
               points: [
-                'Pi Network UID, username, and profile data (via secure Pi SDK authentication).',
+                'Pi Network UID, username and profile data (via secure Pi SDK authentication).',
                 'Optional email address (if provided during support, feedback, or prize claims).',
-                'Competition-related data, such as ticket purchases, wins, rankings, and activity logs.',
+                'Competition-related data, such as ticket purchases, wins, rankings and activity logs.',
                 'Device and technical information (IP address, device type, operating system, browser type) for security and performance analytics.',
                 'Basic engagement metrics (e.g., pages viewed, interaction patterns) to improve services.'
               ]
@@ -34,9 +34,9 @@ export default function PrivacyPolicy() {
             {
               title: '2. How We Use Your Information',
               points: [
-                'To operate competitions, verify eligibility, deliver prizes, and contact winners.',
+                'To operate competitions, verify eligibility, deliver prizes and contact winners.',
                 'To detect and prevent fraud, abuse, or violations of our Terms & Conditions.',
-                'To analyze platform performance, improve services, and develop new features.',
+                'To analyze platform performance, improve services and develop new features.',
                 'To comply with legal obligations, resolve disputes, or enforce our policies.',
                 'To maintain the security and integrity of our platform and user accounts.'
               ]
@@ -44,7 +44,7 @@ export default function PrivacyPolicy() {
             {
               title: '3. Data Security and Protection',
               points: [
-                'We implement advanced security measures, including encryption, access controls, and secure server infrastructure.',
+                'We implement advanced security measures, including encryption, access controls and secure server infrastructure.',
                 'Access to personal data is restricted to authorized personnel on a strict need-to-know basis.',
                 'We do not store, access, or manage your Pi wallet balances or private keys under any circumstances.',
                 'Regular audits and security reviews are performed to identify and mitigate risks.'
@@ -55,14 +55,14 @@ export default function PrivacyPolicy() {
               points: [
                 'We do not sell, rent, or trade your personal information to any third parties.',
                 'We may share data internally for legitimate business or technical purposes only.',
-                'Information may be disclosed if required by law, regulatory authorities, or to protect our rights, users, and community.',
+                'Information may be disclosed if required by law, regulatory authorities, or to protect our rights, users and community.',
                 'In case of a business transfer (e.g., merger or acquisition), your data may be transferred in compliance with applicable laws and this Policy.'
               ]
             },
             {
               title: '5. Cookies and Tracking Technologies',
               points: [
-                'We use minimal, privacy-respecting cookies to enable login sessions, maintain user preferences, and secure platform access.',
+                'We use minimal, privacy-respecting cookies to enable login sessions, maintain user preferences and secure platform access.',
                 'We do not use invasive advertising trackers or third-party behavioral tracking.',
                 'You can manage or disable cookies in your browser settings; however, some platform functionalities may be affected.'
               ]
@@ -72,7 +72,7 @@ export default function PrivacyPolicy() {
               points: [
                 'You have the right to access, correct, update, or request deletion of your personal data.',
                 'EU/EEA residents have additional rights under GDPR, including data portability and the right to restrict or object to processing.',
-                'California residents have specific rights under CCPA, including the right to know, delete, and opt-out of certain uses of personal information.',
+                'California residents have specific rights under CCPA, including the right to know, delete and opt-out of certain uses of personal information.',
                 <>
                   To exercise these rights, please email us at{' '}
                   <span className="text-cyan-300">ohmycompetitions@gmail.com</span>.
@@ -82,7 +82,7 @@ export default function PrivacyPolicy() {
             {
               title: '7. Data Retention',
               points: [
-                'We retain personal data only as long as necessary to fulfill the purposes outlined in this Policy, comply with legal obligations, and protect our interests.',
+                'We retain personal data only as long as necessary to fulfill the purposes outlined in this Policy, comply with legal obligations and protect our interests.',
                 'Upon verified request, we will delete or anonymize your personal data unless we are legally obligated to retain it.'
               ]
             },

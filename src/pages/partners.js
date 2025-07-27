@@ -53,7 +53,7 @@ export default function PartnersPage() {
     <li>✅ Transparent prize draws powered by real Pi transactions</li>
     <li>✅ Verified winner announcements & built-in fraud protection</li>
     <li>✅ Reach thousands of active Pi users instantly</li>
-    <li>✅ Optional live draws, auto-payments, and branded banners</li>
+    <li>✅ Optional live draws, auto-payments and branded banners</li>
   </ul>
 
   <div className="text-center mt-6">

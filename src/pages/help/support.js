@@ -23,7 +23,7 @@ export default function HelpSupport() {
 
         <h2 className="text-xl font-semibold mb-2">Frequently Asked Questions (FAQ)</h2>
         <ul className="mb-4 list-disc list-inside text-left">
-          <li><strong>How do I enter competitions?</strong> — Simply click "Enter Now", login, and pay with Pi!</li>
+          <li><strong>How do I enter competitions?</strong> — Simply click "Enter Now", login and pay with Pi!</li>
           <li><strong>Is it free to join?</strong> — Some competitions are free, others require a small Pi fee per ticket.</li>
           <li><strong>Where can I see my entries?</strong> — Go to your "My Entries" page after logging in.</li>
           <li><strong>When are winners announced?</strong> — Winners are selected when the competition ends and notified.</li>

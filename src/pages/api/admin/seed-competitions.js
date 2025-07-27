@@ -81,7 +81,7 @@ export default async function handler(req, res) {
         slug: 'ray-ban-meta-glasses',
         title: 'Ray-Ban Meta Smart Glasses',
         prize: 'Ray-Ban Meta Wayfarer Smart Glasses',
-        description: 'The future of eyewear - capture, share, and listen with these innovative smart glasses.',
+        description: 'The future of eyewear - capture, share and listen with these innovative smart glasses.',
         totalTickets: 2000,
         entryFee: 0.60,
         piAmount: 0.60,

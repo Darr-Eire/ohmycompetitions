@@ -45,7 +45,7 @@ export default function PioneerHistoryPage() {
 
           {/* Intro Text */}
           <p className="text-center text-white text-sm mb-10">
-            Let’s honor the pioneers who’ve inspired, contributed, and uplifted the community.
+            Let’s honor the pioneers who’ve inspired, contributed and uplifted the community.
           </p>
 
           {/* Winner List */}

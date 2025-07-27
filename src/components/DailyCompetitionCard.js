@@ -23,27 +23,52 @@ export default function DailyCompetitionCard({ comp, title, prize, fee }) {
 
   const [statusLabel, setStatusLabel] = useState('LIVE')
 
-  useEffect(() => {
-    if (!startsAt) {
-      setStatusLabel('LIVE')
-      return
+ useEffect(() => {
+  const end = new Date(endsAt).getTime();
+  const start = startsAt ? new Date(startsAt).getTime() : null;
+
+  const updateTimer = () => {
+    const now = Date.now();
+
+    // Countdown Timer Logic
+    const diff = end - now;
+    const hoursLeft = diff / (1000 * 60 * 60);
+
+    if (diff <= 24 * 60 * 60 * 1000 && diff > 0) {
+      setShowCountdown(true);
+
+      const hrs = Math.floor(diff / (1000 * 60 * 60));
+      const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setTimeLeft(
+        `${hrs.toString().padStart(2, '0')}:${mins
+          .toString()
+          .padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+      );
+    } else {
+      setShowCountdown(false);
     }
 
-    const start = new Date(startsAt).getTime()
-
-    const checkStatus = () => {
-      const now = Date.now()
-      if (now < start) {
-        setStatusLabel('Starting Soon')
-      } else {
-        setStatusLabel('LIVE')
-      }
+    // Live Status
+    if (start && now < start) {
+      setStatusLabel('Starting Soon');
+    } else {
+      setStatusLabel('LIVE');
     }
 
-    checkStatus()
-    const interval = setInterval(checkStatus, 1000)
-    return () => clearInterval(interval)
-  }, [startsAt])
+    // Time progress
+    const totalTime = end - (start || now);
+    const elapsed = now - (start || now);
+    const percent = Math.max(0, Math.min(100, 100 - (elapsed / totalTime) * 100));
+    setTimePercent(percent);
+  };
+
+  updateTimer();
+  const interval = setInterval(updateTimer, 1000);
+  return () => clearInterval(interval);
+}, [endsAt, startsAt]);
+
 
   const timerColor = timePercent > 50 ? 'bg-green-400' : timePercent > 20 ? 'bg-yellow-400' : 'bg-red-500'
 
@@ -90,6 +115,11 @@ export default function DailyCompetitionCard({ comp, title, prize, fee }) {
     {endsAt ? new Date(endsAt).toLocaleDateString('en-GB') : 'TBA'}
   </p>
 
+{showCountdown && (
+  <div className="col-span-2 text-center text-sm text-red-400 font-bold tracking-wider">
+    ⏳ Draw in: <span className="font-mono">{timeLeft}</span>
+  </div>
+)}
 
 
             <p className="font-semibold text-left"> Prize</p>

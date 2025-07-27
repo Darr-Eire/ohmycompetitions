@@ -128,7 +128,7 @@ export default function PiRoyaleLobby() {
           <p className="text-white text-sm sm:text-base mt-4">
             In Pi Royale, 20 players enter, but only one walks away victorious!
             <br />
-            Battle it out to be the last Pioneer standing. Earn bragging rights, climb the leaderboard, and become the ultimate Pi Royale champion.
+            Battle it out to be the last Pioneer standing. Earn bragging rights, climb the leaderboard and become the ultimate Pi Royale champion.
             <br />
             <strong>Will you rise to the top and be crowned Pioneer of the Week?</strong>
           </p>

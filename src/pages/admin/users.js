@@ -38,7 +38,7 @@ export default function AdminUsersPage() {
           <h2 className="text-xl font-bold text-cyan-300 mb-2">User Management</h2>
           <p className="text-gray-400 mb-6">
             User management interface will be implemented here. This will include user listings, 
-            role management, account status controls, and user activity monitoring.
+            role management, account status controls and user activity monitoring.
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

@@ -52,7 +52,7 @@ const navExtras = [
   ['Forums', '/forums'],
   ['Results', '/competitions/results'],
   ['How To Play', '/how-to-play'],
-  ['About Us', '/how-we-got-started'],
+  ['About Us', '/about-us'],
  
   ['Upcoming Features', '/upcoming-features'],
   ['Partners & Sponsors', '/partners'], 

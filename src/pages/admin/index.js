@@ -46,7 +46,7 @@ export default function AdminDashboard() {
   const adminSections = [
     {
       title: 'Competitions',
-      description: 'Manage competitions, prizes, and entries',
+      description: 'Manage competitions, prizes and entries',
       href: '/admin/competitions',
       icon: '🏆',
       color: 'cyan',
@@ -64,7 +64,7 @@ export default function AdminDashboard() {
     },
     {
       title: 'Try Your Luck',
-      description: 'Monitor games, stats, and player activity',
+      description: 'Monitor games, stats and player activity',
       href: '/admin/try-your-luck',
       icon: '🎯',
       color: 'purple',
@@ -110,7 +110,7 @@ export default function AdminDashboard() {
             🛠️ Admin Dashboard
           </h1>
           <p className="text-gray-300 text-lg">
-            Manage competitions, forums, games, and users
+            Manage competitions, forums, games and users
           </p>
           {loading && (
             <p className="text-cyan-300 mt-2">Loading statistics...</p>

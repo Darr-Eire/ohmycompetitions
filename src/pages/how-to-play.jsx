@@ -42,7 +42,7 @@ export default function HowToPlay() {
             <h2 className="text-lg font-bold gradient-text mb-3"> Step 2: Enter Competitions</h2>
             <ul className="list-disc list-inside space-y-3 text-white/90">
               <li>Browse live, upcoming, or themed competitions on the homepage.</li>
-              <li>Click any competition card to view details like prize, draw time, tickets, and fee.</li>
+              <li>Click any competition card to view details like prize, draw time, tickets and fee.</li>
               <li>Click <strong>“Enter Now”</strong> and choose how many tickets to buy.</li>
               <li>Confirm payment using your Pi wallet once complete, your entry is locked and shown in your account.</li>
             </ul>
@@ -53,7 +53,7 @@ export default function HowToPlay() {
             <h2 className="text-lg font-bold gradient-text mb-3">Step 3: Track Entries</h2>
             <ul className="list-disc list-inside space-y-3 text-white/90">
               <li>Go to <strong>My Account → My Tickets</strong> to track your competitions.</li>
-              <li>See your tickets, draw dates, and competition status.</li>
+              <li>See your tickets, draw dates and competition status.</li>
               <li>Check ticket history and winning status any time.</li>
             </ul>
           </section>
@@ -66,10 +66,10 @@ export default function HowToPlay() {
       <strong>Pi Cash Code:</strong> Every day, a secret Pi Cash Code is hidden across the site. Find it and enter it to unlock bonus Pi or extra tickets — no entry fee required.
     </li>
     <li>
-      New codes are revealed daily and remain active for <strong>exactly 31 hours and 4 minutes</strong>. Miss it, and the prize resets so don’t delay!
+      New codes are revealed daily and remain active for <strong>exactly 31 hours and 4 minutes</strong>. Miss it and the prize resets so don’t delay!
     </li>
     <li>
-      Codes drop across our site, Discord, and social media. Stay sharp every code is a fresh chance to win.
+      Codes drop across our site, Discord and social media. Stay sharp every code is a fresh chance to win.
     </li>
   </ul>
 
@@ -91,7 +91,7 @@ export default function HowToPlay() {
           <section>
             <h2 className="text-lg font-bold gradient-text mb-3"> Fair Play & Transparency</h2>
             <ul className="list-disc list-inside space-y-3 text-white/90">
-              <li>Every draw is timestamped, logged, and verifiable.</li>
+              <li>Every draw is timestamped, logged and verifiable.</li>
               <li>No bots. No manipulation. One account = one chance per draw.</li>
               <li>All transactions are processed through the official Pi SDK.</li>
             </ul>

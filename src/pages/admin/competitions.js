@@ -53,7 +53,7 @@ export default function AdminCompetitionsPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-cyan-400">🏆 Competition Management</h1>
-            <p className="text-gray-400 mt-1">Manage all competitions, prizes, and entries</p>
+            <p className="text-gray-400 mt-1">Manage all competitions, prizes and entries</p>
           </div>
           <Link 
             href="/admin/competitions/create"

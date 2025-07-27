@@ -5,13 +5,11 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { getStreak } from 'lib/streak'
 import { miniGames as games } from '@data/minigames';
+
 export default function TryYourLuckPage() {
   const [streak, setStreak] = useState(0)
   const [playedMap, setPlayedMap] = useState({})
   const [resetCountdown, setResetCountdown] = useState('')
-
- 
-
 
   useEffect(() => {
     setStreak(getStreak())
@@ -78,6 +76,8 @@ export default function TryYourLuckPage() {
 
           <div className="space-y-6">
             {games.map((game) => {
+              const hasPlayed = playedMap[game.storageKey]
+
               return (
                 <div
                   key={game.href}
@@ -89,17 +89,22 @@ export default function TryYourLuckPage() {
                   </h2>
                   <p className="mb-4 text-sm text-gray-200">{game.desc}</p>
 
-                  {/* Enabled button */}
-<Link
-  href="#"
-  onClick={(e) => e.preventDefault()}
-  className="bg-cyan-600 text-white font-semibold px-6 py-3 rounded-xl border border-cyan-500 w-full text-center block opacity-50 cursor-not-allowed"
->
-  Play Now
-</Link>
-
-
-
+                  {/* ✅ Conditional Buttons */}
+                  {hasPlayed ? (
+                    <button
+                      disabled
+                      className="bg-gray-700 text-gray-400 font-semibold px-6 py-3 rounded-xl w-full cursor-not-allowed"
+                    >
+                      Already Played Today
+                    </button>
+                  ) : (
+                    <Link
+                      href={game.href}
+                      className="bg-cyan-600 text-white font-semibold px-6 py-3 rounded-xl border border-cyan-500 w-full text-center block hover:bg-cyan-700 transition"
+                    >
+                      Play Now
+                    </Link>
+                  )}
                 </div>
               )
             })}
@@ -111,20 +116,17 @@ export default function TryYourLuckPage() {
               We're building more games! Got a fun idea or a cultural favourite from your country?
               Reach out anytime:
             </p>
-<div className="space-y-2">
-  <p className="text-sm text-white">
-    X: <a href="https://x.com/OhMyComps" target="_blank" className="underline text-cyan-300">@OM_Compitions</a>
-  </p>
-  <p className="text-sm text-white">
-    Instagram: <a href="https://instagram.com/ohmycompetitions" target="_blank" className="underline text-cyan-300">@ohmycompetitions</a>
-  </p>
-  <p className="text-sm text-white">
-    Facebook: <a href="https://www.facebook.com/profile.php?id=61577406478876" target="_blank" rel="noopener noreferrer" className="underline text-cyan-300">Oh My Competitions</a>
-  </p>
-</div>
-
-
-
+            <div className="space-y-2">
+              <p className="text-sm text-white">
+                X: <a href="https://x.com/OhMyComps" target="_blank" className="underline text-cyan-300">@OM_Compitions</a>
+              </p>
+              <p className="text-sm text-white">
+                Instagram: <a href="https://instagram.com/ohmycompetitions" target="_blank" className="underline text-cyan-300">@ohmycompetitions</a>
+              </p>
+              <p className="text-sm text-white">
+                Facebook: <a href="https://www.facebook.com/profile.php?id=61577406478876" target="_blank" rel="noopener noreferrer" className="underline text-cyan-300">Oh My Competitions</a>
+              </p>
+            </div>
           </div>
         </div>
       </main>

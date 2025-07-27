@@ -73,7 +73,7 @@ export default function ForumsPage() {
       slug: 'general',
       title: 'General Discussions',
       icon: <FaComments />,
-      description: 'Chat about anything — competitions, prizes, Pi Network, and more!',
+      description: 'Chat about anything — competitions, prizes, Pi Network and more!',
       href: '/forums/general',
       buttonText: 'Enter',
       color: 'from-blue-500 to-blue-600',
@@ -93,7 +93,7 @@ export default function ForumsPage() {
       slug: 'ideas',
       title: 'Post Your Ideas',
       icon: <FaLightbulb />,
-      description: 'Got a cool idea for OhMyCompetitions? Share it here!',
+      description: 'Got a cool idea for Oh My Competitions? Share it here!',
       href: '/forums/ideas',
       buttonText: 'Post Idea',
       color: 'from-yellow-500 to-yellow-600',
@@ -133,7 +133,7 @@ export default function ForumsPage() {
   return (
     <>
       <Head>
-        <title>Forums | OhMyCompetitions</title>
+        <title>Forums | Oh My Competitions</title>
       </Head>
 
       <main className="app-background min-h-screen p-4 text-white">
@@ -145,7 +145,7 @@ export default function ForumsPage() {
 
           {/* Intro Text */}
           <p className="text-center text-white text-sm sm:text-base mb-10">
-            Welcome to the OhMyCompetitions Forums! Connect, share, vote, and discuss with fellow players around the world.
+            Welcome to the Oh My Competitions Forums! Connect, share, vote and discuss with fellow players around the world.
           </p>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -156,7 +156,7 @@ export default function ForumsPage() {
                 <div className="text-2xl sm:text-3xl text-cyan-300 font-bold mb-3">Pioneer of the Week</div>
                 <h2 className="text-lg font-bold gradient-text mb-2">Nominate Yourself or Vote for a Fellow Pioneer</h2>
                 <p className="text-sm text-white mb-6">
-                  Tell us why you or someone you admire deserves to be recognized this week. The community will vote, and the top Pioneer will be featured!
+                  Tell us why you or someone you admire deserves to be recognized this week. The community will vote and the top Pioneer will be featured!
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 mb-6">

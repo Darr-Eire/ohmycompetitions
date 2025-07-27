@@ -24,7 +24,7 @@ export default async function handler(req, res) {
       // Validate required fields
       if (!slug || !title || !prize) {
         return res.status(400).json({ 
-          message: 'Missing required fields: slug, title, and prize are required.' 
+          message: 'Missing required fields: slug, title and prize are required.' 
         });
       }
       
