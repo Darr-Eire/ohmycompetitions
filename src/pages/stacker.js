@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
-import StackerGame from './stackergame';
+import StackerGame from './try-your-luck/stackergame';
+
 
 export default function StackerPage() {
   const mockUser = { uid: "user123", name: "Darren" };
