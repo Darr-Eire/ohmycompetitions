@@ -1,10 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import GhostWinnerLog from '../components/GhostWinnerLog';
-import ClaimedWinnersLog from '../components/ClaimedWinnersLog';
 import { usePiAuth } from '../context/PiAuthContext';
-import CryptoCodeReveal from '../components/CryptoCodeReveal';
 import LiveActivityFeed from '../components/LiveActivityFeed';
 import CodeHistory from '../components/CodeHistory';
 
@@ -39,9 +36,7 @@ export default function PiCashCodePage() {
 
   useEffect(() => {
     if (!codeData?.expiresAt) return;
-
     const targetTime = new Date(codeData.expiresAt).getTime();
-
     const updateTimeLeft = () => {
       const now = Date.now();
       const diff = targetTime - now;
@@ -49,7 +44,6 @@ export default function PiCashCodePage() {
         setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
         return;
       }
-
       setTimeLeft({
         days: Math.floor(diff / (1000 * 60 * 60 * 24)),
         hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
@@ -57,7 +51,6 @@ export default function PiCashCodePage() {
         seconds: Math.floor((diff / 1000) % 60),
       });
     };
-
     updateTimeLeft();
     const intervalId = setInterval(updateTimeLeft, 1000);
     return () => clearInterval(intervalId);
@@ -94,14 +87,10 @@ export default function PiCashCodePage() {
     setShowSkillModal(true);
   };
 
-  const closeSkillModal = () => {
-    setShowSkillModal(false);
-  };
-
   const handlePiPayment = async () => {
     if (!validateAnswer()) return;
 
-    if (typeof window === 'undefined' || !window.Pi || typeof window.Pi.createPayment !== 'function') {
+    if (!window?.Pi?.createPayment) {
       alert('⚠️ Pi SDK not ready. Make sure you are in the Pi Browser.');
       return;
     }
@@ -121,59 +110,39 @@ export default function PiCashCodePage() {
         },
         {
           onReadyForServerApproval: async (paymentId) => {
-            try {
-              const res = await fetch('/api/pi-cash-code/approve', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ paymentId }),
-              });
-              if (!res.ok) throw new Error(await res.text());
-              console.log('[✅] Payment approved');
-            } catch (err) {
-              console.error('[ERROR] Server approval failed:', err);
-              alert('❌ Server approval failed.');
-            }
+            await fetch('/api/pi-cash-code/approve', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ paymentId }),
+            });
           },
           onReadyForServerCompletion: async (paymentId, txid) => {
-            try {
-              const res = await fetch('/api/pi-cash-code/complete', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  paymentId,
-                  txid,
-                  weekStart: codeData?.weekStart,
-                  quantity,
-                  userId: user?.uid,
-                  username: user?.username,
-                }),
-              });
+            await fetch('/api/pi-cash-code/complete', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                paymentId,
+                txid,
+                weekStart: codeData?.weekStart,
+                quantity,
+                userId: user?.uid,
+                username: user?.username,
+              }),
+            });
 
-              if (!res.ok) throw new Error(await res.text());
-              const data = await res.json();
-              alert(`✅ Ticket purchased! 🎟️ ID: ${data.ticketId}`);
-              setShowSkillModal(false);
+            await fetch('/api/pi-cash-code/log-activity', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ username: user?.username, quantity }),
+            });
 
-              // ✅ Log to live activity feed
-              await fetch('/api/pi-cash-code/log-activity', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: user?.username, quantity }),
-              });
-
-              // Refresh data
-              const refreshRes = await fetch('/api/pi-cash-code');
-              const refreshData = await refreshRes.json();
-              setCodeData(refreshData);
-              setLiveTickets(refreshData.ticketsSold || 0);
-            } catch (err) {
-              console.error('[ERROR] Completing payment:', err);
-              alert('❌ Server completion failed.');
-            }
+            const refreshRes = await fetch('/api/pi-cash-code');
+            const refreshData = await refreshRes.json();
+            setCodeData(refreshData);
+            setLiveTickets(refreshData.ticketsSold || 0);
+            setShowSkillModal(false);
           },
-          onCancel: () => {
-            console.warn('Payment cancelled');
-          },
+          onCancel: () => console.warn('Payment cancelled'),
           onError: (err) => {
             console.error('Payment error:', err);
             alert('Payment failed');
@@ -193,8 +162,7 @@ export default function PiCashCodePage() {
   const unlockProgress = () => {
     if (!codeData?.dropAt || !codeData?.expiresAt) return 0;
     const total = new Date(codeData.expiresAt) - new Date(codeData.dropAt);
-    const now = Date.now();
-    const elapsed = now - new Date(codeData.dropAt);
+    const elapsed = Date.now() - new Date(codeData.dropAt);
     return Math.min(100, Math.floor((elapsed / total) * 100));
   };
 
@@ -219,17 +187,18 @@ export default function PiCashCodePage() {
           </p>
         </div>
 
-       <div className="w-full text-center px-2">
-  <CryptoCodeReveal code={codeData?.code || '????-????'} isRevealed={showCode} />
-</div>
+        <div className="w-full text-center px-2">
+          <div className="inline-block bg-black/40 border border-cyan-500 text-cyan-300 font-mono text-2xl sm:text-3xl tracking-widest px-6 py-4 rounded-lg shadow-md">
+            {showCode ? codeData?.code || '0000-0000' : 'XXXX-XXXX'}
+          </div>
+        </div>
 
-<div className="mt-3 w-full h-2 bg-cyan-900 rounded-full overflow-hidden">
-  <div
-    className="h-full bg-gradient-to-r from-cyan-400 to-cyan-200 transition-all duration-700 ease-in-out motion-reduce:transition-none"
-    style={{ width: `${progressPercent}%` }}
-  />
-</div>
-
+        <div className="mt-3 w-full h-2 bg-cyan-900 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-cyan-400 to-cyan-200 transition-all duration-700 ease-in-out motion-reduce:transition-none"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
 
         <div className="text-center border border-cyan-400 rounded-xl py-4 px-6 bg-black/30">
           <p className="text-lg text-cyan-300 font-semibold">
@@ -237,10 +206,9 @@ export default function PiCashCodePage() {
           </p>
         </div>
 
-      <div className="flex justify-center">
-  <LiveActivityFeed />
-</div>
-
+        <div className="flex justify-center">
+          <LiveActivityFeed />
+        </div>
 
         {timeLeft && (
           <div className="grid grid-cols-4 gap-2 justify-center text-center">
@@ -281,10 +249,10 @@ export default function PiCashCodePage() {
             View full Terms & Conditions
           </a>
         </section>
- <div className="flex justify-center">
-        <CodeHistory />     
 
-</div>
+        <div className="flex justify-center">
+          <CodeHistory />
+        </div>
       </div>
     </main>
   );
