@@ -219,10 +219,17 @@ export default function PiCashCodePage() {
           </p>
         </div>
 
-        <CryptoCodeReveal code={codeData?.code || '????-????'} isRevealed={showCode} />
-        <div className="mt-2 w-full h-2 bg-cyan-900 rounded-full overflow-hidden">
-          <div className="h-full bg-gradient-to-r from-cyan-400 to-cyan-200 transition-all duration-500" style={{ width: `${progressPercent}%` }} />
-        </div>
+       <div className="w-full text-center px-2">
+  <CryptoCodeReveal code={codeData?.code || '????-????'} isRevealed={showCode} />
+</div>
+
+<div className="mt-3 w-full h-2 bg-cyan-900 rounded-full overflow-hidden">
+  <div
+    className="h-full bg-gradient-to-r from-cyan-400 to-cyan-200 transition-all duration-700 ease-in-out motion-reduce:transition-none"
+    style={{ width: `${progressPercent}%` }}
+  />
+</div>
+
 
         <div className="text-center border border-cyan-400 rounded-xl py-4 px-6 bg-black/30">
           <p className="text-lg text-cyan-300 font-semibold">
