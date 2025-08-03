@@ -4,6 +4,9 @@ import React, { useState, useEffect } from 'react';
 import GhostWinnerLog from '../components/GhostWinnerLog';
 import ClaimedWinnersLog from '../components/ClaimedWinnersLog';
 import { usePiAuth } from '../context/PiAuthContext';
+import CryptoCodeReveal from '../components/CryptoCodeReveal';
+import LiveActivityFeed from '../components/LiveActivityFeed';
+import CodeHistory from '../components/CodeHistory';
 
 export default function PiCashCodePage() {
   const { user, login } = usePiAuth();
@@ -14,17 +17,12 @@ export default function PiCashCodePage() {
   const [timeLeft, setTimeLeft] = useState(null);
   const [liveTickets, setLiveTickets] = useState(0);
   const [sdkReady, setSdkReady] = useState(false);
-
-  // Modal state
   const [showSkillModal, setShowSkillModal] = useState(false);
-
-  // Skill question and answer
-  const skillQuestion = "What is 7 + 5?";
-  const skillAnswer = "12";
+  const skillQuestion = 'What is 7 + 5?';
+  const skillAnswer = '12';
   const [userAnswer, setUserAnswer] = useState('');
-  const [isAnswerCorrect, setIsAnswerCorrect] = useState(null); // null = not answered yet
+  const [isAnswerCorrect, setIsAnswerCorrect] = useState(null);
 
-  // Fetch code data
   useEffect(() => {
     const fetchCode = async () => {
       try {
@@ -39,7 +37,6 @@ export default function PiCashCodePage() {
     fetchCode();
   }, []);
 
-  // Countdown timer
   useEffect(() => {
     if (!codeData?.expiresAt) return;
 
@@ -48,7 +45,6 @@ export default function PiCashCodePage() {
     const updateTimeLeft = () => {
       const now = Date.now();
       const diff = targetTime - now;
-
       if (diff <= 0) {
         setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
         return;
@@ -67,7 +63,6 @@ export default function PiCashCodePage() {
     return () => clearInterval(intervalId);
   }, [codeData?.expiresAt]);
 
-  // Load Pi SDK
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://sdk.minepi.com/pi-sdk.js';
@@ -116,12 +111,12 @@ export default function PiCashCodePage() {
         {
           amount: parseFloat(totalPrice),
           memo: `Pi Cash Code Entry Week ${codeData?.weekStart}`,
-          metadata: { 
-            type: 'pi-cash-ticket', 
-            weekStart: codeData?.weekStart, 
+          metadata: {
+            type: 'pi-cash-ticket',
+            weekStart: codeData?.weekStart,
             quantity,
             userId: user?.uid,
-            username: user?.username
+            username: user?.username,
           },
         },
         {
@@ -139,27 +134,34 @@ export default function PiCashCodePage() {
               alert('❌ Server approval failed.');
             }
           },
-
           onReadyForServerCompletion: async (paymentId, txid) => {
             try {
               const res = await fetch('/api/pi-cash-code/complete', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                  paymentId, 
-                  txid, 
+                body: JSON.stringify({
+                  paymentId,
+                  txid,
                   weekStart: codeData?.weekStart,
                   quantity,
                   userId: user?.uid,
-                  username: user?.username
+                  username: user?.username,
                 }),
               });
+
               if (!res.ok) throw new Error(await res.text());
               const data = await res.json();
               alert(`✅ Ticket purchased! 🎟️ ID: ${data.ticketId}`);
               setShowSkillModal(false);
-              
-              // Refresh the code data to update ticket count
+
+              // ✅ Log to live activity feed
+              await fetch('/api/pi-cash-code/log-activity', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: user?.username, quantity }),
+              });
+
+              // Refresh data
               const refreshRes = await fetch('/api/pi-cash-code');
               const refreshData = await refreshRes.json();
               setCodeData(refreshData);
@@ -169,15 +171,13 @@ export default function PiCashCodePage() {
               alert('❌ Server completion failed.');
             }
           },
-
           onCancel: () => {
             console.warn('Payment cancelled');
           },
-
           onError: (err) => {
             console.error('Payment error:', err);
             alert('Payment failed');
-          }
+          },
         }
       );
     } catch (err) {
@@ -190,180 +190,95 @@ export default function PiCashCodePage() {
   const dropTime = new Date(codeData?.dropAt);
   const showCode = now >= dropTime;
 
+  const unlockProgress = () => {
+    if (!codeData?.dropAt || !codeData?.expiresAt) return 0;
+    const total = new Date(codeData.expiresAt) - new Date(codeData.dropAt);
+    const now = Date.now();
+    const elapsed = now - new Date(codeData.dropAt);
+    return Math.min(100, Math.floor((elapsed / total) * 100));
+  };
+
+  const progressPercent = unlockProgress();
+
   return (
-    <>
-      <main className="flex justify-center items-start min-h-screen bg-transparent font-orbitron pt-6">
-        <div className="backdrop-blur-lg border border-cyan-300 neon-outline text-white p-6 sm:p-8 rounded-2xl text-center space-y-6 shadow-[0_0_40px_#00ffd5aa] max-w-3xl w-full mx-auto mt-6 relative overflow-hidden">
-          <h1 className="text-3xl sm:text-4xl font-bold text-cyan-300 animate-glow-float">Pi Cash Code</h1>
+    <main className="min-h-screen bg-gradient-to-b from-black via-[#0c1f27] to-black text-white px-4 py-10 font-sans">
+      <div className="max-w-3xl mx-auto backdrop-blur-md bg-white/5 border border-cyan-500 rounded-2xl shadow-lg p-6 sm:p-10 space-y-8">
 
-
-{/* Code Block + Overlay + Prize Section */}
-<div className="w-full max-w-md mx-auto flex flex-col items-center space-y-6 mt-8 mb-10">
-
- 
-  {/* Prize Pool */}
-  <div className="border-2 border-cyan-400 text-cyan-300 text-lg font-semibold px-6 py-4 rounded-xl shadow-[0_0_20px_#00ffd5aa] w-full text-center">
-    Current Prize Pool: {codeData?.prizePool?.toLocaleString() || 'Loading...'} π
-  </div>
- {/* Code Display */}
-  <div className="relative w-full">
-    <div
-      className={`relative text-center font-mono text-2xl sm:text-3xl px-8 py-6 rounded-2xl transition-all duration-700 ease-in-out overflow-hidden
-        ${showCode
-          ? 'text-cyan-300 border-2 border-cyan-400 shadow-[0_0_30px_#00ffd5aa]'
-          : 'text-lime-400 border-2 border-cyan-700 blur-[1px] brightness-90 grayscale shadow-[inset_0_0_20px_#00ffd544]'}
-      `}
-    >
-      {!showCode && (
-        <div className="absolute inset-0 pointer-events-none z-0 animate-pulse">
-          <div className="absolute top-0 left-1/3 w-1 h-full bg-cyan-400/10 blur-md" />
-          <div className="absolute top-0 left-2/3 w-1 h-full bg-cyan-500/10 blur-md" />
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl sm:text-4xl font-bold text-cyan-300 drop-shadow-md tracking-tight">
+            Pi Cash Code
+          </h1>
+          <p className="text-white text-sm sm:text-base font-medium max-w-xl mx-auto leading-snug">
+            Have you got what it takes to <span className="text-cyan-400 font-semibold">Keep The Code Safe</span> and conquer the <span className="text-cyan-400 font-semibold">Pi Cash Code</span> prize pool?
+          </p>
         </div>
-      )}
-      <span className="relative z-10 tracking-widest select-none">
-        {showCode ? codeData?.code || '????-????' : ''}
-      </span>
-    </div>
 
-    {!showCode && (
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none z-20">
-        <p className="text-cyan-300 text-sm sm:text-base font-semibold uppercase tracking-wider animate-pulse">
-          Code Locked
-        </p>
-        <p className="text-[11px] sm:text-xs text-cyan-400 mt-1">Releasing soon. Stay sharp.</p>
-      </div>
-    )}
-  </div>
+        <div className="text-center border border-cyan-400 rounded-xl py-4 px-6 bg-black/30">
+          <p className="text-lg text-cyan-300 font-semibold">
+            Prize Pool: <span className="text-white">{codeData?.prizePool?.toLocaleString() || '...'}</span> π
+          </p>
+        </div>
 
-  {/* Tickets Sold */}
-  <div className="border-2 border-cyan-400 text-cyan-300 text-lg font-semibold px-6 py-4 rounded-xl shadow-[0_0_20px_#00ffd5aa] w-full text-center">
-    Tickets Sold: {liveTickets}
-  </div>
+        <CryptoCodeReveal code={codeData?.code || '????-????'} isRevealed={showCode} />
+        <div className="mt-2 w-full h-2 bg-cyan-900 rounded-full overflow-hidden">
+          <div className="h-full bg-gradient-to-r from-cyan-400 to-cyan-200 transition-all duration-500" style={{ width: `${progressPercent}%` }} />
+        </div>
+
+        <div className="text-center border border-cyan-400 rounded-xl py-4 px-6 bg-black/30">
+          <p className="text-lg text-cyan-300 font-semibold">
+            Tickets Sold: <span className="text-white">{liveTickets}</span>
+          </p>
+        </div>
+
+      <div className="flex justify-center">
+  <LiveActivityFeed />
 </div>
 
 
-
-          {timeLeft && (
-            <div className="mt-6 flex gap-2 justify-center">
-              {['days', 'hours', 'minutes', 'seconds'].map((label, i) => (
-                <div key={i} className="flex flex-col items-center">
-                  <div className="bg-black text-white text-xl font-bold px-4 py-2 rounded-md shadow w-16 text-center">
-                    {String(timeLeft[label]).padStart(2, '0')}
-                  </div>
-                  <div className="mt-1 text-xs text-cyan-400 font-semibold tracking-wide">{label.toUpperCase()}</div>
+        {timeLeft && (
+          <div className="grid grid-cols-4 gap-2 justify-center text-center">
+            {['days', 'hours', 'minutes', 'seconds'].map((label, i) => (
+              <div key={i}>
+                <div className="bg-black border border-cyan-500 text-white text-xl font-bold py-2 rounded-lg shadow-inner">
+                  {String(timeLeft[label]).padStart(2, '0')}
                 </div>
-              ))}
-            </div>
-          )}
-
-          <div className="flex items-center justify-center gap-4 mt-6">
-            <button
-              onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
-              className="bg-cyan-500 text-black font-bold px-4 py-1 rounded-full hover:brightness-110"
-            >
-              −
-            </button>
-            <span className="text-2xl font-bold">{quantity}</span>
-            <button
-              onClick={() => setQuantity((prev) => prev + 1)}
-              className="bg-cyan-500 text-black font-bold px-4 py-1 rounded-full hover:brightness-110"
-            >
-              +
-            </button>
-          </div>
-
-          <p className="text-cyan-300 mt-2 font-semibold text-sm">Total: {totalPrice} π</p>
-
-          {!user ? (
-            <button
-              onClick={login}
-              className="w-full mt-4 py-3 bg-cyan-300 text-black font-bold rounded-lg"
-            >
-              Login with Pi to Purchase
-            </button>
-          ) : (
-            <button
-              onClick={openSkillModal}
-              className="w-full mt-4 py-3 bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold rounded-lg"
-            >
-              Purchase {quantity} Ticket(s)
-            </button>
-          )}
-
-          <section className="mt-8 text-center">
-            <h2 className="text-1xl font-semi-bold text-black mb-2">How It Works</h2>
-            <div className="inline-block text-left">
-              <ul className="list-disc list-inside text-white/90 space-y-2 text-sm sm:text-base">
-                <li>The code drops every Monday at <strong>3:14 PM UTC</strong>.</li>
-                <li>It remains active for <strong>31 hours and 4 minutes</strong>.</li>
-                <li>Friday draw at <strong>3:14 PM UTC</strong>.</li>
-                <li>The winner must return the code within <strong>31 minutes and 4 seconds</strong>.</li>
-              </ul>
-              <div className="text-center mt-3">
-                <a href="/terms-conditions" className="text-xs text-cyan-400 underline hover:text-cyan-300 transition">
-                  View full Terms & Conditions
-                </a>
+                <p className="text-cyan-300 text-sm mt-1">{label.toUpperCase()}</p>
               </div>
-            </div>
-          </section>
-        </div>
-      </main>
-
-      {/* Skill Question Modal */}
-      {showSkillModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#0f172a] border border-cyan-300 rounded-xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold text-cyan-300 mb-4">Skill Question</h3>
-            <p className="text-white mb-4">Answer correctly to proceed with purchase:</p>
-            <p className="text-cyan-300 font-bold mb-4">{skillQuestion}</p>
-            
-            <input
-              type="text"
-              value={userAnswer}
-            onChange={(e) => {
-  const value = e.target.value;
-  setUserAnswer(value);
-  if (value.trim() === skillAnswer) {
-    setIsAnswerCorrect(true);
-  } else {
-    setIsAnswerCorrect(false);
-  }
-}}
-
-              className="w-full px-4 py-2 bg-black border border-cyan-400 rounded text-white mb-4"
-              placeholder="Enter your answer"
-            />
-            
-            {isAnswerCorrect === false && (
-              <p className="text-red-400 text-sm mb-4">Incorrect answer. Please try again.</p>
-            )}
-            
-            {isAnswerCorrect === true && (
-              <p className="text-cyan-300 text-sm mb-4">✅ Correct! Proceeding to payment...</p>
-            )}
-
-            <div className="flex justify-end gap-4">
-              <button
-                onClick={closeSkillModal}
-                className="px-4 py-2 rounded-lg bg-gray-700 text-white hover:bg-gray-600 transition"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handlePiPayment}
-                disabled={isAnswerCorrect !== true}
-                className={`px-4 py-2 rounded-lg text-black font-bold transition ${
-                  isAnswerCorrect === true
-                    ? 'bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:brightness-110'
-                    : 'bg-gray-500 cursor-not-allowed'
-                }`}
-              >
-                Confirm Purchase
-              </button>
-            </div>
+            ))}
           </div>
+        )}
+
+        <div className="flex items-center justify-center gap-6">
+          <button onClick={() => setQuantity((q) => Math.max(1, q - 1))} className="text-black font-bold bg-cyan-300 hover:bg-cyan-400 rounded-full px-4 py-1">−</button>
+          <span className="text-2xl font-bold">{quantity}</span>
+          <button onClick={() => setQuantity((q) => q + 1)} className="text-black font-bold bg-cyan-300 hover:bg-cyan-400 rounded-full px-4 py-1">+</button>
         </div>
-      )}
-    </>
+
+        <p className="text-center text-cyan-300 text-sm font-semibold">Total: {totalPrice} π</p>
+
+        {!user ? (
+          <button onClick={login} className="w-full py-3 rounded-lg bg-cyan-300 text-black font-bold hover:brightness-110">
+            Login with Pi to Purchase
+          </button>
+        ) : (
+          <button onClick={openSkillModal} className="w-full py-3 rounded-lg bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold hover:brightness-110">
+            Purchase {quantity} Ticket{quantity > 1 ? 's' : ''}
+          </button>
+        )}
+
+        <section className="text-sm text-white/90 text-center space-y-2 mt-8">
+          <p>🕒 Code drops every <strong>Monday at 3:14 PM UTC</strong>.</p>
+          <p>⏳ Active for <strong>31h 4m</strong>, draw on <strong>Friday 3:14 PM UTC</strong>.</p>
+          <p>🏆 Winners must return code in <strong>31m 4s</strong>.</p>
+          <a href="/terms-conditions" className="block mt-3 text-xs text-cyan-400 underline hover:text-cyan-300">
+            View full Terms & Conditions
+          </a>
+        </section>
+ <div className="flex justify-center">
+        <CodeHistory />     
+
+</div>
+      </div>
+    </main>
   );
 }

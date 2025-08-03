@@ -111,10 +111,10 @@ export default function TryYourLuckPage() {
           </div>
 
           <div className="mt-10 p-6 text-center border border-cyan-700 rounded-2xl bg-gradient-to-br from-[#0f172a]/70 to-[#1e293b]/70 shadow-[0_0_20px_#00fff055]">
-            <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">Got an Idea for a New Mini-Game?</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">Got an Idea for a New Mini Game?</h2>
             <p className="text-sm text-gray-300 mb-4">
               We're building more games! Got a fun idea or a cultural favourite from your country?
-              Reach out anytime:
+              Reach out anytime
             </p>
             <div className="space-y-2">
               <p className="text-sm text-white">

@@ -5,26 +5,7 @@ import Link from 'next/link'
 
 export default function PioneerHistoryPage() {
   const previousWinners = [
-    {
-      name: 'PiChamp2025',
-      reason: 'Hosted community competitions and supported hundreds of pioneers.',
-      week: 'June 2 – June 8, 2025',
-    },
-    {
-      name: 'PiWarrior',
-      reason: 'Built tools for fellow Pioneers and mentored new users.',
-      week: 'May 26 – June 1, 2025',
-    },
-    {
-      name: 'CodeMasterPi',
-      reason: 'Developed open-source Pi mini-games loved by the community.',
-      week: 'May 19 – May 25, 2025',
-    },
-    {
-      name: 'SatoshiSpark',
-      reason: 'Spread awareness of OhMyCompetitions on socials non-stop!',
-      week: 'May 12 – May 18, 2025',
-    },
+
   ]
 
   return (

@@ -26,7 +26,7 @@ export default function AboutUs() {
             </p>
 
             <section>
-              <h2 className="text-xl font-bold gradient-text mt-6">From “What's Pi?” to “Let’s Build a Platform”</h2>
+              <h2 className="text-xl font-bold gradient-text mt-6">From What's Pi to Let’s Build a Platform</h2>
               <p>
                 It started like most good stories: with a ping from a mate.  
                 “Bro, try Pi Network.”  

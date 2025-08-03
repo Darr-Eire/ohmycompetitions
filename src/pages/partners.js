@@ -106,6 +106,49 @@ export default function PartnersPage() {
             </Link>
           </div>
         </div>
+{/* X Pages That Helped Us Grow */}
+<section className="competition-card p-6 bg-white bg-opacity-10 rounded-2xl shadow-lg">
+  <div className="bg-gradient-to-r from-[#00ffd5] to-[#0077ff] rounded px-4 py-2 mb-4">
+    <h2 className="text-1xl text-center text-black">
+      X Pages That Helped Us Grow, Give Them A Follow
+    </h2>
+  </div>
+
+  <ul className="space-y-3 text-white text-sm text-center">
+    <li>
+      <a href="https://x.com/CryptoPioneer" target="_blank" rel="noopener noreferrer" className="text-cyan-400 underline">
+        Crypto Pioneer
+      </a> — Gave us our first boost.
+    </li>
+    <li>
+      <a href="https://x.com/PiBuildersHub" target="_blank" rel="noopener noreferrer" className="text-cyan-400 underline">
+        Pi Builders Hub
+      </a> — Shared our early prototype.
+    </li>
+    <li>
+      <a href="https://x.com/PiPulseDaily" target="_blank" rel="noopener noreferrer" className="text-cyan-400 underline">
+        Pi Pulse Daily
+      </a> — Highlighted our launch week.
+    </li>
+    <li>
+      <a href="https://x.com/OmcUpdates" target="_blank" rel="noopener noreferrer" className="text-cyan-400 underline">
+        OMC Updates
+      </a> — Kept the community informed.
+    </li>
+    <li>
+      <a href="https://x.com/PioneersGlobal" target="_blank" rel="noopener noreferrer" className="text-cyan-400 underline">
+        Pioneers Global
+      </a> — Connected us with global Pi fans.
+    </li>
+  </ul>
+
+  <p className="text-sm text-center text-white mt-6">
+    A huge thank you to these pages and the entire Pi community for believing in Pi Network and what we're building.
+    We wouldn’t be here without your support.
+  </p>
+</section>
+
+
 
         {/* Why Partner section */}
         <section className="competition-card p-6 bg-white bg-opacity-10 rounded-2xl shadow-lg">

@@ -1,6 +1,7 @@
 'use client';
 
 import Head from 'next/head';
+import Link from 'next/link';
 import DailyCompetitionCard from '@components/DailyCompetitionCard';
 import { dailyItems, launchWeekItems } from '../../data/competitions';
 
@@ -27,16 +28,20 @@ export default function DailyCompetitionsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-16 mt-8">
             {allDailyCompetitions.map((item) => {
               const hasStarted = new Date(item.comp.startsAt) <= new Date();
+              const slug = item.comp.slug;
 
               return (
-                <DailyCompetitionCard
-                  key={item.comp.slug}
-                  comp={item.comp}
-                  title={item.title}
-                  prize={item.prize}
-                  fee={`${item.comp.entryFee.toFixed(2)} π`}
-                  isLive={hasStarted}
-                />
+                <Link href={`/competitions/${slug}`} key={slug}>
+                  <div className="cursor-pointer">
+                    <DailyCompetitionCard
+                      comp={item.comp}
+                      title={item.title}
+                      prize={item.prize}
+                      fee={`${item.comp.entryFee.toFixed(2)} π`}
+                      isLive={hasStarted}
+                    />
+                  </div>
+                </Link>
               );
             })}
           </div>

@@ -189,7 +189,7 @@ export default function HomePage() {
   {/* Marquee */}
   <div className="overflow-hidden bg-transparent">
   <div className="marquee-content text-cyan-300 text-md sm:text-base font-medium font-orbitron">
-      Oh My Competitions is all about building with Pi Network for the Pi community. Our OMC launch competitions are zero profit designed to create trust, celebrate early winners and give back to Pioneers. All prizes go directly to you. Add us on Pi Profile (darreire2020 & Lyndz2020) More competitions are coming soon across a wide range of exciting categories. Join, win and help shape the future of Pi together
+      Oh My Competitions is all about building with Pi Network for the Pi community. Our OMC launch competitions are zero profit designed to create trust, celebrate early winners and give back to Pioneers. All prizes go directly to you. Add us on all Socials and our Pi Profile darreire2020 More competitions are coming soon across a wide range of exciting categories. Join, win and help shape the future of Pi together
     </div>
   </div>
 </div>

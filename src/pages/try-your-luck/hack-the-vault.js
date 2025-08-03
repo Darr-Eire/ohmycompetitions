@@ -19,6 +19,7 @@ export default function VaultPro() {
   const [retryUsed, setRetryUsed] = useState(false);
   const [dailyUsed, setDailyUsed] = useState(false);
   const [skillAnswer, setSkillAnswer] = useState('');
+  const [skillConfirmed, setSkillConfirmed] = useState(false);
   const [payoutStatus, setPayoutStatus] = useState('');
   const [sendingPayout, setSendingPayout] = useState(false);
   const correctAnswer = '9'; // skill question: 6 + 3
@@ -27,7 +28,6 @@ export default function VaultPro() {
     if (status === 'playing') {
       const newCode = Array.from({ length: NUM_DIGITS }, () => Math.floor(Math.random() * 10));
       setCode(newCode);
-      
     }
   }, [status]);
 
@@ -44,23 +44,24 @@ export default function VaultPro() {
       alert("You've already used your free daily attempt.");
       return;
     }
-    
+
     if (!user) {
       alert("Please login with Pi to play Hack the Vault!");
       loginWithPi();
       return;
     }
-    
+
     setDigits(Array(NUM_DIGITS).fill(0));
     setRetryUsed(false);
     setStatus('playing');
     setDailyUsed(true);
     setSkillAnswer('');
+    setSkillConfirmed(false);
     setPayoutStatus('');
   };
 
   const enterCode = () => {
-    if (skillAnswer.trim() !== correctAnswer) {
+    if (skillAnswer.trim() !== correctAnswer && !skillConfirmed) {
       alert('Answer the skill question correctly before cracking the code.');
       return;
     }
@@ -70,7 +71,6 @@ export default function VaultPro() {
 
     if (isWin) {
       setStatus('success');
-      // Send Pi payout
       sendPiPayout();
     } else {
       setCorrectIndexes(correct);
@@ -122,11 +122,13 @@ export default function VaultPro() {
     setDigits(Array(NUM_DIGITS).fill(0));
     setStatus('playing');
     setSkillAnswer('');
+    setSkillConfirmed(false);
   };
 
   const reset = () => {
     setStatus('idle');
     setSkillAnswer('');
+    setSkillConfirmed(false);
     setPayoutStatus('');
   };
 
@@ -140,7 +142,6 @@ export default function VaultPro() {
           </h1>
         </div>
 
-        {/* User Status */}
         {!user && (
           <div className="bg-red-800 bg-opacity-30 border border-red-400 p-3 rounded-xl text-center">
             <p className="text-red-300 mb-2">🔐 Login Required</p>
@@ -153,14 +154,10 @@ export default function VaultPro() {
           </div>
         )}
 
-        {user && (
-          <div className="bg-green-800 bg-opacity-30 border border-green-400 p-3 rounded-xl text-center">
-            <p className="text-green-300">✅ Logged in as {user.username}</p>
-          </div>
-        )}
+      
 
-        <p className="text-center text-white text-lg mb-2">
-          Crack the secret 4-digit vault and win <span className="text-cyan-300">{PRIZE_POOL} π</span>. One free daily chance.
+        <p className="text-center text-white text-md mb-2">
+          Can you crack our secret 4-digit vault and win <span className="text-cyan-300">{PRIZE_POOL} π</span>. One free try a day
         </p>
 
         <div className="bg-white bg-opacity-10 rounded-2xl shadow-lg p-6 text-center">
@@ -179,7 +176,8 @@ export default function VaultPro() {
 
           {status === 'playing' && (
             <>
-              <p className="text-yellow-300 font-semibold text-lg mb-4">Crack Code:</p>
+            <p className="text-cyan-300 font-semibold text-md mb-4">Have you got what it takes?</p>
+
               <div className="flex justify-center gap-4 mb-6">
                 {digits.map((digit, i) => (
                   <div key={i} className="flex flex-col items-center space-y-2">
@@ -200,32 +198,45 @@ export default function VaultPro() {
                 ))}
               </div>
 
-              {/* Skill Question */}
-              <div className="mb-4 text-left">
-                <label htmlFor="skill-question" className="block font-semibold mb-1">
-                  Skill Question (required):
-                </label>
-                <p className="text-sm mb-1">What is 6 + 3?</p>
-                <input
-                  id="skill-question"
-                  type="text"
-                  value={skillAnswer}
-                  onChange={(e) => setSkillAnswer(e.target.value)}
-                  className="w-full px-4 py-2 rounded-lg bg-white/10 border border-cyan-500 text-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                  placeholder="Enter your answer"
-                />
-                {skillAnswer && skillAnswer.trim() !== correctAnswer && (
-                  <p className="text-sm text-red-400 mt-1">
-                    Incorrect answer. You must answer correctly to proceed.
-                  </p>
-                )}
-              </div>
+  {!skillConfirmed && (
+  <div className="mb-4 text-left">
+    <label htmlFor="skill-question" className="block font-semibold mb-1">
+      Skill Question (required):
+    </label>
+    <p className="text-sm mb-2">What is 6 + 3?</p>
+
+    <input
+      id="skill-question"
+      type="text"
+      value={skillAnswer}
+      onChange={(e) => setSkillAnswer(e.target.value)}
+      className="w-full px-4 py-2 rounded-lg bg-white/10 border border-cyan-500 text-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
+      placeholder="Enter your answer"
+    />
+
+    <div className="flex justify-center mt-3">
+      <button
+        onClick={() => {
+          if (skillAnswer.trim() === correctAnswer) {
+            setSkillConfirmed(true);
+          } else {
+            alert("Incorrect answer. Try again.");
+          }
+        }}
+        className="px-6 py-2 bg-cyan-700 text-white rounded-lg hover:bg-cyan-600"
+      >
+        Submit
+      </button>
+    </div>
+  </div>
+)}
+
 
               <button
                 onClick={enterCode}
-                disabled={skillAnswer.trim() !== correctAnswer}
+                disabled={!skillConfirmed}
                 className={`bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-semibold w-full py-3 text-lg rounded-full shadow-[0_0_30px_#00fff055] border border-cyan-700 hover:brightness-110 transition
-                ${skillAnswer.trim() !== correctAnswer ? 'cursor-not-allowed opacity-70' : ''}`}
+                ${!skillConfirmed ? 'cursor-not-allowed opacity-70' : ''}`}
               >
                 Crack Code
               </button>
@@ -273,8 +284,7 @@ export default function VaultPro() {
             <>
               <Confetti width={width} height={height} />
               <p className="text-green-400 font-bold text-xl mb-4">🎉 You cracked the Vault & won {PRIZE_POOL} π!</p>
-              
-              {/* Payout Status */}
+
               {payoutStatus && (
                 <div className={`p-3 rounded-lg mb-4 ${
                   payoutStatus.includes('✅') ? 'bg-green-800 bg-opacity-30 border border-green-400' :
@@ -290,7 +300,7 @@ export default function VaultPro() {
                   )}
                 </div>
               )}
-              
+
               <button
                 onClick={reset}
                 className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white font-semibold w-full py-3 rounded-full shadow-[0_0_30px_#00fff055] border border-cyan-700 hover:brightness-110 transition"
@@ -299,12 +309,11 @@ export default function VaultPro() {
               </button>
             </>
           )}
-
         </div>
 
         <div className="text-center mt-6">
-          <Link href="/terms/vault-pro-plus" className="text-sm text-cyan-300 underline">
-            Vault Pro Terms & Conditions
+          <Link href="/terms/vaultt&cs" className="text-sm text-cyan-300 underline">
+          Hack The Vaults Terms & Conditions
           </Link>
         </div>
 
