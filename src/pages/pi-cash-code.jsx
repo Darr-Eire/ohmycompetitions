@@ -192,25 +192,7 @@ export default function PiCashCodePage() {
             {showCode ? codeData?.code || '0000-0000' : 'XXXX-XXXX'}
           </div>
         </div>
-
-        <div className="mt-3 w-full h-2 bg-cyan-900 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-cyan-400 to-cyan-200 transition-all duration-700 ease-in-out motion-reduce:transition-none"
-            style={{ width: `${progressPercent}%` }}
-          />
-        </div>
-
-        <div className="text-center border border-cyan-400 rounded-xl py-4 px-6 bg-black/30">
-          <p className="text-lg text-cyan-300 font-semibold">
-            Tickets Sold: <span className="text-white">{liveTickets}</span>
-          </p>
-        </div>
-
-        <div className="flex justify-center">
-          <LiveActivityFeed />
-        </div>
-
-        {timeLeft && (
+ {timeLeft && (
           <div className="grid grid-cols-4 gap-2 justify-center text-center">
             {['days', 'hours', 'minutes', 'seconds'].map((label, i) => (
               <div key={i}>
@@ -222,6 +204,25 @@ export default function PiCashCodePage() {
             ))}
           </div>
         )}
+       
+ <div className="mt-3 w-full h-2 bg-cyan-900 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-cyan-400 to-cyan-200 transition-all duration-700 ease-in-out motion-reduce:transition-none"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+        <div className="flex justify-center">
+          <LiveActivityFeed />
+        </div>
+        <div className="text-center border border-cyan-400 rounded-xl py-4 px-6 bg-black/30">
+          <p className="text-lg text-cyan-300 font-semibold">
+            Tickets Sold: <span className="text-white">{liveTickets}</span>
+          </p>
+        </div>
+
+        
+
+       
 
         <div className="flex items-center justify-center gap-6">
           <button onClick={() => setQuantity((q) => Math.max(1, q - 1))} className="text-black font-bold bg-cyan-300 hover:bg-cyan-400 rounded-full px-4 py-1">−</button>
