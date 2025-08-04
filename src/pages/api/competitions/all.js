@@ -27,6 +27,7 @@ export default async function handler(req, res) {
         'comp.slug': 1,
         'comp.paymentType': 1,
         'comp.piAmount': 1,
+        'comp.prizeBreakdown': 1,  // Include prizeBreakdown from comp
         title: 1,
         prize: 1,
         imageUrl: 1,
@@ -38,14 +39,15 @@ export default async function handler(req, res) {
 
     // Format the response
     const formattedCompetitions = competitions.map(competition => ({
-      _id: competition._id, // Include MongoDB ObjectId for gifting
+      _id: competition._id,
       comp: {
         ...competition.comp,
         ticketsSold: competition.comp?.ticketsSold || 0,
         totalTickets: competition.comp?.totalTickets || 100,
         entryFee: competition.comp?.entryFee || 0,
         status: competition.comp?.status || 'active',
-        paymentType: competition.comp?.paymentType || 'pi'
+        paymentType: competition.comp?.paymentType || 'pi',
+        prizeBreakdown: competition.comp?.prizeBreakdown || null,
       },
       title: competition.title,
       prize: competition.prize,
@@ -70,4 +72,4 @@ export default async function handler(req, res) {
       code: 'INTERNAL_ERROR'
     });
   }
-} 
+}

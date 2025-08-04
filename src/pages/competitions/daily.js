@@ -1,12 +1,150 @@
 'use client';
 
 import Head from 'next/head';
-import Link from 'next/link';
 import DailyCompetitionCard from '@components/DailyCompetitionCard';
-import { dailyItems, launchWeekItems } from '../../data/competitions';
+import { useState } from 'react';
+
+// Import your static data or define it here
+export const competitionsData = [
+  {
+    _id: "687c330c0d220984a4e83c59",
+    comp: {
+      title: "Ps5 Bundle Giveaway",
+      description: "",
+      prize: "Win This Ps5 Bundle",
+      href: "/competitions/ps5-bundle-giveaway",
+      theme: "tech",
+      imageUrl: "/images/playstation.jpeg",
+      thumbnail: null,
+      winners: [],
+      payments: [],
+      createdAt: "2025-07-20T00:06:36.978+00:00",
+      updatedAt: "2025-07-20T00:06:36.978+00:00",
+      __v: 0,
+    },
+    title: "Ps5 Bundle Giveaway",
+    prize: "Win This Ps5 Bundle",
+    href: "/competitions/ps5-bundle-giveaway",
+    theme: "tech",
+    imageUrl: "/images/playstation.jpeg",
+  },
+  {
+    _id: "688fbfdff765e858a83d4c60",
+    comp: {
+      title: "OMC Mega Pi Drop",
+      description: "",
+      prize: "300 Pi",
+      href: "/competitions/omc-mega-pi-drop",
+      theme: "daily",
+      imageUrl: "/images/your.png",
+      thumbnail: null,
+      winners: [],
+      payments: [],
+      createdAt: "2025-08-03T20:00:31.603+00:00",
+      updatedAt: "2025-08-03T20:00:31.603+00:00",
+      __v: 0,
+    },
+    title: "OMC Mega Pi Drop",
+    prize: "300 Pi",
+    href: "/competitions/omc-mega-pi-drop",
+    theme: "daily",
+    imageUrl: "/images/your.png",
+  },
+  {
+    _id: "688fcd7ff765e858a83d4d1a",
+    comp: {
+      title: "OMC 2,500 Pi Prize Pool",
+      description: "",
+      prize: "2500",
+      href: "/competitions/omc-2500-pi-prize-pool",
+      theme: "pi",
+      imageUrl: "/images/your.png",
+      thumbnail: null,
+      winners: [],
+      payments: [],
+      createdAt: "2025-08-03T20:58:39.285+00:00",
+      updatedAt: "2025-08-03T20:58:39.285+00:00",
+      __v: 0,
+    },
+    title: "OMC 2,500 Pi Prize Pool",
+    prize: "2500",
+    href: "/competitions/omc-2500-pi-prize-pool",
+    theme: "pi",
+    imageUrl: "/images/your.png",
+  },
+  {
+    _id: "688fd1dff765e858a83d4d52",
+    comp: {
+      title: "OMC Pi Mini Jackpot",
+      description: "",
+      prize: "250",
+      href: "/competitions/omc-pi-mini-jackpot",
+      theme: "daily",
+      imageUrl: "/images/your.png",
+      thumbnail: null,
+      winners: [],
+      payments: [],
+      createdAt: "2025-08-03T21:17:19.624+00:00",
+      updatedAt: "2025-08-03T21:17:19.624+00:00",
+      __v: 0,
+    },
+    title: "OMC Pi Mini Jackpot",
+    prize: "250",
+    href: "/competitions/omc-pi-mini-jackpot",
+    theme: "daily",
+    imageUrl: "/images/your.png",
+  },
+  {
+    _id: "688fd3fef765e858a83d4d9f",
+    comp: {
+      title: "OMC Pi Pioneers Draw",
+      description: "",
+      prize: "750",
+      href: "/competitions/omc-pi-pioneers-draw",
+      theme: "daily",
+      imageUrl: "/images/your.png",
+      thumbnail: null,
+      winners: [],
+      payments: [],
+      createdAt: "2025-08-03T21:26:22.132+00:00",
+      updatedAt: "2025-08-03T21:26:22.132+00:00",
+      __v: 0,
+    },
+    title: "OMC Pi Pioneers Draw",
+    prize: "750",
+    href: "/competitions/omc-pi-pioneers-draw",
+    theme: "daily",
+    imageUrl: "/images/your.png",
+  },
+  {
+    _id: "688fd4e1f765e858a83d4dbc",
+    comp: {
+      title: "OMC Mega Pi Draw",
+      description: "",
+      prize: "300",
+      href: "/competitions/omc-mega-pi-draw",
+      theme: "daily",
+      imageUrl: "/images/your.png",
+      thumbnail: null,
+      winners: [],
+      payments: [],
+      createdAt: "2025-08-03T21:30:09.105+00:00",
+      updatedAt: "2025-08-03T21:30:09.105+00:00",
+      __v: 0,
+    },
+    title: "OMC Mega Pi Draw",
+    prize: "300",
+    href: "/competitions/omc-mega-pi-draw",
+    theme: "daily",
+    imageUrl: "/images/your.png",
+  },
+];
+
+
 
 export default function DailyCompetitionsPage() {
-  const allDailyCompetitions = [...launchWeekItems, ...dailyItems];
+  // Filter only daily competitions
+  const dailyCompetitions = competitionsData.filter(item => item.comp?.theme === 'daily');
 
   return (
     <>
@@ -26,22 +164,18 @@ export default function DailyCompetitionsPage() {
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-16 mt-8">
-            {allDailyCompetitions.map((item) => {
+            {dailyCompetitions.map((item) => {
               const hasStarted = new Date(item.comp.startsAt) <= new Date();
-              const slug = item.comp.slug;
 
               return (
-                <Link href={`/competitions/${slug}`} key={slug}>
-                  <div className="cursor-pointer">
-                    <DailyCompetitionCard
-                      comp={item.comp}
-                      title={item.title}
-                      prize={item.prize}
-                      fee={`${item.comp.entryFee.toFixed(2)} π`}
-                      isLive={hasStarted}
-                    />
-                  </div>
-                </Link>
+                <DailyCompetitionCard
+                  key={item.comp.slug || item._id}
+                  comp={item.comp}
+                  title={item.title}
+                  prize={item.prize}
+                  fee={item.comp.entryFee !== undefined ? `${item.comp.entryFee.toFixed(2)} π` : 'Free'}
+                  isLive={hasStarted}
+                />
               );
             })}
           </div>

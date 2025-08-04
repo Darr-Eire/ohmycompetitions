@@ -3,149 +3,45 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 
-const selectedCompetitions = [
-  {
-    _id: '687c330c0d220984a4e83c59',
-    comp: {
-      slug: 'ps5-bundle-giveaway',
-      entryFee: 0.4,
-      totalTickets: 1100,
-      ticketsSold: 14,
-      startsAt: '2025-06-20T14:00:00Z',
-      endsAt: '2025-08-20T14:00:00Z',
-      paymentType: 'pi',
-      piAmount: 0.4,
-      status: 'active',
-      prizePool: 220,
-      title: 'Ps5 Bundle Giveaway',
-      description: '',
-      prize: 'Win This Ps5 Bundle',
-      href: '/competitions/ps5-bundle-giveaway',
-      imageUrl: '/images/playstation.jpeg',
-      theme: 'tech',
-    },
-  },
-  {
-    _id: '687d7d759c8f45807d0affff',
-    comp: {
-      slug: 'omc-launch-week-pi-power',
-      entryFee: 0.5,
-      totalTickets: 500,
-      ticketsSold: 0,
-      startsAt: '2025-07-17T00:00:00Z',
-      endsAt: '2025-08-05T00:00:00Z',
-      paymentType: 'pi',
-      piAmount: 0.5,
-      status: 'active',
-      prizePool: 250,
-      title: 'OMC Launch Week Pi Power',
-      description: '',
-      prize: 'Win 250 Pi',
-      href: '/competitions/omc-launch-week-pi-power',
-      imageUrl: '/images/pi2.png',
-      theme: 'daily',
-    },
-  },
-  {
-    _id: '687d7ded9c8f45807d0b0013',
-    comp: {
-      slug: 'omc-launch-week-pi-giveaway',
-      entryFee: 1,
-      totalTickets: 1000,
-      ticketsSold: 0,
-      startsAt: '2025-07-17T00:00:00Z',
-      endsAt: '2025-08-01T00:00:00Z',
-      paymentType: 'pi',
-      piAmount: 1,
-      status: 'active',
-      prizePool: 1000,
-      title: 'OMC Launch Week Pi Giveaway',
-      description: '',
-      prize: 'Win 1000 Pi',
-      href: '/competitions/omc-launch-week-pi-giveaway',
-      imageUrl: '/images/pi1.png',
-      theme: 'daily',
-    },
-  },
-  {
-    _id: '687d7e7d9c8f45807d0b0021',
-    comp: {
-      slug: 'omc-launch-week-early-pioneers',
-      entryFee: 0.5,
-      totalTickets: 200,
-      ticketsSold: 0,
-      startsAt: '2025-08-01T00:00:00Z',
-      endsAt: '2025-08-02T00:00:00Z',
-      paymentType: 'pi',
-      piAmount: 0.5,
-      status: 'active',
-      prizePool: 100,
-      title: 'OMC Launch Week Early Pioneers',
-      description: 'Join now and compete for the Pi prize!',
-      prize: 'Win 100 Pi',
-      href: '/competitions/omc-launch-week-early-pioneers',
-      imageUrl: '/images/pi3.png',
-      theme: 'daily',
-      maxPerUser: 10,
-    },
-  },
-  {
-    _id: '687d93591981446f9a153164',
-    comp: {
-      slug: 'omc-launch-week-pi-pioneers',
-      entryFee: 0.2,
-      totalTickets: 2500,
-      ticketsSold: 0,
-      startsAt: '2025-07-17T00:00:00Z',
-      endsAt: '2025-07-30T00:00:00Z',
-      paymentType: 'pi',
-      piAmount: 0.2,
-      status: 'active',
-      prizePool: 500,
-      title: 'OMC Launch Week Pi Pioneers',
-      description: '',
-      prize: 'Win 500 Pi',
-      href: '/competitions/omc-launch-week-pi-pioneers',
-      imageUrl: '/images/pi4.png',
-      theme: 'daily',
-    },
-  }
-];
-
 export default function MiniPrizeCarousel() {
   const containerRef = useRef(null);
+  const [competitions, setCompetitions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-
-  const liveCompetitions = (selectedCompetitions || []).filter(
-    (item) => item.comp?.status === 'active'
-  );
-
   const groupSize = 3;
 
   useEffect(() => {
-    if (liveCompetitions.length <= groupSize) return;
+    const fetchData = async () => {
+      try {
+        const res = await fetch('/api/competitions/all');
+        const result = await res.json();
+        if (!result.success) throw new Error('Failed to fetch competitions');
+
+        const liveComps = result.data.filter((item) => item.comp?.status === 'active');
+        setCompetitions(liveComps);
+      } catch (err) {
+        console.error('❌ Error loading competitions:', err);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    if (competitions.length <= groupSize) return; // No rotation needed
 
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => {
         const nextIndex = prevIndex + groupSize;
-        return nextIndex >= liveCompetitions.length ? 0 : nextIndex;
+        return nextIndex >= competitions.length ? 0 : nextIndex;
       });
     }, 6000);
 
     return () => clearInterval(interval);
-  }, [liveCompetitions.length]);
+  }, [competitions]);
 
-  const visibleItems = liveCompetitions.slice(
-    currentIndex,
-    currentIndex + groupSize
-  );
+  const displayItems = competitions.slice(currentIndex, currentIndex + groupSize);
 
-  const displayItems =
-    visibleItems.length < groupSize
-      ? [...visibleItems, ...liveCompetitions.slice(0, groupSize - visibleItems.length)]
-      : visibleItems;
-
-  if (liveCompetitions.length === 0) {
+  if (competitions.length === 0) {
     return (
       <div className="w-full px-2 mt-6 text-center text-cyan-300 font-orbitron">
         No live competitions available.
@@ -158,59 +54,67 @@ export default function MiniPrizeCarousel() {
       <h3 className="text-cyan-300 font-orbitron font-semibold text-center mb-2 text-lg select-none">
         Live Competitions
       </h3>
-      <div
-        ref={containerRef}
-        className="flex justify-center gap-3 transition-all duration-500"
-      >
-        {displayItems.map((item) => {
-          const isDaily = item.comp?.theme === 'daily';
-          const hasImage = !!item.comp?.imageUrl && !isDaily;
-          const daysLeft = getDaysLeft(item.comp.endsAt);
+      <div ref={containerRef} className="flex justify-center gap-3 transition-all duration-500">
+     {displayItems.map((item) => {
+  // Hide image for 'pi' and 'daily' themed competitions
+  const hasImage = !!item.imageUrl && item.theme !== 'pi' && item.theme !== 'daily';
 
-          return (
-            <Link
-              key={item._id}
-              href="/competitions/live-now"
-              className="w-[100px] bg-[#0f172a] border border-cyan-400 rounded-lg shadow text-white text-center font-orbitron px-2 py-2 text-[10px] leading-tight space-y-1 hover:opacity-90 transition"
-            >
-              {hasImage ? (
-                <img
-                  src={item.comp.imageUrl}
-                  alt={item.comp.title}
-                  className="w-full h-[70px] object-cover rounded-md mb-1"
-                />
-              ) : (
-                <div className="h-[70px] mb-1 flex flex-col justify-center items-center rounded-md bg-[#0f172a] text-center px-2 py-1 shadow-inner border border-cyan-400">
-                  <span className="text-[9px] text-cyan-300 uppercase tracking-wider font-medium">
-                    Daily Prize
-                  </span>
-                  <span className="text-[16px] font-extrabold text-cyan-400 leading-tight animate-pulse">
-                    {item.comp.prizePool} π
-                  </span>
-                  <span className="text-[9px] text-cyan-300 uppercase tracking-widest font-light">
-                    Up for Grabs
-                  </span>
-                </div>
-              )}
+  return (
+    <div
+      key={item._id}
+      className="w-[100px] bg-[#0f172a] border border-cyan-400 rounded-lg shadow text-white text-center font-orbitron px-2 py-2 text-[10px] leading-tight space-y-1 opacity-70 cursor-default select-none"
+      // cursor-default disables pointer cursor, select-none disables text selection
+    >
+      {hasImage ? (
+        <img
+          src={item.imageUrl}
+          alt={item.title}
+          className="w-full h-[70px] object-cover rounded-md mb-1"
+        />
+      ) : (
+        <div
+          className="h-[70px] mb-1 flex flex-col justify-center items-center rounded-md bg-[#0f172a] text-center px-3 shadow-inner border border-cyan-400"
+          style={{ minWidth: '80px' }}
+        >
+          <span className="text-[14px] text-cyan-300 uppercase tracking-wider font-medium mb-1 select-none">
+            Prize
+          </span>
+         <span
+  className="text-[14px] font-extrabold text-cyan-400 leading-snug animate-pulse truncate max-w-full select-text"
+  title={item.prize}
+  style={{ lineHeight: 1.1 }}
+>
+  {item.prize ? `${item.prize} π` : 'N/A'}
+</span>
 
-              <div className="font-bold text-[11px] text-cyan-300 truncate">
-                {item.comp.title}
-              </div>
+          <span className="text-[9px] text-cyan-300 uppercase tracking-widest font-light mt-1 select-none">
+            Up for Grabs
+          </span>
+        </div>
+      )}
 
-              <div>
-                Draw: <span className="text-white">{formatDate(item.comp.endsAt)}</span>
-              </div>
+      <div className="font-bold text-[11px] text-cyan-300 truncate">
+        {item.title}
+      </div>
 
-              <div>
-                Fee: <span className="text-white">{item.comp.entryFee.toFixed(2)} π</span>
-              </div>
+      <div>
+        Draw: <span className="text-white">{formatDate(item.comp?.endsAt)}</span>
+      </div>
 
-              <div>
-                Sold: <span className="text-white">{item.comp.ticketsSold.toLocaleString()}</span>
-              </div>
-            </Link>
-          );
-        })}
+      <div>
+        Fee: <span className="text-white">{item.comp?.entryFee?.toFixed(2)} π</span>
+      </div>
+
+      <div>
+        Tickets:{' '}
+        <span className="text-white">
+          {item.comp?.ticketsSold?.toLocaleString()} / {item.comp?.totalTickets?.toLocaleString()}
+        </span>
+      </div>
+    </div>
+  );
+})}
+
       </div>
     </div>
   );

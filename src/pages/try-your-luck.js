@@ -90,21 +90,13 @@ export default function TryYourLuckPage() {
                   <p className="mb-4 text-sm text-gray-200">{game.desc}</p>
 
                   {/* ✅ Conditional Buttons */}
-                  {hasPlayed ? (
-                    <button
-                      disabled
-                      className="bg-gray-700 text-gray-400 font-semibold px-6 py-3 rounded-xl w-full cursor-not-allowed"
-                    >
-                      Already Played Today
-                    </button>
-                  ) : (
-                    <Link
-                      href={game.href}
-                      className="bg-cyan-600 text-white font-semibold px-6 py-3 rounded-xl border border-cyan-500 w-full text-center block hover:bg-cyan-700 transition"
-                    >
-                      Play Now
-                    </Link>
-                  )}
+                <button
+  disabled
+  className="bg-gray-700 text-gray-400 font-semibold px-6 py-3 rounded-xl w-full cursor-not-allowed"
+>
+  Play Now
+</button>
+
                 </div>
               )
             })}

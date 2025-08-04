@@ -14,23 +14,25 @@ export default function CreateCompetitionPage({ descriptions = [] }) {
   const defaultEnd = sevenDaysLater.toISOString().slice(0, 16);
 
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    slug: '',
-    title: '',
-    prize: '',
-    description: '',
-    totalTickets: 100,
-    entryFee: 1,
-    piAmount: 1,
-    theme: 'tech',
-    startsAt: defaultStart,
-    endsAt: defaultEnd,
-    status: 'active',
-    imageUrl: '',
-    thumbnail: '',
-    maxTickets: 1,
-    numberOfWinners: 1
-  });
+const [formData, setFormData] = useState({
+  slug: '',
+  title: '',
+  prize: '',
+  description: '',
+  totalTickets: 100,
+  entryFee: 1,
+  piAmount: 1,
+  theme: 'tech',
+  startsAt: defaultStart,
+  endsAt: defaultEnd,
+  status: 'active',
+  imageUrl: '',
+  thumbnail: '',
+  maxTickets: 1,
+  numberOfWinners: 1,
+  prizes: [''] // 💡 Add this field if it's not already present
+});
+
 
   const generateSlug = (title) => {
     return title
@@ -40,38 +42,58 @@ export default function CreateCompetitionPage({ descriptions = [] }) {
       .replace(/-+/g, '-')
       .trim('-');
   };
+const handlePrizeChange = (index, value) => {
+  const updatedPrizes = [...formData.prizes];
+  updatedPrizes[index] = value;
+  setFormData({ ...formData, prizes: updatedPrizes });
+};
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+const addPrize = () => {
+  if (formData.prizes.length < 10) {
+    setFormData({ ...formData, prizes: [...formData.prizes, ''] });
+  }
+};
 
-    try {
-      const submitData = {
-        ...formData,
-        slug: formData.slug || generateSlug(formData.title),
-        piAmount: formData.piAmount || formData.entryFee
-      };
+const removePrize = (index) => {
+  const updatedPrizes = formData.prizes.filter((_, i) => i !== index);
+  setFormData({ ...formData, prizes: updatedPrizes });
+};
 
-      const res = await fetch('/api/admin/competitions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(submitData),
-      });
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Failed to create competition');
-      }
 
-      alert('✅ Competition created successfully!');
-      router.push('/admin/competitions');
-    } catch (err) {
-      console.error('Error creating competition:', err);
-      alert('❌ Failed to create competition: ' + err.message);
-    } finally {
-      setLoading(false);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+
+  try {
+    const submitData = {
+      ...formData,
+      slug: formData.slug || generateSlug(formData.title),
+      piAmount: formData.piAmount || formData.entryFee,
+      prize: formData.prizes[0] || '' // ✅ This is the key improvement
+    };
+
+    const res = await fetch('/api/admin/competitions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(submitData),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || 'Failed to create competition');
     }
-  };
+
+    alert('✅ Competition created successfully!');
+    router.push('/admin/competitions');
+  } catch (err) {
+    console.error('Error creating competition:', err);
+    alert('❌ Failed to create competition: ' + err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -154,19 +176,44 @@ const ImageOption = ({ label, path }) => (
                   <p className="text-xs text-gray-400 mt-1">Auto-generated from title. Used in competition URL.</p>
                 </div>
 
-                {/* Prize */}
-                <div>
-                  <label className="block text-cyan-300 text-sm font-bold mb-2">Prize *</label>
-                  <input
-                    type="text"
-                    name="prize"
-                    value={formData.prize}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-2 bg-black border border-cyan-400 rounded-lg text-white placeholder-gray-400 focus:border-cyan-300 focus:outline-none"
-                    placeholder="e.g., PlayStation 5 Console"
-                  />
-                </div>
+            {/* Dynamic Prizes */}
+<div>
+  <label className="block text-cyan-300 text-sm font-bold mb-2">Prizes *</label>
+
+  {formData.prizes.map((prize, index) => (
+    <div key={index} className="flex items-center gap-2 mb-2">
+      <input
+        type="text"
+        name={`prize-${index}`}
+        value={prize}
+        onChange={(e) => handlePrizeChange(index, e.target.value)}
+        required
+        className="flex-grow px-4 py-2 bg-black border border-cyan-400 rounded-lg text-white placeholder-gray-400 focus:border-cyan-300 focus:outline-none"
+        placeholder={`Prize ${index + 1}`}
+      />
+      {formData.prizes.length > 1 && (
+        <button
+          type="button"
+          onClick={() => removePrize(index)}
+          className="text-red-400 hover:text-red-300 text-sm"
+        >
+          ✕
+        </button>
+      )}
+    </div>
+  ))}
+
+  {formData.prizes.length < 10 && (
+    <button
+      type="button"
+      onClick={addPrize}
+      className="mt-2 text-cyan-400 hover:text-cyan-300 text-sm underline"
+    >
+      + Add another prize
+    </button>
+  )}
+</div>
+
 
                 {/* Theme */}
                 <div>

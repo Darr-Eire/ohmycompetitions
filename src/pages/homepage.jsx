@@ -217,7 +217,7 @@ export default function HomePage() {
       <main className="space-y-10">
         <Section title="Daily Competitions" items={getCompetitionsByCategory('daily')} viewMoreHref="/competitions/daily" extraClass="mt-12" />
         <Section title="Featured Competitions" items={getCompetitionsByCategory('tech')} viewMoreHref="/competitions/featured" />
-        <Section title="Travel & Lifestyle" items={getCompetitionsByCategory('premium')} viewMoreHref="/competitions/travel" />
+        <Section title="Travel & Lifestyle" items={getCompetitionsByCategory('premium').slice(0, 3)} viewMoreHref="/competitions/travel" />
         <Section title="Pi Giveaways" items={getCompetitionsByCategory('pi')} viewMoreHref="/competitions/pi" extraClass="mt-12" />
         <Section title="Crypto Giveaways" items={getCompetitionsByCategory('crypto')} viewMoreHref="/competitions/crypto-giveaways" />
 

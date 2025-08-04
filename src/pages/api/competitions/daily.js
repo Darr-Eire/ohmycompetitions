@@ -15,12 +15,12 @@ export default async function handler(req, res) {
   try {
     await dbConnect();
 
-    // Find all daily competitions that have started
     const now = new Date();
 
     const competitions = await Competition.find({
       theme: 'daily',
-      'comp.startsAt': { $lte: now }
+      'comp.status': 'active',
+      'comp.startsAt': { $lte: now },
     })
       .select({
         _id: 1,
@@ -40,7 +40,7 @@ export default async function handler(req, res) {
         'comp.startsAt': 1,
         'comp.endsAt': 1,
         'comp.location': 1,
-        'comp.maxTicketsPerUser': 1
+        'comp.maxTicketsPerUser': 1,
       })
       .lean();
 
@@ -62,12 +62,12 @@ export default async function handler(req, res) {
       startsAt: competition.comp?.startsAt,
       endsAt: competition.comp?.endsAt,
       location: competition.comp?.location || 'Online',
-      maxTicketsPerUser: competition.comp?.maxTicketsPerUser || 10
+      maxTicketsPerUser: competition.comp?.maxTicketsPerUser || 10,
     }));
 
-    res.status(200).json({ competitions: formatted });
+    res.status(200).json({ success: true, data: formatted });
   } catch (error) {
     console.error('❌ Error fetching daily competitions:', error);
-    res.status(500).json({ error: 'Failed to fetch competitions' });
+    res.status(500).json({ success: false, error: 'Failed to fetch competitions' });
   }
 }

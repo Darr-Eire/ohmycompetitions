@@ -34,6 +34,7 @@ export default async function handler(req, res) {
         'comp.paymentType': 1,
         'comp.piAmount': 1,
         'comp.location': 1,
+        'comp.prizeBreakdown': 1, // <-- Added this line
         title: 1,
         prize: 1,
         imageUrl: 1,
@@ -61,7 +62,6 @@ export default async function handler(req, res) {
       imageUrl: competition.imageUrl || '/images/default-prize.png',
       theme: competition.theme,
       href: competition.href,
-      // Flatten comp fields to top level
       ticketsSold: competition.comp?.ticketsSold || 0,
       totalTickets: competition.comp?.totalTickets || 100,
       entryFee: competition.comp?.entryFee || 0,
@@ -70,7 +70,8 @@ export default async function handler(req, res) {
       paymentType: competition.comp?.paymentType || 'pi',
       startsAt: competition.comp?.startsAt,
       endsAt: competition.comp?.endsAt,
-      location: competition.comp?.location || 'Online'
+      location: competition.comp?.location || 'Online',
+      prizeBreakdown: competition.comp?.prizeBreakdown || {},  // <-- Added this line
     };
 
     console.log('✅ Competition found and formatted:', {
@@ -90,4 +91,4 @@ export default async function handler(req, res) {
       code: 'INTERNAL_ERROR'
     });
   }
-} 
+}
