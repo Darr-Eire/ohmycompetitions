@@ -122,7 +122,7 @@ export const techItems = [
 export const premiumItems = [
  {
   comp: {
-    slug: 'dubai-luxury-holiday',
+    slug: 'luxury-holiday',
     entryFee: null,
     totalTickets: null,
     ticketsSold: 0,
@@ -133,8 +133,8 @@ export const premiumItems = [
     comingSoon: true,
     status: 'active',
   },
-  title: 'Dubai Luxury Holiday',
-  href: '/competitions/dubai-luxury-holiday',
+  title: 'Luxury Holiday',
+  href: '/competitions/luxury-holiday',
   prize: '7-Day Dubai Trip',
   imageUrl: '/images/dubai-luxury-holiday.jpg',
   theme: 'premium',
@@ -237,50 +237,6 @@ export const dailyItems = [];
 
 export const piItems = [
    
-  {
-    comp: {
-      slug: 'pi-giveaway-10k',
-      entryFee: 2.2,
-      totalTickets: 5200,
-      ticketsSold: 0,
-      startsAt: '2025-09-26T00:00:00Z',
-      endsAt: '2025-10-26T00:00:00Z',
-      status: 'active',
-      prizeBreakdown: {
-        first: '5,000 π',
-        second: '3,000 π',
-        third: '2,000 π',
-      },
-    },
-    title: '10,000 Pi Prize Pool',
-    prize: '10,000 π',
-    imageUrl: '/images/100000.png',
-    href: '/competitions/pi-giveaway-10k',
-    theme: 'pi',
-  },
-  {
-    comp: {
-      slug: 'pi-giveaway-5k',
-      entryFee: 1.8,
-      totalTickets: 2900,
-      ticketsSold: 0,
-      startsAt: '2025-08-08T00:00:00Z',
-      endsAt: '2025-09-01T00:00:00Z',
-      status: 'active',
-      prizeBreakdown: {
-        first: '2,500 π',
-        second: '1,500 π',
-        third: '1,000 π',
-      },
-    },
-    title: '5,000 Pi Prize Pool',
-    prize: '5,000 π',
-    href: '/competitions/pi-giveaway-5k',
-    imageUrl: '/images/50000.png',
-    theme: 'pi',
-  },
-
-
 ];
 
 
@@ -419,13 +375,6 @@ export const competitionsData = [
   },
 ];
 
-
-
-
-
-
-
-
 export const freeItems = [
 
 {
@@ -532,8 +481,6 @@ export const cryptoGiveawaysItems = [
     theme: 'crypto',
   },
 ];
-
-
 
 export const allComps = [
   ...techItems,

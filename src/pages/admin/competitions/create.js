@@ -209,29 +209,33 @@ const ImageOption = ({ label, path }) => (
       onClick={addPrize}
       className="mt-2 text-cyan-400 hover:text-cyan-300 text-sm underline"
     >
-      + Add another prize
+       Add another prize
     </button>
   )}
 </div>
 
 
-                {/* Theme */}
-                <div>
-                  <label className="block text-cyan-300 text-sm font-bold mb-2">Theme *</label>
-                  <select
-                    name="theme"
-                    value={formData.theme}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 bg-black border border-cyan-400 rounded-lg text-white focus:border-cyan-300 focus:outline-none"
-                  >
-                    <option value="tech">Tech</option>
-                    <option value="premium">Premium</option>
-                    <option value="pi">Pi Rewards</option>
-                    <option value="daily">Daily</option>
-                    <option value="crypto">Crypto</option>
-                    <option value="free">Free</option>
-                  </select>
-                </div>
+              {/* Theme */}
+<div>
+  <label className="block text-cyan-300 text-sm font-bold mb-2">Category (Theme) *</label>
+  <select
+    name="theme"
+    value={formData.theme}
+    onChange={handleChange}
+    className="w-full px-4 py-2 bg-black border border-cyan-400 rounded-lg text-white focus:border-cyan-300 focus:outline-none"
+  >
+    <option value="tech">💻 Featured / Tech</option>
+    <option value="premium">🌴 Travel & Lifestyle</option>
+    <option value="pi">🟡 Pi Giveaways</option>
+    <option value="daily">📆 Daily Competitions</option>
+    <option value="crypto">💰 Crypto Giveaways</option>
+    <option value="free">🆓 Free</option>
+    <option value="regional">🌍 Regional Giveaways</option>
+    <option value="event">🎉 Special Events</option>
+    <option value="launch">🚀 OMC Launch Week</option>
+  </select>
+</div>
+
 
                 {/* Total Tickets */}
                 <div>

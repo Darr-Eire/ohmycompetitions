@@ -9,7 +9,7 @@ const tutorialSteps = [
   },
   {
     title: 'Login & Sign Up',
-    desc: 'At the top right corner, tap “Login” or “Sign Up” to connect your Pi wallet. This secures your entries, tracks your wins and ensures fair play. You need to be logged in to join competitions or gift tickets.',
+    desc: 'At the top right corner, tap “Login” or “Sign Up” to connect your Pi account and wallet. This secures your entries, tracks your wins and ensures fair play. You need to be logged in to join competitions or gift tickets.',
   },
   {
     title: 'Navigation Menu',

@@ -12,6 +12,7 @@ import CompetitionCard from '@components/CompetitionCard';
 import MiniPrizeCarousel from '@components/MiniPrizeCarousel';
 import { miniGames } from '@data/minigames';
 import TutorialOverlay from 'components/TutorialOverlay';
+import LaunchCompetitionCard from 'components/LaunchCompetitionCard';
 
 import {
   dailyItems,
@@ -152,13 +153,27 @@ export default function HomePage() {
     const theme = item.theme || 'tech';
 
     // Only filter out non-admin for 'daily'
-    if (category === 'daily') {
-      const isFromStatic =
-        [...techItems, ...premiumItems, ...piItems, ...dailyItems, ...freeItems, ...cryptoGiveawaysItems]
-          .some(staticItem => staticItem.comp?.slug === item.comp?.slug);
+  const getCompetitionsByCategory = (category) => {
+  const staticSlugs = new Set(
+    [...techItems, ...premiumItems, ...piItems, ...dailyItems, ...freeItems, ...cryptoGiveawaysItems]
+      .map(item => item.comp?.slug)
+      .filter(Boolean)
+  );
 
-      return theme === category && !isFromStatic;
+  return liveCompetitions.filter(item => {
+    const theme = item.theme || 'tech';
+    const isStatic = staticSlugs.has(item.comp?.slug);
+
+    // Show only dynamic (non-static) for 'daily' and 'pi'
+    if (['daily', 'pi'].includes(category)) {
+      return theme === category && !isStatic;
     }
+
+    // All others (static + dynamic)
+    return theme === category;
+  });
+};
+
 
     // Allow all others (static + admin)
     return theme === category;
@@ -215,11 +230,34 @@ export default function HomePage() {
       </div>
 
       <main className="space-y-10">
-        <Section title="Daily Competitions" items={getCompetitionsByCategory('daily')} viewMoreHref="/competitions/daily" extraClass="mt-12" />
+        <Section
+  title=" OMC Launch Week"
+  items={getCompetitionsByCategory('launch')}
+  viewMoreHref="/competitions/launch-week"
+/>
+
         <Section title="Featured Competitions" items={getCompetitionsByCategory('tech')} viewMoreHref="/competitions/featured" />
-        <Section title="Travel & Lifestyle" items={getCompetitionsByCategory('premium').slice(0, 3)} viewMoreHref="/competitions/travel" />
+                <Section title="Daily Competitions" items={getCompetitionsByCategory('daily')} viewMoreHref="/competitions/daily" extraClass="mt-12" />
         <Section title="Pi Giveaways" items={getCompetitionsByCategory('pi')} viewMoreHref="/competitions/pi" extraClass="mt-12" />
-        <Section title="Crypto Giveaways" items={getCompetitionsByCategory('crypto')} viewMoreHref="/competitions/crypto-giveaways" />
+
+        <Section title="Travel & Lifestyle" items={getCompetitionsByCategory('premium').slice(0, 3)} viewMoreHref="/competitions/travel" />
+<Section
+  title=" Special Events"
+  subtitle="(Coming Soon)"
+  items={getCompetitionsByCategory('event')}
+  viewMoreHref="/competitions/special-events"
+/>
+
+<Section
+  title=" Regional Giveaways"
+  subtitle="(Coming Soon)"
+  items={getCompetitionsByCategory('regional')}
+  viewMoreHref="/competitions/regional"
+/>
+
+
+
+
 
        <section className="w-full bg-white/5 backdrop-blur-lg px-4 sm:px-6 py-8 my-4 border border-cyan-300 rounded-3xl shadow-[0_0_60px_#00ffd577] neon-outline">
   <div className="max-w-7xl mx-auto">
@@ -267,7 +305,7 @@ export default function HomePage() {
   );
 }
 
-function Section({ title, items = [], viewMoreHref, viewMoreText = 'View More', extraClass = '' }) {
+function Section({ title, subtitle, items = [], viewMoreHref, viewMoreText = 'View More', extraClass = '' }) {
   const lower = title.toLowerCase();
   const isDaily = lower.includes('daily');
   const isFree = lower.includes('free');
@@ -280,6 +318,9 @@ function Section({ title, items = [], viewMoreHref, viewMoreText = 'View More', 
         <h2 className="w-full text-base font-bold text-center text-cyan-300 px-4 py-3 rounded-xl font-orbitron shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
           {title}
         </h2>
+        {subtitle && (
+          <p className="text-sm text-cyan-200 mt-1 italic">{subtitle}</p>
+        )}
       </div>
 
       <div className="centered-carousel lg:hidden">
@@ -302,15 +343,42 @@ function Section({ title, items = [], viewMoreHref, viewMoreText = 'View More', 
   );
 }
 
+
 function renderCard(item, i, { isDaily, isFree, isPi, isCrypto }) {
   const key = item?.comp?.slug || `item-${i}`;
   if (!item?.comp) return null;
 
-  if (isDaily) return <DailyCompetitionCard key={key} {...item} />;
+  const useDailyCardThemes = ['daily', 'regional', 'launch'];
+  const useCompetitionCardThemes = ['event'];
+
+  const theme = item.theme || 'tech';
+
+  // Explicit override for themes
+if (theme === 'launch') return <LaunchCompetitionCard key={key} {...item} />;
+
+if (useDailyCardThemes.includes(theme)) return <DailyCompetitionCard key={key} {...item} />;
+
+  if (useCompetitionCardThemes.includes(theme)) {
+    return (
+      <CompetitionCard
+        key={key}
+        comp={{ ...item.comp, comingSoon: item.comp.comingSoon ?? false }}
+        title={item.title}
+        prize={item.prize}
+        fee={`${(item.comp.entryFee ?? 0).toFixed(2)} π`}
+        imageUrl={item.imageUrl}
+        endsAt={item.comp.endsAt}
+        disableGift
+      />
+    );
+  }
+
+  // Other special types
   if (isFree) return <FreeCompetitionCard key={key} {...item} />;
   if (isPi) return <PiCompetitionCard key={key} {...item} />;
   if (isCrypto) return <CryptoGiveawayCard key={key} {...item} />;
 
+  // Default fallback
   return (
     <CompetitionCard
       key={key}
@@ -324,6 +392,8 @@ function renderCard(item, i, { isDaily, isFree, isPi, isCrypto }) {
     />
   );
 }
+
+
 
 function TopWinnersCarousel() {
   const winners = [
