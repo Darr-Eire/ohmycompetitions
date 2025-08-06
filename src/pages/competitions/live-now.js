@@ -6,6 +6,7 @@ import PiCompetitionCard from '@components/PiCompetitionCard';
 import DailyCompetitionCard from '@components/DailyCompetitionCard';
 import FreeCompetitionCard from '@components/FreeCompetitionCard';
 import CryptoGiveawayCard from '@components/CryptoGiveawayCard';
+import LaunchCompetitionCard from '@components/LaunchCompetitionCard';
 
 export default function AllCompetitionsPage() {
   const [competitions, setCompetitions] = useState([]);
@@ -71,6 +72,8 @@ export default function AllCompetitionsPage() {
     };
 
     switch (item.theme?.toLowerCase()) {
+      case 'launch':
+        return <LaunchCompetitionCard {...props} />;
       case 'pi':
         return <PiCompetitionCard {...props} />;
       case 'daily':
@@ -94,8 +97,9 @@ export default function AllCompetitionsPage() {
 
     return Object.entries(grouped).map(([theme, comps]) => (
       <div key={theme} className="mb-12">
-      <h2 className="text-2xl font-bold text-cyan-300 mb-4 capitalize text-center">{theme} Competitions</h2>
-
+        <h2 className="text-2xl font-bold text-cyan-300 mb-4 capitalize text-center">
+          {theme} Competitions
+        </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-16">
           {comps.map((item) => renderCompetitionCard(item))}
         </div>

@@ -201,7 +201,7 @@ useEffect(() => {
           {/* Enhanced Ticket Information */}
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-400">Tickets</span>
+              <span className="text-sm text-cyan-300">Tickets Sold</span>
               <div className="text-right">
               {status === 'COMING SOON' ? (
   <span className="text-sm font-semibold text-gray-300">TBA</span>

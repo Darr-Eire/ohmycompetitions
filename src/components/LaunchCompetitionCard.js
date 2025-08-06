@@ -77,34 +77,43 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize, imageUr
   return (
     <div className="flex flex-col w-full max-w-xs mx-auto bg-[#0f172a] border border-cyan-600 rounded-2xl shadow-lg text-white font-orbitron overflow-hidden transition-transform duration-300 hover:scale-[1.03]">
       
-      {/* Header */}
-      <div className="px-4 pt-4 pb-2 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
-        <h3 className="text-base font-bold text-white">{title || 'Launch Competition'}</h3>
-        <span className="text-xs bg-cyan-500 text-black px-2 py-1 rounded-full whitespace-nowrap">
-          Launch Week
-        </span>
-      </div>
+      
+   {/* Header and Status Section */}
+<div className="px-4 pt-0 space-y-2">
+  {/* Card Title */}
+<div className="px-4 pt-4 text-center">
+  <h3 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-cyan-300 to-blue-500 text-transparent bg-clip-text drop-shadow-md">
+    {title}
+  </h3>
+</div>
 
-      {/* Status */}
-      <div className="px-4 pb-1">
-        <div className={`text-center text-xs font-bold py-1 rounded-md ${
-          status === 'LIVE NOW'
-            ? 'bg-green-400 text-black animate-pulse'
-            : status === 'COMING SOON'
-              ? 'bg-yellow-500 text-black'
-              : status === 'ENDED'
-                ? 'bg-red-600 text-white'
-                : 'bg-orange-500 text-black'
-        }`}>
-          {status}
-        </div>
-      </div>
+
+  {/* Status Label */}
+  <div>
+    <div
+      className={`text-center text-xs font-bold py-1 rounded-md ${
+        status === 'LIVE NOW'
+          ? 'bg-green-400 text-black animate-pulse'
+          : status === 'COMING SOON'
+            ? 'bg-yellow-500 text-black'
+            : status === 'ENDED'
+              ? 'bg-red-600 text-white'
+              : 'bg-orange-500 text-black'
+      }`}
+    >
+      {status}
+    </div>
+  </div>
+</div>
+
 
       {/* Multiple Winners Banner */}
       <div className="text-center text-xs bg-cyan-500 text-black font-semibold py-1 mt-2 mx-4 rounded-md">
         1st, 2nd & 3rd Prizes
       </div>
-
+<p className="text-center text-xs text-white mt-4">
+  Join us this Launch Week and be part of Pi history
+</p>
       {/* Timer */}
       {showCountdown && (
         <div className="text-center mt-2 text-cyan-300 text-sm font-bold">{timeLeft}</div>
@@ -135,7 +144,7 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize, imageUr
         {/* Ticket Progress and Warnings */}
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-400">Tickets</span>
+            <span className="text-sm text-cyan-300">Tickets Sold</span>
             <div className="text-right">
               {status === 'COMING SOON' ? (
                 <span className="text-sm font-semibold text-gray-300">TBA</span>
@@ -146,7 +155,7 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize, imageUr
                   isNearlyFull ? 'text-yellow-400' : 
                   'text-gray-300'
                 }`}>
-                  Sold: {progress}% ({sold.toLocaleString()} / {total.toLocaleString()})
+                {progress}% ({sold.toLocaleString()} / {total.toLocaleString()})
                 </span>
               )}
               {isSoldOut && (

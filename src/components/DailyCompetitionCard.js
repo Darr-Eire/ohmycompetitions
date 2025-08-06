@@ -78,7 +78,6 @@ export default function DailyCompetitionCard({ comp, title, prize, fee }) {
     return () => clearInterval(interval)
   }, [endsAt, startsAt])
 
-  const numberOfWinners = comp?.numberOfWinners || 1
   const prizesArray = Array.isArray(comp?.prizes) ? comp.prizes : []
 
   return (
@@ -98,30 +97,28 @@ export default function DailyCompetitionCard({ comp, title, prize, fee }) {
           {/* Highlight with Prize */}
           <div className="bg-gradient-to-r from-cyan-500/30 via-cyan-400/20 to-cyan-500/30 border border-cyan-400/50 p-2 rounded text-center text-sm font-semibold mb-2 shadow-md">
             <p className="text-white">{getCustomHighlightMessage(comp)}</p>
-           <div className="mt-1 space-y-1">
-  {comp.prizeBreakdown?.first && (
-    <p className="text-white font-bold text-lg">
-      🥇 1st Prize <span className="text-white">{comp.prizeBreakdown.first} π</span>
-    </p>
-  )}
-  {comp.prizeBreakdown?.second && (
-    <p className="text-white font-bold text-lg">
-      🥈 2nd Prize <span className="text-white">{comp.prizeBreakdown.second} π</span>
-    </p>
-  )}
-  {comp.prizeBreakdown?.third && (
-    <p className="text-white font-bold text-lg">
-      🥉 3rd Prize <span className="text-white">{comp.prizeBreakdown.third} π</span>
-    </p>
-  )}
-
-  {/* Fallback if no prizeBreakdown */}
-  {!comp.prizeBreakdown && (
-    <p className="text-white font-bold text-lg">
-      Top Prize <span className="text-white">{comp?.prize || prize || 'No prize found'} π</span>
-    </p>
-  )}
-</div>
+            <div className="mt-1 space-y-1">
+              {comp.prizeBreakdown?.first && (
+                <p className="text-white font-bold text-lg">
+                  🥇 1st Prize <span className="text-white">{comp.prizeBreakdown.first} π</span>
+                </p>
+              )}
+              {comp.prizeBreakdown?.second && (
+                <p className="text-white font-bold text-lg">
+                  🥈 2nd Prize <span className="text-white">{comp.prizeBreakdown.second} π</span>
+                </p>
+              )}
+              {comp.prizeBreakdown?.third && (
+                <p className="text-white font-bold text-lg">
+                  🥉 3rd Prize <span className="text-white">{comp.prizeBreakdown.third} π</span>
+                </p>
+              )}
+              {!comp.prizeBreakdown && (
+                <p className="text-white font-bold text-lg">
+                  Top Prize <span className="text-white">{comp?.prize || prize || 'No prize found'} π</span>
+                </p>
+              )}
+            </div>
 
             <p className="mt-1 text-sm text-cyan-300 font-medium tracking-wide animate-pulse">
               Only {total - sold} tickets left! 🔥
@@ -138,46 +135,46 @@ export default function DailyCompetitionCard({ comp, title, prize, fee }) {
           </div>
 
           {/* Details Grid */}
-          <div className="grid grid-cols-2 gap-1 text-white text-sm mb-3">
-            <p className="font-semibold text-left">Starts</p>
-            <p className="font-semibold text-right tabular-nums">
-              {startsAt ? new Date(startsAt).toLocaleDateString('en-GB') : 'TBA'}
-            </p>
+         <div className="grid grid-cols-2 gap-1 text-sm mb-3">
+  <p className="font-semibold text-left text-cyan-300">Starts</p>
+  <p className="font-semibold text-right tabular-nums text-white">
+    {startsAt ? new Date(startsAt).toLocaleDateString('en-GB') : 'TBA'}
+  </p>
 
-            <p className="font-semibold text-left">Draw</p>
-            <p className="font-semibold text-right tabular-nums">
-              {endsAt ? new Date(endsAt).toLocaleDateString('en-GB') : 'TBA'}
-            </p>
+  <p className="font-semibold text-left text-cyan-300">Draw</p>
+  <p className="font-semibold text-right tabular-nums text-white">
+    {endsAt ? new Date(endsAt).toLocaleDateString('en-GB') : 'TBA'}
+  </p>
 
-            {showCountdown && (
-              <div className="col-span-2 text-center text-sm text-red-400 font-bold tracking-wider">
-                ⏳ Draw in: <span className="font-mono">{timeLeft}</span>
-              </div>
-            )}
+  {showCountdown && (
+    <div className="col-span-2 text-center text-sm text-red-400 font-bold tracking-wider">
+      ⏳ Draw in: <span className="font-mono">{timeLeft}</span>
+    </div>
+  )}
 
-           <p className="font-semibold text-left">Top Prize</p>
-<p className="font-semibold text-right tabular-nums">
-  {prizesArray.length > 0
-    ? `${prizesArray[0]} π`
-    : `${prize} π`}
-</p>
+  <p className="font-semibold text-left text-cyan-300">Top Prize</p>
+  <p className="font-semibold text-right tabular-nums text-white">
+    {prizesArray.length > 0
+      ? `${prizesArray[0]} π`
+      : `${prize} π`}
+  </p>
 
+  <p className="font-semibold text-left text-cyan-300">Fee</p>
+  <p className="font-semibold text-right tabular-nums text-white">
+    {isNaN(entryFee) ? 'TBA' : `${entryFee.toFixed(2)} π`}
+  </p>
 
-        
+  <p className="font-semibold text-left text-cyan-300">Tickets</p>
+  <p className="font-semibold text-right tabular-nums text-white">
+    {total.toLocaleString()}
+  </p>
 
-            <p className="font-semibold text-left">Fee</p>
-            <p className="font-semibold text-right tabular-nums">
-              {isNaN(entryFee) ? 'TBA' : `${entryFee.toFixed(2)} π`}
-            </p>
+  <p className="font-semibold text-left text-cyan-300">Max Per User</p>
+  <p className="font-semibold text-right tabular-nums text-white">
+    {comp.maxTicketsPerUser ? comp.maxTicketsPerUser.toLocaleString() : '10'}
+  </p>
+</div>
 
-            <p className="font-semibold text-left">Tickets</p>
-            <p className="font-semibold text-right tabular-nums">{total.toLocaleString()}</p>
-
-            <p className="font-semibold text-left">Max Per User</p>
-            <p className="font-semibold text-right tabular-nums">
-              {comp.maxTicketsPerUser ? comp.maxTicketsPerUser.toLocaleString() : '10'}
-            </p>
-          </div>
 
           {/* Prize Breakdown Section */}
           {comp.prizeBreakdown && (
@@ -199,7 +196,7 @@ export default function DailyCompetitionCard({ comp, title, prize, fee }) {
                 style={{ width: `${percent}%` }}
               />
             </div>
-            <p className="text-center text-xs text-gray-400 mb-3">
+            <p className="text-center text-xs text-white mb-3">
               Sold: <span className="text-white font-semibold">{sold.toLocaleString()}</span> / {total.toLocaleString()} ({percent}%)
             </p>
           </div>
