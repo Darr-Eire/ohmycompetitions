@@ -13,11 +13,4 @@ export const miniGames = [
     desc: 'Our secret vault code stands between you and hidden rewards. One shot. Can you crack it?',
     storageKey: 'hackVaultPlayed',
   },
-  {
-    title: 'Pi Stacker',
-    href: '/try-your-luck/pi-stacker',
-    icon: '🧱',
-    desc: 'Stack the blocks perfectly to the top to win Pi. One slip and it’s game over. Do you have the timing and precision to win?',
-    storageKey: 'piStackerPlayed',
-  },
 ];

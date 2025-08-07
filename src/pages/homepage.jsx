@@ -135,15 +135,24 @@ export default function HomePage() {
     let allMerged = [...mergedItems, ...adminOnlyCompetitions];
 
     // 💥 Move admin competitions first
-    allMerged.sort((a, b) => {
-      const aAdmin = !staticSlugs.has(a.comp?.slug);
-      const bAdmin = !staticSlugs.has(b.comp?.slug);
+  allMerged.sort((a, b) => {
+  const now = Date.now();
 
-      if (aAdmin && !bAdmin) return -1;
-      if (!aAdmin && bAdmin) return 1;
+  const aStarts = new Date(a.comp.startsAt).getTime();
+  const aEnds   = new Date(a.comp.endsAt).getTime();
+  const bStarts = new Date(b.comp.startsAt).getTime();
+  const bEnds   = new Date(b.comp.endsAt).getTime();
 
-      return 0;
-    });
+  const aLive = aStarts <= now && now < aEnds;
+  const bLive = bStarts <= now && now < bEnds;
+  if (aLive !== bLive) return aLive ? -1 : 1;
+
+  const aAdmin = !staticSlugs.has(a.comp.slug);
+  const bAdmin = !staticSlugs.has(b.comp.slug);
+  if (aAdmin !== bAdmin) return aAdmin ? -1 : 1;
+
+  return 0;
+});
 
     return allMerged;
   };
@@ -276,7 +285,7 @@ export default function HomePage() {
         status: 'active',
       }}
       title="Pi To The Moon"
-      prize="10,000 π"
+      prize="7,500 π"
       hideEntryButton
       buttonLabel="View Details"
     />

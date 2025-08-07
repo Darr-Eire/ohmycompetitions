@@ -37,7 +37,8 @@ export default function Header() {
     ['Live Now', '/competitions/live-now'],
     ['Featured', '/competitions/featured'],
     ['Travel', '/competitions/travel'],
-    ['Crypto', '/competitions/crypto-giveaways'],
+    ['Featured', '/competitions/featured'],
+    ['Travel', '/competitions/travel'],
     ['Daily', '/competitions/daily'],
    
   ];

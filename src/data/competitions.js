@@ -388,7 +388,7 @@ export const freeItems = [
     location: 'Online Global Draw',
   },
   title: 'Pi To The Moon',
-  prize: '10,000 π',
+  prize: '7,500 π',
   href: '/competitions/pi-to-the-moon',
   theme: 'free',
 },

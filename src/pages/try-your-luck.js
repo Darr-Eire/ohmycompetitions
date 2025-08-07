@@ -4,7 +4,7 @@ import Head from 'next/head'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { getStreak } from 'lib/streak'
-import { miniGames as games } from '@data/minigames';
+import { miniGames as games } from '@data/minigames'
 
 export default function TryYourLuckPage() {
   const [streak, setStreak] = useState(0)
@@ -19,7 +19,7 @@ export default function TryYourLuckPage() {
 
   function refreshPlayedMap() {
     const map = {}
-    games.forEach((g) => {
+    games.forEach(g => {
       map[g.storageKey] = Boolean(localStorage.getItem(g.storageKey))
     })
     setPlayedMap(map)
@@ -70,12 +70,13 @@ export default function TryYourLuckPage() {
               Daily Streak: {streak} days
             </p>
             <p className="text-sm text-gray-300 mb-4">
-              Next reset in: <span className="text-white font-semibold">{resetCountdown}</span>
+              Next reset in:{' '}
+              <span className="text-white font-semibold">{resetCountdown}</span>
             </p>
           </div>
 
           <div className="space-y-6">
-            {games.map((game) => {
+            {games.map(game => {
               const hasPlayed = playedMap[game.storageKey]
 
               return (
@@ -89,34 +90,66 @@ export default function TryYourLuckPage() {
                   </h2>
                   <p className="mb-4 text-sm text-gray-200">{game.desc}</p>
 
-                  {/* ✅ Conditional Buttons */}
-                <button
-  disabled
-  className="bg-gray-700 text-gray-400 font-semibold px-6 py-3 rounded-xl w-full cursor-not-allowed"
->
-  Play Now
-</button>
-
+                  {/* Conditional Play Button */}
+                  {hasPlayed ? (
+                    <div
+                      className="bg-gray-700 text-gray-400 font-semibold px-6 py-3 rounded-xl w-full"
+                      aria-label="Already played today"
+                    >
+                      Played
+                    </div>
+                  ) : (
+                    <Link
+                      href={game.href}
+                      className="bg-cyan-600 hover:bg-cyan-500 text-white font-semibold px-6 py-3 rounded-xl w-full block transition text-center"
+                    >
+                      Play Now
+                    </Link>
+                  )}
                 </div>
               )
             })}
           </div>
 
           <div className="mt-10 p-6 text-center border border-cyan-700 rounded-2xl bg-gradient-to-br from-[#0f172a]/70 to-[#1e293b]/70 shadow-[0_0_20px_#00fff055]">
-            <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">Got an Idea for a New Mini Game?</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
+              Got an Idea for a New Mini Game?
+            </h2>
             <p className="text-sm text-gray-300 mb-4">
               We're building more games! Got a fun idea or a cultural favourite from your country?
               Reach out anytime
             </p>
             <div className="space-y-2">
               <p className="text-sm text-white">
-                X: <a href="https://x.com/OhMyComps" target="_blank" className="underline text-cyan-300">@OM_Compitions</a>
+                X:{' '}
+                <a
+                  href="https://x.com/OhMyComps"
+                  target="_blank"
+                  className="underline text-cyan-300"
+                >
+                  @OM_Compitions
+                </a>
               </p>
               <p className="text-sm text-white">
-                Instagram: <a href="https://instagram.com/ohmycompetitions" target="_blank" className="underline text-cyan-300">@ohmycompetitions</a>
+                Instagram:{' '}
+                <a
+                  href="https://instagram.com/ohmycompetitions"
+                  target="_blank"
+                  className="underline text-cyan-300"
+                >
+                  @ohmycompetitions
+                </a>
               </p>
               <p className="text-sm text-white">
-                Facebook: <a href="https://www.facebook.com/profile.php?id=61577406478876" target="_blank" rel="noopener noreferrer" className="underline text-cyan-300">Oh My Competitions</a>
+                Facebook:{' '}
+                <a
+                  href="https://www.facebook.com/profile.php?id=61577406478876"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline text-cyan-300"
+                >
+                  Oh My Competitions
+                </a>
               </p>
             </div>
           </div>
@@ -124,9 +157,12 @@ export default function TryYourLuckPage() {
       </main>
 
       <div className="mt-14 text-center">
-        <a href="/terms-conditions" className="text-xs text-cyan-400 underline hover:text-cyan-300 transition">
+        <Link
+          href="/terms-conditions"
+          className="text-xs text-cyan-400 underline hover:text-cyan-300 transition"
+        >
           View full Terms & Conditions
-        </a>
+        </Link>
       </div>
     </>
   )
