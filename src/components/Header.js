@@ -30,17 +30,17 @@ export default function Header() {
   }, []);
 
   const competitionCategories = [
-    
-    ['Pi Competitions', '/competitions/pi'],
-    ['Pi Cash Code', '/pi-cash-code'],
-    ['Pi Battles', '/competitions/pibattles'],
-    ['Live Now', '/competitions/live-now'],
-    ['Featured', '/competitions/featured'],
-    ['Travel', '/competitions/travel'],
-    ['Featured', '/competitions/featured'],
-    ['Travel', '/competitions/travel'],
-    ['Daily', '/competitions/daily'],
-   
+['Launch Week',        '/competitions/launch-week'],
+  ['Pi Competitions',    '/competitions/pi'],
+  ['Pi Cash Code',       '/pi-cash-code'],
+  ['Pi Battles',         '/competitions/pibattles'],
+  ['Live Now',           '/competitions/live-now'],
+  ['Featured',           '/competitions/featured'],
+  ['Travel',             '/competitions/travel'],
+  ['Daily',              '/competitions/daily'],
+  
+  ['Special Events',     '/competitions/special-events'],
+  ['Regional',           '/competitions/regional'],   
   ];
 
  const navItems = [
