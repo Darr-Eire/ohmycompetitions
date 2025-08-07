@@ -1,3 +1,4 @@
+// src/pages/competitions/try-your-luck.js
 'use client'
 
 import Head from 'next/head'
@@ -90,22 +91,14 @@ export default function TryYourLuckPage() {
                   </h2>
                   <p className="mb-4 text-sm text-gray-200">{game.desc}</p>
 
-                  {/* Conditional Play Button */}
-                  {hasPlayed ? (
-                    <div
-                      className="bg-gray-700 text-gray-400 font-semibold px-6 py-3 rounded-xl w-full"
-                      aria-label="Already played today"
-                    >
-                      Played
-                    </div>
-                  ) : (
-                    <Link
-                      href={game.href}
-                      className="bg-cyan-600 hover:bg-cyan-500 text-white font-semibold px-6 py-3 rounded-xl w-full block transition text-center"
-                    >
-                      Play Now
-                    </Link>
-                  )}
+                  {/* ALWAYS render “Play Now” as disabled */}
+                  <button
+                    disabled
+                    className="w-full bg-gray-700 text-gray-400 font-semibold px-6 py-3 rounded-xl cursor-not-allowed"
+                    aria-label="Play Now (disabled)"
+                  >
+                    Play Now
+                  </button>
                 </div>
               )
             })}
