@@ -46,7 +46,7 @@ export default function FreeCompetitionCard({ comp, title, prize }) {
       <section className="w-full max-w-lg bg-gradient-to-r from-[#111827] to-[#0f172a] rounded-2xl border border-cyan-400 shadow-[0_0_40px_#00f2ff44] text-white font-orbitron text-center p-6 space-y-6">
         {/* Header */}
         <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-wide">
-          ✦ {title} ✦
+           {title} 
         </h2>
 
         {/* Draw Date & Status */}
