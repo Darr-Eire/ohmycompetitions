@@ -192,9 +192,9 @@ export default function PiToTheMoonPage() {
   {showDetails && (
     <div className="mt-4 space-y-3 text-left text-sm">
       <p className="text-white italic">
-        This competition is a special thank-you to our early Oh My Competitions
+        This competition is a special thank you to our early Oh My Competitions
         users who believed in us from day one. Your support helped us launch
-        and grow—every ticket you’ve purchased brings us closer to bigger
+        and grow every ticket you’ve purchased brings us closer to bigger
         prizes and more fun for everyone. We couldn’t have done it without you!
       </p>
       <p className="text-cyan-200 italic">
