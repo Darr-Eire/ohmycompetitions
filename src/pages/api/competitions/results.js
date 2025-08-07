@@ -1,6 +1,5 @@
 // /pages/api/competitions/results.js
-import dbConnect from '../../../lib/dbConnect';
-
+import { dbConnect } from 'lib/dbConnect'
 import Competition from '../../../models/Competition';
 
 

@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { dbConnect } from 'lib/dbConnect'
+
 
 export default function ResultsPage() {
   const [results, setResults]   = useState([]);
