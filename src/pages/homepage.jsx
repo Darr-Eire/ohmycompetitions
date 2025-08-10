@@ -229,275 +229,274 @@ export default function HomePage() {
 
   return (
     <>
-      <div className="w-full space-y-8">
-        {/* Welcome */}
-        <div className="text-center text-cyan-300 text-1xl sm:text-base font-medium font-orbitron">
-          ☘️ Céad Míle Fáilte Let The Competitions Begin ☘️
-        </div>
-
-        {/* Marquee */}
-        <div className="overflow-hidden bg-transparent">
-          <div className="marquee-content text-cyan-300 text-md sm:text-base font-medium font-orbitron">
-            Oh My Competitions is all about building with Pi Network for the Pi community. Our OMC launch competitions are zero profit designed to create trust, celebrate early winners and give back to Pioneers. All prizes go directly to you. Add us on all Socials and our Pi Profile darreire2020. More competitions are coming soon across a wide range of exciting categories. Join, win and help shape the future of Pi together.
-          </div>
-        </div>
-      </div>
-
-
-
-      {/* Mini carousel */}
-      <MiniPrizeCarousel />
-
-      {/* Pi Cash Code CTA */}
-      <div className="mt-6 mb-8 flex justify-center">
-        <Link
-          href="/pi-cash-code"
-          className="group relative bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] border border-cyan-500 rounded-xl px-8 py-6 shadow-md hover:shadow-cyan-500/30 transition-all duration-300 text-center w-full max-w-md"
-        >
-          <h1 className="text-2xl sm:text-3xl font-bold relative inline-block text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-500 to-cyan-300 animate-text-shimmer font-orbitron">
-            Pi Cash Code
-          </h1>
-          <p className="mt-2 text-cyan-400 text-sm italic group-hover:text-cyan-200 transition-all duration-300">
-            If you can dream you can win
-          </p>
-          <p className="mt-2 text-cyan-400 text-sm font-semibold underline group-hover:text-cyan-200 transition-all duration-300">
-            Enter Here
-          </p>
-        </Link>
-      </div>
-
-      {/* Main sections */}
-      <main className="space-y-10">
-        <Section
-          title="OMC Launch Week"
-          items={getCompetitionsByCategory('launch')}
-          viewMoreHref="/competitions/launch-week"
-        />
-
-        <Section
-          title="Featured Competitions"
-          items={getCompetitionsByCategory('tech')}
-          viewMoreHref="/competitions/featured"
-        />
-
-        <Section
-          title="Daily Competitions"
-          items={getCompetitionsByCategory('daily')}
-          viewMoreHref="/competitions/daily"
-          extraClass="mt-12"
-        />
-
-        <Section
-          title="Pi Giveaways"
-          items={getCompetitionsByCategory('pi')}
-          viewMoreHref="/competitions/pi"
-          extraClass="mt-12"
-        />
-{/* OMC Step Competitions + Funnel in one block */}
-<section className="mb-16 mt-16">
-  {/* Header */}
-  <div className="text-center mb-6">
-    <h2 className="w-full text-base font-bold text-center text-cyan-300 px-4 py-3 rounded-xl font-orbitron shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
-      OMC Pi Stages Competitions
-    </h2>
-
-    <p className="text-sm text-cyan-200 mt-3 italic flex items-center justify-center gap-6 flex-wrap">
-      <span className="inline-block">
-        Qualify <span className="text-white font-semibold">(Stage&nbsp;1)</span>
-      </span>
-      <span className="inline-block">
-        Advance <span className="text-white font-semibold">(Stages&nbsp;2–4)</span>
-      </span>
-      <span className="inline-block">
-        Win <span className="text-white font-semibold">(Stage&nbsp;5)</span>
-      </span>
-    </p>
+{/* ===== Welcome ===== */}
+<div className="w-full space-y-8">
+  {/* Welcome */}
+  <div className="text-center text-cyan-300 text-xl sm:text-base font-medium font-orbitron">
+    ☘️ Céad Míle Fáilte Let The Competitions Begin ☘️
   </div>
 
-
-  {/* Funnel preview */}
-  <div className="max-w-6xl mx-auto">
-    <FunnelStagesRow
-      s1={safeS1[0]}
-      s2={safeS2[0]}
-      s3={safeS3[0]}
-      s4={safeS4[0]}
-    />
+  {/* Marquee */}
+  <div className="overflow-hidden bg-transparent">
+    <div className="marquee-content text-cyan-300 text-md sm:text-base font-medium font-orbitron">
+      Oh My Competitions is all about building with Pi Network for the Pi community. Our OMC launch competitions are zero profit designed to create trust, celebrate early winners and give back to Pioneers. All prizes go directly to you. Add us on all Socials and our Pi Profile darreire2020. More competitions are coming soon across a wide range of exciting categories. Join, win and help shape the future of Pi together.
+    </div>
   </div>
-
-  {/* Step competitions list */}
-  <div className="mt-8 centered-carousel lg:hidden">
-    {getCompetitionsByCategory('step').map((item, i) =>
-      renderCard(item, i, { isDaily: false, isFree: false, isPi: false, isCrypto: false })
-    )}
-  </div>
-
-  <div className="mt-8 hidden lg:grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-    {getCompetitionsByCategory('step').map((item, i) =>
-      renderCard(item, i, { isDaily: false, isFree: false, isPi: false, isCrypto: false })
-    )}
-  </div>
-
-  {/* View more */}
-  <div className="text-center mt-4">
-    <Link
-      href="\battles"
-      className="inline-block text-base font-bold px-3 py-1.5 rounded-md font-medium text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow hover:opacity-90 transition"
-    >
-      View More
-    </Link>
-  </div>
-</section>
-
-{/* ================== Free Competitions Title ================== */}
-<div className="text-center my-8">
-  <h2 className="w-full text-base font-bold text-center text-cyan-300 px-4 py-3 rounded-xl font-orbitron shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
-    OMC Free Competitions
-  </h2>
 </div>
 
-{/* Free competition highlight */}
-<section className="w-full bg-white/5 backdrop-blur-lg px-4 sm:px-6 py-8 my-4 border border-cyan-300 rounded-3xl shadow-[0_0_60px_#00ffd577] neon-outline">
-  <div className="max-w-7xl mx-auto">
-    <FreeCompetitionCard
-      comp={{
-        slug: 'pi-to-the-moon',
-        startsAt: '',
-        endsAt: '',
-        ticketsSold: 0,
-        totalTickets: 5000,
-        comingSoon: true,
-        status: 'active',
-      }}
-      title="Pi To The Moon"
-      prize="7,500 π"
-      hideEntryButton
-      buttonLabel="View Detail"
-    />
+{/* Mini carousel */}
+<MiniPrizeCarousel />
+
+{/* Pi Cash Code CTA */}
+<div className="mt-6 mb-8 flex justify-center">
+  <Link
+    href="/pi-cash-code"
+    className="group relative bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] border border-cyan-500 rounded-xl px-8 py-6 shadow-md hover:shadow-cyan-500/30 transition-all duration-300 text-center w-full max-w-md"
+  >
+    <h1 className="text-2xl sm:text-3xl font-bold relative inline-block text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-500 to-cyan-300 animate-text-shimmer font-orbitron">
+      Pi Cash Code
+    </h1>
+    <p className="mt-2 text-cyan-400 text-sm italic group-hover:text-cyan-200 transition-all duration-300">
+      If you can dream you can win
+    </p>
+    <p className="mt-2 text-cyan-400 text-sm font-semibold underline group-hover:text-cyan-200 transition-all duration-300">
+      Enter Here
+    </p>
+  </Link>
+</div>
+
+{/* ===== Main sections ===== */}
+<main className="space-y-10">
+  <Section
+    title="OMC Launch Week"
+    items={getCompetitionsByCategory('launch')}
+    viewMoreHref="/competitions/launch-week"
+  />
+
+  <Section
+    title="Featured Competitions"
+    items={getCompetitionsByCategory('tech')}
+    viewMoreHref="/competitions/featured"
+  />
+
+  <Section
+    title="Daily Competitions"
+    items={getCompetitionsByCategory('daily')}
+    viewMoreHref="/competitions/daily"
+    extraClass="mt-12"
+  />
+
+  <Section
+    title="Pi Giveaways"
+    items={getCompetitionsByCategory('pi')}
+    viewMoreHref="/competitions/pi"
+    extraClass="mt-12"
+  />
+
+  {/* OMC Step Competitions + Funnel in one block */}
+  <section className="mb-16 mt-16">
+    {/* Header */}
+    <div className="text-center mb-6">
+      <h2 className="w-full text-base font-bold text-center text-cyan-300 px-4 py-3 rounded-xl font-orbitron shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
+        OMC Pi Stages Competitions
+      </h2>
+
+      <p className="text-sm text-cyan-200 mt-3 italic flex items-center justify-center gap-6 flex-wrap">
+        <span className="inline-block">
+          Qualify <span className="text-white font-semibold">(Stage&nbsp;1)</span>
+        </span>
+        <span className="inline-block">
+          Advance <span className="text-white font-semibold">(Stages&nbsp;2–4)</span>
+        </span>
+        <span className="inline-block">
+          Win <span className="text-white font-semibold">(Stage&nbsp;5)</span>
+        </span>
+      </p>
+    </div>
+
+    {/* Funnel preview */}
+    <div className="max-w-6xl mx-auto">
+      <FunnelStagesRow
+        s1={safeS1[0]}
+        s2={safeS2[0]}
+        s3={safeS3[0]}
+        s4={safeS4[0]}
+      />
+    </div>
+
+    {/* Step competitions list */}
+    <div className="mt-8 centered-carousel lg:hidden">
+      {getCompetitionsByCategory('step').map((item, i) =>
+        renderCard(item, i, { isDaily: false, isFree: false, isPi: false, isCrypto: false })
+      )}
+    </div>
+
+    <div className="mt-8 hidden lg:grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+      {getCompetitionsByCategory('step').map((item, i) =>
+        renderCard(item, i, { isDaily: false, isFree: false, isPi: false, isCrypto: false })
+      )}
+    </div>
+
+    {/* View more */}
+    <div className="text-center mt-4">
+      <Link
+        href="/battles"
+        className="inline-block text-base font-bold px-3 py-1.5 rounded-md font-medium text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow hover:opacity-90 transition"
+      >
+        View More
+      </Link>
+    </div>
+  </section>
+
+  {/* ================== Free Competitions Title ================== */}
+  <div className="text-center my-8">
+    <h2 className="w-full text-base font-bold text-center text-cyan-300 px-4 py-3 rounded-xl font-orbitron shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
+      OMC Free Competitions
+    </h2>
   </div>
-</section>
 
-{/* Coming Soon Categories */}
-<section className="mt-8">
-  <div className="mt-4 grid grid-cols-1 gap-8 md:grid-cols-3">
-    
-    {/* Travel & Lifestyle */}
-    <div>
-      <h4 className="w-full text-sm font-bold text-center text-cyan-300 px-3 py-1.5 rounded-lg font-orbitron shadow-[0_0_15px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
-        Travel & Lifestyle <span className="text-white/50 text-xs">(Coming Soon)</span>
-      </h4>
-      <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {(getCompetitionsByCategory('premium').length
-          ? getCompetitionsByCategory('premium').slice(0, 3)
-          : []
-        ).map((item, idx) => (
-          <div key={item?.comp?.slug || idx} className="rounded-lg border border-white/10 bg-white/5 p-2">
-            <div className="relative h-24 w-full overflow-hidden rounded-md">
-              <Image
-                src={item.imageUrl || item.thumbnail || '/images/placeholder.jpg'}
-                alt={item.title || item?.comp?.title || 'Coming soon'}
-                fill
-                className="object-cover"
-              />
-            </div>
-            <div className="mt-2">
-              <div className="text-white text-sm font-medium truncate">
-                {item.title || item?.comp?.title || 'Coming soon'}
-              </div>
-              <div className="text-white/60 text-xs truncate">
-                {item.prize || item?.comp?.prizeLabel || 'Stay tuned'}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+  {/* Free competition highlight */}
+  <section className="w-full bg-white/5 backdrop-blur-lg px-4 sm:px-6 py-8 my-4 border border-cyan-300 rounded-3xl shadow-[0_0_60px_#00ffd577] neon-outline">
+    <div className="max-w-7xl mx-auto">
+      <FreeCompetitionCard
+        comp={{
+          slug: 'pi-to-the-moon',
+          startsAt: '',
+          endsAt: '',
+          ticketsSold: 0,
+          totalTickets: 5000,
+          comingSoon: true,
+          status: 'active',
+        }}
+        title="Pi To The Moon"
+        prize="7,500 π"
+        hideEntryButton
+        buttonLabel="View Detail"
+      />
     </div>
+  </section>
 
-    {/* Special Events */}
-    <div>
-      <h4 className="w-full text-sm font-bold text-center text-cyan-300 px-3 py-1.5 rounded-lg font-orbitron shadow-[0_0_15px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
-        Special Events <span className="text-white/50 text-xs">(Coming Soon)</span>
-      </h4>
-      <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {(getCompetitionsByCategory('event').length
-          ? getCompetitionsByCategory('event').slice(0, 3)
-          : []
-        ).map((item, idx) => (
-          <div key={item?.comp?.slug || idx} className="rounded-lg border border-white/10 bg-white/5 p-2">
-            <div className="relative h-24 w-full overflow-hidden rounded-md">
-              <Image
-                src={item.imageUrl || item.thumbnail || '/images/placeholder.jpg'}
-                alt={item.title || item?.comp?.title || 'Coming soon'}
-                fill
-                className="object-cover"
-              />
-            </div>
-            <div className="mt-2">
-              <div className="text-white text-sm font-medium truncate">
-                {item.title || item?.comp?.title || 'Coming soon'}
+  {/* Coming Soon Categories */}
+  <section className="mt-8">
+    <div className="mt-4 grid grid-cols-1 gap-8 md:grid-cols-3">
+      {/* Travel & Lifestyle */}
+      <div>
+        <h4 className="w-full text-sm font-bold text-center text-cyan-300 px-3 py-1.5 rounded-lg font-orbitron shadow-[0_0_15px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
+          Travel & Lifestyle <span className="text-white/50 text-xs">(Coming Soon)</span>
+        </h4>
+        <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {(getCompetitionsByCategory('premium').length
+            ? getCompetitionsByCategory('premium').slice(0, 3)
+            : []
+          ).map((item, idx) => (
+            <div key={item?.comp?.slug || idx} className="rounded-lg border border-white/10 bg-white/5 p-2">
+              <div className="relative h-24 w-full overflow-hidden rounded-md">
+                <Image
+                  src={item.imageUrl || item.thumbnail || '/images/placeholder.jpg'}
+                  alt={item.title || item?.comp?.title || 'Coming soon'}
+                  fill
+                  className="object-cover"
+                />
               </div>
-              <div className="text-white/60 text-xs truncate">
-                {item.prize || item?.comp?.prizeLabel || 'Stay tuned'}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-
-    {/* Regional Giveaways */}
-    <div>
-      <h4 className="w-full text-sm font-bold text-center text-cyan-300 px-3 py-1.5 rounded-lg font-orbitron shadow-[0_0_15px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
-        Regional Giveaways <span className="text-white/50 text-xs">(Coming Soon)</span>
-      </h4>
-      <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {(getCompetitionsByCategory('regional').length
-          ? getCompetitionsByCategory('regional').slice(0, 3)
-          : []
-        ).map((item, idx) => (
-          <div key={item?.comp?.slug || idx} className="rounded-lg border border-white/10 bg-white/5 p-2">
-            <div className="relative h-24 w-full overflow-hidden rounded-md">
-              <Image
-                src={item.imageUrl || item.thumbnail || '/images/placeholder.jpg'}
-                alt={item.title || item?.comp?.title || 'Coming soon'}
-                fill
-                className="object-cover"
-              />
-            </div>
-            <div className="mt-2">
-              <div className="text-white text-sm font-medium truncate">
-                {item.title || item?.comp?.title || 'Coming soon'}
-              </div>
-              <div className="text-white/60 text-xs truncate">
-                {item.prize || item?.comp?.prizeLabel || 'Stay tuned'}
+              <div className="mt-2">
+                <div className="text-white text-sm font-medium truncate">
+                  {item.title || item?.comp?.title || 'Coming soon'}
+                </div>
+                <div className="text-white/60 text-xs truncate">
+                  {item.prize || item?.comp?.prizeLabel || 'Stay tuned'}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
-    </div>
-
-  </div>
-</section>
-        <TopWinnersCarousel />
-
-        {/* Vision block */}
-        <div className="mt-6 px-4">
-          <div className="bg-[#0a1024]/90 border border-cyan-700 rounded-xl px-4 py-6 shadow-[0_0_20px_#00fff055] text-center text-sm">
-            <h2 className="text-lg font-bold text-cyan-300 mb-2">Our Vision for 2026: Impact Through Innovation</h2>
-            <p className="text-white/80 mb-3 leading-relaxed">
-              By the end of 2026, OhMyCompetitions aims to reach these community-first milestones,
-              powered by the Pi Network and supported by Pioneers like you.
-            </p>
-            <ul className="text-cyan-200 space-y-1 font-medium">
-              <li>🌍 Over <strong>100,000+ winners</strong> across the globe</li>
-              <li>💰 <strong>500,000 π</strong> in distributed Pi prizes</li>
-              <li>🎗 <strong>25,000 π</strong> donated to Pi causes & communities</li>
-              <li>⭐ Maintained <strong>5★</strong> user-rated experience</li>
-            </ul>
-          </div>
+          ))}
         </div>
-      </main>
+      </div>
+
+      {/* Special Events */}
+      <div>
+        <h4 className="w-full text-sm font-bold text-center text-cyan-300 px-3 py-1.5 rounded-lg font-orbitron shadow-[0_0_15px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
+          Special Events <span className="text-white/50 text-xs">(Coming Soon)</span>
+        </h4>
+        <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {(getCompetitionsByCategory('event').length
+            ? getCompetitionsByCategory('event').slice(0, 3)
+            : []
+          ).map((item, idx) => (
+            <div key={item?.comp?.slug || idx} className="rounded-lg border border-white/10 bg-white/5 p-2">
+              <div className="relative h-24 w-full overflow-hidden rounded-md">
+                <Image
+                  src={item.imageUrl || item.thumbnail || '/images/placeholder.jpg'}
+                  alt={item.title || item?.comp?.title || 'Coming soon'}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <div className="mt-2">
+                <div className="text-white text-sm font-medium truncate">
+                  {item.title || item?.comp?.title || 'Coming soon'}
+                </div>
+                <div className="text-white/60 text-xs truncate">
+                  {item.prize || item?.comp?.prizeLabel || 'Stay tuned'}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Regional Giveaways */}
+      <div>
+        <h4 className="w-full text-sm font-bold text-center text-cyan-300 px-3 py-1.5 rounded-lg font-orbitron shadow-[0_0_15px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
+          Regional Giveaways <span className="text-white/50 text-xs">(Coming Soon)</span>
+        </h4>
+        <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {(getCompetitionsByCategory('regional').length
+            ? getCompetitionsByCategory('regional').slice(0, 3)
+            : []
+          ).map((item, idx) => (
+            <div key={item?.comp?.slug || idx} className="rounded-lg border border-white/10 bg-white/5 p-2">
+              <div className="relative h-24 w-full overflow-hidden rounded-md">
+                <Image
+                  src={item.imageUrl || item.thumbnail || '/images/placeholder.jpg'}
+                  alt={item.title || item?.comp?.title || 'Coming soon'}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <div className="mt-2">
+                <div className="text-white text-sm font-medium truncate">
+                  {item.title || item?.comp?.title || 'Coming soon'}
+                </div>
+                <div className="text-white/60 text-xs truncate">
+                  {item.prize || item?.comp?.prizeLabel || 'Stay tuned'}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <TopWinnersCarousel />
+
+  {/* Vision block */}
+  <div className="mt-6 px-4">
+    <div className="bg-[#0a1024]/90 border border-cyan-700 rounded-xl px-4 py-6 shadow-[0_0_20px_#00fff055] text-center text-sm">
+      <h2 className="text-lg font-bold text-cyan-300 mb-2">Our Vision for 2026: Impact Through Innovation</h2>
+      <p className="text-white/80 mb-3 leading-relaxed">
+        By the end of 2026, OhMyCompetitions aims to reach these community-first milestones,
+        powered by the Pi Network and supported by Pioneers like you.
+      </p>
+      <ul className="text-cyan-200 space-y-1 font-medium">
+        <li>🌍 Over <strong>100,000+ winners</strong> across the globe</li>
+        <li>💰 <strong>500,000 π</strong> in distributed Pi prizes</li>
+        <li>🎗 <strong>25,000 π</strong> donated to Pi causes & communities</li>
+        <li>⭐ Maintained <strong>5★</strong> user-rated experience</li>
+      </ul>
+    </div>
+  </div>
+</main>
+
     </>
   );
 }

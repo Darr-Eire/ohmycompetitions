@@ -1,55 +1,155 @@
 // file: src/pages/competitions/[slug].jsx
 'use client';
+
 import { useRouter } from 'next/router';
-import { useFunnelDetail } from '../../hooks/useFunnel';
+import { useEffect, useState } from 'react';
 import { postJSON } from '../../lib/api';
 import { usePiAuth } from '../../context/PiAuthContext';
 import FunnelCompetitionCard from '../../components/FunnelCompetitionCard';
+import FreeCompetitionCard from '../../components/FreeCompetitionCard';
+
 export default function CompetitionDetailPage() {
   const router = useRouter();
   const { slug } = router.query;
-
-  // Avoid firing the hook with undefined slug
   const { user } = usePiAuth();
-  const { comp, isLoading, error, mutate } = useFunnelDetail(
-    typeof slug === 'string' ? slug : undefined
-  );
 
-  if (!slug) return <PageWrap><Loader /></PageWrap>;
-  if (isLoading) return <PageWrap><Loader /></PageWrap>;
-  if (error || !comp) return <PageWrap><ErrorBox /></PageWrap>;
+  const [type, setType] = useState('none'); // 'funnel' | 'competition' | 'none'
+  const [comp, setComp] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState(null);
 
-  const canJoin =
-    comp.stage === 1 && comp.status === 'filling' && comp.entrantsCount < comp.capacity;
+  useEffect(() => {
+    if (!slug || typeof slug !== 'string') return;
+    let cancelled = false;
 
-  async function onJoin() {
-    if (!user?.id && !user?.piUserId) return alert('Login required.');
-    try {
-      await postJSON('/api/funnel/join', { slug, userId: user?.id || user?.piUserId });
-      await mutate();
-      alert('Joined! 🍀');
-    } catch (e) {
-      alert(e?.message || 'Join failed');
+    async function run() {
+      setLoading(true);
+      setErr(null);
+      setType('none');
+      setComp(null);
+
+      try {
+        // 1) Try funnel
+        let r = await fetch(`/api/funnel/${slug}`);
+        if (r.ok) {
+          const data = await r.json();
+          if (!cancelled) {
+            setType('funnel');
+            setComp(data);
+            setLoading(false);
+          }
+          return;
+        }
+
+        // If it's not a 404, bubble up error
+        if (r.status !== 404) {
+          const msg = await r.text().catch(() => 'Funnel fetch failed');
+          throw new Error(msg || `Funnel endpoint error (${r.status})`);
+        }
+
+        // 2) Fallback to admin competitions
+        r = await fetch(`/api/competitions/${slug}`);
+        if (r.ok) {
+          const data = await r.json();
+          if (!cancelled) {
+            setType('competition');
+            setComp(data);
+            setLoading(false);
+          }
+          return;
+        }
+
+        if (r.status === 404) {
+          if (!cancelled) {
+            setType('none');
+            setComp(null);
+            setLoading(false);
+          }
+          return;
+        }
+
+        const msg2 = await r.text().catch(() => 'Competition fetch failed');
+        throw new Error(msg2 || `Competition endpoint error (${r.status})`);
+      } catch (e) {
+        if (!cancelled) {
+          setErr(e);
+          setLoading(false);
+        }
+      }
     }
+
+    run();
+    return () => { cancelled = true; };
+  }, [slug]);
+
+  if (!slug || loading) return <PageWrap><Loader /></PageWrap>;
+  if (err || !comp || type === 'none') return <PageWrap><ErrorBox /></PageWrap>;
+
+  // Funnel UI (stage-based)
+  if (type === 'funnel') {
+    const canJoin =
+      comp.stage === 1 && comp.status === 'filling' && comp.entrantsCount < comp.capacity;
+
+    async function onJoin() {
+      if (!user?.id && !user?.piUserId) return alert('Login required.');
+      try {
+        await postJSON('/api/funnel/join', { slug, userId: user?.id || user?.piUserId });
+        alert('Joined! 🍀');
+      } catch (e) {
+        alert(e?.message || 'Join failed');
+      }
+    }
+
+    return (
+      <PageWrap>
+        <FunnelCompetitionCard
+          title={`Funnel — Stage ${comp.stage}`}
+          stage={comp.stage}
+          compId={comp.slug}
+          entrants={comp.entrantsCount}
+          capacity={comp.capacity}
+          advancing={comp.advancing}
+          status={comp.status}
+          imageUrl={comp.imageUrl || '/pi.jpeg'}
+          hasTicket={false}
+          onClickJoin={canJoin ? onJoin : undefined}
+          tags={[String(comp.status || '').toUpperCase()]}
+        />
+      </PageWrap>
+    );
   }
+
+  // Admin-created competition UI
+  const adminComp = {
+    slug: comp.slug,
+    startsAt: comp.startsAt || '',
+    endsAt: comp.endsAt || '',
+    ticketsSold: comp.ticketsSold ?? comp.entrantsCount ?? 0,
+    totalTickets: comp.totalTickets ?? comp.capacity ?? 0,
+    comingSoon: Boolean(comp.comingSoon),
+    status: comp.status || 'active',
+    title: comp.title || 'Competition',
+    prizeLabel: comp.prizeLabel || comp.prize || '',
+    imageUrl: comp.imageUrl || '/pi.jpeg',
+  };
 
   return (
     <PageWrap>
-      <FunnelCompetitionCard
-        title={`Funnel — Stage ${comp.stage}`}
-        stage={comp.stage}
-        compId={comp.slug}
-        entrants={comp.entrantsCount}
-        capacity={comp.capacity}
-        advancing={comp.advancing}
-        status={comp.status}
-        imageUrl={comp.imageUrl || '/pi.jpeg'}
-        hasTicket={false}
-        onClickJoin={canJoin ? onJoin : undefined}
-        tags={[String(comp.status || '').toUpperCase()]}
-      />
+      <div className="max-w-3xl mx-auto w-full">
+        <FreeCompetitionCard
+          comp={adminComp}
+          title={adminComp.title}
+          prize={adminComp.prizeLabel}
+          buttonLabel="Enter"
+        />
+      </div>
     </PageWrap>
   );
+}
+
+// Prevent static prerender on Vercel; keep this page SSR-only.
+export async function getServerSideProps() {
+  return { props: {} };
 }
 
 function PageWrap({ children }) {
