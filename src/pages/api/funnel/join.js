@@ -1,6 +1,6 @@
 // file: src/pages/api/funnel/join.js
-import dbConnect from '../../../lib/dbConnect';
-import { assignStage1Room, ENTRY_FEE_PI } from '../../../lib/funnelService';
+import { dbConnect } from '../../../lib/dbConnect';
+import { ENTRY_FEE_PI, assignStage1Room } from '../../../lib/funnelService';
 import { getPayment, approvePayment } from '../../../lib/piClient';
 
 export default async function handler(req, res) {

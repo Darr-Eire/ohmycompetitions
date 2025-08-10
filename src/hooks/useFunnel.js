@@ -1,19 +1,21 @@
-// file: src/hooks/useFunnel.js
+// If you already have this file, make sure it exports useFunnelDetail exactly as below.
+
+'use client';
 import useSWR from 'swr';
 
-const fetcher = (url) => fetch(url).then(r => r.json());
+const fetcher = (url) => fetch(url).then((r) => r.json());
 
-export function useFunnelStage(stage) {
-  const { data, error, mutate, isLoading } = useSWR(`/api/funnel/stage/${stage}`, fetcher, {
-    refreshInterval: 4000, // keep it live-ish
-    revalidateOnFocus: false,
-  });
+export function useFunnelDetail(slug) {
+  const shouldFetch = typeof slug === 'string' && slug.length > 0;
+  const { data, error, isLoading, mutate } = useSWR(
+    shouldFetch ? `/api/funnel/${slug}` : null,
+    fetcher
+  );
 
   return {
-    filling: data?.filling || [],
-    live: data?.live || [],
-    isLoading,
-    error,
-    mutate,
+    comp: data || null,
+    isLoading: !!shouldFetch && isLoading,
+    error: error || null,
+    mutate
   };
 }
