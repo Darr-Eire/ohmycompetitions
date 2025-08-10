@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-
+import PrizeCard3D from '@components/PrizeCard3D';
 import DailyCompetitionCard from '@components/DailyCompetitionCard';
 import FreeCompetitionCard from '@components/FreeCompetitionCard';
 import PiCompetitionCard from '@components/PiCompetitionCard';
@@ -11,8 +11,11 @@ import CryptoGiveawayCard from '@components/CryptoGiveawayCard';
 import CompetitionCard from '@components/CompetitionCard';
 import MiniPrizeCarousel from '@components/MiniPrizeCarousel';
 import { miniGames } from '@data/minigames';
-import TutorialOverlay from 'components/TutorialOverlay';
-import LaunchCompetitionCard from 'components/LaunchCompetitionCard';
+import TutorialOverlay from '@components/TutorialOverlay';
+import LaunchCompetitionCard from '@components/LaunchCompetitionCard';
+import FunnelStagesRow from '../components/FunnelStagesRow';
+
+// at the top of src/components/FunnelStagesRow.jsx
 
 import {
   dailyItems,
@@ -23,6 +26,8 @@ import {
   cryptoGiveawaysItems,
 } from '@data/competitions';
 ;
+
+// ⬇️ bring your data & components from wherever you store them
 
 
 export default function HomePage() {
@@ -57,6 +62,7 @@ export default function HomePage() {
         console.error('❌ Failed to fetch live competition data:', err);
         setError(err.message);
 
+        // graceful fallback to static sets
         const staticCompetitions = [
           ...techItems,
           ...premiumItems,
@@ -98,12 +104,13 @@ export default function HomePage() {
 
     const now = new Date();
 
+    // merge live props into static where slugs match
     const mergedItems = staticItems
       .map(staticItem => {
         const slug = staticItem.comp?.slug;
-        const liveComp = liveDataMap[slug];
+        const liveComp = slug ? liveDataMap[slug] : null;
 
-        const merged = liveComp
+        return liveComp
           ? {
               ...staticItem,
               imageUrl: liveComp.thumbnail || liveComp.imageUrl || staticItem.imageUrl,
@@ -111,22 +118,21 @@ export default function HomePage() {
               comp: {
                 ...staticItem.comp,
                 ...liveComp.comp,
-                ticketsSold: liveComp.comp.ticketsSold || 0,
-                totalTickets: liveComp.comp.totalTickets || staticItem.comp.totalTickets,
-                entryFee: liveComp.comp.entryFee || staticItem.comp.entryFee,
-                comingSoon: liveComp.comp.comingSoon ?? staticItem.comp.comingSoon ?? false,
+                ticketsSold: liveComp.comp?.ticketsSold ?? 0,
+                totalTickets: liveComp.comp?.totalTickets ?? staticItem.comp?.totalTickets,
+                entryFee: liveComp.comp?.entryFee ?? staticItem.comp?.entryFee,
+                comingSoon: liveComp.comp?.comingSoon ?? staticItem.comp?.comingSoon ?? false,
               },
             }
           : staticItem;
-
-        return merged;
       })
       .filter(item => {
-        const { endsAt, status, comingSoon } = item.comp || {};
+        const { endsAt, status } = item.comp || {};
         const hasEnded = endsAt && new Date(endsAt) < now;
         return status === 'active' && !hasEnded;
       });
 
+    // include live comps that aren’t in static sets (admin-only)
     const staticSlugs = new Set(staticItems.map(item => item.comp?.slug).filter(Boolean));
     const adminOnlyCompetitions = liveData.filter(
       liveComp => liveComp.comp?.slug && !staticSlugs.has(liveComp.comp.slug)
@@ -134,60 +140,79 @@ export default function HomePage() {
 
     let allMerged = [...mergedItems, ...adminOnlyCompetitions];
 
-    // 💥 Move admin competitions first
-  allMerged.sort((a, b) => {
-  const now = Date.now();
+    // sort: live first, then admin extras
+    allMerged.sort((a, b) => {
+      const nowMs = Date.now();
 
-  const aStarts = new Date(a.comp.startsAt).getTime();
-  const aEnds   = new Date(a.comp.endsAt).getTime();
-  const bStarts = new Date(b.comp.startsAt).getTime();
-  const bEnds   = new Date(b.comp.endsAt).getTime();
+      const aStarts = a?.comp?.startsAt ? new Date(a.comp.startsAt).getTime() : 0;
+      const aEnds   = a?.comp?.endsAt ? new Date(a.comp.endsAt).getTime() : 0;
+      const bStarts = b?.comp?.startsAt ? new Date(b.comp.startsAt).getTime() : 0;
+      const bEnds   = b?.comp?.endsAt ? new Date(b.comp.endsAt).getTime() : 0;
 
-  const aLive = aStarts <= now && now < aEnds;
-  const bLive = bStarts <= now && now < bEnds;
-  if (aLive !== bLive) return aLive ? -1 : 1;
+      const aLive = aStarts <= nowMs && nowMs < aEnds;
+      const bLive = bStarts <= nowMs && nowMs < bEnds;
+      if (aLive !== bLive) return aLive ? -1 : 1;
 
-  const aAdmin = !staticSlugs.has(a.comp.slug);
-  const bAdmin = !staticSlugs.has(b.comp.slug);
-  if (aAdmin !== bAdmin) return aAdmin ? -1 : 1;
+      const aAdmin = !staticSlugs.has(a?.comp?.slug);
+      const bAdmin = !staticSlugs.has(b?.comp?.slug);
+      if (aAdmin !== bAdmin) return aAdmin ? -1 : 1;
 
-  return 0;
-});
+      return 0;
+    });
+
 
     return allMerged;
   };
+  const { s1Filling, s2Live, s3Live, s4Live } = React.useMemo(() => {
+    const byStage = (n) =>
+      liveCompetitions.filter((item) => {
+        const stage =
+          item?.comp?.funnelStage ??
+          item?.comp?.stage ??
+          item?.stage;
+        const theme = item?.theme;
+        const slug  = item?.comp?.slug || '';
+        return (
+          stage === n ||
+          theme === `stage${n}` ||
+          slug.includes(`stage${n}`)
+        );
+      });
 
- const getCompetitionsByCategory = (category) => {
-  return liveCompetitions.filter(item => {
-    const theme = item.theme || 'tech';
+    return {
+      s1Filling: byStage(1),
+      s2Live: byStage(2),
+      s3Live: byStage(3),
+      s4Live: byStage(4),
+    };
+  }, [liveCompetitions]);
 
-    // Only filter out non-admin for 'daily'
-  const getCompetitionsByCategory = (category) => {
-  const staticSlugs = new Set(
-    [...techItems, ...premiumItems, ...piItems, ...dailyItems, ...freeItems, ...cryptoGiveawaysItems]
-      .map(item => item.comp?.slug)
-      .filter(Boolean)
-  );
+  // --- Safe guards so JSX never crashes ---
+  const safeS1 = Array.isArray(s1Filling) ? s1Filling : [];
+  const safeS2 = Array.isArray(s2Live)    ? s2Live    : [];
+  const safeS3 = Array.isArray(s3Live)    ? s3Live    : [];
+  const safeS4 = Array.isArray(s4Live)    ? s4Live    : [];
 
-  return liveCompetitions.filter(item => {
-    const theme = item.theme || 'tech';
-    const isStatic = staticSlugs.has(item.comp?.slug);
+  // --- Hoisted helper so it's defined before JSX uses it ---
+  function getCompetitionsByCategory(category) {
+    const staticSlugs = new Set(
+      [...techItems, ...premiumItems, ...piItems, ...dailyItems, ...freeItems, ...cryptoGiveawaysItems]
+        .map(item => item.comp?.slug)
+        .filter(Boolean)
+    );
 
-    // Show only dynamic (non-static) for 'daily' and 'pi'
-    if (['daily', 'pi'].includes(category)) {
-      return theme === category && !isStatic;
-    }
+    return liveCompetitions.filter(item => {
+      const theme = item.theme || 'tech';
+      const isStatic = staticSlugs.has(item.comp?.slug);
 
-    // All others (static + dynamic)
-    return theme === category;
-  });
-};
-
-
-    // Allow all others (static + admin)
-    return theme === category;
-  });
-};
+      // Only show dynamic (non-static) for these buckets
+      if (['daily', 'pi'].includes(category)) {
+        return theme === category && !isStatic;
+      }
+      // Default: include both static + dynamic if theme matches
+      return theme === category;
+    });
+  }
 
   if (loading) {
     return (
@@ -204,23 +229,26 @@ export default function HomePage() {
 
   return (
     <>
-<div className="w-full space-y-8"> {/* shared wrapper with tight spacing */}
-  {/* Welcome message */}
-  <div className="text-center text-cyan-300 text-1xl sm:text-base font-medium font-orbitron">
-   ☘️ Céad Míle Fáilte Let The Competitions Begin ☘️
-  </div>
+      <div className="w-full space-y-8">
+        {/* Welcome */}
+        <div className="text-center text-cyan-300 text-1xl sm:text-base font-medium font-orbitron">
+          ☘️ Céad Míle Fáilte Let The Competitions Begin ☘️
+        </div>
 
-  {/* Marquee */}
-  <div className="overflow-hidden bg-transparent">
-  <div className="marquee-content text-cyan-300 text-md sm:text-base font-medium font-orbitron">
-      Oh My Competitions is all about building with Pi Network for the Pi community. Our OMC launch competitions are zero profit designed to create trust, celebrate early winners and give back to Pioneers. All prizes go directly to you. Add us on all Socials and our Pi Profile darreire2020 More competitions are coming soon across a wide range of exciting categories. Join, win and help shape the future of Pi together
-    </div>
-  </div>
-</div>
-  {/* Mini carousel */}
-  <MiniPrizeCarousel />
-  
+        {/* Marquee */}
+        <div className="overflow-hidden bg-transparent">
+          <div className="marquee-content text-cyan-300 text-md sm:text-base font-medium font-orbitron">
+            Oh My Competitions is all about building with Pi Network for the Pi community. Our OMC launch competitions are zero profit designed to create trust, celebrate early winners and give back to Pioneers. All prizes go directly to you. Add us on all Socials and our Pi Profile darreire2020. More competitions are coming soon across a wide range of exciting categories. Join, win and help shape the future of Pi together.
+          </div>
+        </div>
+      </div>
 
+
+
+      {/* Mini carousel */}
+      <MiniPrizeCarousel />
+
+      {/* Pi Cash Code CTA */}
       <div className="mt-6 mb-8 flex justify-center">
         <Link
           href="/pi-cash-code"
@@ -238,47 +266,104 @@ export default function HomePage() {
         </Link>
       </div>
 
+      {/* Main sections */}
       <main className="space-y-10">
         <Section
-  title=" OMC Launch Week"
-  items={getCompetitionsByCategory('launch')}
-  viewMoreHref="/competitions/launch-week"
-/>
+          title="OMC Launch Week"
+          items={getCompetitionsByCategory('launch')}
+          viewMoreHref="/competitions/launch-week"
+        />
 
-        <Section title="Featured Competitions" items={getCompetitionsByCategory('tech')} viewMoreHref="/competitions/featured" />
-                <Section title="Daily Competitions" items={getCompetitionsByCategory('daily')} viewMoreHref="/competitions/daily" extraClass="mt-12" />
-        <Section title="Pi Giveaways" items={getCompetitionsByCategory('pi')} viewMoreHref="/competitions/pi" extraClass="mt-12" />
+        <Section
+          title="Featured Competitions"
+          items={getCompetitionsByCategory('tech')}
+          viewMoreHref="/competitions/featured"
+        />
 
-        <Section title="Travel & Lifestyle" items={getCompetitionsByCategory('premium').slice(0, 3)} viewMoreHref="/competitions/travel" />
-<Section
-  title=" Special Events"
-  subtitle="(Coming Soon)"
-  items={getCompetitionsByCategory('event')}
-  viewMoreHref="/competitions/special-events"
-/>
+        <Section
+          title="Daily Competitions"
+          items={getCompetitionsByCategory('daily')}
+          viewMoreHref="/competitions/daily"
+          extraClass="mt-12"
+        />
 
-<Section
-  title=" Regional Giveaways"
-  subtitle="(Coming Soon)"
-  items={getCompetitionsByCategory('regional')}
-  viewMoreHref="/competitions/regional"
-/>
-
-
-
-
-
-       <section className="w-full bg-white/5 backdrop-blur-lg px-4 sm:px-6 py-8 my-4 border border-cyan-300 rounded-3xl shadow-[0_0_60px_#00ffd577] neon-outline">
-  <div className="max-w-7xl mx-auto">
-    <h2 className="text-xl sm:text-2xl font-bold text-center text-cyan-300 mb-6 font-orbitron">
-      ✨ Free Competition ✨
+        <Section
+          title="Pi Giveaways"
+          items={getCompetitionsByCategory('pi')}
+          viewMoreHref="/competitions/pi"
+          extraClass="mt-12"
+        />
+{/* OMC Step Competitions + Funnel in one block */}
+<section className="mb-16 mt-16">
+  {/* Header */}
+  <div className="text-center mb-6">
+    <h2 className="w-full text-base font-bold text-center text-cyan-300 px-4 py-3 rounded-xl font-orbitron shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
+      OMC Pi Stages Competitions
     </h2>
 
+    <p className="text-sm text-cyan-200 mt-3 italic flex items-center justify-center gap-6 flex-wrap">
+      <span className="inline-block">
+        Qualify <span className="text-white font-semibold">(Stage&nbsp;1)</span>
+      </span>
+      <span className="inline-block">
+        Advance <span className="text-white font-semibold">(Stages&nbsp;2–4)</span>
+      </span>
+      <span className="inline-block">
+        Win <span className="text-white font-semibold">(Stage&nbsp;5)</span>
+      </span>
+    </p>
+  </div>
+
+
+  {/* Funnel preview */}
+  <div className="max-w-6xl mx-auto">
+    <FunnelStagesRow
+      s1={safeS1[0]}
+      s2={safeS2[0]}
+      s3={safeS3[0]}
+      s4={safeS4[0]}
+    />
+  </div>
+
+  {/* Step competitions list */}
+  <div className="mt-8 centered-carousel lg:hidden">
+    {getCompetitionsByCategory('step').map((item, i) =>
+      renderCard(item, i, { isDaily: false, isFree: false, isPi: false, isCrypto: false })
+    )}
+  </div>
+
+  <div className="mt-8 hidden lg:grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+    {getCompetitionsByCategory('step').map((item, i) =>
+      renderCard(item, i, { isDaily: false, isFree: false, isPi: false, isCrypto: false })
+    )}
+  </div>
+
+  {/* View more */}
+  <div className="text-center mt-4">
+    <Link
+      href="\battles"
+      className="inline-block text-base font-bold px-3 py-1.5 rounded-md font-medium text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow hover:opacity-90 transition"
+    >
+      View More
+    </Link>
+  </div>
+</section>
+
+{/* ================== Free Competitions Title ================== */}
+<div className="text-center my-8">
+  <h2 className="w-full text-base font-bold text-center text-cyan-300 px-4 py-3 rounded-xl font-orbitron shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
+    OMC Free Competitions
+  </h2>
+</div>
+
+{/* Free competition highlight */}
+<section className="w-full bg-white/5 backdrop-blur-lg px-4 sm:px-6 py-8 my-4 border border-cyan-300 rounded-3xl shadow-[0_0_60px_#00ffd577] neon-outline">
+  <div className="max-w-7xl mx-auto">
     <FreeCompetitionCard
       comp={{
         slug: 'pi-to-the-moon',
-        startsAt: '', // 👈 Will show as TBA
-        endsAt: '',   // 👈 Will also show as TBA
+        startsAt: '',
+        endsAt: '',
         ticketsSold: 0,
         totalTickets: 5000,
         comingSoon: true,
@@ -287,28 +372,131 @@ export default function HomePage() {
       title="Pi To The Moon"
       prize="7,500 π"
       hideEntryButton
-      buttonLabel="View Details"
+      buttonLabel="View Detail"
     />
   </div>
 </section>
 
+{/* Coming Soon Categories */}
+<section className="mt-8">
+  <div className="mt-4 grid grid-cols-1 gap-8 md:grid-cols-3">
+    
+    {/* Travel & Lifestyle */}
+    <div>
+      <h4 className="w-full text-sm font-bold text-center text-cyan-300 px-3 py-1.5 rounded-lg font-orbitron shadow-[0_0_15px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
+        Travel & Lifestyle <span className="text-white/50 text-xs">(Coming Soon)</span>
+      </h4>
+      <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {(getCompetitionsByCategory('premium').length
+          ? getCompetitionsByCategory('premium').slice(0, 3)
+          : []
+        ).map((item, idx) => (
+          <div key={item?.comp?.slug || idx} className="rounded-lg border border-white/10 bg-white/5 p-2">
+            <div className="relative h-24 w-full overflow-hidden rounded-md">
+              <Image
+                src={item.imageUrl || item.thumbnail || '/images/placeholder.jpg'}
+                alt={item.title || item?.comp?.title || 'Coming soon'}
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="mt-2">
+              <div className="text-white text-sm font-medium truncate">
+                {item.title || item?.comp?.title || 'Coming soon'}
+              </div>
+              <div className="text-white/60 text-xs truncate">
+                {item.prize || item?.comp?.prizeLabel || 'Stay tuned'}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
 
-        <TopWinnersCarousel />
-<div className="mt-6 px-4">
-  <div className="bg-[#0a1024]/90 border border-cyan-700 rounded-xl px-4 py-6 shadow-[0_0_20px_#00fff055] text-center text-sm">
-    <h2 className="text-lg font-bold text-cyan-300 mb-2">Our Vision for 2026: Impact Through Innovation</h2>
-    <p className="text-white/80 mb-3 leading-relaxed">
-      By the end of 2026, OhMyCompetitions aims to reach these community-first milestones,
-      powered by the Pi Network and supported by Pioneers like you.
-    </p>
-    <ul className="text-cyan-200 space-y-1 font-medium">
-      <li>🌍 Over <strong>100,000+ winners</strong> across the globe</li>
-      <li>💰 <strong>500,000 π</strong> in distributed Pi prizes</li>
-      <li>🎗 <strong>25,000 π</strong> donated to Pi causes & communities</li>
-      <li>⭐ Maintained <strong>5★</strong> user-rated experience</li>
-    </ul>
+    {/* Special Events */}
+    <div>
+      <h4 className="w-full text-sm font-bold text-center text-cyan-300 px-3 py-1.5 rounded-lg font-orbitron shadow-[0_0_15px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
+        Special Events <span className="text-white/50 text-xs">(Coming Soon)</span>
+      </h4>
+      <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {(getCompetitionsByCategory('event').length
+          ? getCompetitionsByCategory('event').slice(0, 3)
+          : []
+        ).map((item, idx) => (
+          <div key={item?.comp?.slug || idx} className="rounded-lg border border-white/10 bg-white/5 p-2">
+            <div className="relative h-24 w-full overflow-hidden rounded-md">
+              <Image
+                src={item.imageUrl || item.thumbnail || '/images/placeholder.jpg'}
+                alt={item.title || item?.comp?.title || 'Coming soon'}
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="mt-2">
+              <div className="text-white text-sm font-medium truncate">
+                {item.title || item?.comp?.title || 'Coming soon'}
+              </div>
+              <div className="text-white/60 text-xs truncate">
+                {item.prize || item?.comp?.prizeLabel || 'Stay tuned'}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* Regional Giveaways */}
+    <div>
+      <h4 className="w-full text-sm font-bold text-center text-cyan-300 px-3 py-1.5 rounded-lg font-orbitron shadow-[0_0_15px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
+        Regional Giveaways <span className="text-white/50 text-xs">(Coming Soon)</span>
+      </h4>
+      <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {(getCompetitionsByCategory('regional').length
+          ? getCompetitionsByCategory('regional').slice(0, 3)
+          : []
+        ).map((item, idx) => (
+          <div key={item?.comp?.slug || idx} className="rounded-lg border border-white/10 bg-white/5 p-2">
+            <div className="relative h-24 w-full overflow-hidden rounded-md">
+              <Image
+                src={item.imageUrl || item.thumbnail || '/images/placeholder.jpg'}
+                alt={item.title || item?.comp?.title || 'Coming soon'}
+                fill
+                className="object-cover"
+              />
+            </div>
+            <div className="mt-2">
+              <div className="text-white text-sm font-medium truncate">
+                {item.title || item?.comp?.title || 'Coming soon'}
+              </div>
+              <div className="text-white/60 text-xs truncate">
+                {item.prize || item?.comp?.prizeLabel || 'Stay tuned'}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
   </div>
-</div>
+</section>
+        <TopWinnersCarousel />
+
+        {/* Vision block */}
+        <div className="mt-6 px-4">
+          <div className="bg-[#0a1024]/90 border border-cyan-700 rounded-xl px-4 py-6 shadow-[0_0_20px_#00fff055] text-center text-sm">
+            <h2 className="text-lg font-bold text-cyan-300 mb-2">Our Vision for 2026: Impact Through Innovation</h2>
+            <p className="text-white/80 mb-3 leading-relaxed">
+              By the end of 2026, OhMyCompetitions aims to reach these community-first milestones,
+              powered by the Pi Network and supported by Pioneers like you.
+            </p>
+            <ul className="text-cyan-200 space-y-1 font-medium">
+              <li>🌍 Over <strong>100,000+ winners</strong> across the globe</li>
+              <li>💰 <strong>500,000 π</strong> in distributed Pi prizes</li>
+              <li>🎗 <strong>25,000 π</strong> donated to Pi causes & communities</li>
+              <li>⭐ Maintained <strong>5★</strong> user-rated experience</li>
+            </ul>
+          </div>
+        </div>
       </main>
     </>
   );
@@ -322,35 +510,37 @@ function Section({ title, subtitle, items = [], viewMoreHref, viewMoreText = 'Vi
   const isCrypto = lower.includes('crypto');
 
   return (
-    <section className={`mb-12 ${extraClass}`}>
-      <div className="text-center mb-12">
-        <h2 className="w-full text-base font-bold text-center text-cyan-300 px-4 py-3 rounded-xl font-orbitron shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
+    <section className={`mb-6 ${extraClass}`}> {/* less bottom margin */}
+      <div className="text-center mb-4"> {/* smaller spacing */}
+        <h2 className="w-full text-sm font-bold text-center text-cyan-300 px-3 py-1.5 rounded-lg font-orbitron shadow-[0_0_15px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
           {title}
         </h2>
-        {subtitle && (
-          <p className="text-sm text-cyan-200 mt-1 italic">{subtitle}</p>
-        )}
+        {subtitle && <p className="text-xs text-cyan-200 mt-0.5 italic">{subtitle}</p>}
       </div>
 
       <div className="centered-carousel lg:hidden">
         {items.map((item, i) => renderCard(item, i, { isDaily, isFree, isPi, isCrypto }))}
       </div>
 
-      <div className="hidden lg:grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="hidden lg:grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         {items.map((item, i) => renderCard(item, i, { isDaily, isFree, isPi, isCrypto }))}
       </div>
 
-      <div className="text-center mt-4">
-        <Link
-          href={viewMoreHref}
-          className="inline-block text-base font-bold px-3 py-1.5 rounded-md font-medium text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow hover:opacity-90 transition"
-        >
-          {viewMoreText}
-        </Link>
-      </div>
+      {viewMoreHref && (
+        <div className="text-center mt-2">
+          <Link
+            href={viewMoreHref}
+            className="inline-block text-sm font-bold px-2.5 py-1 rounded-md text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow hover:opacity-90 transition"
+          >
+            {viewMoreText}
+          </Link>
+        </div>
+      )}
     </section>
   );
 }
+
+
 
 
 function renderCard(item, i, { isDaily, isFree, isPi, isCrypto }) {

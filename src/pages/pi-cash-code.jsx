@@ -169,11 +169,12 @@ export default function PiCashCodePage() {
   const progressPercent = unlockProgress();
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-black via-[#0c1f27] to-black text-white px-4 py-10 font-sans">
+    <main className="min-h-screen bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white px-4 py-10 font-sans">
       <div className="max-w-3xl mx-auto backdrop-blur-md bg-white/5 border border-cyan-500 rounded-2xl shadow-lg p-6 sm:p-10 space-y-8">
 
+        {/* HEADER & DESCRIPTION */}
         <div className="text-center space-y-2">
-          <h1 className="text-3xl sm:text-4xl font-bold text-cyan-300 drop-shadow-md tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-cyan-300 drop-shadow-md tracking-tight">
             Pi Cash Code
           </h1>
           <p className="text-white text-sm sm:text-base font-medium max-w-xl mx-auto leading-snug">
@@ -181,22 +182,19 @@ export default function PiCashCodePage() {
           </p>
         </div>
 
-        <div className="text-center border border-cyan-400 rounded-xl py-4 px-6 bg-black/30">
-          <p className="text-lg text-cyan-300 font-semibold">
-            Prize Pool: <span className="text-white">{codeData?.prizePool?.toLocaleString() || '...'}</span> π
-          </p>
-        </div>
-
+        {/* CODE DISPLAY */}
         <div className="w-full text-center px-2">
-          <div className="inline-block bg-black/40 border border-cyan-500 text-cyan-300 font-mono text-2xl sm:text-3xl tracking-widest px-6 py-4 rounded-lg shadow-md">
+          <div className="inline-block bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] border border-cyan-500 text-cyan-300 font-mono text-2xl sm:text-3xl tracking-widest px-6 py-4 rounded-lg shadow-md">
             {showCode ? codeData?.code || '0000-0000' : 'XXXX-XXXX'}
           </div>
         </div>
- {timeLeft && (
+
+        {/* TIMER */}
+        {timeLeft && (
           <div className="grid grid-cols-4 gap-2 justify-center text-center">
             {['days', 'hours', 'minutes', 'seconds'].map((label, i) => (
               <div key={i}>
-                <div className="bg-black border border-cyan-500 text-white text-xl font-bold py-2 rounded-lg shadow-inner">
+                <div className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] border border-cyan-500 text-white text-xl font-bold py-2 rounded-lg shadow-inner">
                   {String(timeLeft[label]).padStart(2, '0')}
                 </div>
                 <p className="text-cyan-300 text-sm mt-1">{label.toUpperCase()}</p>
@@ -204,34 +202,43 @@ export default function PiCashCodePage() {
             ))}
           </div>
         )}
-       
- <div className="mt-3 w-full h-2 bg-cyan-900 rounded-full overflow-hidden">
+
+        {/* PRIZE POOL */}
+        <div className="text-center border border-cyan-400 rounded-xl py-4 px-6 bg-black/30">
+          <p className="text-lg text-cyan-300 font-semibold">
+            Prize Pool: <span className="text-white">{codeData?.prizePool?.toLocaleString() || '...'}</span> π
+          </p>
+        </div>
+
+        {/* PROGRESS BAR */}
+        <div className="mt-3 w-full h-2 bg-cyan-900 rounded-full overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-cyan-400 to-cyan-200 transition-all duration-700 ease-in-out motion-reduce:transition-none"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
+
+        {/* LIVE FEED */}
         <div className="flex justify-center">
           <LiveActivityFeed />
         </div>
+
+        {/* TICKETS SOLD */}
         <div className="text-center border border-cyan-400 rounded-xl py-4 px-6 bg-black/30">
           <p className="text-lg text-cyan-300 font-semibold">
             Tickets Sold: <span className="text-white">{liveTickets}</span>
           </p>
         </div>
 
-        
-
-       
-
+        {/* QUANTITY CONTROLS */}
         <div className="flex items-center justify-center gap-6">
-          <button onClick={() => setQuantity((q) => Math.max(1, q - 1))} className="text-black font-bold bg-cyan-300 hover:bg-cyan-400 rounded-full px-4 py-1">−</button>
+          <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="text-black font-bold bg-cyan-300 hover:bg-cyan-400 rounded-full px-4 py-1">−</button>
           <span className="text-2xl font-bold">{quantity}</span>
-          <button onClick={() => setQuantity((q) => q + 1)} className="text-black font-bold bg-cyan-300 hover:bg-cyan-400 rounded-full px-4 py-1">+</button>
+          <button onClick={() => setQuantity(q => q + 1)} className="text-black font-bold bg-cyan-300 hover:bg-cyan-400 rounded-full px-4 py-1">+</button>
         </div>
-
         <p className="text-center text-cyan-300 text-sm font-semibold">Total: {totalPrice} π</p>
 
+        {/* LOGIN / PURCHASE BUTTON */}
         {!user ? (
           <button onClick={login} className="w-full py-3 rounded-lg bg-cyan-300 text-black font-bold hover:brightness-110">
             Login with Pi to Purchase
@@ -242,19 +249,116 @@ export default function PiCashCodePage() {
           </button>
         )}
 
-        <section className="text-sm text-white/90 text-center space-y-2 mt-8">
-          <p>🕒 Code drops every <strong>Monday at 3:14 PM UTC</strong>.</p>
-          <p>⏳ Active for <strong>31h 4m</strong>, draw on <strong>Friday 3:14 PM UTC</strong>.</p>
-          <p>🏆 Winners must return code in <strong>31m 4s</strong>.</p>
-          <a href="/terms-conditions" className="block mt-3 text-xs text-cyan-400 underline hover:text-cyan-300">
-            View full Terms & Conditions
-          </a>
-        </section>
+<div className="bg-black/30 border border-cyan-400 rounded-2xl p-6 space-y-4">
+  <h3 className="text-xl font-bold text-cyan-300 text-center">How It Works</h3>
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    {[
+  '1. Secure your ticket(s) now',
+      '2. Stand by for the Pi Cash Code drop',
+      '3. Lock down the code and stay poised',
+      '4. If selected, submit instantly to seize your prize',
+    ].map((step, i) => (
+      <div
+        key={i}
+        className="flex items-center space-x-3 p-4 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a]
+                   border border-cyan-500 rounded-lg shadow-md"
+      >
+        <div className="flex-none w-8 h-8 flex items-center justify-center bg-[#00ffd5] rounded-full text-black font-bold text-lg">
+          {i + 1}
+        </div>
+        <p className="text-white font-medium">{step}</p>
+      </div>
+    ))}
+  </div>
+</div>
 
+
+{/* PRIZE POOL BREAKDOWN */}
+
+<div className="bg-black/30 border border-cyan-400 rounded-2xl p-6 max-w-md mx-auto">
+  <h3 className="text-xl font-bold text-cyan-300 text-center mb-4">
+    Prize Pool Breakdown
+  </h3>
+  <div className="flex justify-center">
+    {[{ label: 'Pi Cash Code Prize', prize: '11,000 π' }].map(
+      ({ label, prize }, i) => (
+        <div
+          key={i}
+          className="flex flex-col items-center p-4 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a]
+                     border border-cyan-500 rounded-lg shadow-md"
+        >
+          <span className="text-cyan-300 font-mono text-sm uppercase tracking-widest">
+            {label}
+          </span>
+          <span className="text-white font-bold text-lg mt-2">{prize}</span>
+        </div>
+      )
+    )}
+  </div>
+</div>
+
+
+{/* ────────────────────────────── */}
+{/* ACCESSIBILITY INDICATORS */}
+{/* ────────────────────────────── */}
+<div className="bg-black/30 border border-cyan-400 rounded-2xl p-6">
+  <div className="flex flex-wrap justify-center gap-4">
+    {[
+ { icon: '🎟️', label: '1.25 π To Enter' },
+    { icon: '🌐', label: 'Global Draw' },
+    { icon: '🗝️', label: 'Code Needed To Win' },
+    ].map(({ icon, label }, i) => (
+      <div
+        key={i}
+        className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a]
+                   border border-cyan-500 rounded-full shadow-sm"
+      >
+        <span className="text-lg">{icon}</span>
+        <span className="text-white font-medium">{label}</span>
+      </div>
+    ))}
+  </div>
+</div>
+
+
+
+        {/* CODE HISTORY */}
         <div className="flex justify-center">
           <CodeHistory />
         </div>
       </div>
+
+      {showSkillModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white/90 rounded-lg p-6 max-w-sm w-full text-black space-y-4">
+            <h2 className="text-lg font-semibold">Skill Test</h2>
+            <p>{skillQuestion}</p>
+            <input
+              type="text"
+              className="w-full border border-gray-400 rounded px-3 py-2"
+              value={userAnswer}
+              onChange={e => setUserAnswer(e.target.value)}
+            />
+            {isAnswerCorrect === false && <p className="text-red-600">Incorrect — try again!</p>}
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setShowSkillModal(false)} className="px-4 py-2">Cancel</button>
+              <button onClick={handlePiPayment} className="px-4 py-2 bg-cyan-300 rounded text-black font-bold">
+                Submit
+              </button>
+            </div>
+          </div>
+            <div className="text-center mt-4">
+    <a
+      href="/terms-conditions"
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-xs text-cyan-400 underline hover:text-cyan-300"
+    >
+      View full Terms &amp; Conditions
+    </a>
+  </div>
+        </div>
+      )}
     </main>
   );
 }

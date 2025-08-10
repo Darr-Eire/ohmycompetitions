@@ -116,130 +116,10 @@ export const techItems = [
   },
 
 ];
-
-
- 
 export const premiumItems = [
- {
-  comp: {
-    slug: 'luxury-holiday',
-    entryFee: null,
-    totalTickets: null,
-    ticketsSold: 0,
-    startsAt: null,
-    endsAt: '',
-    paymentType: 'pi',
-    piAmount: null,
-    comingSoon: true,
-    status: 'active',
-  },
-  title: 'Luxury Holiday',
-  href: '/competitions/luxury-holiday',
-  prize: '7-Day Dubai Trip',
-  imageUrl: '/images/dubai-luxury-holiday.jpg',
-  theme: 'premium',
-},
-{
-  comp: {
-    slug: 'penthouse-stay',
-    entryFee: null,
-    totalTickets: null,
-    ticketsSold: 0,
-    startsAt: null,
-    endsAt: '',
-    paymentType: 'pi',
-    piAmount: null,
-    comingSoon: true,
-    status: 'active',
-  },
-  title: 'Penthouse Stay',
-  href: '/competitions/penthouse-stay',
-  prize: 'Penthouse Hotel Stay of your choice',
-  imageUrl: '/images/hotel.jpeg',
-  theme: 'premium',
-},
-{
-  comp: {
-    slug: 'first-class-flight',
-    entryFee: null,
-    totalTickets: null,
-    ticketsSold: null,
-    startsAt: null,
-    endsAt: '',
-    paymentType: 'pi',
-    piAmount: null,
-    comingSoon: true,
-    status: 'active',
-  },
-  title: 'First Class Flight',
-  prize: 'Return flights to anywhere in the world',
-  href: '/competitions/first-class-flight',
-  imageUrl: '/images/first.jpeg',
-  thumbnails: [
-    '/images/first1.jpeg',
-    '/images/first2.jpeg',
-    '/images/first3.jpeg',
-  ],
-  theme: 'premium',
-},
-{
-  comp: {
-    slug: 'weekend-getaway',
-    entryFee: null,
-    totalTickets: null,
-    ticketsSold: 0,
-    startsAt: null,
-    endsAt: '',
-    paymentType: 'pi',
-    piAmount: null,
-    comingSoon: true,
-    status: 'active',
-  },
-  title: 'Weekend Getaway',
-  prize: '3,000 Pi Travel Voucher',
-  href: '/competitions/weekend-getaway',
-  imageUrl: '/images/weekend.jpeg',
-  thumbnails: [
-    '/images/weekend1.jpeg',
-    '/images/weekend2.jpeg',
-    '/images/weekend3.jpeg',
-  ],
-  theme: 'premium',
-},
-{
-  comp: {
-    slug: 'spa-day-package',
-    entryFee: null,
-    totalTickets: null,
-    ticketsSold: 0,
-    startsAt: null,
-    endsAt: '',
-    paymentType: 'pi',
-    piAmount: null,
-    comingSoon: true,
-    status: 'active',
-  },
-  title: 'Spa Day Package',
-  prize: 'Luxury Spa Experience',
-  href: '/competitions/spa-day-package',
-  imageUrl: '/images/spa.jpeg',
-  thumbnails: [
-    '/images/spa1.jpeg',
-    '/images/spa2.jpeg',
-    '/images/spa3.jpeg',
-  ],
-  theme: 'premium',
-},
-
-
 ];
 export const dailyItems = [];
-
-export const piItems = [
-   
-];
-
-
+export const piItems = [];
 export const competitionsData = [
   {
     _id: "687c330c0d220984a4e83c59",
@@ -374,7 +254,6 @@ export const competitionsData = [
     imageUrl: "/images/your.png",
   },
 ];
-
 export const freeItems = [
 
 {
@@ -392,96 +271,9 @@ export const freeItems = [
   href: '/competitions/pi-to-the-moon',
   theme: 'free',
 },
-
 ];
 export const cryptoGiveawaysItems = [
-  {
-    comp: {
-      slug: 'crypto-eth',
-      entryFee: 0.5,
-      totalTickets: 6000,
-      ticketsSold: 0,
-      startsAt: '2025-07-10T00:00:00Z',
-      endsAt: '2025-08-01T23:59:00Z',
-      status: 'active',
-      comingSoon: true,
-    },
-    title: 'Win ETH',
-    href: '/crypto/crypto-eth',
-    token: 'ETH',
-    imageUrl: '/images/crypto-eth.png',
-    theme: 'crypto',
-  },
-  {
-    comp: {
-      slug: 'crypto-xrp',
-      entryFee: 0.4,
-      totalTickets: 8000,
-      ticketsSold: 0,
-      startsAt: '2025-07-10T00:00:00Z',
-      endsAt: '2025-08-02T23:59:00Z',
-      status: 'active',
-      comingSoon: true,
-    },
-    title: 'Win XRP',
-    href: '/crypto/crypto-xrp',
-    token: 'XRP',
-    imageUrl: '/images/crypto-xrp.png',
-    theme: 'crypto',
-  },
-  {
-    comp: {
-      slug: 'crypto-sol',
-      entryFee: 0.4,
-      totalTickets: 7000,
-      ticketsSold: 0,
-      startsAt: '2025-07-10T00:00:00Z',
-      endsAt: '2025-08-03T23:59:00Z',
-      status: 'active',
-      comingSoon: true,
-    },
-    title: 'Win SOL',
-    href: '/crypto/crypto-sol',
-    token: 'SOL',
-    imageUrl: '/images/crypto-sol.png',
-    theme: 'crypto',
-  },
-  {
-    comp: {
-      slug: 'crypto-bnb',
-      entryFee: 0.4,
-      totalTickets: 4000,
-      ticketsSold: 0,
-      startsAt: '2025-07-10T00:00:00Z',
-      endsAt: '2025-08-04T23:59:00Z',
-      status: 'active',
-      comingSoon: true,
-    },
-    title: 'Win BNB',
-    href: '/crypto/crypto-bnb',
-    token: 'BNB',
-    imageUrl: '/images/crypto-bnb.png',
-    theme: 'crypto',
-  },
-  {
-    comp: {
-      slug: 'crypto-doge',
-      entryFee: 0.3,
-      totalTickets: 10000,
-      ticketsSold: 0,
-      startsAt: '2025-07-10T00:00:00Z',
-      endsAt: '2025-08-05T23:59:00Z',
-      status: 'active',
-      comingSoon: true,
-    },
-    title: 'Win DOGE',
-    href: '/crypto/crypto-doge',
-    token: 'DOGE',
-    imageUrl: '/images/crypto-doge.png',
-    theme: 'crypto',
-  },
-];
-
+ ];
 export const allComps = [
   ...techItems,
   ...premiumItems,

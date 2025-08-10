@@ -10,7 +10,8 @@
     "draw-winner": "node scripts/drawWinner.mjs",
     "rollover-prize": "node scripts/rolloverUnclaimed.mjs",
     "seed-pi-cash": "node scripts/seedPiCashCode.mjs",
-    "seed-competitions": "node scripts/seedPiCompetitions.mjs"
+    "seed-competitions": "node scripts/seedPiCompetitions.mjs",
+    "worker:funnel": "node scripts/funnelWorker.js"
   },
   "dependencies": {
     "@emoji-mart/react": "^1.1.1",

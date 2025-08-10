@@ -14,7 +14,7 @@ export default function HowToPlay() {
       <div className="competition-card max-w-3xl w-full bg-white bg-opacity-10 rounded-2xl shadow-lg">
         
         {/* Header */}
-        <div className="competition-top-banner title-gradient text-white text-center py-5 text-2xl sm:text-3xl font-extrabold uppercase tracking-wide">
+        <div className="competition-top-banner title-gradient text-white text-center py-5 text-2xl sm:text-2xl font-bold tracking-wide">
           How to Play & Win
         </div>
 
