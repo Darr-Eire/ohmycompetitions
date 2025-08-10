@@ -2,18 +2,21 @@
 'use client';
 
 import { useRouter } from 'next/router';
-import { useFunnelDetail } from '../../hooks/useFunnel'
-;
-import { postJSON } from '../../lib/api';
-import { usePiAuth } from 'context/PiAuthContext';
-import FunnelCompetitionCard from '@/components/FunnelCompetitionCard';
-
+import { useFunnelDetail } from '@hooks/useFunnel';
+import { postJSON } from '@lib/api';
+import { usePiAuth } from '@context/PiAuthContext';
+import FunnelCompetitionCard from '../../components/FunnelCompetitionCard';
 export default function CompetitionDetailPage() {
   const router = useRouter();
   const { slug } = router.query;
-  const { user } = usePiAuth();
-  const { comp, isLoading, error, mutate } = useFunnelDetail(slug);
 
+  // Avoid firing the hook with undefined slug
+  const { user } = usePiAuth();
+  const { comp, isLoading, error, mutate } = useFunnelDetail(
+    typeof slug === 'string' ? slug : undefined
+  );
+
+  if (!slug) return <PageWrap><Loader /></PageWrap>;
   if (isLoading) return <PageWrap><Loader /></PageWrap>;
   if (error || !comp) return <PageWrap><ErrorBox /></PageWrap>;
 
@@ -27,7 +30,7 @@ export default function CompetitionDetailPage() {
       await mutate();
       alert('Joined! 🍀');
     } catch (e) {
-      alert(e.message || 'Join failed');
+      alert(e?.message || 'Join failed');
     }
   }
 
@@ -44,14 +47,14 @@ export default function CompetitionDetailPage() {
         imageUrl={comp.imageUrl || '/pi.jpeg'}
         hasTicket={false}
         onClickJoin={canJoin ? onJoin : undefined}
-        tags={[comp.status.toUpperCase()]}
+        tags={[String(comp.status || '').toUpperCase()]}
       />
     </PageWrap>
   );
 }
 
 function PageWrap({ children }) {
-  return <div className="min-h-screen bg-[#070d19] p-6">{children}</div>;
+  return <div className="min-h-screen bg-[#070d19] p-6 text-white">{children}</div>;
 }
 function Loader() {
   return <div className="h-56 rounded-2xl bg-white/5 animate-pulse" />;
