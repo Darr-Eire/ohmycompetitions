@@ -1,34 +1,53 @@
-// file: src/pages/competitions/[slug].jsx
 'use client';
 
 import { useRouter } from 'next/router';
-import { useFunnelDetail } from '../../hooks/useFunnel';
-import { postJSON } from '../../lib/api';
-import { usePiAuth } from '../../context/PiAuthContext';
-import FunnelCompetitionCard from '../../components/FunnelCompetitionCard';
+import { useState, useEffect } from 'react';
+import { usePiAuth } from '../../context/PiAuthContext.js';
+import FunnelCompetitionCard from '../../components/FunnelCompetitionCard.js';
 
 export default function CompetitionDetailPage() {
   const router = useRouter();
   const { slug } = router.query;
   const { user } = usePiAuth();
-  const { comp, isLoading, error, mutate } = useFunnelDetail(slug);
+  const [comp, setComp] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  if (isLoading) return <PageWrap><Loader /></PageWrap>;
-  if (error || !comp) return <PageWrap><ErrorBox /></PageWrap>;
+  useEffect(() => {
+    if (!slug) return;
+    fetch(`/api/funnel/live?stage=1`)
+      .then(res => res.json())
+      .then(data => {
+        const found = [...data.filling, ...data.live].find(c => c.slug === slug);
+        if (!found) setError(true);
+        else setComp(found);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError(true);
+        setLoading(false);
+      });
+  }, [slug]);
 
   const canJoin =
-    comp.stage === 1 && comp.status === 'filling' && comp.entrantsCount < comp.capacity;
+    comp?.stage === 1 && comp?.status === 'filling' && comp?.entrantsCount < comp?.capacity;
 
   async function onJoin() {
     if (!user?.id && !user?.piUserId) return alert('Login required.');
     try {
-      await postJSON('/api/funnel/join', { slug, userId: user?.id || user?.piUserId });
-      await mutate();
+      await fetch('/api/funnel/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug, userId: user?.id || user?.piUserId })
+      });
       alert('Joined! 🍀');
-    } catch (e) {
-      alert(e.message || 'Join failed');
+    } catch {
+      alert('Join failed');
     }
   }
+
+  if (loading) return <PageWrap><Loader /></PageWrap>;
+  if (error || !comp) return <PageWrap><ErrorBox /></PageWrap>;
 
   return (
     <PageWrap>

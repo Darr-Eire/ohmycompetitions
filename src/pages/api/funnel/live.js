@@ -1,3 +1,4 @@
+// file: src/pages/api/funnel/live.js
 import dbConnect from '../../../lib/dbConnect.js';
 import FunnelCompetition from '../../../models/FunnelCompetition.js';
 
@@ -5,13 +6,19 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
   try {
     await dbConnect();
+
     const stage = Number(req.query.stage || 1);
-    if (![1, 2, 3, 4, 5].includes(stage)) return res.status(400).json({ error: 'Invalid stage' });
+    if (![1, 2, 3, 4, 5].includes(stage)) {
+      return res.status(400).json({ error: 'Invalid stage' });
+    }
 
     const [filling, live] = await Promise.all([
       FunnelCompetition.find({ stage, status: 'filling' })
@@ -27,7 +34,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       summary: {
         stage,
-        counts: { filling: filling.length, live: live.length },
+        counts: { filling: filling.length, live: live.length, total: filling.length + live.length },
         timestamp: new Date().toISOString(),
       },
       filling,
