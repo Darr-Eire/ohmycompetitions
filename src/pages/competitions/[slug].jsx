@@ -1,10 +1,9 @@
 // file: src/pages/competitions/[slug].jsx
 'use client';
 
-import { useRouter } from 'next/router';
-import { useFunnelDetail } from '@hooks/useFunnel';
-import { postJSON } from '@lib/api';
-import { usePiAuth } from '@context/PiAuthContext';
+import { useFunnelDetail } from '../../hooks/useFunnel';
+import { postJSON } from '../../lib/api';
+import { usePiAuth } from '../../context/PiAuthContext';
 import FunnelCompetitionCard from '../../components/FunnelCompetitionCard';
 export default function CompetitionDetailPage() {
   const router = useRouter();
