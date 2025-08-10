@@ -2,7 +2,8 @@
 'use client';
 
 import { useRouter } from 'next/router';
-import { useFunnelDetail } from '@/hooks/useFunnel';
+import { useFunnelDetail } from '../../hooks/useFunnel'
+;
 import { postJSON } from '@/lib/api';
 import { usePiAuth } from 'context/PiAuthContext';
 import FunnelCompetitionCard from '@/components/FunnelCompetitionCard';

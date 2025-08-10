@@ -1,4 +1,3 @@
-// pages/partners.js
 'use client'
 
 import Image from 'next/image'
@@ -27,159 +26,125 @@ const partnerItems = [
 
 export default function PartnersPage() {
   return (
-    <main className="pages-partners app-background min-h-screen p-4 text-white">
-      <div className="max-w-4xl mx-auto space-y-8">
+    <main className="pages-partners app-background min-h-screen p-4 text-white font-orbitron">
+      <div className="max-w-5xl mx-auto space-y-10">
+
         {/* Header */}
         <header className="text-center">
-          <div className="competition-top-banner title-gradient mb-2">
-             Partners & Sponsors
+          <div className="competition-top-banner title-gradient mb-3">
+            Partners & Sponsors
           </div>
-        
-         
+          <p className="text-white/80 max-w-2xl mx-auto text-sm sm:text-base">
+            Collaborating with visionary pioneers, developers, and brands to grow the Pi ecosystem together.
+          </p>
         </header>
-{/* Host Your Giveaway CTA */}
-<section className="competition-card p-6 bg-white bg-opacity-10 rounded-2xl shadow-lg">
-  <div className="bg-gradient-to-r from-[#0ff] to-[#0af] rounded px-4 py-2 mb-4">
-    <h2 className="text-1xl text-center text-black">
-      Got a Giveaway? Let Us Host It.
-    </h2>
-  </div>
 
-  <p className="text-white text-sm mb-4 text-center">
-    Whether you’re launching a Pi-powered game, a community milestone, or a product drop — we’ll run your giveaway end-to-end. 100% secure. 100% transparent. 100% Pi-native.
-  </p>
+        {/* Host Your Giveaway */}
+        <GlassCard>
+          <SectionTitle>Got a Giveaway? Let Us Host It.</SectionTitle>
+          <p className="text-center text-white/90 text-sm mb-4">
+            Whether you’re launching a Pi-powered game, a community milestone, or a product drop — we’ll run your giveaway end-to-end. 100% secure. 100% transparent. 100% Pi-native.
+          </p>
+          <ul className="space-y-2 text-white/90 text-sm">
+            <li>✅ Transparent prize draws powered by real Pi transactions</li>
+            <li>✅ Verified winner announcements & built-in fraud protection</li>
+            <li>✅ Reach thousands of active Pi users instantly</li>
+            <li>✅ Optional live draws, auto-payments, and branded banners</li>
+          </ul>
+          <div className="text-center mt-6">
+            <Link href="/contact" className="btn-gradient px-6 py-2 inline-block rounded-lg">
+              Let’s Talk →
+            </Link>
+          </div>
+        </GlassCard>
 
-  <ul className="space-y-2 text-white text-sm">
-    <li>✅ Transparent prize draws powered by real Pi transactions</li>
-    <li>✅ Verified winner announcements & built-in fraud protection</li>
-    <li>✅ Reach thousands of active Pi users instantly</li>
-    <li>✅ Optional live draws, auto-payments and branded banners</li>
-  </ul>
-
-  <div className="text-center mt-6">
-    <Link href="/contact">
-      <button className="btn-gradient px-6 py-2">Let’s Talk </button>
-    </Link>
-  </div>
-</section>
-
-        {/* Partners grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {/* Partners Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {partnerItems.map(partner => (
-            <div
-              key={partner.slug}
-              className="competition-card flex flex-col items-center p-6 bg-white bg-opacity-10 rounded-2xl shadow-lg text-center"
-            >
+            <GlassCard key={partner.slug} className="items-center text-center">
               <Image
                 src={partner.logoUrl}
                 alt={partner.name}
                 width={80}
                 height={80}
-                sizes="80px"
                 className="object-contain mb-4"
               />
-              <h2 className="text-xl font-semibold gradient-text mb-4 text-black">
-                {partner.name}
-              </h2>
+              <h2 className="text-lg font-semibold gradient-text mb-4">{partner.name}</h2>
               <Link
                 href={partner.website}
                 target="_blank"
                 rel="noopener noreferrer"
+                className="btn-gradient w-full py-2 rounded-lg inline-block"
               >
-                <button className="btn-gradient w-full">
-                  Visit Site →
-                </button>
+                Visit Site →
               </Link>
-            </div>
+            </GlassCard>
           ))}
 
-          {/* Become a Partner CTA */}
-          <div className="competition-card flex flex-col items-center p-6 bg-white bg-opacity-10 rounded-2xl shadow-lg text-center">
-            <div className="mb-4 gradient-text text-black">Your Logo Here</div>
-            <p className="mb-6 text-white">
-              Want your DApp featured? Contact us!
-            </p>
-            <Link href="/contact">
-              <button className="btn-gradient w-full">
-                Become a Partner
-              </button>
+          {/* Become Partner CTA */}
+          <GlassCard className="items-center text-center">
+            <div className="mb-4 gradient-text">Your Logo Here</div>
+            <p className="mb-6 text-white/90">Want your DApp featured? Contact us!</p>
+            <Link href="/contact" className="btn-gradient w-full py-2 rounded-lg inline-block">
+              Become a Partner
             </Link>
-          </div>
+          </GlassCard>
         </div>
-{/* X Pages That Helped Us Grow */}
-<section className="competition-card p-6 bg-white bg-opacity-10 rounded-2xl shadow-lg">
-  <div className="bg-gradient-to-r from-[#00ffd5] to-[#0077ff] rounded px-4 py-2 mb-4">
-    <h2 className="text-1xl text-center text-black">
-      X Pages That Helped Us Grow, Give Them A Follow
-    </h2>
-  </div>
 
-  <ul className="space-y-3 text-white text-sm text-center">
-    <li>
-      <a href="https://x.com/CryptoPioneer" target="_blank" rel="noopener noreferrer" className="text-cyan-400 underline">
-        Crypto Pioneer
-      </a> — Gave us our first boost.
-    </li>
-    <li>
-      <a href="https://x.com/PiBuildersHub" target="_blank" rel="noopener noreferrer" className="text-cyan-400 underline">
-        Pi Builders Hub
-      </a> — Shared our early prototype.
-    </li>
-    <li>
-      <a href="https://x.com/PiPulseDaily" target="_blank" rel="noopener noreferrer" className="text-cyan-400 underline">
-        Pi Pulse Daily
-      </a> — Highlighted our launch week.
-    </li>
-    <li>
-      <a href="https://x.com/OmcUpdates" target="_blank" rel="noopener noreferrer" className="text-cyan-400 underline">
-        OMC Updates
-      </a> — Kept the community informed.
-    </li>
-    <li>
-      <a href="https://x.com/PioneersGlobal" target="_blank" rel="noopener noreferrer" className="text-cyan-400 underline">
-        Pioneers Global
-      </a> — Connected us with global Pi fans.
-    </li>
-  </ul>
-
-  <p className="text-sm text-center text-white mt-6">
-    A huge thank you to these pages and the entire Pi community for believing in Pi Network and what we're building.
-    We wouldn’t be here without your support.
-  </p>
-</section>
-
-
-
-        {/* Why Partner section */}
-        <section className="competition-card p-6 bg-white bg-opacity-10 rounded-2xl shadow-lg">
-          <div className="bg-gradient-to-r from-[#00ffd5] to-[#0077ff] rounded px-4 py-2 mb-4">
-            <h2 className="text-1xl text-center text-black">
-              Why Partner With OhMyCompetitions?
-            </h2>
-          </div>
-
-          <ul className="space-y-3 text-white text-sm">
-            <li>
-              <strong className="gradient-text">Developer Support:</strong> Direct access to technical assistance and integration guidance.
-            </li>
-            <li>
-              <strong className="gradient-text">Performance Insights:</strong> Get real-time analytics to track user engagement and optimize performance.
-            </li>
-            <li>
-              <strong className="gradient-text">Ecosystem Credibility:</strong> Be featured alongside other verified projects building on the Pi Network.
-            </li>
-            <li>
-              <strong className="gradient-text">Security & Compliance:</strong> Leverage our audited infrastructure for peace of mind.
-            </li>
-            <li>
-              <strong className="gradient-text">Partner Competition:</strong> Feature your competitions across our Pi App and community channels for maximum traction.
-            </li>
-            <li>
-              <strong className="gradient-text">We Pi Family:</strong> Join a trusted alliance of pioneers building real utility in the Pi ecosystem — together we grow.
-            </li>
+        {/* X Pages That Helped Us Grow */}
+        <GlassCard>
+          <SectionTitle>X Pages That Helped Us Grow</SectionTitle>
+          <ul className="space-y-3 text-white/90 text-sm text-center">
+            <li><PartnerLink href="https://x.com/CryptoPioneer">Crypto Pioneer</PartnerLink> — Gave us our first boost.</li>
+            <li><PartnerLink href="https://x.com/PiBuildersHub">Pi Builders Hub</PartnerLink> — Shared our early prototype.</li>
+            <li><PartnerLink href="https://x.com/PiPulseDaily">Pi Pulse Daily</PartnerLink> — Highlighted our launch week.</li>
+            <li><PartnerLink href="https://x.com/OmcUpdates">OMC Updates</PartnerLink> — Kept the community informed.</li>
+            <li><PartnerLink href="https://x.com/PioneersGlobal">Pioneers Global</PartnerLink> — Connected us with global Pi fans.</li>
           </ul>
-        </section>
+          <p className="text-sm text-center text-white mt-6">
+            Huge thanks to these pages and the entire Pi community for believing in Pi Network and what we're building.
+          </p>
+        </GlassCard>
+
+        {/* Why Partner */}
+        <GlassCard>
+          <SectionTitle>Why Partner With OhMyCompetitions?</SectionTitle>
+          <ul className="space-y-3 text-white/90 text-sm">
+            <li><strong className="gradient-text">Developer Support:</strong> Direct access to technical assistance and integration guidance.</li>
+            <li><strong className="gradient-text">Performance Insights:</strong> Real-time analytics to track engagement.</li>
+            <li><strong className="gradient-text">Ecosystem Credibility:</strong> Be featured alongside other verified Pi projects.</li>
+            <li><strong className="gradient-text">Security & Compliance:</strong> Leverage our audited infrastructure.</li>
+            <li><strong className="gradient-text">Partner Competition:</strong> Feature your competitions across our channels.</li>
+            <li><strong className="gradient-text">We Pi Family:</strong> Join a trusted alliance of pioneers building real utility.</li>
+          </ul>
+        </GlassCard>
+
       </div>
     </main>
+  )
+}
+
+/* ===== Small components for reusability & polish ===== */
+function GlassCard({ children, className = '' }) {
+  return (
+    <div className={`competition-card flex flex-col bg-white/[0.05] border border-cyan-500/20 backdrop-blur-md rounded-2xl p-6 shadow-[0_0_40px_rgba(34,211,238,0.15)] ${className}`}>
+      {children}
+    </div>
+  )
+}
+
+function SectionTitle({ children }) {
+  return (
+    <div className="bg-gradient-to-r from-[#00ffd5] to-[#0077ff] rounded px-4 py-2 mb-4 text-center text-black font-bold text-base sm:text-lg">
+      {children}
+    </div>
+  )
+}
+
+function PartnerLink({ href, children }) {
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer" className="text-cyan-300 hover:text-cyan-200 underline transition">
+      {children}
+    </a>
   )
 }
