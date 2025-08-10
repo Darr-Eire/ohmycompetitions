@@ -230,10 +230,11 @@ export default function HomePage() {
   return (
     <>
 {/* ===== Welcome ===== */}
-<div className="w-full space-y-8">
-  {/* Welcome */}
-  <div className="text-center text-cyan-300 text-xl sm:text-base font-medium font-orbitron">
-    ☘️ Céad Míle Fáilte Let The Competitions Begin ☘️
+<div className="w-full space-y-8 mt-5">
+  <div className="text-center text-cyan-300 font-medium font-orbitron leading-snug">
+    <div className="text-lg sm:text-base">☘️ Céad Míle Fáilte ☘️</div>
+   
+    <div className="text-sm sm:text-base">Let The Competitions Begin</div>
   </div>
 
   {/* Marquee */}
