@@ -43,11 +43,17 @@ export default function FunnelCompetitionMiniCard({
       <div className="mt-2 h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
         <div className="h-full rounded-full bg-cyan-400" style={{ width: `${pct}%` }} />
       </div>
+<div className="mt-3 flex items-center justify-between relative">
+  <div className="text-xs text-white/60">
+    {status === 'filling' ? `${spotsLeft} spots left` : '—'}
+  </div>
 
-      <div className="mt-3 flex items-center justify-between">
-        <div className="text-xs text-white/60">
-          {status === 'filling' ? `${spotsLeft} spots left` : '—'}
-        </div>
+  {status === 'live' && (
+    <div className="absolute -top-2 right-0 bg-red-600 text-white text-[10px] font-bold px-2 py-[1px] rounded shadow-lg animate-pulse">
+      LIVE
+    </div>
+  )}
+</div>
 
         {canJoin ? (
           onClickJoin ? (

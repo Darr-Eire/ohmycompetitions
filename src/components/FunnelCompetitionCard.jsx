@@ -86,6 +86,15 @@ export default function FunnelCompetitionCard({
                 style={{ animation: 'omcGradient 10s ease infinite' }}
               />
             )}
+            {derivedStatus === 'live' && (
+  <div className="absolute top-3 right-3 z-20">
+    <span className="inline-flex items-center gap-1 rounded-full bg-red-600 px-2 py-[2px] text-[10px] font-bold text-white shadow-lg animate-pulse">
+      <span className="h-[6px] w-[6px] rounded-full bg-white" />
+      LIVE
+    </span>
+  </div>
+)}
+
             <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px]" />
             {stage === 5 && (
               <div className="absolute inset-0">

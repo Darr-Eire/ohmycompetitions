@@ -32,24 +32,32 @@ export default function FunnelStageCardStage1({
       />
       <div className="relative">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-         
-            <div className="text-white font-semibold text-xs">{title}</div>
-          </div>
-          <span
-            className={[
-              'text-[9px] font-bold px-2 py-[2px] rounded-full border border-black/10',
-              status === 'live'
-                ? 'bg-emerald-400 text-black'
-                : status === 'filling'
-                ? 'bg-cyan-400 text-black'
-                : 'bg-white/10 text-white/80',
-            ].join(' ')}
-          >
-            {status.toUpperCase()}
-          </span>
-        </div>
+    <div className="flex items-center justify-between relative">
+  <div>
+    <div className="text-white font-semibold text-xs">{title}</div>
+  </div>
+
+  <span
+    className={[
+      'text-[9px] font-bold px-2 py-[2px] rounded-full border border-black/10',
+      status === 'live'
+        ? 'bg-emerald-400 text-black'
+        : status === 'filling'
+        ? 'bg-cyan-400 text-black'
+        : 'bg-white/10 text-white/80',
+    ].join(' ')}
+  >
+    {status.toUpperCase()}
+  </span>
+
+  {/* LIVE Banner */}
+  {status === 'live' && (
+    <div className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold px-2 py-[1px] rounded shadow-lg animate-pulse">
+      LIVE
+    </div>
+  )}
+</div>
+
 
         {/* Stats */}
         <div className="mt-1 text-[10px] text-white">
