@@ -1,4 +1,3 @@
-// file: src/pages/competitions/[slug].jsx
 'use client';
 
 import { useRouter } from 'next/router';
@@ -7,13 +6,14 @@ import { postJSON } from '../../lib/api';
 import { usePiAuth } from '../../context/PiAuthContext';
 import FunnelCompetitionCard from '../../components/FunnelCompetitionCard';
 import FreeCompetitionCard from '../../components/FreeCompetitionCard';
+import LaunchCompetitionDetailCard from '../../components/LaunchCompetitionDetailCard';
 
 export default function CompetitionDetailPage() {
   const router = useRouter();
   const { slug } = router.query;
   const { user } = usePiAuth();
 
-  const [type, setType] = useState('none'); // 'funnel' | 'competition' | 'none'
+  const [type, setType] = useState('none');
   const [comp, setComp] = useState(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState(null);
@@ -40,14 +40,12 @@ export default function CompetitionDetailPage() {
           }
           return;
         }
-
-        // If it's not a 404, bubble up error
         if (r.status !== 404) {
           const msg = await r.text().catch(() => 'Funnel fetch failed');
           throw new Error(msg || `Funnel endpoint error (${r.status})`);
         }
 
-        // 2) Fallback to admin competitions
+        // 2) Try admin competitions
         r = await fetch(`/api/competitions/${slug}`);
         if (r.ok) {
           const data = await r.json();
@@ -67,9 +65,9 @@ export default function CompetitionDetailPage() {
           }
           return;
         }
-
         const msg2 = await r.text().catch(() => 'Competition fetch failed');
         throw new Error(msg2 || `Competition endpoint error (${r.status})`);
+
       } catch (e) {
         if (!cancelled) {
           setErr(e);
@@ -85,7 +83,7 @@ export default function CompetitionDetailPage() {
   if (!slug || loading) return <PageWrap><Loader /></PageWrap>;
   if (err || !comp || type === 'none') return <PageWrap><ErrorBox /></PageWrap>;
 
-  // Funnel UI (stage-based)
+  // Funnel UI
   if (type === 'funnel') {
     const canJoin =
       comp.stage === 1 && comp.status === 'filling' && comp.entrantsCount < comp.capacity;
@@ -119,35 +117,83 @@ export default function CompetitionDetailPage() {
     );
   }
 
-  // Admin-created competition UI
-  const adminComp = {
-    slug: comp.slug,
-    startsAt: comp.startsAt || '',
-    endsAt: comp.endsAt || '',
-    ticketsSold: comp.ticketsSold ?? comp.entrantsCount ?? 0,
-    totalTickets: comp.totalTickets ?? comp.capacity ?? 0,
-    comingSoon: Boolean(comp.comingSoon),
-    status: comp.status || 'active',
-    title: comp.title || 'Competition',
-    prizeLabel: comp.prizeLabel || comp.prize || '',
-    imageUrl: comp.imageUrl || '/pi.jpeg',
-  };
+  // Admin-created competition object
+ // Admin-created competition UI
+const adminComp = {
+  slug: comp.slug,
+  startsAt: comp.startsAt || '',
+  endsAt: comp.endsAt || '',
+  ticketsSold: comp.ticketsSold ?? comp.entrantsCount ?? 0,
+  totalTickets: comp.totalTickets ?? comp.capacity ?? 0,
+  comingSoon: Boolean(comp.comingSoon),
+  status: comp.status || 'active',
+  title: comp.title || 'Competition',
+  prizeLabel: comp.prizeLabel || comp.prize || '',
+  imageUrl: comp.imageUrl || '/pi.jpeg',
+  entryFee: comp.entryFee ?? 0,
+  theme: comp.theme || '',
+  winners: comp.winners || 'Multiple',           // <-- added
+  maxTicketsPerUser: comp.maxTicketsPerUser || 'N/A', // <-- added
+};
 
-  return (
-    <PageWrap>
-      <div className="max-w-3xl mx-auto w-full">
+return (
+  <PageWrap>
+    <div className="max-w-3xl mx-auto w-full">
+      {adminComp.theme.toLowerCase() === 'launch' ? (
+        <LaunchCompetitionDetailCard
+          comp={adminComp}
+          title={adminComp.title}
+          prize={adminComp.prizeLabel}
+          fee={`${(adminComp.entryFee).toFixed(2)} π`}
+          imageUrl={adminComp.imageUrl}
+          startsAt={adminComp.startsAt}
+          endsAt={adminComp.endsAt}
+          ticketsSold={adminComp.ticketsSold}
+          totalTickets={adminComp.totalTickets}
+          status={adminComp.status}
+        />
+      ) : (
         <FreeCompetitionCard
           comp={adminComp}
           title={adminComp.title}
           prize={adminComp.prizeLabel}
           buttonLabel="Enter"
         />
+      )}
+    </div>
+  </PageWrap>
+);
+
+
+  return (
+    <PageWrap>
+      <div className="max-w-3xl mx-auto w-full">
+        {adminComp.theme.toLowerCase() === 'launch' ? (
+          <LaunchCompetitionDetailCard
+            comp={adminComp}
+            title={adminComp.title}
+            prize={adminComp.prizeLabel}
+            fee={`${adminComp.entryFee.toFixed(2)} π`}
+            imageUrl={adminComp.imageUrl}
+            startsAt={adminComp.startsAt}
+            endsAt={adminComp.endsAt}
+            ticketsSold={adminComp.ticketsSold}
+            totalTickets={adminComp.totalTickets}
+            status={adminComp.status}
+          />
+        ) : (
+          <FreeCompetitionCard
+            comp={adminComp}
+            title={adminComp.title}
+            prize={adminComp.prizeLabel}
+            buttonLabel="Enter"
+          />
+        )}
       </div>
     </PageWrap>
   );
 }
 
-// Prevent static prerender on Vercel; keep this page SSR-only.
 export async function getServerSideProps() {
   return { props: {} };
 }

@@ -49,6 +49,9 @@ export default function FreeCompetitionCard({ comp = {}, title, prize }) {
     return () => clearInterval(interval);
   }, [endsAt]);
 
+  // ✅ Detect Launch Week
+  const isLaunchWeek = title?.toLowerCase().includes('launch week') || comp?.slug?.includes('launch-week');
+
   return (
     <div className="flex justify-center py-8">
       {/* Outer glow & animated border frame */}
@@ -56,11 +59,15 @@ export default function FreeCompetitionCard({ comp = {}, title, prize }) {
         <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-cyan-400/15 via-blue-500/10 to-fuchsia-500/15 blur-xl" />
         <div className="relative rounded-3xl p-[1.5px] bg-[linear-gradient(135deg,rgba(0,255,213,0.6),rgba(0,119,255,0.5))] [mask-composite:exclude]">
           {/* Card body */}
-          <section className="rounded-3xl bg-[#0b1220]/95 backdrop-blur-xl border border-white/10 text-white font-orbitron p-5 sm:p-6">
+          <section className={`rounded-3xl backdrop-blur-xl border text-white font-orbitron p-5 sm:p-6
+            ${isLaunchWeek ? 'bg-gradient-to-br from-yellow-400 via-orange-400 to-red-500 border-yellow-300 shadow-[0_0_30px_rgba(255,200,0,0.8)]' : 'bg-[#0b1220]/95 border-white/10'}
+          `}>
 
             {/* Top row: Title + status */}
             <div className="flex flex-col items-center gap-3">
-              <h2 className="text-2xl sm:text-[28px] font-extrabold tracking-wide text-center bg-gradient-to-r from-cyan-300 via-sky-300 to-blue-300 bg-clip-text text-transparent drop-shadow">
+              <h2 className={`text-2xl sm:text-[28px] font-extrabold tracking-wide text-center drop-shadow
+                ${isLaunchWeek ? 'text-black' : 'bg-gradient-to-r from-cyan-300 via-sky-300 to-blue-300 bg-clip-text text-transparent'}
+              `}>
                 {title}
               </h2>
 
@@ -125,9 +132,13 @@ export default function FreeCompetitionCard({ comp = {}, title, prize }) {
             <div className="mt-6 flex items-center justify-center">
               <Link
                 href={`/competitions/${comp.slug}`}
-                className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-6 py-2.5 text-black text-lg font-extrabold shadow-[0_0_24px_#00ffd570] hover:brightness-110 active:scale-[0.99] transition"
+                className={`inline-flex items-center gap-2 rounded-2xl px-6 py-2.5 text-lg font-extrabold shadow-lg hover:brightness-110 active:scale-[0.99] transition
+                  ${isLaunchWeek
+                    ? 'bg-gradient-to-r from-yellow-300 via-orange-400 to-red-500 text-black'
+                    : 'bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black'}
+                `}
               >
-                View Details
+                {isLaunchWeek ? '🚀 Enter Now' : 'View Detail'}
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
@@ -147,7 +158,6 @@ export default function FreeCompetitionCard({ comp = {}, title, prize }) {
   );
 }
 
-/* ---------- tiny UI helper ---------- */
 function StatChip({ label, value, highlight = false, strong = false }) {
   return (
     <div className={`rounded-xl border px-3 py-2 text-[12px] ${

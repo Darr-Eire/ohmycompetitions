@@ -294,60 +294,65 @@ export default function HomePage() {
     extraClass="mt-12"
   />
 
-  {/* OMC Step Competitions + Funnel in one block */}
-  <section className="mb-16 mt-16">
-    {/* Header */}
-    <div className="text-center mb-6">
-      <h2 className="w-full text-base font-bold text-center text-cyan-300 px-4 py-3 rounded-xl font-orbitron shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
-        OMC Pi Stages Competitions
-      </h2>
+{/* OMC Step Competitions + Funnel in one block */}
+<section className="mb-16 mt-16">
+  {/* Header */}
+  <div className="text-center mb-6">
+    <h2 className="w-full text-base font-bold text-center text-cyan-300 px-4 py-3 rounded-xl font-orbitron shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
+      OMC Pi Stages Competitions
+    </h2>
 
-      <p className="text-sm text-cyan-200 mt-3 italic flex items-center justify-center gap-6 flex-wrap">
-        <span className="inline-block">
-          Qualify <span className="text-white font-semibold">(Stage&nbsp;1)</span>
-        </span>
-        <span className="inline-block">
-          Advance <span className="text-white font-semibold">(Stages&nbsp;2–4)</span>
-        </span>
-        <span className="inline-block">
-          Win <span className="text-white font-semibold">(Stage&nbsp;5)</span>
-        </span>
-      </p>
-    </div>
+    <p className="text-sm text-cyan-200 mt-3 italic flex items-center justify-center gap-6 flex-wrap">
+      <span className="inline-block">
+        Qualify <span className="text-white font-semibold">(Stage&nbsp;1)</span>
+      </span>
+      <span className="inline-block">
+        Advance <span className="text-white font-semibold">(Stages&nbsp;2–4)</span>
+      </span>
+      <span className="inline-block">
+        Win <span className="text-white font-semibold">(Stage&nbsp;5)</span>
+      </span>
+    </p>
+  </div>
 
-    {/* Funnel preview */}
-    <div className="max-w-6xl mx-auto">
-      <FunnelStagesRow
-        s1={safeS1[0]}
-        s2={safeS2[0]}
-        s3={safeS3[0]}
-        s4={safeS4[0]}
-      />
-    </div>
+  {/* Fake "always live" data */}
+  {(() => {
+    const fakeStage = (stageNum) => ({
+      entrants: Math.floor(Math.random() * 25),
+      capacity: 25,
+      advancing: stageNum < 5 ? 5 : 1,
+      status: 'live', // Always live
+      slug: `stage-${stageNum}-slug`,
+      pricePi: stageNum === 1 ? 0.15 : 'Free',
+      hasTicket: stageNum !== 1 // Pretend player has ticket for stages 2–5
+    });
 
-    {/* Step competitions list */}
-    <div className="mt-8 centered-carousel lg:hidden">
-      {getCompetitionsByCategory('step').map((item, i) =>
-        renderCard(item, i, { isDaily: false, isFree: false, isPi: false, isCrypto: false })
-      )}
-    </div>
+    // Always running data
+    const fakeS1 = fakeStage(1);
+    const fakeS2 = fakeStage(2);
+    const fakeS3 = fakeStage(3);
+    const fakeS4 = fakeStage(4);
+    const fakeS5 = fakeStage(5);
 
-    <div className="mt-8 hidden lg:grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-      {getCompetitionsByCategory('step').map((item, i) =>
-        renderCard(item, i, { isDaily: false, isFree: false, isPi: false, isCrypto: false })
-      )}
-    </div>
+    return (
+      <div className="max-w-6xl mx-auto">
+        <FunnelStagesRow
+          s1={fakeS1}
+          s2={fakeS2}
+          s3={fakeS3}
+          s4={fakeS4}
+          s5={fakeS5}
+          prizePoolPi={2150}
+          onEnterStage1={() => {
+            alert('✅ You have entered Stage 1!');
+          }}
+          className="shadow-[0_0_25px_rgba(0,255,255,0.15)]"
+        />
+      </div>
+    );
+  })()}
+</section>
 
-    {/* View more */}
-    <div className="text-center mt-4">
-      <Link
-        href="/battles"
-        className="inline-block text-base font-bold px-3 py-1.5 rounded-md font-medium text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow hover:opacity-90 transition"
-      >
-        View More
-      </Link>
-    </div>
-  </section>
 
   {/* ================== Free Competitions Title ================== */}
   <div className="text-center my-8">
