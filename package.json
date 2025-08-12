@@ -42,6 +42,7 @@
     "jose": "^6.0.11",
     "jsonwebtoken": "^9.0.2",
     "lightweight-charts": "^5.0.6",
+    "lucide-react": "^0.539.0",
     "mongodb": "^6.17.0",
     "mongoose": "^6.13.8",
     "next": "^13.5.6",

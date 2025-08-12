@@ -306,7 +306,7 @@ export default function CompetitionCard({
                   onClick={handleGiftClick}
                   className="w-full py-2 rounded-md font-bold text-cyan-400 border border-cyan-400 hover:bg-cyan-400 hover:text-black transition-colors duration-200"
                 >
-                  🎁 Gift Ticket
+                  Gift Ticket
                 </button>
               )}
             </div>

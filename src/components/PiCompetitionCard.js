@@ -237,7 +237,7 @@ useEffect(() => {
       }}
       className="w-full py-2 border border-cyan-400 text-cyan-400 rounded-md hover:bg-cyan-400 hover:text-black font-bold"
     >
-      🎁 Gift Ticket
+      Gift Ticket
     </button>
   )}
 </div>
