@@ -210,9 +210,9 @@ export default function LaunchCompetitionDetailCard({
 
             {status === 'upcoming' && (
               <div className="mt-4 text-center">
-                <span className="inline-block rounded-full bg-yellow-400 text-black font-bold px-4 py-1">
-                  ⏳ Coming Soon
-                </span>
+           <span className="inline-block rounded-full bg-gradient-to-r from-orange-400 to-orange-600 text-black font-bold px-4 py-1 shadow-[0_0_8px_rgba(251,146,60,0.6)]">
+   Coming Soon
+</span>
               </div>
             )}
 
@@ -224,33 +224,27 @@ export default function LaunchCompetitionDetailCard({
               </div>
             )}
 
-            {/* Prizes */}
-            <div className="mt-5">
-              <div className="flex justify-center">
-                <div className="inline-flex items-baseline gap-2 rounded-lg border border-cyan-300/50 bg-white/5 px-3 py-1.5 shadow-[0_0_8px_rgba(34,211,238,0.25)]">
-                  <span className="text-[14px] uppercase tracking-wide text-cyan-300">1st Prize</span>
-                  <span
-                    className="text-base font-extrabold text-cyan-300 motion-safe:animate-pulse drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]"
-                    style={{ animationDuration: '1.1s' }}
-                  >
-                    {formatPrize(firstPrizeVal) ?? '—'}
-                  </span>
-                </div>
-              </div>
+{/* Prizes */}
+{comp?.prizeBreakdown && Object.keys(comp.prizeBreakdown).length > 0 && (
+  <div className="mt-5 flex flex-col items-center gap-3">
+    {Object.entries(comp.prizeBreakdown).map(([label, amount]) => (
+      <div
+        key={label}
+        className="w-full max-w-xs flex justify-between items-center rounded-lg border border-cyan-300/50 bg-white/5 px-4 py-2 shadow-[0_0_8px_rgba(34,211,238,0.25)]"
+      >
+        <span className="text-[14px] uppercase tracking-wide text-cyan-300">{label}</span>
+        <span
+          className="text-base font-extrabold text-cyan-300 motion-safe:animate-pulse drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]"
+          style={{ animationDuration: '1.1s' }}
+        >
+          {formatPrize(amount) ?? '—'}
+        </span>
+      </div>
+    ))}
+  </div>
+)}
 
-              <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
-                {formatPrize(secondPrizeVal) && (
-                  <span className="inline-flex items-center rounded-md border border-gray-300/40 bg-white/5 px-2 py-0.5 text-[12px] leading-none text-gray-200">
-                    2nd: <span className="ml-1 font-semibold">{formatPrize(secondPrizeVal)}</span>
-                  </span>
-                )}
-                {formatPrize(thirdPrizeVal) && (
-                  <span className="inline-flex items-center rounded-md border border-orange-300/40 bg-white/5 px-2 py-0.5 text-[12px] leading-none text-orange-200">
-                    3rd: <span className="ml-1 font-semibold">{formatPrize(thirdPrizeVal)}</span>
-                  </span>
-                )}
-              </div>
-            </div>
+
 
             {/* Key Details */}
             <div className="mt-4 grid grid-cols-2 gap-2">

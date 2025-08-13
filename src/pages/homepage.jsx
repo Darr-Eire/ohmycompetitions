@@ -302,17 +302,21 @@ export default function HomePage() {
       OMC Pi Stages Competitions
     </h2>
 
-    <p className="text-sm text-cyan-200 mt-3 italic flex items-center justify-center gap-6 flex-wrap">
-      <span className="inline-block">
-        Qualify <span className="text-white font-semibold">(Stage&nbsp;1)</span>
-      </span>
-      <span className="inline-block">
-        Advance <span className="text-white font-semibold">(Stages&nbsp;2–4)</span>
-      </span>
-      <span className="inline-block">
-        Win <span className="text-white font-semibold">(Stage&nbsp;5)</span>
-      </span>
-    </p>
+<p className="text-sm text-cyan-300 mt-3 italic flex items-center justify-center gap-6 flex-wrap">
+  <span className="inline-block">
+    Qualify <span className="text-white font-semibold">(Stage&nbsp;1)</span>
+  </span>
+  <span className="inline-block">
+    Advance <span className="text-white font-semibold">(Stages&nbsp;2–4)</span>
+  </span>
+  <span className="inline-block">
+    Win <span className="text-white font-semibold">(Stage&nbsp;5)</span>
+  </span>
+  <span className="inline-block text-Cyan-300 font-semibold">
+    Stage 5 Prize Pool: <span className="text-white">2,250π</span>
+  </span>
+</p>
+
   </div>
 
   {/* Fake "always live" data */}

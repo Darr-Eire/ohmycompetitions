@@ -1,239 +1,149 @@
+// pages/competitions/pi-to-the-moon.jsx
 'use client';
 
+import { useEffect, useMemo, useState } from 'react';
+import Head from 'next/head';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import '@fontsource/orbitron';
+import LaunchCompetitionDetailCard from 'components/LaunchCompetitionDetailCard';
 
 export default function PiToTheMoonPage() {
-  const [timeLeft, setTimeLeft] = useState('');
-  const [showDetails, setShowDetails] = useState(false);
+  // --- Competition data (normalized like your slug pages expect) ---
+  const startsAt = '2025-09-30T00:00:00Z';        // future -> shows "Coming Soon"
+  const endsAt   = '2025-10-01T18:00:00Z';
+  const total    = 5000;
+  const sold     = 0;
 
-  // Competition data
-  const startsAt = ''; // TBA
-  const endsAt = '2025-10-01T18:00:00Z';
-  const total = 5000;
-  const sold = 0;
-  const percent = Math.min(100, Math.floor((sold / total) * 100));
+  const comp = {
+    slug: 'pi-to-the-moon',
+    title: 'Pi To The Moon',
+    entryFee: 0,                       // Free
+    firstPrize: 3000,                  // 1st place (from your breakdown)
+  prizeBreakdown: {
+  '1st Place': '3,000 ',
+  '2nd–5th Places': '1,000',
+  '6th–10th Places': '100',
+},
 
-  // Countdown
+    winners: 'Multiple',
+    totalTickets: total,
+    ticketsSold: sold,
+    maxTicketsPerUser: null,
+    startsAt,
+    endsAt,
+    theme: 'pi',
+    // imageUrl: '/images/pi-to-the-moon.jpg', // optional (card only shows images for tech/premium)
+    description: '',                   // we’ll pass a full description below
+  };
+
+  // Status logic mirrors your slug page: upcoming if startsAt is in the future
+  const status = useMemo(() => {
+    const now = Date.now();
+    const sTs = comp.startsAt ? new Date(comp.startsAt).getTime() : null;
+    const eTs = comp.endsAt   ? new Date(comp.endsAt).getTime()   : null;
+    if (sTs && now < sTs) return 'upcoming';
+    if (eTs && now > eTs) return 'ended';
+    return 'active';
+  }, [comp.startsAt, comp.endsAt]);
+
+  // Free ticket / share bonus UX hooks (reuses the same pattern as your slug page)
+  const [sharedBonus, setSharedBonus] = useState(false);
+  const slugKey = comp.slug;
+
   useEffect(() => {
-    if (!endsAt) return;
-    const end = new Date(endsAt).getTime();
-    const interval = setInterval(() => {
-      const now = Date.now();
-      const diff = end - now;
-      if (diff <= 0) {
-        setTimeLeft('Ended');
-      } else {
-        const hrs = Math.floor(diff / (1000 * 60 * 60));
-        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const secs = Math.floor((diff % (1000 * 60)) / 1000);
-        setTimeLeft(`${hrs}h ${mins}m ${secs}s`);
-      }
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [endsAt]);
+    setSharedBonus(localStorage.getItem(`${slugKey}-shared`) === 'true');
+  }, [slugKey]);
 
-  const formattedDate = endsAt
-    ? new Date(endsAt).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      })
-    : 'TBA';
+  const claimFreeTicket = () => {
+    const key = `${slugKey}-claimed`;
+    const current = parseInt(localStorage.getItem(key) || '0', 10);
+    const max = sharedBonus ? 2 : 1;
+    if (current >= max) {
+      alert('You have claimed the maximum free tickets.');
+      return;
+    }
+    localStorage.setItem(key, String(current + 1));
+    alert('✅ Free ticket claimed!');
+  };
+
+  const handleShare = () => {
+    if (sharedBonus) {
+      alert('You already received your bonus ticket.');
+      return;
+    }
+    localStorage.setItem(`${slugKey}-shared`, 'true');
+    setSharedBonus(true);
+    alert('✅ Thanks for sharing! Bonus ticket unlocked.');
+  };
+
+  const handlePaymentSuccess = async () => {
+    // Free comp: nothing special here, card expects handler; keep consistent API.
+    alert('🎉 Entry confirmed!');
+  };
+
+  // Rich description + rules (what shows under “View Competition Details” in the card)
+  const description = `
+Pi To The Moon — Community Grand Giveaway
+
+Prize Pool: 7,500 π
+• 1st Place: 3,000 π
+• 2nd–5th Place: 1,000 π each
+• 6th–10th Place: 100 π each
+
+Entry Fee: Free
+Total Tickets: ${total.toLocaleString()}
+Location: Online Global Draw
+
+How It Works:
+1) Sign up for an Oh My Competitions account.
+2) When the app launches, a free ticket is automatically credited.
+3) Watch the live results in-app at draw time.
+4) Winners claim prizes instantly to their Pi wallet.
+
+Rules:
+1) You must log in with Pi Network to receive the free ticket.
+2) One account per person; attempts to create multiple accounts will void entries.
+3) Winners are selected randomly using our verifiable draw system.
+4) Prizes are paid within 48 hours to the winner’s Pi wallet.
+5) No purchase necessary. Free entry only.
+6) The prize pool is awarded as advertised.
+7) By entering, you agree to our Terms & Conditions.
+
+Good luck, Pioneer!
+  `.trim();
 
   return (
-    <section className="w-full py-10 px-4 bg-gradient-to-r from-[#111827] to-[#0f172a] rounded-2xl border border-cyan-400 shadow-[0_0_40px_#00f2ff44] text-white font-orbitron max-w-2xl mx-auto text-center space-y-6">
-      
-      <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-wide">
-        ✦ Pi To The Moon ✦
-      </h2>
+    <>
+      <Head>
+        <title>Pi To The Moon | Oh My Competitions</title>
+        <meta name="description" content="Pi To The Moon — a free global giveaway for Pioneers with a 7,500 π prize pool." />
+      </Head>
 
-      {/* Date & Status */}
-      <div className="flex justify-center items-center gap-4 text-sm">
-        <span className="bg-white/10 px-3 py-1 rounded-full text-cyan-200 font-medium">
-          {formattedDate}
-        </span>
-        <span className="bg-gradient-to-r from-orange-400 to-orange-500 px-3 py-1 rounded-full animate-pulse">
-          Coming Soon
-        </span>
-      </div>
+      <main className="min-h-screen px-4 py-6 text-white bg-[#070d19] font-orbitron">
+        <div className="max-w-xl mx-auto">
+          <LaunchCompetitionDetailCard
+            comp={comp}
+            title={comp.title}
+            prize={comp.firstPrize}
+            fee={comp.entryFee}
+            imageUrl={comp.imageUrl}           // optional, not shown unless theme is tech/premium
+            endsAt={comp.endsAt}
+            startsAt={comp.startsAt}
+            ticketsSold={comp.ticketsSold}
+            totalTickets={comp.totalTickets}
+            status={status}
 
-      {/* Main Details Panel */}
-    <div className="bg-white/5 rounded-lg p-6 text-sm space-y-4">
-  <p>
-    <span className="font-semibold text-cyan-300">Prize:</span>{' '}
-    7,500 π
-  </p>
-  <p>
-    <span className="font-semibold text-cyan-300">Winners:</span>{' '}
-    Multiple Winners
-  </p>
-  <p>
-    <span className="font-semibold text-cyan-300">Entry Fee:</span>{' '}
-    Free
-  </p>
-  <p>
-    <span className="font-semibold text-cyan-300">Start:</span>{' '}
-    TBA
-  </p>
-  <p>
-    <span className="font-semibold text-cyan-300">Draw Date:</span>{' '}
-    TBA
-  </p>
-  <p>
-    <span className="font-semibold text-cyan-300">Total Tickets:</span>{' '}
-    {total.toLocaleString()}
-  </p>
-  <p>
-    <span className="font-semibold text-cyan-300">Location:</span>{' '}
-    Online Global Draw
-  </p>
+            description={description}
+            handlePaymentSuccess={handlePaymentSuccess}
 
-  <hr className="border-gray-700 my-4" />
-
-
-
-
-{/* ──────────────────────────────────────────── */}
-{/* HOW IT WORKS / STEPS */}
-{/* ──────────────────────────────────────────── */}
-<div className="bg-white/5 rounded-lg p-6 text-sm space-y-4">
-  <h3 className="text-lg font-semibold text-white">How It Works</h3>
-  <div className="flex flex-col sm:flex-row justify-between gap-4">
-    <div className="flex-1 flex items-start space-x-3">
-      <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-cyan-300 text-black font-bold rounded-full">
-        1
-      </div>
-      <p>Sign up for an Oh My Competitions account</p>
-    </div>
-    <div className="flex-1 flex items-start space-x-3">
-      <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-cyan-300 text-black font-bold rounded-full">
-        2
-      </div>
-      <p>Earn your free ticket automatically when the app launches</p>
-    </div>
-    <div className="flex-1 flex items-start space-x-3">
-      <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-cyan-300 text-black font-bold rounded-full">
-        3
-      </div>
-      <p>Get the live draw results right in the app</p>
-    </div>
-    <div className="flex-1 flex items-start space-x-3">
-      <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-cyan-300 text-black font-bold rounded-full">
-        4
-      </div>
-      <p>Claim your prize instantly to your Pi wallet</p>
-    </div>
-  </div>
-</div>
-
-{/* ──────────────────────────────────────────── */}
-{/* PRIZE POOL BREAKDOWN */}
-{/* ──────────────────────────────────────────── */}
-<div className="bg-white/5 rounded-lg p-6 text-sm space-y-4">
-  <h3 className="text-lg font-semibold text-white">Prize Pool Breakdown</h3>
-  <table className="w-full text-left text-xs">
-    <thead>
-      <tr className="border-b border-gray-700">
-        <th className="pb-2">Place</th>
-        <th className="pb-2">Prize</th>
-      </tr>
-    </thead>
-    <tbody className="divide-y divide-gray-700">
-      <tr>
-        <td className="py-2">1<sup>st</sup> Place</td>
-        <td className="py-2">3,000 π</td>
-      </tr>
-      <tr>
-        <td className="py-2">2<sup>nd</sup>–5<sup>th</sup> Place</td>
-        <td className="py-2">1,000 π each</td>
-      </tr>
-      <tr>
-        <td className="py-2">6<sup>th</sup>–10<sup>th</sup> Place</td>
-        <td className="py-2">100 π each</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
-
-
-
-{/* ──────────────────────────────────────────── */}
-{/* ACCESSIBILITY INDICATORS */}
-{/* ──────────────────────────────────────────── */}
-<div className="bg-white/5 rounded-lg p-6 text-sm flex flex-wrap justify-center gap-6">
-  <div className="flex items-center space-x-2">
-    {/* Replace with your SVG icon */}
-    <span className="w-5 h-5 bg-cyan-300 rounded-full flex items-center justify-center text-black font-bold">✔</span>
-    <span>Free to enter</span>
-  </div>
-  <div className="flex items-center space-x-2">
-    <span className="w-5 h-5 bg-cyan-300 rounded-full flex items-center justify-center text-black font-bold">🌐</span>
-    <span>Global draw</span>
-  </div>
-  <div className="flex items-center space-x-2">
-    <span className="w-5 h-5 bg-cyan-300 rounded-full flex items-center justify-center text-black font-bold">🤝</span>
-    <span>No purchase necessary</span>
-  </div>
-</div>
-  {/* Centered Toggle */}
-  <div className="flex justify-center">
-    <button
-      onClick={() => setShowDetails(!showDetails)}
-      className="text-xs text-cyan-300 underline hover:text-cyan-400 focus:outline-none"
-    >
-      {showDetails
-        ? 'Hide full competition details'
-        : 'Show full competition details'}
-    </button>
-  </div>
-  {/* Dropdown Content */}
-  {showDetails && (
-    <div className="mt-4 space-y-3 text-left text-sm">
-      <p className="text-white italic">
-        This competition is a special thank you to our early Oh My Competitions
-        users who believed in us from day one. Your support helped us launch
-        and grow every ticket you’ve purchased brings us closer to bigger
-        prizes and more fun for everyone. We couldn’t have done it without you!
-      </p>
-      <p className="text-cyan-200 italic">
-        We’ll open entries once the app is fully up and running, and a free
-        ticket will be automatically credited to your account for simply
-        using the platform and helping us grow.
-      </p>
-    </div>
-  )}
-</div>
-      {/* Progress Bar & Sold */}
-      <div className="w-full">
-        <div className="w-full h-2 bg-gray-800 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-[#00ffd5] via-blue-400 to-[#0077ff]"
-            style={{ width: `${percent}%` }}
+            /* free-ticket UX */
+            claimFreeTicket={claimFreeTicket}
+            handleShare={handleShare}
+            sharedBonus={sharedBonus}
           />
+
+  
         </div>
-        <p className="text-xs text-gray-400 mt-1">
-          Sold: <span className="text-white">{sold.toLocaleString()}</span> / {total.toLocaleString()} ({percent}%)
-        </p>
-      </div>
-
-      {/* Coming Soon Button */}
-      <div className="flex justify-center mt-6">
-        <button
-          disabled
-          className="bg-cyan-300 text-black font-bold text-lg px-8 py-3 rounded-2xl shadow-[0_0_20px_#00ffd5aa] opacity-70 cursor-not-allowed"
-        >
-          Coming Soon
-        </button>
-      </div>
-
-      {/* Terms link */}
-      <div className="text-center pt-4">
-        <Link href="/terms-conditions" className="text-sm text-cyan-300 underline hover:text-cyan-400">
-          View Full Terms & Conditions
-        </Link>
-      </div>
-    </section>
+      </main>
+    </>
   );
 }

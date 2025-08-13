@@ -12,6 +12,8 @@ export default function FunnelStageCardStage1({
   entrants = 0,
   capacity = 25,
   advancing = 5,
+  advancedLastHour = 0,
+  winRate = 0,
   status = 'filling',
   pricePi = 0.15,
   compSlug,
@@ -24,70 +26,81 @@ export default function FunnelStageCardStage1({
   const ctaLabel = spotsLeft > 0 ? `Enter • ${spotsLeft} left` : 'Full';
 
   return (
-    <div className="relative rounded-xl border border-white/10 bg-[#0b1220] p-2 shadow-md overflow-hidden text-xs">
-      {/* Ambient ring */}
+    <div className="relative rounded-xl border border-white/10 bg-[#0b1220] p-4 sm:p-5 shadow-lg overflow-hidden text-xs">
+      {/* Ambient glow */}
       <div
-        className={`absolute -inset-px rounded-xl bg-gradient-to-r ${gradient} opacity-30 blur-md`}
+        className={`absolute -inset-px rounded-xl bg-gradient-to-r ${gradient} opacity-20 blur-lg`}
         aria-hidden
       />
+
       <div className="relative">
         {/* Header */}
-    <div className="flex items-center justify-between relative">
-  <div>
-    <div className="text-white font-semibold text-xs">{title}</div>
-  </div>
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-white font-semibold text-sm">{title}</div>
+            <span className="mt-0.5 inline-block text-[10px] bg-white/10 text-white/70 px-2 py-[2px] rounded-full">
+              Advance Top {advancing}
+            </span>
+          </div>
 
-  <span
-    className={[
-      'text-[9px] font-bold px-2 py-[2px] rounded-full border border-black/10',
-      status === 'live'
-        ? 'bg-emerald-400 text-black'
-        : status === 'filling'
-        ? 'bg-cyan-400 text-black'
-        : 'bg-white/10 text-white/80',
-    ].join(' ')}
-  >
-    {status.toUpperCase()}
-  </span>
-
-  {/* LIVE Banner */}
-  {status === 'live' && (
-    <div className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold px-2 py-[1px] rounded shadow-lg animate-pulse">
-      LIVE
-    </div>
-  )}
-</div>
-
-
-        {/* Stats */}
-        <div className="mt-1 text-[10px] text-white">
-          Max Players {entrants}/{capacity}      Advance Top {advancing}
-        </div>
-        <div className="mt-1 h-1.5 w-full rounded-full bg-white/10 overflow-hidden" aria-hidden>
-          <div className="h-full rounded-full bg-cyan-400 transition-all" style={{ width: `${pct}%` }} />
+          <span
+            className={[
+              'text-[10px] font-bold px-2 py-[2px] rounded-full border border-black/10',
+              status === 'live'
+                ? 'bg-emerald-400 text-black'
+                : status === 'filling'
+                ? 'bg-cyan-400 text-black'
+                : 'bg-white/10 text-white/80',
+            ].join(' ')}
+          >
+            {status.toUpperCase()}
+          </span>
         </div>
 
-        {/* Footer */}
-        <div className="mt-2 flex items-center justify-between">
-          <div className="text-[10px] text-white">{spotsLeft} spots left</div>
+        {/* Compact Stats Row */}
+        <div className="mt-3 grid grid-cols-2 gap-2 text-[10px] sm:text-[11px] text-white/80 text-center">
+          <div className="bg-white/5 rounded-lg py-1 border border-white/10">
+            👥 {entrants}/{capacity}
+          </div>
+          <div className="bg-white/5 rounded-lg py-1 border border-white/10">
+            ⬆ {advancedLastHour} last hr
+          </div>
+          <div className="bg-white/5 rounded-lg py-1 border border-white/10">
+            🎯 {winRate}%
+          </div>
+          <div className="bg-white/5 rounded-lg py-1 border border-white/10">
+            🪙 {pricePi} π
+          </div>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="mt-3 h-2 w-full rounded-full bg-white/10 overflow-hidden">
+          <div
+            className="h-full rounded-full bg-cyan-400 transition-all"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+
+        {/* CTA */}
+        <div className="mt-4 flex justify-center">
           {canEnter ? (
             onEnter ? (
               <button
                 onClick={() => onEnter(1)}
-                className="rounded-lg px-2 py-1 text-[10px] font-semibold bg-cyan-400 text-black hover:brightness-110 active:translate-y-[1px]"
+                className="w-full rounded-lg px-3 py-2 text-[11px] font-semibold bg-cyan-400 text-black hover:brightness-110 active:translate-y-[1px] transition"
               >
-                {ctaLabel} · {pricePi} π
+                {ctaLabel}
               </button>
             ) : (
               <Link
                 href={compSlug ? `/competitions/${compSlug}` : '#'}
-                className="rounded-lg px-2 py-1 text-[10px] font-semibold bg-cyan-400 text-black hover:brightness-110 active:translate-y-[1px]"
+                className="w-full text-center rounded-lg px-3 py-2 text-[11px] font-semibold bg-cyan-400 text-black hover:brightness-110 active:translate-y-[1px] transition"
               >
-                {ctaLabel} · {pricePi} π
+                {ctaLabel}
               </Link>
             )
           ) : (
-            <span className="rounded-lg px-2 py-1 text-[10px] font-semibold bg-white/10 text-white/70">
+            <span className="w-full text-center rounded-lg px-3 py-2 text-[11px] font-semibold bg-white/10 text-white/70">
               {ctaLabel}
             </span>
           )}

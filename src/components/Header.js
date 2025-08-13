@@ -51,15 +51,19 @@ export default function Header() {
   // Nav data
   const competitionCategories = [
     ['Launch Week', '/competitions/launch-week'],
-    ['Pi Competitions', '/competitions/pi'],
     ['Pi Stages', '/battles'],
     ['Pi Cash Code', '/pi-cash-code'],
     ['Live Now', '/competitions/live-now'],
-    ['Featured', '/competitions/featured'],
+    ['Pi Competitions', '/competitions/pi'],
     ['Daily', '/competitions/daily'],
+    ['Featured', '/competitions/featured'],
+   
   ];
   const navItems = [['Home', '/homepage']];
-  const miniGames = [['Try Your Luck', '/try-your-luck']];
+ const miniGames = [
+  ['Try Your Luck', '/try-your-luck', '(Opening Soon)']
+];
+
   const navExtras = [
     ['Forums', '/forums'],
     ['Results', '/competitions/results'],
@@ -211,17 +215,12 @@ export default function Header() {
           </Section>
 
           <Section title="Mini Games">
-            {miniGames.map(([label, href]) => (
-              <Link
-                key={href}
-                href={href}
-                className={getLinkClass(href)}
-                onClick={() => setMenuOpen(false)}
-              >
-                <span className="relative z-10">{label}</span>
-                <span className="absolute inset-0 bg-cyan-500/10 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300" />
-              </Link>
-            ))}
+          {miniGames.map(([name, link, status]) => (
+  <a key={link} href={link}>
+    {name} {status && <span className="text-cyan-300">{status}</span>}
+  </a>
+))}
+
           </Section>
 
           <Section title="More">
