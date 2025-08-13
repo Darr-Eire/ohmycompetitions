@@ -14,36 +14,83 @@ export default function CreateCompetitionPage() {
     startsAt: '',
     endsAt: '',
     theme: 'pi',
+
+    // NEW
+    maxPerUser: 1,
+    winnersCount: 1,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === 'number' ? (value === '' ? '' : Number(value)) : value,
+    }));
+  };
+
+  const num = (v, def = 0) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : def;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
     try {
+      const payload = {
+        // top-level (for older handlers)
+        slug: form.slug,
+        entryFee: num(form.entryFee),
+        totalTickets: num(form.totalTickets, 1),
+        title: form.title,
+        prize: form.prize,
+        theme: form.theme,
+        startsAt: form.startsAt,
+        endsAt: form.endsAt,
+        // legacy + flat support
+        maxPerUser: num(form.maxPerUser, 1),
+        winnersCount: num(form.winnersCount, 1),
+        numberOfWinners: num(form.winnersCount, 1),
+
+        // nested (for new handler/model)
+        comp: {
+          slug: form.slug,
+          entryFee: num(form.entryFee),
+          totalTickets: num(form.totalTickets, 1),
+          ticketsSold: 0,
+          prizePool: 0,
+          startsAt: form.startsAt,
+          endsAt: form.endsAt,
+          location: 'Online Global Draw',
+          paymentType: form.theme === 'free' ? 'free' : 'pi',
+          piAmount: form.theme === 'free' ? 0 : num(form.entryFee),
+          status: 'active',
+          maxPerUser: num(form.maxPerUser, 1),
+          winnersCount: num(form.winnersCount, 1),
+        },
+      };
+
       const res = await fetch('/api/admin/competitions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Something went wrong');
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || err.error || 'Something went wrong');
       }
 
       router.push('/admin/competitions');
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -66,24 +113,70 @@ export default function CreateCompetitionPage() {
           <input name="prize" value={form.prize} onChange={handleChange} required className="input" />
         </div>
 
-        <div>
-          <label>Entry Fee (π)</label>
-          <input name="entryFee" type="number" value={form.entryFee} onChange={handleChange} className="input" />
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label>Entry Fee (π)</label>
+            <input
+              name="entryFee"
+              type="number"
+              min={0}
+              step="0.01"
+              value={form.entryFee}
+              onChange={handleChange}
+              className="input"
+            />
+          </div>
+
+          <div>
+            <label>Total Tickets</label>
+            <input
+              name="totalTickets"
+              type="number"
+              min={1}
+              value={form.totalTickets}
+              onChange={handleChange}
+              className="input"
+            />
+          </div>
         </div>
 
-        <div>
-          <label>Total Tickets</label>
-          <input name="totalTickets" type="number" value={form.totalTickets} onChange={handleChange} className="input" />
+        {/* NEW fields */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label>Max Per User</label>
+            <input
+              name="maxPerUser"
+              type="number"
+              min={1}
+              value={form.maxPerUser}
+              onChange={handleChange}
+              className="input"
+              required
+            />
+          </div>
+          <div>
+            <label>Winners</label>
+            <input
+              name="winnersCount"
+              type="number"
+              min={1}
+              value={form.winnersCount}
+              onChange={handleChange}
+              className="input"
+              required
+            />
+          </div>
         </div>
 
-        <div>
-          <label>Starts At (ISO)</label>
-          <input name="startsAt" value={form.startsAt} onChange={handleChange} className="input" />
-        </div>
-
-        <div>
-          <label>Ends At (ISO)</label>
-          <input name="endsAt" value={form.endsAt} onChange={handleChange} className="input" />
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label>Starts At (ISO)</label>
+            <input name="startsAt" value={form.startsAt} onChange={handleChange} className="input" />
+          </div>
+          <div>
+            <label>Ends At (ISO)</label>
+            <input name="endsAt" value={form.endsAt} onChange={handleChange} className="input" />
+          </div>
         </div>
 
         <div>

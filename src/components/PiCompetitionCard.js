@@ -41,13 +41,41 @@ const [status, setStatus] = useState('')
   const isNearlyFull = remaining <= total * 0.25
   const isGiftable = status === 'LIVE NOW' && !isSoldOut && !!slug
 
- const rawFee = fee ?? comp?.entryFee ?? comp?.comp?.entryFee;
-const formattedFee =
-  typeof rawFee === 'number' && !isNaN(rawFee)
-    ? rawFee === 0
-      ? 'Free'
-      : `${rawFee.toFixed(2)} π`
-    : 'N/A';
+function resolveNumeric(value) {
+  if (value == null) return null;
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string') {
+    // keep "Free" and values that already include π
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    const numLike = trimmed.replace(/[^\d.,-]/g, '').replace(',', '.');
+    const n = Number(numLike);
+    if (Number.isFinite(n)) return n;
+    // if it isn't numeric, return the original string (e.g., "Free", "1 π")
+    return trimmed;
+  }
+  return null;
+}
+
+function formatEntryFee(value) {
+  if (value == null) return 'N/A';
+  if (typeof value === 'number') {
+    return value === 0 ? 'Free' : `${value.toFixed(2)} π`;
+  }
+  // string: if it already includes a currency/π, show as-is; otherwise append π
+  return /\bπ\b|[$€£]/.test(value) ? value : `${value} π`;
+}
+
+// include other possible fields like piAmount just in case
+const rawFee =
+  fee ??
+  comp?.entryFee ??
+  comp?.comp?.entryFee ??
+  comp?.piAmount ??
+  comp?.comp?.piAmount;
+
+const resolvedFee = resolveNumeric(rawFee);
+const formattedFee = formatEntryFee(resolvedFee);
 
   // ✅ Top Countries Data
   const topCountries = [
@@ -171,19 +199,41 @@ useEffect(() => {
     <span className="text-cyan-300">Entry Fee:</span>
     <span>{status === 'UPCOMING' ? 'TBA' : formattedFee}</span>
   </p>
-  <p className="flex justify-between">
-  <span className="text-cyan-300">Start:</span>
-  <span>{status === 'UPCOMING' ? 'TBA' : startsAt.toLocaleDateString()}</span>
+
+
+<p className="flex justify-between">
+  <span className="text-cyan-300">Muliple Winners:</span>
+  <span>
+    {comp?.comp?.winners
+      ? comp.comp.winners
+      : comp?.winners
+      ? comp.winners
+      : '10'}
+  </span>
 </p>
+
+
 
   <p className="flex justify-between">
     <span className="text-cyan-300">Draw Date:</span>
     <span>{status === 'UPCOMING' ? 'TBA' : endsAt.toLocaleDateString()}</span>
   </p>
+   <p className="flex justify-between">
+  <span className="text-cyan-300">Max Per User:</span>
+  <span>
+    {comp?.comp?.maxTicketsPerUser
+      ? comp.comp.maxTicketsPerUser.toLocaleString()
+      : comp?.maxTicketsPerUser
+      ? comp.maxTicketsPerUser.toLocaleString()
+      : 'TBA'}
+  </span>
+</p>
+
   <p className="flex justify-between">
     <span className="text-cyan-300">Tickets:</span>
     <span>{status === 'UPCOMING' ? 'TBA' : `${sold.toLocaleString()} / ${total.toLocaleString()}`}</span>
   </p>
+  
 </div>
 
 

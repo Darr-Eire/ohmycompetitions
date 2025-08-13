@@ -45,10 +45,10 @@ export default function DailyCompetitionsPage() {
         <title>Daily Competitions | OhMyCompetitions</title>
       </Head>
 
-      <main className="app-background min-h-screen px-0 py-0 text-white">
-        <div className="max-w-screen-lg mx-auto px-6 sm:px-8 lg:px-10 py-8">
+      <main className="app-background min-h-screen text-white">
+        <div className="max-w-screen-lg mx-auto px-4 sm:px-0">
           <h1 className="
-            text-2xl font-bold text-center mb-6
+            text-2xl font-bold text-center mb-4
             bg-gradient-to-r from-[#00ffd5] to-[#0077ff]
             bg-clip-text text-transparent
           ">

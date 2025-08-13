@@ -28,10 +28,11 @@ const [formData, setFormData] = useState({
   status: 'active',
   imageUrl: '',
   thumbnail: '',
-  maxTickets: 1,
-  numberOfWinners: 1,
-  prizes: [''] // 💡 Add this field if it's not already present
+  maxPerUser: 1,       // ✅ renamed from maxTickets
+  winnersCount: 1,     // ✅ renamed from numberOfWinners
+  prizes: ['']
 });
+
 
 
   const generateSlug = (title) => {

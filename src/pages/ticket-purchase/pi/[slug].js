@@ -80,25 +80,28 @@ export default function PiTicketPage() {
   }
 
   return (
-    <main className="min-h-screen px-4 py-10 bg-[#070d19] text-white">
-      <LaunchCompetitionDetailCard
-        /* visual parity with LaunchCompetitionDetailCard */
-        comp={comp}
-        title={comp?.title}
-        prize={comp?.firstPrize ?? comp?.prize}
-        fee={comp?.entryFee}
-        imageUrl={comp?.imageUrl || comp?.thumbnail}
-        endsAt={comp?.endsAt}
-        startsAt={comp?.startsAt}
-        ticketsSold={ticketsSold}
-        totalTickets={totalTickets}
-        status={status}
-        GiftTicketModal={GiftTicketModal}
-        description={desc}
-        handlePaymentSuccess={() => {
-          // Optional: refresh state here after a payment if needed.
-        }}
-      />
+    <main className="min-h-screen bg-[#070d19] text-white px-0 py-0">
+      {/* Full-bleed content wrapper */}
+      <div className="w-full backdrop-blur-md bg-white/5 border border-cyan-500 rounded-none shadow-lg p-4 sm:p-8">
+        <LaunchCompetitionDetailCard
+          /* visual parity with LaunchCompetitionDetailCard */
+          comp={comp}
+          title={comp?.title}
+          prize={comp?.firstPrize ?? comp?.prize}
+          fee={comp?.entryFee}
+          imageUrl={comp?.imageUrl || comp?.thumbnail}
+          endsAt={comp?.endsAt}
+          startsAt={comp?.startsAt}
+          ticketsSold={ticketsSold}
+          totalTickets={totalTickets}
+          status={status}
+          GiftTicketModal={GiftTicketModal}
+          description={desc}
+          handlePaymentSuccess={() => {
+            // Optional: refresh state here after a payment if needed.
+          }}
+        />
+      </div>
     </main>
   );
 }

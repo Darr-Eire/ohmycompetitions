@@ -69,7 +69,7 @@ export default function FeaturedCompetitionsPage() {
               ? 'Loading featured competitions…'
               : error
               ? error
-              : 'Are you our next winner? Try your luck at one of our featured competitions from as little as '}
+              : 'Try your luck at one of our featured competitions from as little as '}
             {!loading && !error && <span className="font-semibold">0.35 π</span>}
           </p>
         </div>

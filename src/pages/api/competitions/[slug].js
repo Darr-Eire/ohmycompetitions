@@ -24,17 +24,12 @@ export default async function handler(req, res) {
   try {
     await dbConnect();
 
-    // TIP: ensure indexes exist somewhere in your startup code / schema:
-    // Competition.collection.createIndex({ slug: 1 }, { unique: true }).catch(()=>{});
-    // Competition.collection.createIndex({ 'comp.slug': 1 });
-
-    // Find by either top-level slug or nested comp.slug
     const competition = await Competition.findOne({
       $or: [{ 'comp.slug': slug }, { slug }],
-      // published: { $ne: false }, // uncomment if you want to hide unpublished
     })
       .select({
         _id: 1,
+        // comp fields
         'comp.status': 1,
         'comp.ticketsSold': 1,
         'comp.totalTickets': 1,
@@ -45,11 +40,15 @@ export default async function handler(req, res) {
         'comp.paymentType': 1,
         'comp.piAmount': 1,
         'comp.location': 1,
-        'comp.prizeBreakdown': 1,
-        slug: 1,               // include top-level slug if present
+        'comp.maxPerUser': 1,      // ✅ include it
+        'comp.winnersCount': 1,    // ✅ include it
+
+        // top-level fields
+        slug: 1,
         title: 1,
         prize: 1,
         prizeLabel: 1,
+        prizeBreakdown: 1,         // ✅ top-level, not comp.prizeBreakdown
         imageUrl: 1,
         theme: 1,
         href: 1,
@@ -59,10 +58,17 @@ export default async function handler(req, res) {
       .lean();
 
     if (!competition) {
-      return res.status(404).json({ error: 'Competition not found', code: 'COMPETITION_NOT_FOUND' });
+      return res
+        .status(404)
+        .json({ error: 'Competition not found', code: 'COMPETITION_NOT_FOUND' });
     }
 
     const c = competition.comp || {};
+    const totalTickets = c.totalTickets ?? 100;
+    const ticketsSold = c.ticketsSold ?? 0;
+    const percentSold =
+      totalTickets > 0 ? Math.round((ticketsSold / totalTickets) * 100) : 0;
+
     const response = {
       _id: competition._id?.toString?.() || competition._id,
       slug: c.slug || competition.slug || slug,
@@ -74,8 +80,10 @@ export default async function handler(req, res) {
       theme: competition.theme ?? null,
       href: competition.href ?? null,
 
-      ticketsSold: c.ticketsSold ?? 0,
-      totalTickets: c.totalTickets ?? 100,
+      // comp (numbers + meta)
+      ticketsSold,
+      totalTickets,
+      percentSold, // optional convenience
       entryFee: c.entryFee ?? 0,
       piAmount: c.piAmount ?? c.entryFee ?? 0,
       status: c.status ?? 'active',
@@ -83,16 +91,24 @@ export default async function handler(req, res) {
       startsAt: c.startsAt ?? null,
       endsAt: c.endsAt ?? null,
       location: c.location ?? 'Online',
-      prizeBreakdown: c.prizeBreakdown ?? {},
+
+      // ✅ the two fields your UI needs
+      maxPerUser: c.maxPerUser ?? null,
+      winnersCount: c.winnersCount ?? null,
+
+      // ✅ correct source (top-level in schema)
+      prizeBreakdown: competition.prizeBreakdown ?? [],
+
       published: competition.published ?? true,
     };
 
     // Cache (edge-friendly): 60s fresh, 5m SWR
     res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
-
     return res.status(200).json(response);
   } catch (error) {
     console.error('❌ Error fetching competition:', error);
-    return res.status(500).json({ error: error.message || 'Internal server error', code: 'INTERNAL_ERROR' });
+    return res
+      .status(500)
+      .json({ error: error.message || 'Internal server error', code: 'INTERNAL_ERROR' });
   }
 }

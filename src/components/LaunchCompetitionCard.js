@@ -119,22 +119,64 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize, imageUr
         <div className="text-center mt-2 text-cyan-300 text-sm font-bold">{timeLeft}</div>
       )}
 
-      {/* Main Details */}
-      <div className="p-4 text-sm space-y-3">
-        <div className="flex justify-between">
-          <span className="text-cyan-300">1st Prize</span>
-          <span>{prize ? `${prize} π` : 'TBA'}</span>
-        </div>
+<div className="p-4 text-sm space-y-3">
+  {/* Compact 1st Prize row */}
+<div className="flex flex-col items-center justify-center 
+                rounded-md border border-cyan-400/40 
+                bg-[#0b1220]/80 px-4 py-2 
+                shadow-[0_0_6px_rgba(0,255,213,0.12)]">
+
+  <span className="text-[14px] uppercase tracking-wide text-cyan-300 font-semibold">
+    1st Prize
+  </span>
+
+  <span className="font-extrabold text-white text-lg tabular-nums tracking-wide mt-0.5">
+    {prize ? `${prize} π` : 'TBA'}
+  </span>
+</div>
+
+
+
+  {/* Entry Fee */}
+  <div className="flex justify-between items-center">
+    <span className="text-cyan-300 font-medium">Entry Fee</span>
+    <span className="text-white font-semibold">
+      {comingSoon ? 'TBA' : `${entryFee.toFixed(2)} π`}
+    </span>
+  </div>
+
+
+
+
+
+<p className="flex justify-between">
+  <span className="text-cyan-300">Max Per User:</span>
+  <span>
+    {comp?.comp?.maxTicketsPerUser
+      ? comp.comp.maxTicketsPerUser.toLocaleString()
+      : comp?.maxTicketsPerUser
+      ? comp.maxTicketsPerUser.toLocaleString()
+      : 'TBA'}
+  </span>
+</p>
+
+<p className="flex justify-between">
+  <span className="text-cyan-300">Winners:</span>
+  <span>
+    {comp?.comp?.winners
+      ? comp.comp.winners
+      : comp?.winners
+      ? comp.winners
+      : 'TBA'}
+  </span>
+</p>
 
         <div className="flex justify-between">
           <span className="text-cyan-300">Entry Fee</span>
           <span>{comingSoon ? 'TBA' : `${entryFee.toFixed(2)} π`}</span>
         </div>
 
-        <div className="flex justify-between">
-          <span className="text-cyan-300">Tickets</span>
-          <span>{comingSoon ? 'TBA' : `${sold.toLocaleString()} / ${total.toLocaleString()}`}</span>
-        </div>
+
 
         <div className="flex justify-between">
           <span className="text-cyan-300">Draw Date</span>

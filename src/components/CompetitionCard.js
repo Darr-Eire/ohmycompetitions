@@ -181,22 +181,19 @@ export default function CompetitionCard({
             <span className="text-cyan-300 font-semibold">Prize:</span>
             <span>{prize}</span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-cyan-300 font-semibold">Starts:</span>
-            <span>
-              {(comp?.comp?.startsAt || comp?.startsAt)
-                ? new Date(comp.comp?.startsAt || comp.startsAt).toLocaleString(
-                    undefined,
-                    {
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    }
-                  )
-                : 'TBA'}
-            </span>
-          </div>
+
+
+<div className="flex justify-between">
+  <span className="text-cyan-300 font-semibold">Winners:</span>
+  <span>
+    {comp?.winnersCount ??
+     comp?.comp?.winnersCount ??
+     'TBA'}
+  </span>
+</div>
+
+
+
           <div className="flex justify-between mt-1">
             <span className="text-cyan-300 font-semibold">Draw Date:</span>
             <span>
@@ -223,6 +220,14 @@ export default function CompetitionCard({
               {status === 'COMING SOON' ? 'TBA' : total.toLocaleString()}
             </span>
           </div>
+<div className="flex justify-between">
+  <span className="text-cyan-300 font-semibold">Max Per User:</span>
+  <span>
+    {comp?.maxPerUser ??
+     comp?.comp?.maxPerUser ??
+     'TBA'}
+  </span>
+</div>
 
           {/* Tickets Sold & Progress */}
           <div className="space-y-2">

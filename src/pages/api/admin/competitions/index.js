@@ -1,3 +1,4 @@
+// src/pages/api/admin/competitions/index.js
 import { dbConnect } from '../../../../lib/dbConnect';
 import Competition from '../../../../models/Competition';
 
@@ -5,87 +6,149 @@ export default async function handler(req, res) {
   try {
     await dbConnect();
 
-    // 🔐 Optional: Add back authentication when ready
-    // const session = await getServerSession(req, res, authOptions);
-    // if (!session || session.user?.role !== 'admin') {
-    //   return res.status(401).json({ message: 'Unauthorized' });
-    // }
-
-    // 👉 Fetch all competitions
+    /* ----------------------------- GET: list all ----------------------------- */
     if (req.method === 'GET') {
-      const competitions = await Competition.find({}).sort({ createdAt: -1 }).lean();
+      const competitions = await Competition.find({})
+        .sort({ createdAt: -1 })
+        .lean();
       return res.status(200).json(competitions);
     }
 
-    // ✅ Create a new competition
+    /* ---------------------------- POST: create one --------------------------- */
     if (req.method === 'POST') {
-      const {
-        slug,
-        entryFee,
-        totalTickets,
-        title,
-        prize,
-        prizes = [],
-        theme,
-        startsAt,
-        endsAt,
-        piAmount,
-        description,
-        imageUrl,
-        thumbnail,
-        numberOfWinners
-      } = req.body;
+      const body = req.body || {};
+      console.log('📥 Admin create body:', JSON.stringify(body, null, 2));
 
-      console.log('📥 Received competition data:', req.body);
 
-      // ⚠️ Validate required fields
-      if (!slug || !title || (!prize && prizes.length === 0)) {
+      // Uncomment to debug incoming payload:
+      // console.log('📥 Admin create body:', JSON.stringify(body, null, 2));
+
+      /* ---------- Normalize prizes into a single array (prizeBreakdown) ------ */
+      const prizeBreakdown = Array.isArray(body.prizeBreakdown)
+        ? body.prizeBreakdown
+        : Array.isArray(body.prizes)
+        ? body.prizes
+        : [];
+
+      // Accept winners count from winnersCount (new), numberOfWinners (legacy), or nested comp
+      const rawWinnersCount =
+        body.winnersCount ??
+        body.numberOfWinners ??
+        body.comp?.winnersCount;
+
+      /* --------------------------- Pull string fields ------------------------ */
+      const slug = body.slug ?? body.comp?.slug;
+      const title = body.title;
+      const prize = body.prize ?? (prizeBreakdown[0] ?? '');
+      const theme = body.theme;
+
+      // Strings can come flat or nested (comp.*)
+      const startsAt =
+        (body.startsAt ?? body.comp?.startsAt ?? '').trim();
+      const endsAt =
+        (body.endsAt ?? body.comp?.endsAt ?? '').trim();
+      const location =
+        (body.location ?? body.comp?.location ?? 'Online Global Draw').trim();
+      const imageUrl = (body.imageUrl ?? '').trim() || '/images/your.png';
+      const thumbnail =
+        (body.thumbnail && String(body.thumbnail).trim()) || null;
+      const description = body.description || '';
+
+      /* -------------------------- Basic validations ------------------------- */
+      if (!slug || !title || (!prize && prizeBreakdown.length === 0)) {
         return res.status(400).json({
-          message: 'Missing required fields: slug, title, and at least one prize are required.'
+          message:
+            'Missing required: slug, title, and a prize (prize or prizeBreakdown[])',
         });
       }
 
-      // ❌ Check for duplicate slug
-      const existingCompetition = await Competition.findOne({ 'comp.slug': slug });
-      if (existingCompetition) {
+      // Unique slug (stored under comp.slug)
+      const exists = await Competition.findOne({ 'comp.slug': slug });
+      if (exists) {
         return res.status(409).json({
-          message: `Competition with slug "${slug}" already exists. Please use a different slug.`
+          message: `Competition with slug "${slug}" already exists.`,
         });
       }
 
-      // 🆕 Create competition document
+      /* ---------------------- Numbers (accept both shapes) ------------------- */
+      const asNum = (v) =>
+        v === '' || v === null || v === undefined ? NaN : Number(v);
+
+      const entryFee = asNum(body.entryFee ?? body.comp?.entryFee);
+      const totalTickets = asNum(
+        body.totalTickets ?? body.comp?.totalTickets
+      );
+      const piAmount = asNum(body.piAmount ?? body.comp?.piAmount);
+      const maxPerUser = asNum(
+        body.maxPerUser ?? body.comp?.maxPerUser
+      );
+      const winnersCount = asNum(rawWinnersCount);
+
+      // Validations
+      if (!Number.isFinite(entryFee) || entryFee < 0) {
+        return res
+          .status(400)
+          .json({ message: 'entryFee must be a number ≥ 0' });
+      }
+      if (!Number.isFinite(totalTickets) || totalTickets < 1) {
+        return res
+          .status(400)
+          .json({ message: 'totalTickets must be a number ≥ 1' });
+      }
+      if (!Number.isFinite(maxPerUser) || maxPerUser < 1) {
+        return res
+          .status(400)
+          .json({ message: 'maxPerUser must be a number ≥ 1' });
+      }
+      if (!Number.isFinite(winnersCount) || winnersCount < 1) {
+        return res
+          .status(400)
+          .json({ message: 'winnersCount must be a number ≥ 1' });
+      }
+
+      /* ------------------------- Build & create doc ------------------------- */
       const competition = await Competition.create({
         comp: {
           slug,
-          entryFee: parseFloat(entryFee) || 0,
-          totalTickets: parseInt(totalTickets) || 100,
+          entryFee,
+          totalTickets,
           ticketsSold: 0,
-          startsAt: startsAt ? new Date(startsAt) : new Date(),
-          endsAt: endsAt ? new Date(endsAt) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days default
-          paymentType: parseFloat(entryFee) > 0 ? 'pi' : 'free',
-          piAmount: parseFloat(piAmount) || parseFloat(entryFee) || 0,
-          status: 'active'
+          prizePool: 0, // compute if you wish
+          // Keep as strings to match your schema
+          startsAt,
+          endsAt,
+          location,
+          paymentType: entryFee > 0 ? 'pi' : 'free',
+          piAmount: Number.isFinite(piAmount) ? piAmount : entryFee,
+          status: 'active',
+
+          // New required fields
+          maxPerUser,
+          winnersCount,
         },
+
         title,
-        prize: prize || (prizes.length > 0 ? prizes[0] : ''),
-        prizes: prizes.slice(0, 10), // ✅ Up to 10 prizes
-        numberOfWinners: parseInt(numberOfWinners) || 1,
-        description: description || '',
+        description,
+        prize,                   // legacy single-line
+        prizeBreakdown,          // multi-line prizes
         href: `/competitions/${slug}`,
         theme: theme || 'tech',
-        imageUrl: imageUrl || '/images/your.png',
-        thumbnail: thumbnail?.trim() || null
+        imageUrl,
+        thumbnail,
       });
 
-      console.log('✅ Competition created:', competition);
       return res.status(201).json(competition);
     }
 
-    // 🗑️ Delete a competition
+    /* --------------------------- DELETE: by id ------------------------------ */
     if (req.method === 'DELETE') {
-      const { id } = req.body;
+      const { id } = req.body || {};
+      if (!id) return res.status(400).json({ message: 'Missing id' });
+
       await Competition.findByIdAndDelete(id);
-      return res.status(200).json({ message: 'Competition deleted successfully' });
+      return res
+        .status(200)
+        .json({ message: 'Competition deleted successfully' });
     }
 
     res.setHeader('Allow', ['GET', 'POST', 'DELETE']);
@@ -93,18 +156,18 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error('❌ Admin competitions API error:', error);
 
-    if (error.code === 11000) {
-      const duplicateField = error.keyValue;
+    if (error?.code === 11000) {
+      const duplicateField = error.keyValue || {};
       return res.status(409).json({
         message: `Duplicate entry for ${Object.keys(duplicateField)[0]}`,
         field: Object.keys(duplicateField)[0],
-        value: Object.values(duplicateField)[0]
+        value: Object.values(duplicateField)[0],
       });
     }
 
     return res.status(500).json({
       message: 'Server error',
-      error: error.message
+      error: error.message,
     });
   }
 }

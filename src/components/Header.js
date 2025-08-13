@@ -11,6 +11,7 @@ export default function Header() {
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false); // NEW
   const sidebarRef = useRef(null);
 
   // Close when clicking outside sidebar
@@ -29,12 +30,12 @@ export default function Header() {
     const onKey = (e) => {
       if (e.key === 'Escape') {
         setMenuOpen(false);
-        setShowLoginModal(false);
+        if (!isLoggingIn) setShowLoginModal(false); // don't close while logging in
       }
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, []);
+  }, [isLoggingIn]);
 
   // Lock background scroll when menu or modal is open
   useEffect(() => {
@@ -57,12 +58,9 @@ export default function Header() {
     ['Pi Competitions', '/competitions/pi'],
     ['Daily', '/competitions/daily'],
     ['Featured', '/competitions/featured'],
-   
   ];
   const navItems = [['Home', '/homepage']];
- const miniGames = [
-  ['Try Your Luck', '/try-your-luck', '(Opening Soon)']
-];
+  const miniGames = [['Try Your Luck', '/try-your-luck', '(Opening Soon)']];
 
   const navExtras = [
     ['Forums', '/forums'],
@@ -122,23 +120,19 @@ export default function Header() {
         </button>
 
         {/* Logo */}
-     <div className="flex flex-col items-center text-center">
-  {/* Site Title */}
-  <Link
-    href="/homepage"
-    className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 text-transparent bg-clip-text drop-shadow"
-  >
-    Oh My Competitions
-  </Link>
-
-  {/* Welcome + Username */}
-  {user && (
-    <div className="text-cyan-300 text-sm font-orbitron mt-0.5">
-      Welcome <span className="text-cyan-300">{user.username}</span>
-    </div>
-  )}
-</div>
-
+        <div className="flex flex-col items-center text-center">
+          <Link
+            href="/homepage"
+            className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 text-transparent bg-clip-text drop-shadow"
+          >
+            Oh My Competitions
+          </Link>
+          {user && (
+            <div className="text-cyan-300 text-sm font-orbitron mt-0.5">
+              Welcome <span className="text-cyan-300">{user.username}</span>
+            </div>
+          )}
+        </div>
 
         {/* Auth Button */}
         <div className="flex flex-col gap-1 items-end">
@@ -150,10 +144,7 @@ export default function Header() {
               Login
             </button>
           ) : (
-            <button
-              onClick={logout}
-              className="neon-button text-xs px-2 py-1 w-fit"
-            >
+            <button onClick={logout} className="neon-button text-xs px-2 py-1 w-fit">
               Log Out
             </button>
           )}
@@ -215,12 +206,14 @@ export default function Header() {
           </Section>
 
           <Section title="Mini Games">
-          {miniGames.map(([name, link, status]) => (
-  <a key={link} href={link}>
-    {name} {status && <span className="text-cyan-300">{status}</span>}
-  </a>
-))}
-
+            {miniGames.map(([name, link, status]) => (
+              <a key={link} href={link} className={getLinkClass(link)}>
+                <span className="relative z-10">
+                  {name} {status && <span className="text-cyan-300">{status}</span>}
+                </span>
+                <span className="absolute inset-0 bg-cyan-500/10 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300" />
+              </a>
+            ))}
           </Section>
 
           <Section title="More">
@@ -250,73 +243,108 @@ export default function Header() {
         </nav>
       </aside>
 
-{/* Auth Choice Modal */}
-{showLoginModal && (
-  <>
-    {/* Dark overlay */}
-    <div
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50"
-      onClick={() => setShowLoginModal(false)}
-    />
+      {/* Auth Choice Modal */}
+      {showLoginModal && (
+        <>
+          {/* Dark overlay */}
+          <div
+            className={`fixed inset-0 bg-black/70 backdrop-blur-sm z-50 ${isLoggingIn ? 'cursor-wait' : ''}`}
+            onClick={() => {
+              if (!isLoggingIn) setShowLoginModal(false);
+            }}
+          />
 
-    {/* Centered modal */}
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="bg-[#0f172a] border border-cyan-700 rounded-lg shadow-lg p-6 w-80 flex flex-col gap-4 text-center neon-glow animate-fade-in">
-        <h2 className="text-cyan-300 font-orbitron text-lg">
-          Welcome to OMC <span className="text-xs text-cyan-500">(Oh My Competitions)</span>
-        </h2>
-    
+          {/* Centered modal */}
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div
+              className="bg-[#0f172a] border border-cyan-700 rounded-lg shadow-lg p-6 w-80 flex flex-col gap-4 text-center neon-glow animate-fade-in"
+              aria-busy={isLoggingIn ? 'true' : 'false'}
+              aria-live="polite"
+            >
+              <h2 className="text-cyan-300 font-orbitron text-lg">
+                Welcome to OMC <span className="text-xs text-cyan-500">(Oh My Competitions)</span>
+              </h2>
 
-        {/* Sign Up */}
-    {/* Sign Up */}
-<div className="flex flex-col gap-1">
-  <Link
-    href="/signup"
-    className="neon-button px-3 py-2 text-sm w-full"
-    onClick={() => setShowLoginModal(false)} // closes popup
-  >
-    Sign Up Now
-  </Link>
-  <p className="text-cyan-400 text-xs italic">
-    Create your free OMC account and start competing today!
-  </p>
-</div>
+              {/* Sign Up */}
+              <div className="flex flex-col gap-1">
+                <Link
+                  href="/signup"
+                  className={`neon-button px-3 py-2 text-sm w-full ${isLoggingIn ? 'pointer-events-none opacity-60' : ''}`}
+                  onClick={() => {
+                    if (!isLoggingIn) setShowLoginModal(false);
+                  }}
+                  tabIndex={isLoggingIn ? -1 : 0}
+                  aria-disabled={isLoggingIn}
+                >
+                  Sign Up Now
+                </Link>
+                <p className="text-cyan-400 text-xs italic">
+                  Create your free OMC account and start competing today!
+                </p>
+              </div>
 
-{/* Login */}
-<div className="flex flex-col gap-1">
-  <button
-    onClick={async () => {
-      try {
-        await loginWithPi();
-        setShowLoginModal(false); // closes popup
-      } catch (err) {
-        console.error('❌ Pi Login failed:', err);
-        alert('Pi login failed. Try again.');
-      }
-    }}
-    className="neon-button px-3 py-2 text-sm w-full"
-  >
-    Login
-  </button>
-  <p className="text-cyan-400 text-xs italic">
-    Login will automatically log you in with Pi Auth.
-  </p>
-</div>
+              {/* Login */}
+              <div className="flex flex-col gap-1">
+                <button
+                  onClick={async () => {
+                    if (isLoggingIn) return;
+                    setIsLoggingIn(true);
+                    try {
+                      await loginWithPi();
+                      setShowLoginModal(false); // close on success
+                    } catch (err) {
+                      console.error('❌ Pi Login failed:', err);
+                      alert('Pi login failed. Please try again.');
+                    } finally {
+                      setIsLoggingIn(false);
+                    }
+                  }}
+                  className="neon-button px-3 py-2 text-sm w-full flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                  disabled={isLoggingIn}
+                >
+                  {isLoggingIn ? (
+                    <>
+                      <svg
+                        className="h-4 w-4 animate-spin"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true"
+                      >
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.25" strokeWidth="4" />
+                        <path
+                          d="M22 12a10 10 0 0 1-10 10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                      Logging in…
+                    </>
+                  ) : (
+                    'Login'
+                  )}
+                </button>
+                <p className="text-cyan-400 text-xs italic">
+                  Login will automatically log you in with Pi Auth.
+                </p>
+              </div>
 
-
-        {/* Cancel */}
-        <button
-          onClick={() => setShowLoginModal(false)}
-          className="text-xs text-gray-400 hover:text-cyan-300 mt-2"
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  </>
-)}
-
-
+              {/* Cancel */}
+              <button
+                onClick={() => {
+                  if (!isLoggingIn) setShowLoginModal(false);
+                }}
+                className={`text-xs ${isLoggingIn ? 'text-gray-500' : 'text-gray-400 hover:text-cyan-300'} mt-2`}
+                disabled={isLoggingIn}
+                aria-disabled={isLoggingIn}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Scrollbar Styles */}
       <style jsx>{`
