@@ -354,7 +354,7 @@ export default function FunnelIndexPage() {
 
           {/* Stages Today */}
           <div className="p-3 sm:p-4 text-center">
-            <div className="text-emerald-300 text-lg sm:text-xl font-extrabold">🏁 7</div>
+            <div className="text-cyan-300 text-lg sm:text-xl font-extrabold">🏁 7</div>
             <div className="text-[10px] sm:text-xs text-white/60">Stages Today</div>
           </div>
 
@@ -366,7 +366,7 @@ export default function FunnelIndexPage() {
 
           {/* Winners Stage 5 */}
           <div className="p-3 sm:p-4 text-center">
-            <div className="text-purple-300 text-lg sm:text-xl font-extrabold">🏆 25</div>
+            <div className="text-cyan-300 text-lg sm:text-xl font-extrabold">🏆 25</div>
             <div className="text-[10px] sm:text-xs text-white/60">Winners in Stage 5</div>
           </div>
 
@@ -378,7 +378,7 @@ export default function FunnelIndexPage() {
 
           {/* Next Stage */}
           <div className="p-3 sm:p-4 text-center">
-            <div className="text-emerald-300 text-lg sm:text-xl font-extrabold">⏳ 2</div>
+            <div className="text-cyan-300 text-lg sm:text-xl font-extrabold">⏳ 2</div>
             <div className="text-[10px] sm:text-xs text-white/60">Next Stage</div>
             <div className="text-[9px] text-white/50">Starts in 2m 15s</div>
           </div>
