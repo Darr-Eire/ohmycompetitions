@@ -69,8 +69,12 @@ body,
   padding: 0;
   height: 100%;
   font-family: sans-serif;
-  background: #ffffff;
-  color: #000;
+
+  /* ✅ FIX: use gradient instead of white bg/black text */
+  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+  color: #ffffff;
 }
 
 a {
@@ -276,8 +280,6 @@ button {
   scroll-snap-align: center;
   scroll-snap-stop: always;
 }
-
-
 
 .centered-carousel::-webkit-scrollbar {
   display: none;
@@ -501,18 +503,14 @@ h1 {
 form {
   margin-top: 1rem;
 }
-/* In your global CSS */
-body {
-  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-  background-size: 400% 400%;
-  animation: gradientShift 15s ease infinite;
-}
 
+/* Gradient bg animation */
 @keyframes gradientShift {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
+
 @keyframes glitch {
   0% { transform: translate(0); }
   20% { transform: translate(-2px, 2px); }

@@ -4,6 +4,29 @@ export default function Document() {
   return (
     <Html lang="en">
       <Head>
+        {/* Lock the site’s color scheme so WebViews (X, FB, IG) don’t auto-darken */}
+        <meta name="color-scheme" content="dark light" />
+        <meta name="supported-color-schemes" content="dark" />
+
+        {/* Make the browser/status bar match your background */}
+        <meta
+          name="theme-color"
+          media="(prefers-color-scheme: light)"
+          content="#0a1024"
+        />
+        <meta
+          name="theme-color"
+          media="(prefers-color-scheme: dark)"
+          content="#0a1024"
+        />
+
+        {/* iOS Safari status bar */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta
+          name="apple-mobile-web-app-status-bar-style"
+          content="black-translucent"
+        />
+
         {/* Expose ENV config to browser */}
         <script
           dangerouslySetInnerHTML={{
