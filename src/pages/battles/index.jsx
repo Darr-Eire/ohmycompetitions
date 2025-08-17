@@ -1,17 +1,23 @@
 'use client';
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { postJSON } from '../../lib/api';
 import { useFunnelStage } from '../../hooks/useFunnel';
 import { usePiAuth } from '../../context/PiAuthContext';
-import { computeFunnelEconomics, formatPi } from '../../lib/funnelMath';
+import { formatPi } from '../../lib/funnelMath';
+import XPBar from '../../components/XPBar';
 
 /* ----------------------------- Config ------------------------------------ */
 const ENTRY_FEE_PI = 0.15;
 const STAGE1_CAPACITY = 25;
 const ADVANCING_PER_ROOM = 5;
 
+/* ---------------- Helpers ---------------- */
+function inFuture(minutes = 2, jitter = 60_000) {
+  const t = Date.now() + minutes * 60_000 + Math.floor(Math.random() * jitter);
+  return new Date(t).toISOString();
+}
+
 /* ---------------- Mock helpers ---------------- */
-// In mockItems, add advancedLastHour for demo
 function mockItems(count, { stage, live = false } = {}) {
   const arr = [];
   for (let i = 0; i < count; i++) {
@@ -26,12 +32,12 @@ function mockItems(count, { stage, live = false } = {}) {
       imageUrl: '/pi.jpeg',
       startsAt: live ? '2025-01-01T00:00:00.000Z' : null,
       stage,
-      advancedLastHour: Math.floor(Math.random() * 10), // mock stat
+      advancedLastHour: Math.floor(Math.random() * 10),
+      nextStartAt: inFuture(2 + i),
     });
   }
   return arr;
 }
-
 
 /* ---------------- Toast Hook ---------------- */
 function useToasts() {
@@ -63,151 +69,292 @@ function useToasts() {
   return { pushToast, Toasts };
 }
 
-/* ---------------- Prize Card ---------------- */
-function PrizeCard3D({ place = '1st', amount = 1000, label = 'Champion', accent = 'gold' }) {
-  const styles = {
-    gold:   { grad: 'from-amber-300/30 via-amber-200/10 to-transparent', text: 'text-amber-200', footer: 'bg-amber-400/20 text-amber-200 border-amber-300/40' },
-    silver: { grad: 'from-slate-200/30 via-slate-100/10 to-transparent', text: 'text-slate-100', footer: 'bg-white/10 text-slate-100 border-white/30' },
-    bronze: { grad: 'from-orange-300/30 via-amber-200/10 to-transparent', text: 'text-orange-200', footer: 'bg-orange-400/15 text-orange-200 border-orange-300/40' },
-    cyan:   { grad: 'from-cyan-400/30 via-cyan-300/10 to-transparent', text: 'text-cyan-200', footer: 'bg-cyan-400/15 text-cyan-200 border-cyan-300/40' },
-  }[accent];
+/* ---------------- Countdown Circle ---------------- */
+function CountdownCircle({ targetISO, size = 64, stroke = 6, label = 'Next Stage' }) {
+  const [mounted, setMounted] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    setMounted(true);
+    const id = setInterval(() => setNow(Date.now()), 250);
+    return () => clearInterval(id);
+  }, []);
+
+  const target = new Date(targetISO).getTime();
+  const remaining = Math.max(0, target - now);
+
+  const estTotal = 2 * 60 * 1000;
+  const progress = 1 - (remaining / estTotal);
+  const r = (size - stroke) / 2;
+  const C = 2 * Math.PI * r;
+  const dash = Math.min(C, Math.max(0, progress * C));
+
+  const total = Math.max(0, Math.floor(remaining / 1000));
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  const display = total === 0 ? 'Live' : `${m}:${String(s).padStart(2, '0')}`;
 
   return (
-    <div className="group perspective-[1200px]">
-      {/* Glow shadow */}
-      <div className={`h-2 -mb-2 mx-4 rounded-b-xl bg-gradient-to-b from-black/30 to-transparent blur-[3px]`} />
+    <div className="flex flex-col items-center">
+      <div className="relative" style={{ width: size, height: size }}>
+        <svg width={size} height={size} className="transform -rotate-90">
+          <circle cx={size/2} cy={size/2} r={r} stroke="rgba(255,255,255,0.15)" strokeWidth={stroke} fill="none" />
+          <circle
+            cx={size/2}
+            cy={size/2}
+            r={r}
+            stroke="rgb(34,211,238)"
+            strokeWidth={stroke}
+            strokeDasharray={`${dash} ${C-dash}`}
+            strokeLinecap="round"
+            fill="none"
+            className="drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]"
+          />
+        </svg>
+        <div className="absolute inset-0 grid place-items-center text-xs font-bold text-white">
+          <span suppressHydrationWarning>{mounted ? display : '—:—'}</span>
+        </div>
+        <div className="absolute -inset-1 rounded-full animate-[ping_1.5s_ease-out_infinite] bg-cyan-400/10" />
+      </div>
+      <div className="mt-1 text-[11px] text-white/60">{label}</div>
+    </div>
+  );
+}
 
-      {/* Card */}
-      <div
-        className={`relative rounded-xl p-[1px] bg-gradient-to-br ${styles.grad} transition-transform duration-300 ease-out
-          group-hover:-translate-y-[4px] group-hover:rotate-x-[3deg] group-hover:rotate-y-[-2deg]`}
-        style={{ transformStyle: 'preserve-3d' }}
-      >
-        <div className="relative rounded-xl bg-white/5 backdrop-blur border border-white/10 flex flex-col overflow-hidden">
+/* ---------------- Reusable KPI ---------------- */
+function KPI({ icon, label, value, sub }) {
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur p-4 text-left">
+      <div className="flex items-center gap-2 text-white/70 text-xs">
+        <span className="text-base">{icon}</span>
+        <span>{label}</span>
+      </div>
+      <div className="mt-2 text-2xl font-extrabold text-cyan-300">{value}</div>
+      {sub ? <div className="text-[11px] text-white/50 mt-1">{sub}</div> : null}
+    </div>
+  );
+}
 
-          {/* Amount */}
-          <div className="flex-1 flex flex-col items-center justify-center py-6 px-4">
-            <span className="text-3xl sm:text-4xl font-extrabold text-cyan-300 drop-shadow-[0_0_10px_rgba(34,211,238,0.55)]">
-              {formatPi(amount)}
-            </span>
-            <span className="mt-2 px-3 py-1 text-xs font-semibold bg-white/10 text-white/90 rounded-full border border-white/20">
-              {place} Prize
-            </span>
-          </div>
+/* ---------------- Stage Rules (shared) ---------------- */
+function getStageRules(stage) {
+  switch (stage) {
+    case 1:
+      return [
+        'Entry cost required for qualifiers.',
+        'Top 5 in each room advance to Stage 2.',
+        'Ties are broken by fastest completion time.',
+        'No multi-accounting; anti-cheat enforced.',
+      ];
+    case 2:
+      return [
+        'Only players with a Stage 2 ticket may enter.',
+        'Top 5 advance to Stage 3.',
+        'Round timer applies; slowest players are eliminated.',
+        'Ties broken by previous round rank.',
+      ];
+    case 3:
+      return [
+        'Higher difficulty; fewer checkpoints.',
+        'Top 5 advance to Stage 4.',
+        'Repeated AFK events lead to disqualification.',
+      ];
+    case 4:
+      return [
+        'Final qualifier round before Finals.',
+        'Top 5 advance to the Finals.',
+        'Strict fair-play checks; suspicious activity is reviewed.',
+      ];
+    case 5:
+      return [
+        'Final ticket required to enter.',
+        'Winners share the prize pool.',
+        'Anti-cheat & manual review for top placements.',
+      ];
+    default:
+      return ['General rules apply.'];
+  }
+}
 
-          {/* Footer Title */}
-          <div className={`text-center py-2 text-sm sm:text-base font-bold border-t ${styles.footer}`}>
-            {label}
-          </div>
-
+function StageRulesModal({ stage, onClose }) {
+  if (!stage) return null;
+  const rules = getStageRules(stage);
+  return (
+    <div className="fixed inset-0 z-50">
+      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
+      <div className="absolute inset-x-4 sm:inset-x-auto sm:right-6 top-10 sm:top-16 z-10 max-w-md rounded-2xl border border-white/10 bg-[#0b1220] p-4 shadow-2xl">
+        <div className="flex items-center justify-between">
+          <div className="text-white font-semibold">Stage {stage} Rules</div>
+          <button
+            onClick={onClose}
+            className="text-white/70 hover:text-white text-sm px-2 py-1 rounded-md hover:bg-white/10"
+          >
+            Close
+          </button>
+        </div>
+        <ul className="mt-3 text-sm text-white/70 space-y-2 list-disc pl-5">
+          {rules.map((r, i) => <li key={i}>{r}</li>)}
+        </ul>
+        <div className="mt-4 text-[11px] text-white/50">
+          Note: Rule enforcement includes automated and manual review.
         </div>
       </div>
     </div>
   );
 }
 
+/* ---------------- Finals meta / header ---------------- */
+function computeFinalsMeta(list = []) {
+  const rooms = list.length;
+  const entrants = list.reduce((s, r) => s + (r.entrantsCount || 0), 0);
+  const capacity = list.reduce((s, r) => s + (r.capacity || 0), 0);
+  const nextStartTs = list
+    .map(r => r.nextStartAt ? new Date(r.nextStartAt).getTime() : Infinity)
+    .reduce((min, t) => Math.min(min, t), Infinity);
+  const nextStartISO = Number.isFinite(nextStartTs) ? new Date(nextStartTs).toISOString() : null;
 
+  // You can still compute/estimate a dynamic pool if you want, but we
+  // now display a fixed breakdown card as requested.
+  const prizePoolPi = Math.max(100, Math.round(entrants * 0.5));
 
-
-
-/* ---------------- Stage Block ---------------- */
-function StageBlock({ stage, title, list, onJoin }) {
-  if (!list?.length) return null;
-
-  const advancing = list[0]?.advancing ?? (stage === 1 ? 5 : 1);
-  const advancedLastHour = list.reduce((sum, room) => sum + (room.advancedLastHour || 0), 0);
-  const entrantsLastHour = list.reduce((sum, room) => sum + (room.entrantsLastHour || 0), 0);
-  const winRate = entrantsLastHour > 0 ? Math.round((advancedLastHour / entrantsLastHour) * 100) : 0;
-  const roomsCompleted = list.reduce((sum, room) => sum + (room.roomsCompletedLastHour || 0), 0);
-  const peakOnline = list.reduce((max, room) => Math.max(max, room.peakOnline || 0), 0);
-  const prizeRemaining = stage === 5 ? 1520 : null; // example
-  const nextMatchETA = list[0]?.nextMatchETA || '2m 15s'; // mock
-  const stageProgress = 42; // mock %
-
-  return (
-    <StageSection title={title}>
- {/* Stats row */}
-<div className="flex flex-wrap gap-3 text-xs sm:text-sm text-white">
-  {stage === 5
-    ? <StatCard icon="🏆" label="25 Winners" />
-    : <StatCard icon="🏆" label={`Top ${advancing} Advance`} />}
-  
-  <StatCard icon="📈" label="Win Rate" value={`${winRate}%`} />
-  <StatCard icon="🏟" label="Rooms" value={roomsCompleted} />
-  <StatCard icon="👥" label="Peak" value={peakOnline} />
-  {prizeRemaining !== null && (
-    <StatCard icon="💰" label="Remaining" value={`${formatPi(prizeRemaining)}`} />
-  )}
-  <StatCard icon="⏳" label="Next" value={nextMatchETA} />
-</div>
-
-      {/* Stage Progress Bar */}
-      <div className="mt-3 w-full bg-white/10 rounded-full h-2">
-        <div className="bg-cyan-400 h-2 rounded-full" style={{ width: `${stageProgress}%` }} />
-      </div>
-
-      {/* Stage Cards */}
-      <Cards list={list} stage={stage} onJoin={onJoin} />
-    </StageSection>
-  );
+  return { rooms, entrants, capacity, nextStartISO, prizePoolPi };
 }
 
-function StatCard({ icon, label, value }) {
+function FinalsHeader({ list }) {
+  const meta = useMemo(() => computeFinalsMeta(list), [list]);
   return (
-    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 rounded-lg border border-white/10">
-      <span>{icon}</span>
-      <span className="font-semibold">{label}</span>
-      {value && <span className="text-cyan-300 font-bold">{value}</span>}
+    <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <KPI icon="👥" label="Finalists" value={String(meta.entrants)} sub={`${meta.rooms} room${meta.rooms===1?'':'s'}`} />
+      <KPI icon="🪪" label="Capacity" value={String(meta.capacity)} sub="total slots" />
+      <KPI icon="🏆" label="Prize Pool" value={`${meta.prizePoolPi.toLocaleString()} π`} sub="est. (live)" />
+      <div className="rounded-xl border border-white/10 bg-white/5 p-4 flex items-center justify-center">
+        <CountdownCircle targetISO={meta.nextStartISO || inFuture(2)} size={56} stroke={5} label="Next Final" />
+      </div>
     </div>
   );
 }
 
-
-
-/* ---------------- Cards & MiniCard ---------------- */
-function Cards({ list, stage, onJoin, entryFee }) {
-  if (!list?.length) return <div className="text-white/70">Nothing to show.</div>;
+/* ---------------- Finals Prize Breakdown (fixed) ---------------- */
+function FinalsPrizeCard() {
+  const breakdown = [
+    { place: '1st Place', prize: '750 π' },
+    { place: '2nd Place', prize: '500 π' },
+    { place: '3rd Place', prize: '250 π' },
+    { place: '4th Place', prize: '100 π' },
+    { place: '5th Place', prize: '100 π' },
+    { place: '6th – 20th', prize: '25 π each' },
+  ];
   return (
-    <div className="grid gap-5 sm:gap-6 md:gap-8 sm:grid-cols-2 lg:grid-cols-3">
-      {list.map(c => (
-        <MiniCard key={c.slug} data={c} stage={stage} onJoin={onJoin} entryFee={entryFee} />
-      ))}
+  <div className="rounded-2xl border border-cyan-400/40 bg-gradient-to-br from-[#0d1729] to-[#0a1020] p-4 shadow-lg shadow-cyan-400/10">
+  <div className="text-sm font-bold text-cyan-300 mb-3 flex items-center gap-2 drop-shadow-[0_0_6px_rgba(34,211,238,0.6)]">
+    Finals Prize Breakdown
+  </div>
+  <ul className="space-y-2 text-sm text-white/80">
+    {breakdown.map((b, i) => (
+      <li
+        key={i}
+        className="flex justify-between border-b border-white/5 pb-2 last:border-0 last:pb-0"
+      >
+        <span>{b.place}</span>
+        <span className="font-semibold text-cyan-200 drop-shadow-[0_0_4px_rgba(34,211,238,0.7)]">
+          {b.prize}
+        </span>
+      </li>
+    ))}
+  </ul>
+</div>
+
+  );
+}
+
+/* ---------------- Finals Rules Card ---------------- */
+function FinalsRulesCard() {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+      <div className="text-white font-semibold">Finals Rules</div>
+      <ul className="mt-2 text-xs text-white/70 space-y-1 list-disc pl-5">
+        <li>One final ticket required to enter.</li>
+        <li>Winners share the prize pool (see breakdown).</li>
+        <li>Anti-cheat & fairness checks apply.</li>
+      </ul>
     </div>
   );
 }
 
 function MiniCard({ data, stage, onJoin, entryFee }) {
   const spotsLeft = Math.max(0, (data.capacity || STAGE1_CAPACITY) - (data.entrantsCount || 0));
-  const pct = Math.max(0, Math.min(100, Math.floor((data.entrantsCount / (data.capacity || STAGE1_CAPACITY)) * 100)));
+  const pct = Math.max(
+    0,
+    Math.min(100, Math.floor((data.entrantsCount / (data.capacity || STAGE1_CAPACITY)) * 100))
+  );
   const canJoinStage1 = stage === 1 && spotsLeft > 0;
+
+  const entrants = data.entrantsCount || 0;
+  const adv = data.advancing || (stage === 1 ? ADVANCING_PER_ROOM : 1);
+  const winChance = entrants > 0 ? Math.round((adv / entrants) * 100) : null;
+
+  const isFinals = stage === 5;
+
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#0b1220] p-5 sm:p-6">
-      <div className="flex justify-between items-center">
-        <div className="text-white font-semibold text-sm sm:text-base">
+    <div
+      dir={isFinals ? 'rtl' : 'ltr'} // 👈 flips everything for Stage 5
+      className={`min-w-[260px] sm:min-w-[300px] rounded-2xl border 
+        ${isFinals ? 'border-cyan-400 text-right' : 'border-white/10 text-left'} 
+        bg-[#0b1220] p-5`}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="text-white font-semibold">
           {stage === 1 ? 'Qualifier' : `Stage ${stage}`}
         </div>
         <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-cyan-400 text-black">
           {stage === 1 ? 'FILLING' : 'TICKETS'}
         </span>
       </div>
-      <div className="mt-3 text-xs sm:text-sm text-white">
-        Players {data.entrantsCount}/{data.capacity} • Advance Top {data.advancing}
+
+      {/* Players / Advance line */}
+      <div className="mt-3 text-xs sm:text-sm text-white/80">
+        Players {data.entrantsCount}/{data.capacity} • Advance Top {adv}
       </div>
-      <div className="mt-3 h-2 rounded-full bg-white/10">
-        <div className="h-full rounded-full bg-cyan-400" style={{ width: `${pct}%` }} />
+
+      {/* Progress bar (always LTR so the bar fills correctly) */}
+      <div className="mt-3 h-2 rounded-full bg-white/10 overflow-hidden" dir="ltr">
+        <div className="h-full bg-cyan-400" style={{ width: `${pct}%` }} />
       </div>
-      <div className="mt-4">
+
+      {/* Info lines */}
+      <div className="mt-2 text-[11px] text-white/60 space-y-1">
+        <div>+5 XP when you join this stage</div>
+        <div>Top {adv} advance for a share of the pool</div>
+        {winChance !== null && <div>Win chance: {winChance}%</div>}
+      </div>
+
+      {/* Countdown + CTA */}
+      <div className="mt-4 flex items-center justify-between gap-3">
+        <CountdownCircle
+          targetISO={data.nextStartAt || inFuture(2)}
+          size={44}
+          stroke={5}
+          label="Starts"
+        />
         {stage === 1 ? (
           canJoinStage1 ? (
-            <button onClick={() => onJoin?.({ slug: null, stage })} className="w-full rounded-lg bg-cyan-400 text-black py-2 sm:py-2.5 text-sm sm:text-base font-bold">
-              Pay & Enter {formatPi(entryFee)}
+            <button
+              onClick={() => onJoin?.({ slug: null, stage })}
+              className="flex-1 rounded-lg bg-cyan-400 text-black py-2 font-bold"
+            >
+              Enter {formatPi(entryFee)}
             </button>
           ) : (
-            <div className="w-full text-center rounded-lg bg-white/10 py-2 text-sm text-white/70">Full</div>
+            <div className="flex-1 text-center rounded-lg bg-white/10 py-2 text-sm text-white/70">
+              Full
+            </div>
           )
         ) : (
-          <button onClick={() => onJoin?.({ slug: data.slug, stage })} className="w-full rounded-lg bg-emerald-400 text-black py-2 sm:py-2.5 text-sm sm:text-base font-bold">
-            Enter with Ticket
+          <button
+            onClick={() => onJoin?.({ slug: data.slug, stage })}
+            className="flex-1 rounded-lg bg-emerald-400 text-black py-2 font-bold"
+          >
+            {isFinals ? 'Use Final Ticket' : 'Use Ticket'}
           </button>
         )}
       </div>
@@ -215,42 +362,168 @@ function MiniCard({ data, stage, onJoin, entryFee }) {
   );
 }
 
-/* ---------------- Stage Section ---------------- */
-function StageSection({ title, children }) {
-  return (
-    <section className="space-y-5">
-      <h2 className="text-lg sm:text-xl font-bold text-white">{title}</h2>
-      {children}
-    </section>
-  );
-}
 
-function PrizeTable() {
-  return (
-    <div className="bg-[#0b1220]/80 backdrop-blur rounded-xl border border-white/10 p-4 sm:p-6 text-xs sm:text-sm text-white/80">
-      <table className="w-full">
-        <thead>
-          <tr className="text-white/60 border-b border-white/10">
-            <th className="pb-2 text-left">Place</th>
-            <th className="pb-2 text-right">Prize</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-white/5">
-         <tr>
-  <td className="py-2">4th–10th</td>
-  <td className="py-2 text-right text-cyan-300 font-semibold">{formatPi(50)}</td>
-</tr>
 
-          <tr>
-            <td className="py-2">11th–25th</td>
-            <td className="py-2 text-right text-cyan-300 font-semibold">{formatPi(10)}</td>
-          </tr>
-        </tbody>
-      </table>
+
+function HScrollCards({ list, stage, onJoin, entryFee }) {
+  if (!list?.length) return null;
+  return (
+    <div className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex gap-4 pr-2">
+        {list.map((c) => (
+          <MiniCard key={c.slug} data={c} stage={stage} onJoin={onJoin} entryFee={entryFee} />
+        ))}
+      </div>
     </div>
   );
 }
 
+/* ---------------- Stage Block ---------------- */
+function StageBlock({ stage, title, list, onJoin, entryFee, onShowRules }) {
+  if (!list?.length) return null;
+
+  const advancing = list[0]?.advancing ?? (stage === 1 ? 5 : 1);
+  const advancedLastHour = list.reduce((sum, room) => sum + (room.advancedLastHour || 0), 0);
+  const entrantsLastHour = list.reduce((sum, room) => sum + (room.entrantsLastHour || 0), 0);
+  const winRate = entrantsLastHour > 0 ? Math.round((advancedLastHour / entrantsLastHour) * 100) : 0;
+
+  const nextISO = list
+    .map(r => r.nextStartAt ? new Date(r.nextStartAt).getTime() : Infinity)
+    .reduce((min, t) => Math.min(min, t), Infinity);
+
+  return (
+    <section className="space-y-4" id={`stage-${stage}`}>
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <h3 className="text-lg sm:text-xl font-bold text-white">{title}</h3>
+          <p className="text-xs text-white/60 mt-1">
+            {stage < 5 ? `Top ${advancing} advance • Last hour win rate: ` : `Finals • Last hour win rate: `}
+            <span className="text-cyan-300 font-semibold">{winRate}%</span>
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 sm:gap-3">
+          <button
+            onClick={() => onShowRules?.(stage)}
+            className="text-xs px-3 py-1 rounded-full border border-white/15 text-white/80 hover:bg-white/5"
+            aria-label={`Stage ${stage} rules`}
+          >
+            Rules
+          </button>
+
+          {Number.isFinite(nextISO) && (
+            <div className="hidden sm:flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-2 py-1">
+              <CountdownCircle targetISO={new Date(nextISO).toISOString()} size={40} stroke={4} label="Next" />
+            </div>
+          )}
+          {stage === 1 && (
+            <div className="hidden sm:flex items-center gap-2 text-xs text-white/70">
+              <span className="rounded-full bg-cyan-400/20 text-cyan-300 border border-cyan-400/30 px-2 py-1">
+                Entry {formatPi(ENTRY_FEE_PI)}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <HScrollCards list={list} stage={stage} onJoin={onJoin} entryFee={entryFee} />
+    </section>
+  );
+}
+
+/* ---------------- Finals Leaderboard (mock simple list) ---------------- */
+function FinalsLeaderboard({ items = [] }) {
+  const data = items.slice(0, 5).map((r, i) => ({
+    place: i + 1,
+    slug: r.slug,
+    entrants: r.entrantsCount || 0,
+  }));
+  if (data.length === 0) return null;
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
+      <div className="px-4 py-3 text-white font-semibold">Live Finals Rooms</div>
+      <div className="divide-y divide-white/10">
+        {data.map(row => (
+          <div key={row.slug} className="px-4 py-3 flex items-center justify-between text-sm">
+            <div className="flex items-center gap-3">
+              <span className="w-6 h-6 grid place-items-center rounded-full bg-cyan-400 text-black font-bold text-xs">
+                {row.place}
+              </span>
+              <span className="text-white/90 font-medium">{row.slug}</span>
+            </div>
+            <div className="text-white/70">Players {row.entrants}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- Finals Tab Content ---------------- */
+function FinalsTab({ list, onJoin, entryFee, onShowRules }) {
+  const meta = useMemo(() => computeFinalsMeta(list), [list]);
+
+  return (
+    <>
+      <div className="flex items-center justify-between">
+  
+
+        <button
+          onClick={() => onShowRules?.(5)}
+          className="text-xs px-3 py-1 rounded-full border border-white/15 text-white/80 hover:bg-white/5"
+          aria-label="Finals rules"
+        >
+          Rules
+        </button>
+      </div>
+
+      {/* KPI header with countdown etc. */}
+      <FinalsHeader list={list} />
+
+      <div className="mt-6 grid lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          {list?.length ? (
+            <div className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div className="flex gap-4 pr-2" id="stage-5">
+                {list.map((c) => (
+                  <MiniCard
+                    key={c.slug}
+                    data={c}
+                    stage={5}
+                    onJoin={onJoin}
+                    entryFee={entryFee}
+                  />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="text-white/70">No finals room available right now.</div>
+          )}
+
+          <FinalsLeaderboard items={list} />
+        </div>
+
+        <aside className="space-y-6">
+          <FinalsPrizeCard />
+          <FinalsRulesCard />
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="text-sm font-semibold text-white">Enter Finals</div>
+            <div className="text-[11px] text-white/60 mt-1">Requires a Final Ticket</div>
+            <button
+              onClick={() => {
+                const el = document.getElementById('stage-5');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+              className="mt-3 w-full rounded-lg bg-emerald-400 text-black py-2 font-bold"
+            >
+              Choose a Finals Room
+            </button>
+          </div>
+        </aside>
+      </div>
+    </>
+  );
+}
 
 /* ---------------- Main Page ---------------- */
 export default function FunnelIndexPage() {
@@ -260,19 +533,29 @@ export default function FunnelIndexPage() {
   const s3 = useFunnelStage(3);
   const s4 = useFunnelStage(4);
   const s5 = useFunnelStage(5);
+
   const [mock] = useState(() => ({
-    s1Filling: mockItems(3, { stage: 1 }),
-    s2Live: mockItems(2, { stage: 2, live: true }),
+    s1Filling: mockItems(4, { stage: 1 }),
+    s2Live: mockItems(3, { stage: 2, live: true }),
     s3Live: mockItems(2, { stage: 3, live: true }),
-    s4Live: mockItems(1, { stage: 4, live: true }),
+    s4Live: mockItems(2, { stage: 4, live: true }),
     s5Live: mockItems(1, { stage: 5, live: true }),
   }));
+
   const s1Filling = s1.filling?.length ? s1.filling : mock.s1Filling;
   const s2Live = s2.live?.length ? s2.live : mock.s2Live;
   const s3Live = s3.live?.length ? s3.live : mock.s3Live;
   const s4Live = s4.live?.length ? s4.live : mock.s4Live;
   const s5Live = s5.live?.length ? s5.live : mock.s5Live;
+
   const { pushToast, Toasts } = useToasts();
+
+  const [xp, setXp] = useState(0);
+  const [level, setLevel] = useState(1);
+  useEffect(() => {
+    const nextLevelXP = 100 + (level - 1) * 50;
+    if (xp >= nextLevelXP) setLevel(prev => prev + 1);
+  }, [xp, level]);
 
   const handleJoin = useCallback(async ({ slug, stage }) => {
     if (!user?.id && !user?.piUserId) {
@@ -309,142 +592,175 @@ export default function FunnelIndexPage() {
         const resp = await postJSON('/api/funnel/join', { slug, userId, stage });
         pushToast(resp?.message || 'Entered with your ticket ✅', 'success');
       }
+      setXp(x => x + 20);
     } catch (e) {
       pushToast(e?.message || 'Could not enter', 'error');
     }
   }, [user, pushToast, s1]);
 
+  const allLists = [s2Live, s3Live, s4Live, s5Live].flat();
+  const heroNextISO = useMemo(() => {
+    const ts = allLists
+      .map(r => r?.nextStartAt ? new Date(r.nextStartAt).getTime() : Infinity)
+      .reduce((min, t) => Math.min(min, t), Infinity);
+    return Number.isFinite(ts) ? new Date(ts).toISOString() : inFuture(2);
+  }, [allLists]);
+
+  /* Tabs (no "All") */
+  const stageTabs = useMemo(() => ([
+    { key: '1', label: 'Stage 1', n: 1, list: s1Filling },
+    { key: '2', label: 'Stage 2', n: 2, list: s2Live },
+    { key: '3', label: 'Stage 3', n: 3, list: s3Live },
+    { key: '4', label: 'Stage 4', n: 4, list: s4Live },
+    { key: '5', label: 'Finals',  n: 5, list: s5Live },
+  ]), [s1Filling, s2Live, s3Live, s4Live, s5Live]);
+
+  const [activeTab, setActiveTab] = useState('1');
+
+  const handleTab = (key) => {
+    setActiveTab(key);
+    const n = Number(key);
+    const el = document.getElementById(`stage-${n}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  /* Stage Rules modal control */
+  const [rulesStage, setRulesStage] = useState(null);
+  const openRules = useCallback((stage) => setRulesStage(stage), []);
+  const closeRules = useCallback(() => setRulesStage(null), []);
+
   return (
-    <main className="min-h-screen bg-[#070d19] pb-20">
-  <div className="max-w-6xl mx-auto px-0 sm:px-6 lg:px-8 space-y-10 sm:space-y-12 lg:space-y-16">
-    
-    {/* Hero */}
-    <header className="relative py-6 sm:py-8 bg-gradient-to-br from-[#08121f] via-[#0b1a2a] to-[#061019] text-center overflow-hidden">
-  {/* Decorative glow */}
-  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(34,211,238,0.15),transparent_70%)] pointer-events-none" />
+    <main className="min-h-screen bg-[#070d19] pb-24">
+      {/* Hero */}
+      <section className="relative bg-gradient-to-br from-[#08121f] via-[#0b1a2a] to-[#061019]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(34,211,238,0.12),transparent_70%)]" />
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-8">
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Left: Title + KPIs + XP */}
+            <div className="flex-1">
+              <h1 className="text-[26px] sm:text-3xl font-extrabold bg-gradient-to-r from-cyan-300 to-blue-400 bg-clip-text text-transparent drop-shadow">
+                OMC Stages
+              </h1>
+              <p className="mt-2 text-white/70 text-sm max-w-xl">
+                Start in <span className="text-cyan-300 font-semibold">Stage 1</span>, battle through each round, and reach the finals to share the prize pool.
+              </p>
 
-  {/* Title at top */}
-  <h1 className="text-[22px] sm:text-lg font-bold tracking-wide bg-gradient-to-r from-cyan-300 to-blue-400 bg-clip-text text-transparent drop-shadow mb-1">
-    OMC Stages
-  </h1>
-
-      {/* Message below title */}
-      <p className="text-[13.5px] sm:text-xs text-white/70 max-w-lg mx-auto mb-4">
-        Start your journey in <span className="text-cyan-300 font-semibold">Stage 1 for 0.15 π </span>, 
-        battle your way through the stages, and reach Stage 5 to claim your share of the <span className="text-cyan-300 font-semibold">Pi prize pool</span>!
-      </p>
-
-      {/* Live Tournament Stats */}
-      <div className="mt-6 bg-[#0b1220]/70 backdrop-blur rounded-xl border border-white/10 overflow-hidden shadow-lg">
-        
-        {/* Header Row */}
-        <div className="bg-gradient-to-r from-cyan-400/20 via-emerald-400/20 to-transparent px-4 py-2 flex items-center justify-between border-b border-white/10">
-          <h3 className="text-cyan-300 font-bold text-sm sm:text-base tracking-wide">Live Tournament Stats</h3>
-          <span className="text-[10px] sm:text-xs text-white/60">Updated 2s ago</span>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 divide-x divide-white/5">
-          
-          {/* Players Played */}
-          <div className="p-3 sm:p-4 text-center">
-            <div className="text-cyan-300 text-lg sm:text-xl font-extrabold">👥 246</div>
-            <div className="text-[10px] sm:text-xs text-white/60">Players Played</div>
-          </div>
-
-          {/* Stages Today */}
-          <div className="p-3 sm:p-4 text-center">
-            <div className="text-cyan-300 text-lg sm:text-xl font-extrabold">🏁 7</div>
-            <div className="text-[10px] sm:text-xs text-white/60">Stages Today</div>
-          </div>
-
-          {/* π Awarded */}
-          <div className="p-3 sm:p-4 text-center">
-            <div className="text-cyan-300 text-lg sm:text-xl font-extrabold">💰 5000 π</div>
-            <div className="text-[10px] sm:text-xs text-white/60">π Awarded</div>
-          </div>
-
-          {/* Winners Stage 5 */}
-          <div className="p-3 sm:p-4 text-center">
-            <div className="text-cyan-300 text-lg sm:text-xl font-extrabold">🏆 25</div>
-            <div className="text-[10px] sm:text-xs text-white/60">Winners in Stage 5</div>
-          </div>
-
-          {/* Prize Pool */}
-          <div className="p-3 sm:p-4 text-center">
-            <div className="text-cyan-300 text-lg sm:text-xl font-extrabold">🎯 2,250 π</div>
-            <div className="text-[10px] sm:text-xs text-white/60">Prize Pool</div>
-          </div>
-
-          {/* Next Stage */}
-          <div className="p-3 sm:p-4 text-center">
-            <div className="text-cyan-300 text-lg sm:text-xl font-extrabold">⏳ 2</div>
-            <div className="text-[10px] sm:text-xs text-white/60">Next Stage</div>
-            <div className="text-[9px] text-white/50">Starts in 2m 15s</div>
-          </div>
-
-          {/* Prizes Breakdown (Compact) */}
-          <div className="p-3 sm:p-4 text-center col-span-2 sm:col-span-3 lg:col-span-6 border-t border-white/10 mt-2">
-            <div className="text-[14px] sm:text-base font-extrabold tracking-wide bg-gradient-to-r from-cyan-300 to-blue-400 bg-clip-text text-transparent drop-shadow">
-              Stage 5 • Prize Pool
-            </div>
-            <div className="flex flex-wrap justify-center gap-5 text-[13px] sm:text-sm text-white/70 mt-2">
-              <span className="flex items-center gap-1">🥇 <span className="font-semibold text-cyan-300">1st: 1000 π</span></span>
-              <span className="flex items-center gap-1">🥈 <span className="font-semibold text-cyan-300">2nd: 500 π</span></span>
-              <span className="flex items-center gap-1">🥉 <span className="font-semibold text-cyan-300">3rd: 250 π</span></span>
-              <span className="flex items-center gap-1">
-                4th–10th: <span className="font-semibold text-cyan-300">50 π</span>
-                <span className="text-white/50 px-1">|</span>
-                11th–25th: <span className="font-semibold text-cyan-300">10 π</span>
-              </span>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      {/* Stage Progression */}
-      <div className="mt-10 flex justify-center gap-4 flex-wrap text-xs sm:text-sm text-white/70">
-        {["Stage 1", "Stage 2", "Stage 3", "Stage 4", "Stage 5"].map((stage, i) => {
-          let subText = "";
-          if (i === 0) subText = "Enter";
-          else if (i > 0 && i < 4) subText = "Advance";
-          else if (i === 4) subText = "Prize Pool";
-          return (
-            <div key={stage} className="flex flex-col items-center">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-emerald-400 text-black flex items-center justify-center font-bold shadow-md">
-                {i + 1}
+              <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <KPI icon="👥" label="Players" value="246" sub="today" />
+                <KPI icon="🏁" label="Stages" value="7" sub="completed" />
+                <KPI icon="💰" label="π Awarded" value="5,000 π" sub="lifetime" />
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4 flex items-center justify-center">
+                  <CountdownCircle targetISO={heroNextISO} size={56} stroke={5} label="Next Stage" />
+                </div>
               </div>
-              <span className="mt-1 font-semibold">{stage}</span>
-              <span className="text-[10px] sm:text-xs text-white/50">{subText}</span>
+
+              <div className="mt-4">
+                <XPBar xp={xp} level={level} />
+              </div>
             </div>
-          );
-        })}
+
+            {/* Right: quick join */}
+            <aside className="lg:w-[320px] lg:shrink-0">
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
+                <div className="text-sm font-semibold text-white">Jump In</div>
+                <div className="mt-2 text-xs text-white/60">Stage 1 entry</div>
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <div className="text-[12px] text-white/70">Cost {formatPi(ENTRY_FEE_PI)}</div>
+                  <button
+                    onClick={() => handleJoin({ slug: null, stage: 1 })}
+                    className="rounded-lg bg-cyan-400 text-black px-4 py-2 font-bold"
+                  >
+                    Enter
+                  </button>
+                </div>
+                <div className="mt-4 text-[11px] text-white/50">
+                  Earn XP every time you play and advance.
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      {/* Content */}
+      <section className="relative">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 lg:py-10">
+          {/* Tabs */}
+          <div className="mb-6 flex flex-wrap gap-2">
+            {stageTabs.map(t => {
+              const active = activeTab === t.key;
+              return (
+                <button
+                  key={t.key}
+                  onClick={() => handleTab(t.key)}
+                  className={`px-3 py-1 rounded-full text-xs border transition
+                    ${active ? 'bg-cyan-400 text-black border-cyan-400'
+                             : 'border-white/15 text-white/80 hover:bg-white/5'}`}
+                  aria-pressed={active}
+                >
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Tab-aware rendering */}
+          {activeTab === '5' ? (
+            <>
+              {/* Anchor for smooth scroll */}
+              <div id="stage-5" className="h-0" />
+              <FinalsTab list={s5Live} onJoin={handleJoin} entryFee={ENTRY_FEE_PI} onShowRules={openRules} />
+            </>
+          ) : (
+            (() => {
+              const tab = stageTabs.find(t => t.key === activeTab);
+              if (!tab) return null;
+              const title = tab.n === 1 ? 'Stage 1 · Open Qualifiers' : `Stage ${tab.n}`;
+              if (!tab.list || tab.list.length === 0) {
+                return <div className="text-white/60 text-sm">No rooms available.</div>;
+              }
+              return (
+                <>
+                  {/* Anchor for smooth scroll */}
+                  <div id={`stage-${tab.n}`} className="h-0" />
+                  <StageBlock
+                    stage={tab.n}
+                    title={title}
+                    list={tab.list}
+                    onJoin={handleJoin}
+                    entryFee={ENTRY_FEE_PI}
+                    onShowRules={openRules}
+                  />
+                </>
+              );
+            })()
+          )}
+        </div>
+      </section>
+
+      {/* Mobile floating action bar */}
+      <div className="lg:hidden fixed bottom-3 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-1.5rem)]">
+        <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur px-4 py-3 flex items-center justify-between">
+          <div className="text-sm">
+            <div className="text-white font-semibold">Join Stage 1</div>
+            <div className="text-[11px] text-white/70">Entry {formatPi(ENTRY_FEE_PI)}</div>
+          </div>
+          <button
+            onClick={() => handleJoin({ slug: null, stage: 1 })}
+            className="rounded-lg bg-cyan-400 text-black px-4 py-2 font-bold"
+          >
+            Enter
+          </button>
+        </div>
       </div>
 
-    </header>
+      {/* Rules Modal */}
+      <StageRulesModal stage={rulesStage} onClose={closeRules} />
 
-
-
-
-
-
-
-        {/* Stages */}
-        {s1Filling.length > 0 && (
-          <StageSection title="Stage 1 · Open Qualifiers">
-            <Cards list={s1Filling} stage={1} onJoin={handleJoin} entryFee={ENTRY_FEE_PI} />
-          </StageSection>
-        )}
-        {[{ stage: 2, title: "Stage 2 ", list: s2Live },
-          { stage: 3, title: "Stage 3 ", list: s3Live },
-          { stage: 4, title: "Stage 4 ", list: s4Live },
-          { stage: 5, title: "Stage 5 ", list: s5Live }]
-          .map(({ stage, title, list }) => (
-            list.length > 0 && <StageBlock key={stage} stage={stage} title={title} list={list} onJoin={handleJoin} />
-          ))
-        }
-      </div>
       <Toasts />
     </main>
   );

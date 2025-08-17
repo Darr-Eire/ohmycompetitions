@@ -9,30 +9,28 @@ export default function ReferralStatsCard({
   ticketsEarned = 0,
   miniGamesBonus = 0,
   totalBonusTickets = 0,
-  // new preferred props (will override old if provided)
+  // new preferred props (override old if provided)
   entriesEarned,
   bonusEntries,
   totalEntries,
   userReferralCode = null,
   competitionBreakdown = {},
+  className = '',
 }) {
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // Backward-compatible value mapping
+  // Backward-compatible mapping
   const earned = (entriesEarned ?? ticketsEarned) || 0;
   const bonus  = (bonusEntries ?? miniGamesBonus) || 0;
   const total  = (totalEntries ?? totalBonusTickets ?? (earned + bonus)) || 0;
 
-  const referralUrl = `https://ohmycompetitions.com/signup?ref=${encodeURIComponent(
-    userReferralCode || username
-  )}`;
+  const code = userReferralCode || username;
+  const referralUrl = `https://ohmycompetitions.com/signup?ref=${encodeURIComponent(code)}`;
 
-  const handleCopy = async () => {
+  async function handleCopy() {
     try {
       await navigator.clipboard.writeText(referralUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1600);
     } catch {
       const ta = document.createElement('textarea');
       ta.value = referralUrl;
@@ -40,107 +38,136 @@ export default function ReferralStatsCard({
       ta.select();
       document.execCommand('copy');
       document.body.removeChild(ta);
+    } finally {
       setCopied(true);
-      setTimeout(() => setCopied(false), 1600);
+      setTimeout(() => setCopied(false), 1200);
     }
-  };
+  }
 
-  const handleShare = (platform) => {
-    const shareText = encodeURIComponent('Join me on OhMyCompetitions — monthly 100π draw! 🎁🏆');
+  function openShare(url) {
+    window.open(url, '_blank', 'width=600,height=520');
+  }
+
+  function handleShare(platform) {
+    const shareText = 'Join me on Oh My Competitions monthly 1000 π draw 🎁🏆';
+    if (navigator.share) {
+      navigator.share({ title: 'Oh My Competitions', text: shareText, url: referralUrl }).catch(() => {});
+      return;
+    }
     const url = encodeURIComponent(referralUrl);
+    const text = encodeURIComponent(shareText);
     const map = {
-      telegram: `https://t.me/share/url?url=${url}&text=${shareText}`,
-      twitter: `https://twitter.com/intent/tweet?text=${shareText}&url=${url}`,
-      whatsapp: `https://wa.me/?text=${shareText}%20${url}`,
+      telegram: `https://t.me/share/url?url=${url}&text=${text}`,
+      twitter:  `https://twitter.com/intent/tweet?text=${text}&url=${url}`,
+      whatsapp: `https://wa.me/?text=${text}%20${url}`,
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
     };
-    if (map[platform]) window.open(map[platform], '_blank', 'width=600,height=520');
-  };
+    if (map[platform]) openShare(map[platform]);
+  }
 
   // Milestones every 5 signups
-  const nextMilestone = Math.ceil(Math.max(1, signupCount + 1) / 5) * 5;
-  const progressPct = ((signupCount % 5) / 5) * 100;
-  const toGo = 5 - (signupCount % 5 || 5) === 5 ? 0 : 5 - (signupCount % 5);
+  const remainder = signupCount % 5;
+  const milestoneReached = signupCount > 0 && remainder === 0;
+  const nextMilestone = milestoneReached ? signupCount + 5 : signupCount - remainder + 5;
+  const progressPct = (remainder / 5) * 100;
 
   return (
-    <div className="bg-gradient-to-br from-[#0b1220] via-[#0b162a] to-[#0b1220] p-5 sm:p-6 rounded-2xl border border-cyan-500/30 shadow-[0_0_40px_rgba(0,255,255,0.12)] text-white">
-      {/* Header */}
-      <div className="text-center space-y-1">
-        <h3 className="font-orbitron text-lg sm:text-xl font-bold text-cyan-300">
-          Monthly 100&nbsp;π Draw — Your Entries
-        </h3>
-        <p className="text-xs sm:text-sm text-cyan-200/80">
-          Every successful referral = <b>1 entry</b>. Bonus actions can add more.
-        </p>
+    <div
+      className={`rounded-2xl border border-cyan-600 bg-[#0f172a] 
+                  p-2.5 sm:p-4 text-white ${className}`}
+    >
+      {/* Header (ultra compact on mobile) */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="min-w-0">
+          <h3 className="text-sm sm:text-lg font-bold text-cyan-300 leading-tight">
+            Monthly 1000&nbsp;π Draw
+          </h3>
+          {/* Hide the helper sentence on mobile to save height */}
+          <p className="hidden sm:block text-xs text-white/70 mt-0.5">
+            Every successful referral = <b>1 entry</b>. Bonus actions can add more.
+          </p>
+        </div>
+        <span className="shrink-0 text-[10px] sm:text-xs bg-white/10 border border-white/10 rounded-lg px-2 py-0.5">
+          Total: <b className="text-cyan-300">{total}</b>
+        </span>
       </div>
 
-      {/* Stat tiles */}
-      <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+      {/* Tiles (tight gaps + sizes) */}
+      <div className="mt-2.5 grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2.5">
         <Tile label="Referrals" value={signupCount} />
         <Tile label="Entries from Referrals" value={earned} />
         <Tile label="Bonus Entries" value={bonus} />
         <Tile label="Total Entries" value={total} highlight />
       </div>
 
-      {/* Milestone progress */}
-      <div className="mt-4 rounded-xl border border-fuchsia-400/30 bg-fuchsia-400/10 p-3">
+      {/* Milestone (minimal on mobile) */}
+      <div className="mt-2.5 rounded-xl border border-cyan-600/60 bg-white/5 p-2 sm:p-2.5">
         <div className="flex items-center justify-between">
-          <span className="text-[11px] sm:text-xs text-fuchsia-200">Next Milestone</span>
-          <span className="text-[11px] sm:text-xs text-white">{signupCount}/{nextMilestone}</span>
+          <span className="text-[10px] sm:text-xs text-white/80">Next Milestone</span>
+          <span className="text-[10px] sm:text-xs text-white/90">
+            {signupCount}/{nextMilestone}
+          </span>
         </div>
-        <div className="mt-2 h-2 w-full rounded-full bg-white/10 overflow-hidden">
+        <div className="mt-1.5 h-1 sm:h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-fuchsia-400 to-pink-500 transition-all duration-500"
-            style={{ width: `${progressPct}%` }}
+            className="h-full rounded-full bg-gradient-to-r from-cyan-300 to-emerald-300 transition-all duration-500"
+            style={{ width: `${milestoneReached ? 100 : progressPct}%` }}
           />
         </div>
-        <p className="mt-1 text-[11px] text-white/70">
-          {toGo > 0 ? `${toGo} more referrals to hit the next milestone` : 'Milestone reached — nice!'}
-        </p>
       </div>
 
-      {/* Referral link */}
-      <div className="mt-4 rounded-xl border border-cyan-400/30 bg-cyan-400/10 p-3">
-        <div className="text-[11px] sm:text-xs text-cyan-200 mb-1">Your referral link</div>
-        <div className="flex flex-col sm:flex-row gap-2">
-          <code className="flex-1 whitespace-nowrap overflow-x-auto rounded-lg bg-black/40 px-3 py-2 text-xs">
+      {/* Link row (super compact on mobile) */}
+      <div className="mt-2.5 rounded-xl border border-cyan-600/60 bg-white/5 p-2 sm:p-2.5">
+        {/* Mobile: single line with code + copy button */}
+        <div className="flex items-center gap-2 sm:hidden">
+          <div className="text-[11px] text-white/80">
+            Code: <span className="font-semibold text-cyan-300">{code}</span>
+          </div>
+          <button
+            onClick={handleCopy}
+            className={`ml-auto rounded-md px-2 py-1 text-[11px] font-semibold 
+                        ${copied ? 'bg-emerald-400 text-black' : 'bg-cyan-400 text-black hover:brightness-110'}`}
+          >
+            {copied ? 'Copied!' : 'Copy link'}
+          </button>
+        </div>
+
+        {/* Desktop+ : show full URL row */}
+        <div className="hidden sm:flex flex-col sm:flex-row gap-2">
+          <code className="flex-1 truncate rounded-lg bg-black/40 px-2.5 py-1.5 text-[11px]">
             {referralUrl}
           </code>
           <button
             onClick={handleCopy}
-            className={`rounded-lg px-3 py-2 text-xs font-semibold ${
-              copied ? 'bg-emerald-400 text-black' : 'bg-cyan-400 text-black hover:brightness-110'
-            }`}
+            className={`rounded-lg px-2.5 py-1.5 text-[11px] font-semibold 
+                        ${copied ? 'bg-emerald-400 text-black' : 'bg-cyan-400 text-black hover:brightness-110'}`}
           >
             {copied ? 'Copied!' : 'Copy'}
           </button>
         </div>
-        <div className="mt-2 text-[11px] text-white/70">
-          Code: <span className="font-semibold text-cyan-200">{userReferralCode || username}</span>
-        </div>
       </div>
 
-      {/* Share buttons */}
-      <div className="mt-3 grid grid-cols-4 gap-2">
+      {/* Share (2 cols on mobile, 4 on sm+) */}
+      <div className="mt-2.5 grid grid-cols-2 sm:grid-cols-4 gap-2">
         <ShareBtn onClick={() => handleShare('telegram')}>📱 Telegram</ShareBtn>
         <ShareBtn onClick={() => handleShare('twitter')}>🐦 Twitter</ShareBtn>
         <ShareBtn onClick={() => handleShare('whatsapp')}>💬 WhatsApp</ShareBtn>
         <ShareBtn onClick={() => handleShare('facebook')}>📘 Facebook</ShareBtn>
       </div>
 
-      {/* Breakdown */}
+      {/* Breakdown is optional; keep compact and collapsed by default */}
       {Object.keys(competitionBreakdown || {}).length > 0 && (
-        <div className="mt-4 border-t border-white/10 pt-3">
+        <div className="mt-2.5 border-t border-white/10 pt-2">
           <button
             onClick={() => setShowBreakdown(!showBreakdown)}
-            className="w-full text-left text-sm text-cyan-300 hover:text-cyan-200 transition-colors"
+            className="w-full text-left text-xs text-cyan-300 hover:text-cyan-200 transition-colors"
           >
             {showBreakdown ? '📊 Hide' : '📈 Show'} Entry Breakdown
           </button>
           {showBreakdown && (
-            <div className="mt-3 space-y-1.5">
+            <div className="mt-1.5 space-y-1">
               {Object.entries(competitionBreakdown).map(([slug, count]) => (
-                <div key={slug} className="flex items-center justify-between text-xs">
+                <div key={slug} className="flex items-center justify-between text-[11px]">
                   <span className="text-white/70 truncate pr-3">{slug}</span>
                   <span className="text-cyan-200 font-semibold">{count} entries</span>
                 </div>
@@ -149,11 +176,6 @@ export default function ReferralStatsCard({
           )}
         </div>
       )}
-
-      {/* Terms blurb */}
-      <p className="mt-4 text-[11px] text-white/60">
-        Winners announced monthly. Entries reset each cycle. Terms apply.
-      </p>
     </div>
   );
 }
@@ -161,12 +183,11 @@ export default function ReferralStatsCard({
 function Tile({ label, value, highlight = false }) {
   return (
     <div
-      className={`rounded-xl px-3 py-3 text-center border ${
-        highlight ? 'border-cyan-400/40 bg-cyan-400/10' : 'border-white/10 bg-white/5'
-      }`}
+      className={`rounded-xl px-2 py-2 text-center border leading-tight
+        ${highlight ? 'border-cyan-600 bg-white/5' : 'border-white/10 bg-white/5'}`}
     >
-      <div className="text-[10px] sm:text-xs text-white/70">{label}</div>
-      <div className={`mt-1 font-orbitron font-bold ${highlight ? 'text-cyan-300' : 'text-white'}`}>
+      <div className="text-[10px] text-white/70">{label}</div>
+      <div className={`mt-0.5 font-bold ${highlight ? 'text-cyan-300' : 'text-white'} text-sm`}>
         {value}
       </div>
     </div>
@@ -177,7 +198,8 @@ function ShareBtn({ onClick, children }) {
   return (
     <button
       onClick={onClick}
-      className="rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 text-white text-xs py-2 transition-colors"
+      className="rounded-lg bg-white/5 border border-cyan-600/60 hover:bg-white/10 
+                 text-white text-[11px] py-1.5 sm:py-1.5 transition-colors"
     >
       {children}
     </button>

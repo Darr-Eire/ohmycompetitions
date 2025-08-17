@@ -17,6 +17,8 @@ export default function FunnelStageCard({
   onEnter,
   small = false,
   micro = false,
+  // optional manual override if you ever want RTL on other stages:
+  rtl = undefined,
 }) {
   const safeCapacity = Math.max(1, Number(capacity) || 1);
   const safeEntrants = Math.max(0, Number(entrants) || 0);
@@ -35,7 +37,7 @@ export default function FunnelStageCard({
     return `Enter • ${spotsLeft} left`;
   })();
 
-  // ✅ Handle Free Ticket logic
+  // Free ticket/price label
   const isFree =
     pricePi === 'Free' ||
     pricePi === 'Free Ticket' ||
@@ -43,9 +45,7 @@ export default function FunnelStageCard({
     pricePi === null ||
     pricePi === undefined;
 
-  const priceLabel = isFree
-    ? 'Ticket'
-    : `${Number(pricePi).toFixed(2)} π`;
+  const priceLabel = isFree ? 'Ticket' : `${Number(pricePi).toFixed(2)} π`;
 
   // sizing presets
   const isMicro = !!micro;
@@ -59,48 +59,52 @@ export default function FunnelStageCard({
   const btnPad = isMicro ? 'px-2 py-1' : isSmall ? 'px-2.5 py-1.5' : 'px-3 py-2';
   const btnText = isMicro ? 'text-[10px]' : isSmall ? 'text-xs' : 'text-sm';
 
+  // RTL logic: finals by default, or manual override
+  const isFinals = stage === 5;
+  const useRTL = typeof rtl === 'boolean' ? rtl : isFinals;
+
   return (
     <div
-      className={`group relative rounded-xl bg-[#0b1220] border border-white/10 shadow-lg overflow-hidden ${pad}`}
+      dir={useRTL ? 'rtl' : 'ltr'}
+      className={`group relative rounded-xl bg-[#0b1220] shadow-lg overflow-hidden ${pad}
+        ${useRTL ? 'text-right border-cyan-400' : 'text-left border-white/10'} border`}
     >
       {/* Header strip */}
-<div
-  className={`relative w-full ${headerH} rounded-md bg-gradient-to-r from-cyan-500 via-sky-500 to-indigo-500 shadow-md`}
->
-  {/* Soft overlay for depth */}
-  <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.05),transparent)]" />
+      <div
+        className={`relative w-full ${headerH} rounded-md 
+        bg-gradient-to-r from-cyan-500 via-sky-500 to-indigo-500 shadow-md`}
+      >
+        <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.05),transparent)]" />
 
-  {/* Stage badge */}
-  <div
-    className={`absolute top-1 left-1 rounded-full bg-gradient-to-r from-cyan-300 to-sky-400 text-[#021017] font-bold ${textSize} px-2 py-[2px] shadow-sm`}
-  >
-    Stage {stage}
-  </div>
+        {/* Stage badge (swap sides in RTL) */}
+        <div
+          className={`absolute top-1 ${useRTL ? 'right-1' : 'left-1'} rounded-full
+            bg-gradient-to-r from-cyan-300 to-sky-400 text-[#021017] font-bold ${textSize}
+            px-2 py-[2px] shadow-sm`}
+        >
+          Stage {stage}
+        </div>
 
-  {/* Status badge */}
-  <div
-    className={`absolute top-1 right-1 rounded-full bg-gradient-to-r from-indigo-300 to-sky-400 text-[#021017] font-extrabold tracking-wide ${
-      isMicro ? 'text-[9px]' : 'text-[10px]'
-    } px-2 py-[2px] shadow-sm`}
-  >
-    {status.toUpperCase()}
-  </div>
-</div>
-
-
+        {/* Status badge (swap sides in RTL) */}
+        <div
+          className={`absolute top-1 ${useRTL ? 'left-1' : 'right-1'} rounded-full
+            bg-gradient-to-r from-indigo-300 to-sky-400 text-[#021017] font-extrabold tracking-wide
+            ${isMicro ? 'text-[9px]' : 'text-[10px]'} px-2 py-[2px] shadow-sm`}
+        >
+          {status.toUpperCase()}
+        </div>
+      </div>
 
       {/* Body */}
-    <div className={`${isMicro ? 'pt-1.5' : isSmall ? 'pt-2' : 'pt-3'}`}>
-  <h3
-    className={`font-semibold text-white ${titleSize} truncate text-center`}
-    title={title}
-  >
-    {title}
-  </h3>
-
-        <div
-          className={`mt-1 grid grid-cols-3 gap-1 ${textSize} text-white/80`}
+      <div className={`${isMicro ? 'pt-1.5' : isSmall ? 'pt-2' : 'pt-3'}`}>
+        <h3
+          className={`font-semibold text-white ${titleSize} truncate ${useRTL ? 'text-right' : 'text-center'}`}
+          title={title}
         >
+          {title}
+        </h3>
+
+        <div className={`mt-1 grid grid-cols-3 gap-1 ${textSize} text-white/80`}>
           <div className="rounded bg-white/5 px-1 py-[2px] text-center leading-tight">
             Players
             <br />
@@ -108,13 +112,14 @@ export default function FunnelStageCard({
               {safeEntrants}/{safeCapacity}
             </span>
           </div>
-         <div className="rounded bg-white/5 px-1 py-[2px] text-center leading-tight">
-  {stage === 5 ? 'Winners' : 'Advance'}
-  <br />
-  <span className="font-semibold text-white">
-    {stage === 5 ? '25' : `Top ${advancing}`}
-  </span>
-</div>
+
+          <div className="rounded bg-white/5 px-1 py-[2px] text-center leading-tight">
+            {stage === 5 ? 'Winners' : 'Advance'}
+            <br />
+            <span className="font-semibold text-white">
+              {stage === 5 ? '25' : `Top ${advancing}`}
+            </span>
+          </div>
 
           <div className="rounded bg-white/5 px-1 py-[2px] text-center leading-tight">
             Entry
@@ -123,64 +128,48 @@ export default function FunnelStageCard({
           </div>
         </div>
 
-        {/* Progress */}
+        {/* Progress (keep LTR so the fill animates left→right naturally) */}
         <div className={`${isMicro ? 'mt-1.5' : 'mt-2'}`}>
           <div
-            className={`flex justify-between text-white/60 ${
-              isMicro ? 'text-[9px]' : textSize
-            } mb-1`}
+            className={`flex justify-between text-white/60 ${isMicro ? 'text-[9px]' : textSize} mb-1`}
+            dir="ltr"
           >
             <span>Filling</span>
             <span>{pct}%</span>
           </div>
-          <div
-            className={`w-full ${barH} bg-white/10 rounded-full overflow-hidden`}
-          >
-            <div
-              className="h-full bg-cyan-400 rounded-full transition-all"
-              style={{ width: `${pct}%` }}
-            />
+          <div className={`w-full ${barH} bg-white/10 rounded-full overflow-hidden`} dir="ltr">
+            <div className="h-full bg-cyan-400 rounded-full transition-all" style={{ width: `${pct}%` }} />
           </div>
         </div>
 
         {/* CTA */}
-    <div
-  className={`${isMicro ? 'mt-1.5' : 'mt-2'} flex items-center justify-between`}
->
-  <div className={`text-white/60 ${isMicro ? 'text-[9px]' : textSize}`}>
-    {stage === 1
-      ? `${spotsLeft} left`
-      : hasTicket
-      ? 'Qualified'
-      : 'Locked'}
-  </div>
+        <div className={`${isMicro ? 'mt-1.5' : 'mt-2'} flex items-center justify-between`}>
+          <div className={`text-white/60 ${isMicro ? 'text-[9px]' : textSize}`}>
+            {stage === 1 ? `${spotsLeft} left` : hasTicket ? 'Qualified' : 'Locked'}
+          </div>
 
-{canJoin ? (
-  onEnter ? (
-    <button
-      onClick={() => onEnter(stage)}
-      className={`rounded-lg bg-cyan-400 text-black font-semibold hover:brightness-110 active:translate-y-[1px] ${btnPad} ${btnText}`}
-    >
-      Enter Now
-    </button>
-  ) : (
-    <Link
-      href="/battles" // 🔹 Force link to battles page
-      className={`rounded-lg bg-cyan-400 text-black font-semibold hover:brightness-110 active:translate-y-[1px] ${btnPad} ${btnText}`}
-    >
-      Enter Now
-    </Link>
-  )
-) : (
-  <span
-    className={`rounded-lg bg-white/10 text-white/70 font-semibold ${btnPad} ${btnText}`}
-  >
-    {ctaLabel}
-  </span>
-)}
-
-</div>
-
+          {canJoin ? (
+            onEnter ? (
+              <button
+                onClick={() => onEnter(stage)}
+                className={`rounded-lg bg-cyan-400 text-black font-semibold hover:brightness-110 active:translate-y-[1px] ${btnPad} ${btnText}`}
+              >
+                Enter Now
+              </button>
+            ) : (
+              <Link
+                href="/battles"
+                className={`rounded-lg bg-cyan-400 text-black font-semibold hover:brightness-110 active:translate-y-[1px] ${btnPad} ${btnText}`}
+              >
+                Enter Now
+              </Link>
+            )
+          ) : (
+            <span className={`rounded-lg bg-white/10 text-white/70 font-semibold ${btnPad} ${btnText}`}>
+              {ctaLabel}
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );

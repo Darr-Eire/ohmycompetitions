@@ -9,9 +9,9 @@ export default function IndexPage() {
     { icon: '💎', text: 'Daily Competitions', href: '/competitions/daily' },
     { icon: '📲', text: 'Pi Cash Code', href: '/pi-cash-code' },
     { icon: '🎁', text: 'Pi Giveaways', href: '/competitions/pi' },
-    { icon: '⚔️', text: 'Pi Battles', href: '/competitions/pibattles' },
+    { icon: '⚔️', text: 'Pi stages', href: '/battles' },
     { icon: '🎮', text: 'Mini Games', href: '/try-your-luck' },
-    { icon: '🧩', text: 'Mystery Features', href: '/future' },
+    { icon: '🧩', text: 'Mystery Features', href: '' },
   ];
 
   return (

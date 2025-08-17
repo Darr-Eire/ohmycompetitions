@@ -1,10 +1,11 @@
-// src/pages/competitions/daily.js
+// src/pages/competitions/featured.js
 'use client'
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import Head from 'next/head'
 import { ChevronLeft, ChevronRight, RefreshCw, Sparkles } from 'lucide-react'
-import DailyCompetitionCard from '@components/DailyCompetitionCard'
+import CompetitionCard from '@components/CompetitionCard'
+import { techItems } from '@data/competitions'
 
 /* ------------------------------ Skeleton / Empty ------------------------------ */
 function SkeletonSlide() {
@@ -26,8 +27,8 @@ function EmptyState({ onRefresh }) {
   return (
     <div className="text-center py-16 rounded-2xl border border-white/10 bg-white/5 mx-4">
       <Sparkles className="mx-auto mb-4" />
-      <h3 className="text-xl font-semibold">No daily competitions yet</h3>
-      <p className="text-white/70 mt-2">Check back soon — fresh prizes drop every day.</p>
+      <h3 className="text-xl font-semibold">No featured competitions yet</h3>
+      <p className="text-white/70 mt-2">Check back soon — we’re lining up more prizes.</p>
       <button
         onClick={onRefresh}
         className="mt-6 inline-flex items-center gap-2 rounded-xl bg-cyan-400 text-black font-semibold px-4 py-2 hover:brightness-110 active:translate-y-px"
@@ -43,15 +44,16 @@ function FullWidthCarousel({ items, renderItem }) {
   const scrollerRef = useRef(null)
   const [index, setIndex] = useState(0)
 
-  const clamp = useCallback((i) => Math.max(0, Math.min(i, (items?.length || 1) - 1)), [items?.length])
+  const clamp = useCallback((i) => Math.max(0, Math.min(i, items.length - 1)), [items.length])
 
-  // slow, eased scroll
+  // Slower, eased scroll
   const easeInOut = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2)
 
   const scrollToIndex = useCallback(
     (i, duration = 900) => {
       const el = scrollerRef.current
       if (!el) return
+
       const target = clamp(i)
       const start = el.scrollLeft
       const end = target * el.clientWidth
@@ -77,6 +79,7 @@ function FullWidthCarousel({ items, renderItem }) {
     if (i !== index) setIndex(i)
   }, [index])
 
+  // keyboard arrows
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === 'ArrowRight') scrollToIndex(index + 1, 900)
@@ -86,6 +89,7 @@ function FullWidthCarousel({ items, renderItem }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [index, scrollToIndex])
 
+  // scroll listener
   useEffect(() => {
     const el = scrollerRef.current
     if (!el) return
@@ -101,7 +105,7 @@ function FullWidthCarousel({ items, renderItem }) {
       <div className="pointer-events-none absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-[#0a0f1a] to-transparent z-10" />
       <div className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-[#0a0f1a] to-transparent z-10" />
 
-      {/* scroller: one full-viewport slide per screen */}
+      {/* scroller */}
       <div
         ref={scrollerRef}
         className="
@@ -115,6 +119,7 @@ function FullWidthCarousel({ items, renderItem }) {
         <div className="flex">
           {items.map((item, i) => (
             <div key={item.key || i} className="snap-start snap-always min-w-[100vw] px-3 sm:px-4">
+              {/* wrapper to neutralize any hover/active/focus transforms */}
               <div
                 className="mx-auto w-full max-w-[min(92vw,820px)] carousel-card"
                 style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -166,12 +171,12 @@ function FullWidthCarousel({ items, renderItem }) {
 }
 
 /* ---------------------------------- Page ---------------------------------- */
-export default function DailyCompetitionsPage() {
+export default function FeaturedCompetitionsPage() {
   const [competitions, setCompetitions] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  async function fetchDaily() {
+  async function fetchCompetitions() {
     setLoading(true)
     setError(null)
     try {
@@ -181,73 +186,109 @@ export default function DailyCompetitionsPage() {
       const raw = Array.isArray(json) ? json : json.data || []
 
       const now = new Date()
-      const dailyLive = raw.filter(
+      const techLive = raw.filter(
         (c) =>
-          c.theme === 'daily' &&
+          c.theme === 'tech' &&
           c.comp?.status === 'active' &&
           !(c.comp.endsAt && new Date(c.comp.endsAt) < now)
       )
 
-      setCompetitions(dailyLive)
+      setCompetitions(techLive.length > 0 ? techLive : techItems)
     } catch (err) {
-      console.error('❌ Error fetching daily competitions:', err)
-      setError('Couldn’t load daily competitions.')
+      console.error('❌ Featured fetch error:', err)
+      setError('Couldn’t load live featured competitions.')
+      setCompetitions(techItems)
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchDaily()
+    fetchCompetitions()
   }, [])
 
-  // normalize for carousel
   const slides = useMemo(() => {
     return (competitions || []).map((item) => {
       const comp = item.comp ?? item
-      const fee =
-        typeof comp.entryFee === 'number' ? `${comp.entryFee.toFixed(2)} π` : 'Free'
-
-      // card props
-      const hasStarted = comp.startsAt ? new Date(comp.startsAt) <= new Date() : true
-
+      const fee = typeof comp.entryFee === 'number' ? `${comp.entryFee.toFixed(2)} π` : '0.00 π'
       return {
         key: comp.slug || comp._id || item.title,
         comp,
         title: item.title,
         prize: item.prize,
         fee,
-        isLive: hasStarted,
+        imageUrl: item.imageUrl,
+        endsAt: comp.endsAt,
+        href: item.href,
       }
     })
   }, [competitions])
 
+  // Smart hero stats
+  const liveCount = slides.length
+  const minFee = useMemo(() => {
+    const fees = slides
+      .map(s => Number(s.comp?.entryFee ?? 0))
+      .filter(Number.isFinite)
+    return fees.length ? Math.min(...fees) : 0
+  }, [slides])
+
+  const soonestStr = useMemo(() => {
+    const soonest =
+      slides
+        .map(s => new Date(s.endsAt))
+        .filter(d => Number.isFinite(d.getTime()))
+        .sort((a, b) => a - b)[0] || null
+    return soonest
+      ? new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(soonest)
+      : 'TBA'
+  }, [slides])
+
   return (
     <>
-   <Head>
-  <title>Daily/Wekly Competitions | OhMyCompetitions</title>
+  <Head>
+  <title>Tech/Gadgets Competitions | OhMyCompetitions</title>
 </Head>
 
-<main className="app-background min-h-screen text-white bg-[#0a0f1a] pt-10 md:pt-24">
+<main className="app-background min-h-screen text-white bg-[#0a0f1a] pt-10 md:pt-20">
   <div className="max-w-screen-lg mx-auto px-4 sm:px-0">
           <h1
             className="
-              text-2xl font-bold text-center mb-2
+              text-2xl font-bold text-center mb-4
               bg-gradient-to-r from-[#00ffd5] to-[#0077ff]
               bg-clip-text text-transparent
             "
           >
-            Daily/Weekly Competitions
+            Tech/Gadgets Competitions
           </h1>
 
-          <p className="text-center text-white/80 max-w-md mx-auto mb-6">
-            {loading
-              ? 'Loading daily competitions…'
-              : error
-              ? error
-              : 'Swipe or use arrows to browse today’s prizes — starting from '}
-            {!loading && !error && <span className="font-semibold">0.31 π</span>}
-          </p>
+          <div className="text-center max-w-md mx-auto mb-6">
+            {loading ? (
+              <p className="text-white/80">Loading featured competitions…</p>
+            ) : error ? (
+              <p className="text-red-300">{error}</p>
+            ) : (
+              <>
+                <p className="text-white/90">
+                  Explore hand-picked tech prizes. Swipe or use arrows to browse.&nbsp;
+                  <span className="text-cyan-300 font-semibold">{liveCount}</span> live · from{' '}
+                  <span className="text-cyan-300 font-semibold">{minFee.toFixed(2)} π</span>.
+                </p>
+
+                <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+                  <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
+                    ⏳ Soonest draw: <b className="text-white">{soonestStr}</b>
+                  </span>
+                  <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
+                    🎟 Easy entry
+                  </span>
+                  <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
+                    ⚡ New drops weekly
+                  </span>
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         {/* content: full-width, mobile-first carousel */}
@@ -258,24 +299,24 @@ export default function DailyCompetitionsPage() {
                 <SkeletonSlide key={i} />
               ))}
             </div>
-          ) : error ? (
-            <EmptyState onRefresh={fetchDaily} />
           ) : slides.length > 0 ? (
             <FullWidthCarousel
               items={slides}
               renderItem={(s) => (
-                <DailyCompetitionCard
+                <CompetitionCard
                   key={s.key}
-                  comp={s.comp}
+                  comp={{ ...s.comp, comingSoon: s.comp.comingSoon ?? false }}
                   title={s.title}
                   prize={s.prize}
                   fee={s.fee}
-                  isLive={s.isLive}
+                  imageUrl={s.imageUrl}
+                  endsAt={s.endsAt}
+                  href={s.href}
                 />
               )}
             />
           ) : (
-            <EmptyState onRefresh={fetchDaily} />
+            <EmptyState onRefresh={fetchCompetitions} />
           )}
         </section>
       </main>
@@ -289,7 +330,7 @@ export default function DailyCompetitionsPage() {
           -webkit-tap-highlight-color: transparent;
         }
 
-        /* remove outlines/rings (per your request to avoid highlight) */
+        /* remove outlines/rings (as requested to avoid highlight) */
         .carousel-card *:focus,
         .carousel-card *:focus-visible {
           outline: none !important;
@@ -298,7 +339,7 @@ export default function DailyCompetitionsPage() {
 
         /* neutralize ALL hover/active/focus transforms (including group-hover etc.) */
         .carousel-card,
-        .carousel-card * ,
+        .carousel-card *,
         .carousel-card:hover,
         .carousel-card:active,
         .carousel-card *:hover,
@@ -308,7 +349,7 @@ export default function DailyCompetitionsPage() {
         }
 
         /* also disable transform transitions so nothing "animates" bigger on press */
-        .carousel-card *,
+        .carousel-card * ,
         .carousel-card *:hover,
         .carousel-card *:active {
           transition-property: transform !important;

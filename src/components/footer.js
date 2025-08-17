@@ -9,7 +9,7 @@ export default function Footer() {
     <footer className="text-cyan-300 text-xs py-6 px-4 bg-[#0f172a] border-t border-cyan-700">
       {/* Back to Home */}
       <div className="flex justify-center mb-3">
-        <Link href="/homepage">
+        <Link href="index">
           <span className="btn-gradient px-3 py-1 rounded-md cursor-pointer text-sm">
             Back to Home
           </span>

@@ -53,14 +53,14 @@ export default function Header() {
   const competitionCategories = [
     ['Launch Week', '/competitions/launch-week'],
     ['Pi Stages', '/battles'],
-    ['Pi Cash Code', '/pi-cash-code'],
+    ['Pi Cash Code', '/pi-cash-code', '(Coming Soon)'],
     ['Live Now', '/competitions/live-now'],
     ['Pi Competitions', '/competitions/pi'],
     ['Daily', '/competitions/daily'],
     ['Featured', '/competitions/featured'],
   ];
   const navItems = [['Home', '/homepage']];
-  const miniGames = [['Try Your Luck', '/try-your-luck', '(Opening Soon)']];
+  const miniGames = [['Try Your Luck', '/try-your-luck', '(Coming Soon)']];
 
   const navExtras = [
     ['Forums', '/forums'],
@@ -191,30 +191,44 @@ export default function Header() {
             ))}
           </Section>
 
-          <Section title="Competitions">
-            {competitionCategories.map(([label, href]) => (
-              <Link
-                key={href}
-                href={href}
-                className={getLinkClass(href)}
-                onClick={() => setMenuOpen(false)}
-              >
-                <span className="relative z-10">{label}</span>
-                <span className="absolute inset-0 bg-cyan-500/10 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300" />
-              </Link>
-            ))}
-          </Section>
+<Section title="Competitions">
+  {competitionCategories.map(([label, href, status]) => (
+    <Link
+      key={href}
+      href={href}
+      className={getLinkClass(href)}
+      onClick={() => setMenuOpen(false)}
+    >
+      <span className="relative z-10">
+        {label}{' '}
+        {status && (
+          <span className="text-cyan-300 text-xs ml-1 align-middle">
+            {status}
+          </span>
+        )}
+      </span>
+      <span className="absolute inset-0 bg-cyan-500/10 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300" />
+    </Link>
+  ))}
+</Section>
 
-          <Section title="Mini Games">
-            {miniGames.map(([name, link, status]) => (
-              <a key={link} href={link} className={getLinkClass(link)}>
-                <span className="relative z-10">
-                  {name} {status && <span className="text-cyan-300">{status}</span>}
-                </span>
-                <span className="absolute inset-0 bg-cyan-500/10 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300" />
-              </a>
-            ))}
-          </Section>
+<Section title="Mini Games">
+  {miniGames.map(([name, link, status]) => (
+    <a key={link} href={link} className={getLinkClass(link)}>
+      <span className="relative z-10">
+        {name}{' '}
+        {status && (
+          <span className="text-cyan-300 text-xs ml-1 align-middle">
+            {status}
+          </span>
+        )}
+      </span>
+      <span className="absolute inset-0 bg-cyan-500/10 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300" />
+    </a>
+  ))}
+</Section>
+
+
 
           <Section title="More">
             {navExtras.map(([label, href]) => (
