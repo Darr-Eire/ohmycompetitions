@@ -1,55 +1,52 @@
-// src/pages/competitions/pi.js
-'use client';
+// src/pages/competitions/featured.js
+'use client'
 
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import Head from 'next/head';
-import { ChevronLeft, ChevronRight, RefreshCw, Sparkles } from 'lucide-react';
-import PiCompetitionCard from '@components/PiCompetitionCard';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import Head from 'next/head'
+import { ChevronLeft, ChevronRight, RefreshCw, Sparkles } from 'lucide-react'
+import CompetitionCard from '@components/CompetitionCard'
+import { techItems } from '@data/competitions'
 
 /* ------------------------------ Tagline Rotator ------------------------------ */
 function TaglineRotator() {
   const taglines = [
-    'Pi-powered prizes pure on-chain.',
-    'Compete. Win. Repeat. 🔥',
-    'Epic rewards paid in Pi.',
-    'Join the action ⚡ Entry from 0.00 π',
-  ];
-  const [index, setIndex] = useState(0);
-
+    'Hand-picked tech & gadgets 🔧',
+    'Phones, consoles, tech, win big 🎮',
+    'Epic prizes, new drops weekly ⚡',
+    'Entry from 0.35 π let’s go 🚀',
+  ]
+  const [index, setIndex] = useState(0)
   useEffect(() => {
-    const id = setInterval(() => setIndex((i) => (i + 1) % taglines.length), 3500);
-    return () => clearInterval(id);
-  }, []);
-
+    const id = setInterval(() => setIndex(i => (i + 1) % taglines.length), 3500)
+    return () => clearInterval(id)
+  }, [])
   return (
     <p className="text-center text-white/80 text-sm sm:text-base mt-1 transition-opacity duration-500 ease-in-out">
       {taglines[index]}
     </p>
-  );
+  )
 }
 
 /* ------------------------------ Subtle Background Motion ------------------------------ */
 function BackgroundFX() {
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-      {/* soft blobs tuned for #0a0f1a */}
       <div className="absolute -top-40 -left-40 h-[420px] w-[420px] rounded-full blur-3xl opacity-20 bg-cyan-400 animate-float-slow" />
       <div className="absolute -bottom-40 -right-40 h-[420px] w-[420px] rounded-full blur-3xl opacity-15 bg-blue-500 animate-float-slower" />
-      {/* particle grid subtler on dark */}
       <div className="absolute inset-0 [background-image:radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:18px_18px] opacity-20" />
     </div>
-  );
+  )
 }
 
 /* ------------------------------ Live Counter (frontend trickle) ------------------------------ */
 function useLiveCounter(initial = 420) {
-  const [count, setCount] = useState(initial);
+  const [count, setCount] = useState(initial)
   useEffect(() => {
-    const tick = () => setCount((c) => c + Math.floor(1 + Math.random() * 5));
-    const id = setInterval(tick, 2000 + Math.random() * 2000);
-    return () => clearInterval(id);
-  }, []);
-  return count;
+    const tick = () => setCount(c => c + Math.floor(1 + Math.random() * 5))
+    const id = setInterval(tick, 2000 + Math.random() * 2000)
+    return () => clearInterval(id)
+  }, [])
+  return count
 }
 
 /* ------------------------------ Skeleton / Empty ------------------------------ */
@@ -67,15 +64,15 @@ function SkeletonSlide() {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 function EmptyState({ onRefresh }) {
   return (
     <div className="text-center py-16 rounded-2xl border border-white/10 bg-white/5 mx-4">
       <Sparkles className="mx-auto mb-4" />
-      <h3 className="text-xl font-semibold">No Pi competitions yet</h3>
-      <p className="text-white/70 mt-2">Check back soon new Pi prizes are on the way.</p>
+      <h3 className="text-xl font-semibold">No featured competitions yet</h3>
+      <p className="text-white/70 mt-2">Check back soon we’re lining up more prizes.</p>
       <button
         onClick={onRefresh}
         type="button"
@@ -84,58 +81,61 @@ function EmptyState({ onRefresh }) {
         <RefreshCw size={16} /> Refresh
       </button>
     </div>
-  );
+  )
 }
 
 /* ------------------------------- Full-width Carousel ------------------------------- */
 function FullWidthCarousel({ items, renderItem }) {
-  const scrollerRef = useRef(null);
-  const [index, setIndex] = useState(0);
+  const scrollerRef = useRef(null)
+  const [index, setIndex] = useState(0)
 
   const clamp = useCallback(
     (i) => Math.max(0, Math.min(i, (items?.length || 1) - 1)),
     [items?.length]
-  );
+  )
 
+  // Pure horizontal scroll
   const scrollToIndex = useCallback(
     (i) => {
-      const el = scrollerRef.current;
-      if (!el) return;
-      const target = clamp(i);
-      const left = target * el.clientWidth;
-      el.scrollTo({ left, behavior: 'smooth' });
+      const el = scrollerRef.current
+      if (!el) return
+      const target = clamp(i)
+      const left = target * el.clientWidth
+      el.scrollTo({ left, behavior: 'smooth' })
     },
     [clamp]
-  );
+  )
 
   const onScroll = useCallback(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    const i = Math.round(el.scrollLeft / el.clientWidth);
-    if (i !== index) setIndex(i);
-  }, [index]);
+    const el = scrollerRef.current
+    if (!el) return
+    const i = Math.round(el.scrollLeft / el.clientWidth)
+    if (i !== index) setIndex(i)
+  }, [index])
 
+  // keyboard arrows
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === 'ArrowRight') scrollToIndex(index + 1);
-      if (e.key === 'ArrowLeft') scrollToIndex(index - 1);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [index, scrollToIndex]);
+      if (e.key === 'ArrowRight') scrollToIndex(index + 1)
+      if (e.key === 'ArrowLeft') scrollToIndex(index - 1)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [index, scrollToIndex])
 
+  // scroll listener
   useEffect(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    el.addEventListener('scroll', onScroll, { passive: true });
-    return () => el.removeEventListener('scroll', onScroll);
-  }, [onScroll]);
+    const el = scrollerRef.current
+    if (!el) return
+    el.addEventListener('scroll', onScroll, { passive: true })
+    return () => el.removeEventListener('scroll', onScroll)
+  }, [onScroll])
 
-  if (!items?.length) return null;
+  if (!items?.length) return null
 
   return (
     <div className="relative">
-      {/* edge fades use app bg */}
+      {/* edge fades match app bg */}
       <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-[#0a0f1a] to-transparent z-10" />
       <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[#0a0f1a] to-transparent z-10" />
 
@@ -152,7 +152,7 @@ function FullWidthCarousel({ items, renderItem }) {
           [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden
         "
         aria-roledescription="carousel"
-        aria-label="Pi competitions"
+        aria-label="Featured competitions"
       >
         <div className="flex">
           {items.map((item, i) => (
@@ -215,7 +215,7 @@ function FullWidthCarousel({ items, renderItem }) {
         ))}
       </div>
 
-      {/* reduced motion */}
+      {/* Reduced motion */}
       <style jsx global>{`
         @media (prefers-reduced-motion: reduce) {
           * {
@@ -226,53 +226,51 @@ function FullWidthCarousel({ items, renderItem }) {
         }
       `}</style>
     </div>
-  );
+  )
 }
 
 /* ---------------------------------- Page ---------------------------------- */
-export default function PiCompetitionsPage() {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const ticketsToday = useLiveCounter(420); // purely visual
+export default function FeaturedCompetitionsPage() {
+  const [competitions, setCompetitions] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const ticketsToday = useLiveCounter(420) // purely visual
 
-  async function fetchPi() {
-    setLoading(true);
-    setError(null);
+  async function fetchCompetitions() {
+    setLoading(true)
+    setError(null)
     try {
-      const res = await fetch('/api/competitions/all', { headers: { 'cache-control': 'no-cache' } });
-      if (!res.ok) throw new Error(`API error ${res.status}`);
-      const json = await res.json();
-      const data = Array.isArray(json?.data) ? json.data : [];
+      const res = await fetch('/api/competitions/all')
+      if (!res.ok) throw new Error(`API error ${res.status}`)
+      const json = await res.json()
+      const raw = Array.isArray(json) ? json : json.data || []
 
-      const now = Date.now();
-      const livePi = data.filter((c) => {
-        const theme = c?.theme || c?.comp?.theme;
-        const isPi = theme?.toLowerCase() === 'pi';
-        const statusOk = (c?.comp?.status ?? 'active') === 'active';
-        const ends = c?.comp?.endsAt ? new Date(c.comp.endsAt).getTime() : Infinity;
-        return isPi && statusOk && now < ends;
-      });
+      const now = new Date()
+      const techLive = raw.filter(
+        (c) =>
+          (c.theme === 'tech' || c?.comp?.theme === 'tech') &&
+          (c.comp?.status ?? 'active') === 'active' &&
+          !(c.comp?.endsAt && new Date(c.comp.endsAt) < now)
+      )
 
-      setItems(livePi);
-    } catch (e) {
-      console.error('❌ Error loading Pi competitions:', e);
-      setError('Couldn’t load Pi competitions.');
-      setItems([]);
+      setCompetitions(techLive.length > 0 ? techLive : techItems)
+    } catch (err) {
+      console.error('❌ Featured fetch error:', err)
+      setError('Couldn’t load live featured competitions.')
+      setCompetitions(techItems)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchPi();
-  }, []);
+    fetchCompetitions()
+  }, [])
 
-  // Normalize for carousel + hero stats
   const slides = useMemo(() => {
-    return (items || []).map((item) => {
-      const comp = item.comp ?? item;
-      const fee = typeof comp.entryFee === 'number' ? `${comp.entryFee.toFixed(2)} π` : '0.00 π';
+    return (competitions || []).map((item) => {
+      const comp = item.comp ?? item
+      const fee = typeof comp.entryFee === 'number' ? `${comp.entryFee.toFixed(2)} π` : '0.00 π'
       return {
         key: comp.slug || comp._id || item.title,
         comp,
@@ -282,27 +280,27 @@ export default function PiCompetitionsPage() {
         imageUrl: item.imageUrl,
         endsAt: comp.endsAt,
         href: item.href,
-      };
-    });
-  }, [items]);
+      }
+    })
+  }, [competitions])
 
-  const liveCount = slides.length;
-
+  // Smart hero stats
+  const liveCount = slides.length
   const minFee = useMemo(() => {
-    const fees = slides.map(s => Number(s.comp?.entryFee ?? 0)).filter(Number.isFinite);
-    return fees.length ? Math.min(...fees) : 0;
-  }, [slides]);
+    const fees = slides.map(s => Number(s.comp?.entryFee ?? 0)).filter(Number.isFinite)
+    return fees.length ? Math.min(...fees) : 0
+  }, [slides])
 
   const soonestStr = useMemo(() => {
     const soonest =
       slides
         .map(s => new Date(s.endsAt))
         .filter(d => Number.isFinite(d.getTime()))
-        .sort((a, b) => a - b)[0] || null;
+        .sort((a, b) => a - b)[0] || null
     return soonest
       ? new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(soonest)
-      : 'TBA';
-  }, [slides]);
+      : 'TBA'
+  }, [slides])
 
   if (loading) {
     return (
@@ -311,23 +309,22 @@ export default function PiCompetitionsPage() {
         <div className="max-w-screen-lg mx-auto px-4 sm:px-0">
           <div className="text-center py-16">
             <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-cyan-400 mx-auto" />
-            <p className="mt-4 text-cyan-300">Loading Pi competitions…</p>
+            <p className="mt-4 text-cyan-300">Loading featured competitions…</p>
           </div>
         </div>
       </main>
-    );
+    )
   }
 
   return (
     <>
       <Head>
-        <title>Pi Competitions | OhMyCompetitions</title>
+        <title>Tech/Gadgets Competitions | OhMyCompetitions</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       </Head>
 
       <main className="app-background min-h-[100svh] text-white bg-[#0a0f1a] pt-[calc(10px+env(safe-area-inset-top))] md:pt-[calc(80px+env(safe-area-inset-top))] relative">
         <BackgroundFX />
-
         <div className="max-w-screen-lg mx-auto px-4 sm:px-0">
           <h1
             className="
@@ -336,7 +333,7 @@ export default function PiCompetitionsPage() {
               bg-clip-text text-transparent
             "
           >
-            Pi Competitions
+            Tech/Gadgets Competitions
           </h1>
 
           <div className="text-center max-w-md mx-auto mb-6 mt-3">
@@ -345,10 +342,10 @@ export default function PiCompetitionsPage() {
             ) : (
               <>
                 <p className="text-white/90">
-                  Dive into Pi-powered competitions win tech, Pi and more.
+                  Explore hand-picked tech prizes phones, consoles, tech and more.
                 </p>
 
-                {/* Rotating short tagline */}
+                {/* Rotating tagline */}
                 <TaglineRotator />
 
                 {/* Live counter */}
@@ -367,7 +364,7 @@ export default function PiCompetitionsPage() {
                     ⏳ Soonest draw: <b className="text-white">{soonestStr}</b>
                   </span>
                   <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
-                    💜 Pay in Pi
+                    🎟 Easy entry
                   </span>
                   <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
                     ⚡ New drops weekly
@@ -380,11 +377,11 @@ export default function PiCompetitionsPage() {
 
         {/* content: full-width, mobile-first carousel */}
         <section className="pb-14">
-          {!error && slides.length > 0 ? (
+          {slides.length > 0 ? (
             <FullWidthCarousel
               items={slides}
               renderItem={(s) => (
-                <PiCompetitionCard
+                <CompetitionCard
                   key={s.key}
                   comp={{ ...s.comp, comingSoon: s.comp?.comingSoon ?? false }}
                   title={s.title}
@@ -396,15 +393,13 @@ export default function PiCompetitionsPage() {
                 />
               )}
             />
-          ) : error ? (
-            <EmptyState onRefresh={fetchPi} />
           ) : (
-            <EmptyState onRefresh={fetchPi} />
+            <EmptyState onRefresh={fetchCompetitions} />
           )}
         </section>
       </main>
 
-      {/* Hard overrides to STOP any click/tap scaling in the carousel + hover glow */}
+      {/* Hover glow + no-scale + background animations */}
       <style jsx global>{`
         .competition-card {
           transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
@@ -432,7 +427,6 @@ export default function PiCompetitionsPage() {
           transition-duration: 0s !important;
         }
 
-        /* Background float animations */
         @keyframes float-slow {
           0% { transform: translateY(0) translateX(0); }
           50% { transform: translateY(18px) translateX(6px); }
@@ -451,5 +445,5 @@ export default function PiCompetitionsPage() {
         }
       `}</style>
     </>
-  );
+  )
 }

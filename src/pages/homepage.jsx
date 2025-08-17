@@ -275,13 +275,13 @@ export default function HomePage() {
   />
 
   <Section
-    title="Tech/Gadgets Competitions"
+    title="Tech/Gadgets"
     items={getCompetitionsByCategory('tech')}
     viewMoreHref="/competitions/tech/gadgets"
   />
 
   <Section
-    title="Daily Competitions"
+    title="Daily/Weekly"
     items={getCompetitionsByCategory('daily')}
     viewMoreHref="/competitions/daily"
     extraClass="mt-12"

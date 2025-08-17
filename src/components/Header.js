@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import { usePiAuth } from '../context/PiAuthContext';
 
@@ -11,7 +11,7 @@ export default function Header() {
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [isLoggingIn, setIsLoggingIn] = useState(false); // NEW
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const sidebarRef = useRef(null);
 
   // Close when clicking outside sidebar
@@ -30,7 +30,7 @@ export default function Header() {
     const onKey = (e) => {
       if (e.key === 'Escape') {
         setMenuOpen(false);
-        if (!isLoggingIn) setShowLoginModal(false); // don't close while logging in
+        if (!isLoggingIn) setShowLoginModal(false);
       }
     };
     document.addEventListener('keydown', onKey);
@@ -49,17 +49,19 @@ export default function Header() {
     };
   }, [menuOpen, showLoginModal]);
 
-  // Nav data
+  /* ---------------- Nav data (tuples) ---------------- */
   const competitionCategories = [
+    ['Live Now', '/competitions/live-now'],
     ['Launch Week', '/competitions/launch-week'],
+    ['Tech/Gadgets', '/competitions/tech&gadgets'],
+    ['Daily/Weekly', '/competitions/daily'],
+    ['Pi Giveaways', '/competitions/pi'],
     ['Pi Stages', '/battles'],
     ['Pi Cash Code', '/pi-cash-code', '(Coming Soon)'],
-    ['Live Now', '/competitions/live-now'],
-    ['Pi Competitions', '/competitions/pi'],
-    ['Daily', '/competitions/daily'],
-    ['Featured', '/competitions/featured'],
   ];
+
   const navItems = [['Home', '/homepage']];
+
   const miniGames = [['Try Your Luck', '/try-your-luck', '(Coming Soon)']];
 
   const navExtras = [
@@ -69,14 +71,20 @@ export default function Header() {
     ['About Us', '/about-us'],
     ['Partners & Sponsors', '/partners'],
   ];
-  const finalNavItems = [...navItems];
-  if (user) finalNavItems.splice(1, 0, ['My Account', '/account']);
 
+  const finalNavItems = useMemo(() => {
+    const arr = [...navItems];
+    if (user) arr.splice(1, 0, ['My Account', '/account']);
+    return arr;
+  }, [user]);
+
+  /* ---------------- Helpers ---------------- */
   const normalize = (p = '') =>
     (p || '/').replace(/[#?].*$/, '').replace(/\/+$/, '') || '/';
 
   const linkBase =
     'block rounded px-3 py-2 text-sm font-medium transition-all duration-200 relative overflow-hidden group';
+
   const getLinkClass = (href) => {
     const active =
       normalize(router.asPath) === normalize(href) ||
@@ -99,14 +107,40 @@ export default function Header() {
     </div>
   );
 
+  /* Render a tuple item: [label, href, note?] */
+const Item = ({ tuple }) => {
+  const [label, href, note] = tuple;
+  const isComingSoon = !!note?.toLowerCase().includes('coming soon');
+
+  return (
+    <Link
+      href={href}
+      className={getLinkClass(href)}
+      onClick={() => setMenuOpen(false)}
+    >
+      <span className="relative z-10 flex items-center gap-2">
+        <span>{label}</span>
+        {isComingSoon && (
+          <span className="text-[10px] px-2 py-0.5 rounded-md bg-yellow-400/20 text-yellow-200 border border-yellow-400/30">
+            {note}
+          </span>
+        )}
+      </span>
+      <span className="absolute inset-0 bg-cyan-500/10 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300" />
+    </Link>
+  );
+};
+
+
   return (
     <>
       {/* Top Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 px-3 py-2 flex items-center justify-between shadow-md backdrop-blur-md bg-gradient-to-r from-[#0f172a] via-[#1a2535] to-[#0f172a] border-b border-cyan-700">
+      <header className="fixed top-0 left-0 right-0 z-50 px-3 py-2 flex items-center justify-between shadow-md backdrop-blur-md bg-[#0f172a] border-b border-cyan-700">
         {/* Menu Button */}
         <button
           onClick={() => setMenuOpen(true)}
           className="neon-button text-white px-2 py-1 hover:scale-105 transition-transform"
+          aria-label="Open menu"
         >
           <svg
             className="w-5 h-5"
@@ -114,6 +148,7 @@ export default function Header() {
             stroke="currentColor"
             strokeWidth="2"
             viewBox="0 0 24 24"
+            aria-hidden="true"
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 8h16M4 16h16" />
           </svg>
@@ -140,11 +175,16 @@ export default function Header() {
             <button
               onClick={() => setShowLoginModal(true)}
               className="neon-button text-xs px-2 py-1 w-fit"
+              aria-haspopup="dialog"
+              aria-expanded={showLoginModal ? 'true' : 'false'}
             >
               Login
             </button>
           ) : (
-            <button onClick={logout} className="neon-button text-xs px-2 py-1 w-fit">
+            <button
+              onClick={logout}
+              className="neon-button text-xs px-2 py-1 w-fit"
+            >
               Log Out
             </button>
           )}
@@ -156,6 +196,7 @@ export default function Header() {
         <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
           onClick={() => setMenuOpen(false)}
+          aria-hidden="true"
         />
       )}
 
@@ -165,83 +206,49 @@ export default function Header() {
         className={`fixed top-0 left-0 z-50 h-full w-72 bg-gradient-to-b from-[#0f172a] to-[#1a2a3a] border-r border-cyan-700 shadow-[0_0_25px_rgba(0,255,255,0.15)] transform transition-transform duration-300 ease-out overflow-y-auto custom-scroll ${
           menuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Site navigation"
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-cyan-700">
           <span className="text-cyan-300 font-orbitron text-lg">Menu</span>
           <button
             onClick={() => setMenuOpen(false)}
             className="text-white hover:text-cyan-300 hover:scale-110 transition-transform"
+            aria-label="Close menu"
           >
             ✕
           </button>
         </div>
 
         <nav className="p-4 space-y-6">
-          <Section>
-            {finalNavItems.map(([label, href]) => (
-              <Link
-                key={href}
-                href={href}
-                className={getLinkClass(href)}
-                onClick={() => setMenuOpen(false)}
-              >
-                <span className="relative z-10">{label}</span>
-                <span className="absolute inset-0 bg-cyan-500/10 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300" />
-              </Link>
+          {/* Main */}
+          <div>
+            {finalNavItems.map((tuple) => (
+              <Item key={tuple[1]} tuple={tuple} />
+            ))}
+          </div>
+
+          {/* Competitions */}
+          <Section title="Competitions">
+            {competitionCategories.map((tuple) => (
+              <Item key={tuple[1]} tuple={tuple} />
             ))}
           </Section>
 
-<Section title="Competitions">
-  {competitionCategories.map(([label, href, status]) => (
-    <Link
-      key={href}
-      href={href}
-      className={getLinkClass(href)}
-      onClick={() => setMenuOpen(false)}
-    >
-      <span className="relative z-10">
-        {label}{' '}
-        {status && (
-          <span className="text-cyan-300 text-xs ml-1 align-middle">
-            {status}
-          </span>
-        )}
-      </span>
-      <span className="absolute inset-0 bg-cyan-500/10 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300" />
-    </Link>
-  ))}
-</Section>
-
-<Section title="Mini Games">
-  {miniGames.map(([name, link, status]) => (
-    <a key={link} href={link} className={getLinkClass(link)}>
-      <span className="relative z-10">
-        {name}{' '}
-        {status && (
-          <span className="text-cyan-300 text-xs ml-1 align-middle">
-            {status}
-          </span>
-        )}
-      </span>
-      <span className="absolute inset-0 bg-cyan-500/10 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300" />
-    </a>
-  ))}
-</Section>
-
-
-
-          <Section title="More">
-            {navExtras.map(([label, href]) => (
-              <Link
-                key={href}
-                href={href}
-                className={getLinkClass(href)}
-                onClick={() => setMenuOpen(false)}
-              >
-                <span className="relative z-10">{label}</span>
-                <span className="absolute inset-0 bg-cyan-500/10 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300" />
-              </Link>
+          {/* Mini Games */}
+          <Section title="Mini Games">
+            {miniGames.map((tuple) => (
+              <Item key={tuple[1]} tuple={tuple} />
             ))}
+          </Section>
+
+          {/* Extras */}
+          <Section title="More">
+            {navExtras.map((tuple) => (
+              <Item key={tuple[1]} tuple={tuple} />
+            ))}
+
             {user && (
               <button
                 onClick={() => {
@@ -266,6 +273,7 @@ export default function Header() {
             onClick={() => {
               if (!isLoggingIn) setShowLoginModal(false);
             }}
+            aria-hidden="true"
           />
 
           {/* Centered modal */}
@@ -274,6 +282,9 @@ export default function Header() {
               className="bg-[#0f172a] border border-cyan-700 rounded-lg shadow-lg p-6 w-80 flex flex-col gap-4 text-center neon-glow animate-fade-in"
               aria-busy={isLoggingIn ? 'true' : 'false'}
               aria-live="polite"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Login dialog"
             >
               <h2 className="text-cyan-300 font-orbitron text-lg">
                 Welcome to OMC <span className="text-xs text-cyan-500">(Oh My Competitions)</span>
@@ -305,7 +316,7 @@ export default function Header() {
                     setIsLoggingIn(true);
                     try {
                       await loginWithPi();
-                      setShowLoginModal(false); // close on success
+                      setShowLoginModal(false);
                     } catch (err) {
                       console.error('❌ Pi Login failed:', err);
                       alert('Pi login failed. Please try again.');

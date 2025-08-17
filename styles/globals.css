@@ -639,3 +639,10 @@ form {
   50% { opacity: 1 }
   100% { opacity: 0.85 }
 }
+/* Stop hover/click scale-up/down on CompetitionCard inside carousel */
+.carousel-card *,
+.carousel-card:hover,
+.carousel-card:active {
+  transform: none !important;
+  transition: none !important;
+}

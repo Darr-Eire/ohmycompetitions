@@ -6,6 +6,48 @@ import { motion } from 'framer-motion'
 import { Sparkles, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react'
 import LaunchCompetitionCard from '@components/LaunchCompetitionCard'
 
+/* ------------------------------ Tagline Rotator ------------------------------ */
+function TaglineRotator() {
+  const taglines = [
+    'Pi-powered launch prizes 🚀',
+    'New drops, fresh rewards ⚡',
+    'Win tech, Pi & more 💎',
+    'Entry from 0.25 π jump in 🎟️',
+  ]
+  const [index, setIndex] = useState(0)
+  useEffect(() => {
+    const id = setInterval(() => setIndex(i => (i + 1) % taglines.length), 3500)
+    return () => clearInterval(id)
+  }, [])
+  return (
+    <p className="text-center text-white/80 text-sm sm:text-base mt-1 transition-opacity duration-500 ease-in-out">
+      {taglines[index]}
+    </p>
+  )
+}
+
+/* ------------------------------ Subtle Background Motion ------------------------------ */
+function BackgroundFX() {
+  return (
+    <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+      <div className="absolute -top-40 -left-40 h-[420px] w-[420px] rounded-full blur-3xl opacity-20 bg-cyan-400 animate-float-slow" />
+      <div className="absolute -bottom-40 -right-40 h-[420px] w-[420px] rounded-full blur-3xl opacity-15 bg-blue-500 animate-float-slower" />
+      <div className="absolute inset-0 [background-image:radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:18px_18px] opacity-20" />
+    </div>
+  )
+}
+
+/* ------------------------------ Live Counter (frontend trickle) ------------------------------ */
+function useLiveCounter(initial = 420) {
+  const [count, setCount] = useState(initial)
+  useEffect(() => {
+    const tick = () => setCount(c => c + Math.floor(1 + Math.random() * 5))
+    const id = setInterval(tick, 2000 + Math.random() * 2000)
+    return () => clearInterval(id)
+  }, [])
+  return count
+}
+
 /* -------------------------------- Utilities ------------------------------- */
 const bySoonestEnd = (a, b) =>
   new Date((a.comp || a).endsAt || Infinity) - new Date((b.comp || b).endsAt || Infinity)
@@ -52,7 +94,7 @@ function Carousel({ items, renderItem }) {
     [items?.length]
   )
 
-  // slower controlled animation
+  // smoother controlled animation
   const easeInOut = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2)
 
   const scrollToIndex = useCallback(
@@ -105,9 +147,9 @@ function Carousel({ items, renderItem }) {
 
   return (
     <div className="relative">
-      {/* Edge fades */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-[#0a0f1a] to-transparent z-10" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-[#0a0f1a] to-transparent z-10" />
+      {/* Edge fades: match app bg */}
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-[#0f172a] to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-[#0f172a] to-transparent z-10" />
 
       {/* Scroller */}
       <div
@@ -123,8 +165,10 @@ function Carousel({ items, renderItem }) {
         <div className="flex">
           {items.map((item, i) => (
             <div key={item.key || i} className="snap-start snap-always min-w-full px-4">
-              {/* wrap with .carousel-slide so we can neutralize press-scale inside */}
-              <div className="carousel-slide max-w-5xl mx-auto">{renderItem(item, i)}</div>
+              {/* wrapper for card interactivity controls */}
+              <div className="carousel-slide competition-card max-w-5xl mx-auto">
+                {renderItem(item, i)}
+              </div>
             </div>
           ))}
         </div>
@@ -139,6 +183,7 @@ function Carousel({ items, renderItem }) {
             index === 0 ? 'opacity-50 cursor-not-allowed' : ''
           }`}
           aria-label="Previous"
+          type="button"
         >
           <ChevronLeft />
         </button>
@@ -151,6 +196,7 @@ function Carousel({ items, renderItem }) {
             index === items.length - 1 ? 'opacity-50 cursor-not-allowed' : ''
           }`}
           aria-label="Next"
+          type="button"
         >
           <ChevronRight />
         </button>
@@ -166,12 +212,22 @@ function Carousel({ items, renderItem }) {
               i === index ? 'w-6 bg-cyan-400' : 'w-2.5 bg-white/40'
             }`}
             aria-label={`Go to slide ${i + 1}`}
+            type="button"
           />
         ))}
       </div>
 
-      {/* Neutralize any hover/tap scale on cards inside the carousel */}
+      {/* Neutralize press-scale inside; add hover glow on wrapper */}
       <style jsx global>{`
+        .competition-card {
+          transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+          border-radius: 1rem;
+        }
+        .competition-card:hover {
+          transform: translateY(-4px) scale(1.02);
+          box-shadow: 0 0 18px rgba(0, 255, 213, 0.25), 0 0 28px rgba(0, 119, 255, 0.18);
+        }
+
         .carousel-slide {
           -webkit-tap-highlight-color: transparent;
         }
@@ -192,10 +248,26 @@ function Carousel({ items, renderItem }) {
           outline: 2px solid rgba(34, 211, 238, 0.6);
           outline-offset: 2px;
         }
-        /* Last resort: kill any transform on descendants during interactions */
         .carousel-slide *:hover,
         .carousel-slide *:active {
           transform: none !important;
+        }
+
+        @keyframes float-slow {
+          0% { transform: translateY(0) translateX(0); }
+          50% { transform: translateY(18px) translateX(6px); }
+          100% { transform: translateY(0) translateX(0); }
+        }
+        @keyframes float-slower {
+          0% { transform: translateY(0) translateX(0); }
+          50% { transform: translateY(-14px) translateX(-8px); }
+          100% { transform: translateY(0) translateX(0); }
+        }
+        .animate-float-slow { animation: float-slow 12s ease-in-out infinite; }
+        .animate-float-slower { animation: float-slower 16s ease-in-out infinite; }
+
+        @media (prefers-reduced-motion: reduce) {
+          * { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
         }
       `}</style>
     </div>
@@ -207,6 +279,7 @@ export default function LaunchWeekCompetitionsPage() {
   const [competitions, setCompetitions] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const ticketsToday = useLiveCounter(420) // purely visual
 
   async function fetchCompetitions() {
     setLoading(true)
@@ -223,7 +296,7 @@ export default function LaunchWeekCompetitionsPage() {
       else if (Array.isArray(payload.data)) arr = payload.data
       else if (Array.isArray(payload.competitions)) arr = payload.competitions
 
-      const launchOnly = arr.filter((c) => (c.theme || '').toLowerCase() === 'launch')
+      const launchOnly = arr.filter((c) => (c.theme || c?.comp?.theme || '').toLowerCase() === 'launch')
       setCompetitions(launchOnly)
     } catch (err) {
       console.error('❌ fetch error:', err)
@@ -256,9 +329,7 @@ export default function LaunchWeekCompetitionsPage() {
   // Hero stats
   const heroStats = useMemo(() => {
     if (!slides.length) return { count: 0, minFee: 0, soonest: null }
-    const fees = slides
-      .map((s) => Number(s.comp?.entryFee ?? 0))
-      .filter((n) => Number.isFinite(n))
+    const fees = slides.map((s) => Number(s.comp?.entryFee ?? 0)).filter(Number.isFinite)
     const minFee = fees.length ? Math.min(...fees) : 0
     const soonest =
       slides
@@ -271,16 +342,26 @@ export default function LaunchWeekCompetitionsPage() {
   const fmtDate = (d) =>
     !d ? 'TBA' : new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(d)
 
+  if (loading) {
+    return (
+      <main className="relative min-h-[100svh] text-white overflow-hidden bg-slate-900">
+        <BackgroundFX />
+        <section className="px-4 py-16">
+          <div className="max-w-5xl mx-auto text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-cyan-400 mx-auto" />
+            <p className="mt-4 text-cyan-300">Loading launch-week competitions…</p>
+          </div>
+        </section>
+      </main>
+    )
+  }
+
   return (
-    <main className="relative min-h-screen text-white overflow-hidden bg-[#0a0f1a]">
-      {/* Decorative background */}
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-cyan-500/10 via-transparent to-transparent" />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_0,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(transparent_0,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:40px_40px]" />
-      </div>
+    <main className="relative min-h-[100svh] text-white overflow-hidden bg-slate-900">
+      <BackgroundFX />
 
       {/* Hero */}
-      <section className="px-4 py-10 sm:px-6 lg:px-10">
+      <section className="px-4 py-4 sm:px-6 lg:px-10">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -291,11 +372,18 @@ export default function LaunchWeekCompetitionsPage() {
             Launch Week Competitions
           </h1>
 
-          <p className="text-white/80 mt-3 max-w-2xl mx-auto">
-            Swipe or use arrows.{' '}
-            <span className="text-cyan-300 font-semibold">{heroStats.count}</span> live · from{' '}
-            <span className="text-cyan-300 font-semibold">{heroStats.minFee.toFixed(2)} π</span>.
-          </p>
+          {/* Tagline */}
+          <TaglineRotator />
+
+          <div className="text-center max-w-2xl mx-auto mb-2 mt-3">
+            <p className="text-white/80 text-xs sm:text-sm">
+               <span className="text-cyan-300 font-semibold">{ticketsToday.toLocaleString()}</span> tickets sold today ·{' '}
+              <span className="text-cyan-300 font-semibold">{heroStats.count}</span> live competitions
+            </p>
+            <p className="text-white/70 text-xs sm:text-sm">
+              Use arrows or swipe to browse.&nbsp;
+            </p>
+          </div>
 
           <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
             <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
@@ -307,11 +395,14 @@ export default function LaunchWeekCompetitionsPage() {
             <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
               🏆 New prizes this week
             </span>
+            <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
+              From <b className="text-white">{heroStats.minFee.toFixed(2)} π</b>
+            </span>
           </div>
         </motion.div>
       </section>
 
-      {/* Content: full-width carousel (one slide per screen) */}
+      {/* Content: full-width carousel */}
       <section className="pb-14">
         <div className="w-screen">
           {error && (
@@ -320,15 +411,7 @@ export default function LaunchWeekCompetitionsPage() {
             </div>
           )}
 
-          {loading ? (
-            <div className="relative">
-              <div className="flex">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <SkeletonSlide key={i} />
-                ))}
-              </div>
-            </div>
-          ) : slides.length > 0 ? (
+          {slides.length > 0 ? (
             <Carousel
               items={slides}
               renderItem={(s) => (
