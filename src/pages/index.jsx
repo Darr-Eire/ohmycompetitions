@@ -6,12 +6,12 @@ import { FaXTwitter, FaFacebookF, FaDiscord, FaInstagram } from 'react-icons/fa6
 
 export default function IndexPage() {
   const features = [
-    { icon: '💎', text: 'Daily Competitions', href: '/competitions/daily' },
-    { icon: '📲', text: 'Pi Cash Code', href: '/pi-cash-code' },
+    { icon: '🔄', text: 'Daily Competitions', href: '/competitions/daily' },
+    { icon: '🚀', text: 'Launch Week', href: '/competitions/launch-week' },
     { icon: '🎁', text: 'Pi Giveaways', href: '/competitions/pi' },
-    { icon: '⚔️', text: 'Pi stages', href: '/battles' },
+    { icon: '🏆', text: 'Pi stages', href: '/battles' },
     { icon: '🎮', text: 'Mini Games', href: '/try-your-luck' },
-    { icon: '🧩', text: 'Mystery Features', href: '' },
+    { icon: '❓', text: 'Mystery Features', href: '' },
   ];
 
   return (

@@ -277,7 +277,7 @@ export default function HomePage() {
   <Section
     title="Tech/Gadgets"
     items={getCompetitionsByCategory('tech')}
-    viewMoreHref="/competitions/tech/gadgets"
+    viewMoreHref="/competitions/tech%gadgets"
   />
 
   <Section
