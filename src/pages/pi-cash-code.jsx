@@ -1,111 +1,339 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  LockKeyhole,
+  Ticket,
+  ShieldCheck,
+  Timer,
+  Trophy,
+  Rocket,
+  Sparkles,
+  Loader2,
+} from 'lucide-react';
 import { usePiAuth } from '../context/PiAuthContext';
 import LiveActivityFeed from '../components/LiveActivityFeed';
 import CodeHistory from '../components/CodeHistory';
 
+/* -------------------------------------------------------------------------- */
+/*                              Utility Functions                             */
+/* -------------------------------------------------------------------------- */
+const clamp = (n, min, max) => Math.min(Math.max(n, min), max);
+const pad2 = (n) => String(n).padStart(2, '0');
+const ts = (v) => (v ? new Date(v).getTime() : null);
+
+function useServerTimeOffset() {
+  const [offsetMs, setOffsetMs] = useState(0);
+  const setFromFetch = async (res, bodyServerNow) => {
+    try {
+      const clientNow = Date.now();
+      const headerDate = res.headers?.get('date');
+      const serverNow = bodyServerNow
+        ? new Date(bodyServerNow).getTime()
+        : headerDate
+        ? new Date(headerDate).getTime()
+        : NaN;
+      setOffsetMs(Number.isFinite(serverNow) ? serverNow - clientNow : 0);
+    } catch {
+      setOffsetMs(0);
+    }
+  };
+  return { offsetMs, setFromFetch };
+}
+
+function useTick(ms = 1000) {
+  const [, setT] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setT((t) => t + 1), ms);
+    return () => clearInterval(id);
+  }, [ms]);
+}
+
+function useIsPiBrowser() {
+  const [isPi, setIsPi] = useState(false);
+  useEffect(() => {
+    const ua = navigator?.userAgent || '';
+    setIsPi(/PiBrowser/i.test(ua));
+  }, []);
+  return isPi;
+}
+
+/* ----------------------------- Tiny UI Helpers ----------------------------- */
+function NeonBadge({ icon: Icon, children }) {
+  return (
+    <div className="flex items-center gap-2 rounded-full border border-cyan-400/60 bg-white/5 px-3 py-1 text-xs font-semibold text-cyan-200 shadow-[0_0_20px_#22d3ee33]">
+      {Icon ? <Icon size={14} className="shrink-0" /> : null}
+      <span>{children}</span>
+    </div>
+  );
+}
+
+function Stat({ label, value, sub }) {
+  return (
+    <div className="rounded-xl border border-cyan-500/60 bg-gradient-to-b from-white/5 to-transparent p-4 text-center shadow-[0_0_40px_#22d3ee22]">
+      <div className="text-cyan-300/90 text-xs tracking-widest uppercase">
+        {label}
+      </div>
+      <div className="mt-1 text-2xl font-bold text-white">{value}</div>
+      {sub ? <div className="mt-1 text-xs text-white/60">{sub}</div> : null}
+    </div>
+  );
+}
+
+function CountdownRing({
+  size = 120,
+  stroke = 8,
+  pct = 0,
+  label = 'UNTIL DROP',
+  time = '00:00:00',
+}) {
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const dash = c * (1 - pct);
+  return (
+    <svg
+      width={size}
+      height={size}
+      className="drop-shadow-[0_0_30px_#22d3ee55]"
+    >
+      <defs>
+        <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#00ffd5" />
+          <stop offset="100%" stopColor="#22d3ee" />
+        </linearGradient>
+      </defs>
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        stroke="#0c2a33"
+        strokeWidth={stroke}
+        fill="none"
+      />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        stroke="url(#grad)"
+        strokeWidth={stroke}
+        fill="none"
+        strokeDasharray={`${c} ${c}`}
+        strokeDashoffset={dash}
+        strokeLinecap="round"
+        transform={`rotate(-90 ${size / 2} ${size / 2})`}
+      />
+      <foreignObject
+        x={stroke}
+        y={stroke}
+        width={size - stroke * 2}
+        height={size - stroke * 2}
+      >
+        <div className="flex h-full w-full flex-col items-center justify-center">
+          <div className="text-[10px] tracking-widest text-cyan-300/80">
+            {label}
+          </div>
+          <div className="text-lg font-bold text-white">{time}</div>
+        </div>
+      </foreignObject>
+    </svg>
+  );
+}
+
+function Toast({ show, kind = 'info', children }) {
+  return (
+    <AnimatePresence>
+      {show ? (
+        <motion.div
+          initial={{ y: 80, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 80, opacity: 0 }}
+          className={`fixed bottom-6 left-1/2 z-[60] -translate-x-1/2 rounded-full border px-4 py-2 text-sm shadow-lg backdrop-blur-md ${
+            kind === 'error'
+              ? 'border-rose-400/60 bg-rose-500/10 text-rose-200'
+              : kind === 'success'
+              ? 'border-emerald-400/60 bg-emerald-500/10 text-emerald-200'
+              : 'border-cyan-400/60 bg-cyan-500/10 text-cyan-100'
+          }`}
+        >
+          {children}
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                Main Component                              */
+/* -------------------------------------------------------------------------- */
 export default function PiCashCodePage() {
   const { user, login } = usePiAuth();
-  const [codeData, setCodeData] = useState(null);
-  const [quantity, setQuantity] = useState(1);
+
+  const [data, setData] = useState(null);
+  const [err, setErr] = useState(null);
+
+  const [qty, setQty] = useState(1);
+  const [showSkill, setShowSkill] = useState(false);
+  const [answer, setAnswer] = useState('');
+  const [answerOk, setAnswerOk] = useState(null);
+  const [toast, setToast] = useState({ show: false, kind: 'info', text: '' });
+
   const ticketPrice = 1.25;
-  const totalPrice = (ticketPrice * quantity).toFixed(2);
-  const [timeLeft, setTimeLeft] = useState(null);
-  const [liveTickets, setLiveTickets] = useState(0);
-  const [sdkReady, setSdkReady] = useState(false);
-  const [showSkillModal, setShowSkillModal] = useState(false);
-  const skillQuestion = 'What is 7 + 5?';
-  const skillAnswer = '12';
-  const [userAnswer, setUserAnswer] = useState('');
-  const [isAnswerCorrect, setIsAnswerCorrect] = useState(null);
+  const totalPrice = useMemo(
+    () => (ticketPrice * qty).toFixed(2),
+    [ticketPrice, qty]
+  );
 
+  const isPiBrowser = useIsPiBrowser();
+  const { offsetMs, setFromFetch } = useServerTimeOffset();
+  useTick(1000);
+
+  /* ---------------------------- Data fetching ---------------------------- */
   useEffect(() => {
-    const fetchCode = async () => {
+    let cancelled = false;
+
+    const load = async () => {
       try {
-        const res = await fetch('/api/pi-cash-code');
-        const data = await res.json();
-        setCodeData(data);
-        setLiveTickets(data.ticketsSold || 0);
-      } catch (err) {
-        console.error('Failed to fetch PiCash data:', err);
+        const res = await fetch('/api/pi-cash-code', { cache: 'no-store' });
+        if (!res.ok) throw new Error('Failed to load Pi Cash Code data');
+        const j = await res.json();
+        if (!cancelled) {
+          setData(j);
+          setErr(null);
+          await setFromFetch(res, j?.serverNow);
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setErr(e.message || 'Error loading data');
+          setToast({
+            show: true,
+            kind: 'error',
+            text: e.message || 'Error loading data',
+          });
+          setTimeout(() => setToast({ show: false }), 2500);
+        }
       }
     };
-    fetchCode();
-  }, []);
 
-  useEffect(() => {
-    if (!codeData?.expiresAt) return;
-    const targetTime = new Date(codeData.expiresAt).getTime();
-    const updateTimeLeft = () => {
-      const now = Date.now();
-      const diff = targetTime - now;
-      if (diff <= 0) {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-        return;
-      }
-      setTimeLeft({
-        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-        minutes: Math.floor((diff / (1000 * 60)) % 60),
-        seconds: Math.floor((diff / 1000) % 60),
-      });
+    load();
+    const id = setInterval(() => load(), 15000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
     };
-    updateTimeLeft();
-    const intervalId = setInterval(updateTimeLeft, 1000);
-    return () => clearInterval(intervalId);
-  }, [codeData?.expiresAt]);
+  }, [setFromFetch]);
 
+  /* ------------------------------ Pi SDK ------------------------------- */
+  const [sdkReady, setSdkReady] = useState(false);
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://sdk.minepi.com/pi-sdk.js';
-    script.onload = () => {
-      window.Pi.init({ version: '2.0', sandbox: process.env.NEXT_PUBLIC_PI_SANDBOX === 'true' });
+    const has =
+      typeof window !== 'undefined' && window.Pi && window.Pi?.createPayment;
+    if (has) {
+      try {
+        window.Pi.init({
+          version: '2.0',
+          sandbox: process.env.NEXT_PUBLIC_PI_SANDBOX === 'true',
+        });
+      } catch {}
+      setSdkReady(true);
+      return;
+    }
+    const s = document.createElement('script');
+    s.src = 'https://sdk.minepi.com/pi-sdk.js';
+    s.async = true;
+    s.onload = () => {
+      try {
+        window.Pi.init({
+          version: '2.0',
+          sandbox: process.env.NEXT_PUBLIC_PI_SANDBOX === 'true',
+        });
+      } catch {}
       setSdkReady(true);
     };
-    document.head.appendChild(script);
+    document.head.appendChild(s);
+  }, []);
+
+  /* --------------------------- Skill Question -------------------------- */
+  const skill = useMemo(() => {
+    const pool = [
+      { q: 'What is 7 + 5?', a: '12' },
+      { q: 'Type the word "PIONEER" exactly.', a: 'PIONEER' },
+      { q: 'What is 3 × 4?', a: '12' },
+      { q: 'Type the phrase "Pi Cash Code"', a: 'Pi Cash Code' },
+    ];
+    return pool[(Date.now() >> 10) % pool.length];
   }, []);
 
   const validateAnswer = () => {
-    const trimmed = userAnswer.trim();
-    if (trimmed === skillAnswer) {
-      setIsAnswerCorrect(true);
-      return true;
-    } else {
-      setIsAnswerCorrect(false);
-      return false;
-    }
+    const ok = (answer || '').trim() === skill.a;
+    setAnswerOk(ok);
+    return ok;
   };
 
-  const openSkillModal = () => {
-    if (!user) {
-      alert('Please login with Pi to purchase tickets');
+  /* ---------------------- Time + unlock progress ---------------------- */
+  const now = Date.now() + offsetMs;
+  const dropAt = ts(data?.dropAt);
+  const expiresAt = ts(data?.expiresAt);
+
+  const beforeDrop = !!dropAt && now < dropAt;
+  const afterExpiry = !!expiresAt && now >= expiresAt;
+  const showCode = !!dropAt && now >= dropAt && !afterExpiry;
+
+  const target = beforeDrop ? dropAt : expiresAt;
+  const remaining = Math.max(0, target ? target - now : 0);
+
+  const timeLeft = useMemo(() => {
+    let ms = remaining;
+    const days = Math.floor(ms / 86_400_000);
+    ms -= days * 86_400_000;
+    const hours = Math.floor(ms / 3_600_000);
+    ms -= hours * 3_600_000;
+    const minutes = Math.floor(ms / 60_000);
+    ms -= minutes * 60_000;
+    const seconds = Math.floor(ms / 1000);
+    return { days, hours, minutes, seconds };
+  }, [remaining]);
+
+  const unlockPct = useMemo(() => {
+    if (!dropAt || !expiresAt) return 0;
+    const total = expiresAt - dropAt;
+    const elapsed = clamp(now - dropAt, 0, total);
+    return Math.floor((elapsed / total) * 100);
+  }, [dropAt, expiresAt, now]);
+
+  /* ------------------------------- Payment ----------------------------- */
+  const { user: authUser } = usePiAuth();
+
+  const buy = async () => {
+    if (!authUser) {
+      setToast({ show: true, kind: 'info', text: 'Please login with Pi first.' });
+      setTimeout(() => setToast({ show: false }), 1600);
       return;
     }
-    setUserAnswer('');
-    setIsAnswerCorrect(null);
-    setShowSkillModal(true);
-  };
-
-  const handlePiPayment = async () => {
+    if (!sdkReady || !window?.Pi?.createPayment) {
+      setToast({
+        show: true,
+        kind: 'error',
+        text: 'Pi SDK not ready. Please open in Pi Browser.',
+      });
+      setTimeout(() => setToast({ show: false }), 2200);
+      return;
+    }
     if (!validateAnswer()) return;
 
-    if (!window?.Pi?.createPayment) {
-      alert('⚠️ Pi SDK not ready. Make sure you are in the Pi Browser.');
-      return;
-    }
-
     try {
-      window.Pi.createPayment(
+      const amount = parseFloat(totalPrice);
+      const memo = `Pi Cash Code Entry Week ${data?.weekStart || ''}`;
+      await window.Pi.createPayment(
         {
-          amount: parseFloat(totalPrice),
-          memo: `Pi Cash Code Entry Week ${codeData?.weekStart}`,
+          amount,
+          memo,
           metadata: {
             type: 'pi-cash-ticket',
-            weekStart: codeData?.weekStart,
-            quantity,
-            userId: user?.uid,
-            username: user?.username,
+            weekStart: data?.weekStart,
+            quantity: qty,
+            userId: authUser?.uid,
+            username: authUser?.username,
           },
         },
         {
@@ -123,242 +351,332 @@ export default function PiCashCodePage() {
               body: JSON.stringify({
                 paymentId,
                 txid,
-                weekStart: codeData?.weekStart,
-                quantity,
-                userId: user?.uid,
-                username: user?.username,
+                weekStart: data?.weekStart,
+                quantity: qty,
+                userId: authUser?.uid,
+                username: authUser?.username,
               }),
             });
-
-            await fetch('/api/pi-cash-code/log-activity', {
+            fetch('/api/pi-cash-code/log-activity', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ username: user?.username, quantity }),
+              body: JSON.stringify({
+                username: authUser?.username,
+                quantity: qty,
+              }),
+            }).catch(() => {});
+            const res = await fetch('/api/pi-cash-code', { cache: 'no-store' });
+            const j = await res.json();
+            setData(j);
+            await setFromFetch(res, j?.serverNow);
+            setShowSkill(false);
+            setAnswer('');
+            setAnswerOk(null);
+            setToast({
+              show: true,
+              kind: 'success',
+              text: 'Tickets secured! Good luck 🍀',
             });
-
-            const refreshRes = await fetch('/api/pi-cash-code');
-            const refreshData = await refreshRes.json();
-            setCodeData(refreshData);
-            setLiveTickets(refreshData.ticketsSold || 0);
-            setShowSkillModal(false);
+            setTimeout(() => setToast({ show: false }), 2200);
           },
-          onCancel: () => console.warn('Payment cancelled'),
-          onError: (err) => {
-            console.error('Payment error:', err);
-            alert('Payment failed');
+          onCancel: () => {
+            setToast({ show: true, kind: 'info', text: 'Payment cancelled.' });
+            setTimeout(() => setToast({ show: false }), 1600);
+          },
+          onError: () => {
+            setToast({ show: true, kind: 'error', text: 'Payment error.' });
+            setTimeout(() => setToast({ show: false }), 2000);
           },
         }
       );
-    } catch (err) {
-      console.error('Payment failed', err);
-      alert('Payment error');
+    } catch {
+      setToast({ show: true, kind: 'error', text: 'Something went wrong.' });
+      setTimeout(() => setToast({ show: false }), 2000);
     }
   };
 
-  const now = new Date();
-  const dropTime = new Date(codeData?.dropAt);
-  const showCode = now >= dropTime;
-
-  const unlockProgress = () => {
-    if (!codeData?.dropAt || !codeData?.expiresAt) return 0;
-    const total = new Date(codeData.expiresAt) - new Date(codeData.dropAt);
-    const elapsed = Date.now() - new Date(codeData.dropAt);
-    return Math.min(100, Math.floor((elapsed / total) * 100));
-  };
-
-  const progressPercent = unlockProgress();
-
+  /* ------------------------------- Layout ------------------------------ */
   return (
-    <main className="min-h-screen bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white px-4 py-10 font-sans">
-      <div className="max-w-3xl mx-auto backdrop-blur-md bg-white/5 border border-cyan-500 rounded-2xl shadow-lg p-6 sm:p-10 space-y-8">
+    <main className="relative min-h-[100dvh] overflow-x-hidden bg-[#070c1a] text-white">
+      {/* Background */}
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,255,213,.08),transparent_60%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(0,119,255,.14),transparent_40%,rgba(0,255,213,.10))]" />
+        <div className="absolute inset-0 opacity-25 [background-image:radial-gradient(#22d3ee_1px,transparent_1px)] [background-size:18px_18px]" />
+      </div>
 
-        {/* HEADER & DESCRIPTION */}
-        <div className="text-center space-y-2">
-          <h1 className="text-2xl sm:text-3xl font-bold text-cyan-300 drop-shadow-md tracking-tight">
-            Pi Cash Code
-          </h1>
-          <p className="text-white text-sm sm:text-base font-medium max-w-xl mx-auto leading-snug">
-            Have you got what it takes to <span className="text-cyan-400 font-semibold">Keep The Code Safe</span> and conquer the <span className="text-cyan-400 font-semibold">Pi Cash Code</span> prize pool?
-          </p>
-        </div>
-
-        {/* CODE DISPLAY */}
-        <div className="w-full text-center px-2">
-          <div className="inline-block bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] border border-cyan-500 text-cyan-300 font-mono text-2xl sm:text-3xl tracking-widest px-6 py-4 rounded-lg shadow-md">
-            {showCode ? codeData?.code || '0000-0000' : 'XXXX-XXXX'}
+      {/* Top badges */}
+      <div className="mx-auto w-full max-w-5xl px-4 pt-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <NeonBadge icon={ShieldCheck}>
+              Fair • Transparent • Pi SDK
+            </NeonBadge>
+            <NeonBadge icon={Rocket}>Open Network</NeonBadge>
+          </div>
+          <div className="flex items-center gap-2">
+            <NeonBadge icon={Ticket}>{ticketPrice} π per ticket</NeonBadge>
+            <NeonBadge icon={Timer}>
+              {isPiBrowser ? 'Pi Browser' : 'Open in Pi Browser'}
+            </NeonBadge>
           </div>
         </div>
+      </div>
 
-        {/* TIMER */}
-        {timeLeft && (
-          <div className="grid grid-cols-4 gap-2 justify-center text-center">
-            {['days', 'hours', 'minutes', 'seconds'].map((label, i) => (
-              <div key={i}>
-                <div className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] border border-cyan-500 text-white text-xl font-bold py-2 rounded-lg shadow-inner">
-                  {String(timeLeft[label]).padStart(2, '0')}
+      {/* Hero section */}
+      <section className="mx-auto mt-6 w-full max-w-5xl px-4">
+        <div className="relative overflow-hidden rounded-3xl border border-cyan-500/50 bg-white/5 p-6 shadow-[0_0_60px_#22d3ee33] sm:p-10">
+          {/* Refresh button */}
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => window.location.reload()}
+            className="absolute right-4 top-4 inline-flex items-center gap-2 rounded-full border border-cyan-400/60 bg-black/40 px-3 py-1 text-xs text-cyan-100 hover:bg-cyan-400/20 active:bg-cyan-400/30 transition"
+          >
+            <Loader2 className="h-3.5 w-3.5 animate-spin" /> Refresh
+          </motion.button>
+
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
+            {/* Left */}
+           <div className="flex flex-col items-center justify-center text-center">
+  <motion.h1
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.6 }}
+    className="text-balance text-3xl font-extrabold tracking-tight text-cyan-200 sm:text-5xl animate-pulse"
+  >
+    Pi Cash Code
+  </motion.h1>
+
+  <p className="mt-3 max-w-md text-white/80">
+    Keep the code safe, watch the drop and be the Pioneer who’s lucky enough
+  </p>
+
+  <div className="mt-6">
+                <div className="inline-block rounded-2xl border border-cyan-500/70 bg-gradient-to-r from-[#081425] via-[#0e1b33] to-[#081425] p-[2px] shadow-[0_0_40px_#22d3ee44]">
+<div className="flex justify-center mt-6">
+  <div className="flex items-center gap-3 rounded-[14px] bg-black/40 px-6 py-5 font-mono text-2xl sm:text-4xl tracking-[0.25em] text-cyan-100 whitespace-nowrap shadow-[0_0_35px_#22d3eeaa] animate-[pulse_1.5s_ease-in-out_infinite]">
+    <LockKeyhole className="text-cyan-300 shrink-0" />
+    <span className="select-all">
+      {showCode ? data?.code || '0000-0000' : 'XXXX-XXXX'}
+    </span>
+  </div>
+</div>
+
+
+
                 </div>
-                <p className="text-cyan-300 text-sm mt-1">{label.toUpperCase()}</p>
+                {data?.dropAt && (
+                  <p className="mt-2 text-xs text-cyan-300/80">
+                    Drop time: {new Date(data.dropAt).toLocaleString()}
+                  </p>
+                )}
               </div>
-            ))}
-          </div>
-        )}
+            </div>
 
-        {/* PRIZE POOL */}
-        <div className="text-center border border-cyan-400 rounded-xl py-4 px-6 bg-black/30">
-          <p className="text-lg text-cyan-300 font-semibold">
-            Prize Pool: <span className="text-white">{codeData?.prizePool?.toLocaleString() || '...'}</span> π
-          </p>
-        </div>
-
-        {/* PROGRESS BAR */}
-        <div className="mt-3 w-full h-2 bg-cyan-900 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-cyan-400 to-cyan-200 transition-all duration-700 ease-in-out motion-reduce:transition-none"
-            style={{ width: `${progressPercent}%` }}
-          />
-        </div>
-
-        {/* LIVE FEED */}
-        <div className="flex justify-center">
-          <LiveActivityFeed />
-        </div>
-
-        {/* TICKETS SOLD */}
-        <div className="text-center border border-cyan-400 rounded-xl py-4 px-6 bg-black/30">
-          <p className="text-lg text-cyan-300 font-semibold">
-            Tickets Sold: <span className="text-white">{liveTickets}</span>
-          </p>
-        </div>
-
-        {/* QUANTITY CONTROLS */}
-        <div className="flex items-center justify-center gap-6">
-          <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="text-black font-bold bg-cyan-300 hover:bg-cyan-400 rounded-full px-4 py-1">−</button>
-          <span className="text-2xl font-bold">{quantity}</span>
-          <button onClick={() => setQuantity(q => q + 1)} className="text-black font-bold bg-cyan-300 hover:bg-cyan-400 rounded-full px-4 py-1">+</button>
-        </div>
-        <p className="text-center text-cyan-300 text-sm font-semibold">Total: {totalPrice} π</p>
-
-        {/* LOGIN / PURCHASE BUTTON */}
-        {!user ? (
-          <button onClick={login} className="w-full py-3 rounded-lg bg-cyan-300 text-black font-bold hover:brightness-110">
-            Login with Pi to Purchase
-          </button>
-        ) : (
-          <button onClick={openSkillModal} className="w-full py-3 rounded-lg bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold hover:brightness-110">
-            Purchase {quantity} Ticket{quantity > 1 ? 's' : ''}
-          </button>
-        )}
-
-<div className="bg-black/30 border border-cyan-400 rounded-2xl p-6 space-y-4">
-  <h3 className="text-xl font-bold text-cyan-300 text-center">How It Works</h3>
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-    {[
-  '1. Secure your ticket(s) now',
-      '2. Stand by for the Pi Cash Code drop',
-      '3. Lock down the code and stay poised',
-      '4. If selected, submit instantly to seize your prize',
-    ].map((step, i) => (
-      <div
-        key={i}
-        className="flex items-center space-x-3 p-4 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a]
-                   border border-cyan-500 rounded-lg shadow-md"
-      >
-        <div className="flex-none w-8 h-8 flex items-center justify-center bg-[#00ffd5] rounded-full text-black font-bold text-lg">
-          {i + 1}
-        </div>
-        <p className="text-white font-medium">{step}</p>
-      </div>
-    ))}
-  </div>
+            {/* Right */}
+            <div className="flex flex-col items-center justify-center gap-5">
+              <CountdownRing
+                size={160}
+                stroke={10}
+                pct={
+                  data?.dropAt && data?.expiresAt
+                    ? clamp((now - dropAt) / (expiresAt - dropAt), 0, 1)
+                    : 0
+                }
+                label={showCode ? 'ENDS IN' : 'UNTIL DROP'}
+                time={(() => {
+                  const d = timeLeft;
+                  const h = pad2((d?.days || 0) * 24 + (d?.hours || 0));
+                  return `${h}:${pad2(d?.minutes || 0)}:${pad2(
+                    d?.seconds || 0
+                  )}`;
+                })()}
+              />
+              <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-3">
+  <Stat
+    label="Prize Pool"
+    value={`${data?.prizePool?.toLocaleString?.() ?? '—'} π`}
+  />
+  <Stat label="Tickets Sold" value={data?.ticketsSold ?? '—'} />
+  <Stat
+    label="Progress"
+    value={`${unlockPct}%`}
+    sub={showCode ? 'To expiry' : 'To drop'}
+  />
 </div>
 
-
-{/* PRIZE POOL BREAKDOWN */}
-
-<div className="bg-black/30 border border-cyan-400 rounded-2xl p-6 max-w-md mx-auto">
-  <h3 className="text-xl font-bold text-cyan-300 text-center mb-4">
-    Prize Pool Breakdown
-  </h3>
-  <div className="flex justify-center">
-    {[{ label: 'Pi Cash Code Prize', prize: '11,000 π' }].map(
-      ({ label, prize }, i) => (
-        <div
-          key={i}
-          className="flex flex-col items-center p-4 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a]
-                     border border-cyan-500 rounded-lg shadow-md"
-        >
-          <span className="text-cyan-300 font-mono text-sm uppercase tracking-widest">
-            {label}
-          </span>
-          <span className="text-white font-bold text-lg mt-2">{prize}</span>
-        </div>
-      )
-    )}
-  </div>
-</div>
-
-
-{/* ────────────────────────────── */}
-{/* ACCESSIBILITY INDICATORS */}
-{/* ────────────────────────────── */}
-<div className="bg-black/30 border border-cyan-400 rounded-2xl p-6">
-  <div className="flex flex-wrap justify-center gap-4">
-    {[
- { icon: '🎟️', label: '1.25 π To Enter' },
-    { icon: '🌐', label: 'Global Draw' },
-    { icon: '🗝️', label: 'Code Needed To Win' },
-    ].map(({ icon, label }, i) => (
-      <div
-        key={i}
-        className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a]
-                   border border-cyan-500 rounded-full shadow-sm"
-      >
-        <span className="text-lg">{icon}</span>
-        <span className="text-white font-medium">{label}</span>
-      </div>
-    ))}
-  </div>
-</div>
-
-
-
-        {/* CODE HISTORY */}
-        <div className="flex justify-center">
-          <CodeHistory />
-        </div>
-      </div>
-
-      {showSkillModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white/90 rounded-lg p-6 max-w-sm w-full text-black space-y-4">
-            <h2 className="text-lg font-semibold">Skill Test</h2>
-            <p>{skillQuestion}</p>
-            <input
-              type="text"
-              className="w-full border border-gray-400 rounded px-3 py-2"
-              value={userAnswer}
-              onChange={e => setUserAnswer(e.target.value)}
-            />
-            {isAnswerCorrect === false && <p className="text-red-600">Incorrect — try again!</p>}
-            <div className="flex justify-end gap-3">
-              <button onClick={() => setShowSkillModal(false)} className="px-4 py-2">Cancel</button>
-              <button onClick={handlePiPayment} className="px-4 py-2 bg-cyan-300 rounded text-black font-bold">
-                Submit
-              </button>
             </div>
           </div>
-            <div className="text-center mt-4">
-    <a
-      href="/terms-conditions"
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-xs text-cyan-400 underline hover:text-cyan-300"
-    >
-      View full Terms &amp; Conditions
-    </a>
-  </div>
+
+          {/* CTA */}
+          <div className="mt-8 flex flex-col items-stretch gap-3">
+            {!user ? (
+              <button
+                onClick={login}
+                className="group inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-5 py-3 font-bold text-black shadow-[0_10px_30px_#22d3ee55] hover:brightness-110"
+              >
+                <Ticket className="transition-transform group-hover:scale-110" />
+                Login with Pi to enter
+              </button>
+            ) : (
+              <>
+                {/* Quantity selector */}
+                <div className="flex items-center justify-between gap-3 rounded-xl border border-cyan-500/60 bg-black/30 px-3 py-2">
+                  <span className="text-sm text-cyan-200">Tickets</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setQty((q) => Math.max(1, q - 1))}
+                      className="h-9 w-9 rounded-lg bg-cyan-300/90 text-black font-extrabold"
+                    >
+                      −
+                    </button>
+                    <input
+                      type="number"
+                      className="h-9 w-16 rounded-lg bg-white/10 text-center font-bold outline-none [appearance:textfield]"
+                      value={qty}
+                      min={1}
+                      onChange={(e) =>
+                        setQty(Math.max(1, parseInt(e.target.value || '1', 10)))
+                      }
+                    />
+                    <button
+                      onClick={() => setQty((q) => q + 1)}
+                      className="h-9 w-9 rounded-lg bg-cyan-300/90 text-black font-extrabold"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                {/* Purchase button */}
+                <button
+                  onClick={() => setShowSkill(true)}
+                  className="group inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-5 py-3 font-extrabold text-black shadow-[0_10px_30px_#22d3ee55] hover:brightness-110"
+                >
+                  <Sparkles className="transition-transform group-hover:scale-110" />
+                  Purchase {qty} ticket{qty > 1 ? 's' : ''} · {totalPrice} π
+                </button>
+              </>
+            )}
+          </div>
         </div>
-      )}
+      </section>
+
+      {/* Info blocks */}
+      <section className="mx-auto w-full max-w-5xl px-4 py-8 sm:py-10">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="rounded-2xl border border-cyan-500/40 bg-white/5 p-5">
+            <h3 className="flex items-center gap-2 text-lg font-bold text-cyan-200">
+              <ShieldCheck size={18} /> Proven Fairness
+            </h3>
+            <p className="mt-1 text-sm text-white/70">
+              Blockchain-backed, Pi SDK payments, server-side approvals, and
+              auditable history.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-cyan-500/40 bg-white/5 p-5">
+            <h3 className="flex items-center gap-2 text-lg font-bold text-cyan-200">
+              <Timer size={18} /> Real-Time Thrill
+            </h3>
+            <p className="mt-1 text-sm text-white/70">
+              Watch the countdown, track progress, and be ready. When the code
+              drops, speed matters.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-cyan-500/40 bg-white/5 p-5">
+            <h3 className="flex items-center gap-2 text-lg font-bold text-cyan-200">
+              <Trophy size={18} /> Big Prize Energy
+            </h3>
+            <p className="mt-1 text-sm text-white/70">
+              Prize pool grows with every ticket. More players, bigger rewards.
+              Simple.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Live widgets */}
+      <section className="mx-auto w-full max-w-5xl px-4 pb-16">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div className="rounded-2xl border border-cyan-500/50 bg-white/5 p-4">
+            <h4 className="mb-3 text-center text-sm font-bold tracking-widest text-cyan-300">
+              LIVE ACTIVITY
+            </h4>
+            <LiveActivityFeed />
+          </div>
+          <div className="rounded-2xl border border-cyan-500/50 bg-white/5 p-4">
+            <h4 className="mb-3 text-center text-sm font-bold tracking-widest text-cyan-300">
+              CODE HISTORY
+            </h4>
+            <CodeHistory />
+          </div>
+        </div>
+        <p className="mt-6 text-center text-xs text-cyan-300/70">
+          By entering you agree to our rules.{' '}
+          <a
+            className="underline"
+            href="/terms-conditions"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View Terms &amp; Conditions
+          </a>
+        </p>
+      </section>
+
+      {/* Skill modal */}
+      <AnimatePresence>
+        {showSkill && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          >
+            <motion.div
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 30, opacity: 0 }}
+              className="w-full max-w-sm rounded-2xl border border-cyan-500/60 bg-white/95 p-5 text-black shadow-2xl"
+            >
+              <div className="mb-2 text-xs font-semibold text-cyan-700">
+                SKILL CHECK
+              </div>
+              <div className="text-sm text-black/80">{skill.q}</div>
+              <input
+                autoFocus
+                className="mt-3 w-full rounded-lg border border-cyan-500/50 bg-white px-3 py-2 font-semibold outline-none focus:ring-2 focus:ring-cyan-400"
+                value={answer}
+                onChange={(e) => setAnswer(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && buy()}
+              />
+              {answerOk === false && (
+                <div className="mt-2 text-xs font-semibold text-rose-600">
+                  Incorrect — try again!
+                </div>
+              )}
+              <div className="mt-4 flex items-center justify-end gap-2">
+                <button
+                  onClick={() => setShowSkill(false)}
+                  className="rounded-lg px-3 py-2 text-sm font-semibold text-cyan-800 hover:bg-cyan-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={buy}
+                  className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-4 py-2 text-sm font-extrabold text-black shadow-[0_10px_30px_#22d3ee55] hover:brightness-110"
+                >
+                  <Ticket size={16} /> Pay {totalPrice} π
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <Toast show={toast.show} kind={toast.kind}>
+        {toast.text}
+      </Toast>
     </main>
   );
 }
