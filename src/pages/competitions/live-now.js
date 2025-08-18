@@ -427,7 +427,7 @@ export default function AllCompetitionsPage() {
             ) : (
               <>
                 <p className="text-white/90">
-                  Dive into Pi-powered competitions — win tech, Pi, and more.
+                  Dive into Pi-powered competitions win tech, Pi, and more.
                 </p>
 
                 {/* Rotating short tagline */}

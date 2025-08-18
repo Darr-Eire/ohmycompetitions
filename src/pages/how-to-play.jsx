@@ -23,18 +23,13 @@ export default function HowToPlay() {
 
       <div className="mx-auto w-full max-w-4xl px-4 py-10 sm:py-12">
         {/* Header / hero card */}
-  <div className="rounded-3xl border border-cyan-500/40 bg-white/[0.04] backdrop-blur-md shadow-[0_0_50px_rgba(34,211,238,0.25)] overflow-hidden">
+<div className="rounded-3xl border border-cyan-500/40 bg-white/[0.04] backdrop-blur-md shadow-[0_0_50px_rgba(34,211,238,0.25)] overflow-hidden">
   <div className="competition-top-banner title-gradient text-center py-6">
-    How to Play & Win
-    <p className="mt-2 text-sm sm:text-base text-white/90 px-4">
-      Welcome to <span className="font-semibold text-white">Oh My Competitions</span> — the ultimate Pi-powered platform where your entries could win real rewards every single day.
+    <h2 className="text-2xl font-bold text-black">How to Play</h2>
+    <p className="mt-2 text-sm sm:text-base text-black px-4">
+      Welcome to <span className="font-semibold text-black">Oh My Competitions</span> — the ultimate Pi-powered platform where your entries could win real rewards every single day.
     </p>
   </div>
-
-
-
-
-
           {/* Steps / timeline */}
           <div className="p-6 sm:p-8">
             <ol className="relative border-s border-white/10 pl-6 space-y-7">
@@ -95,6 +90,19 @@ export default function HowToPlay() {
                   'Prizes are sent as Pi (instantly) or delivered physically for real-world items.',
                 ]}/>
               </li>
+              <li className="relative">
+  <h2 className="text-lg font-bold gradient-text mb-3">Step 6: Play OMC Stages</h2>
+  <GlassList
+    items={[
+      'Stage 1 entry fee is 0.15 π.',
+      'Each qualifier has 25 players, and only the Top 5 advance.',
+      'The same format applies through Stage 2, Stage 3, and Stage 4.',
+      'Tickets for Stage 2, 3, and 4 are FREE — you win them by advancing.',
+      'Stage 5 Final: all finalists share the prize pool.',
+      'Only one ticket per user is allowed in each qualifier (no multi-entries).',
+    ]}
+  />
+</li>
             </ol>
 
             {/* Trust / transparency */}

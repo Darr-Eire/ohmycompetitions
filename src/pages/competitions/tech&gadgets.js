@@ -152,7 +152,7 @@ function FullWidthCarousel({ items, renderItem }) {
           [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden
         "
         aria-roledescription="carousel"
-        aria-label="Featured competitions"
+        aria-label="Launch week competitions"
       >
         <div className="flex">
           {items.map((item, i) => (
@@ -228,6 +228,7 @@ function FullWidthCarousel({ items, renderItem }) {
     </div>
   )
 }
+
 
 /* ---------------------------------- Page ---------------------------------- */
 export default function FeaturedCompetitionsPage() {

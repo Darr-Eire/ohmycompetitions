@@ -14,121 +14,128 @@ export default function AboutUs() {
         <div className="competition-card max-w-3xl w-full bg-white bg-opacity-10 rounded-2xl shadow-lg">
 
           {/* Banner */}
-          <div className="competition-top-banner title-gradient">
-            Our Story
+          <div className="competition-top-banner title-gradient text-center py-6">
+            <h2 className="text-2xl font-bold text-white">Our Story</h2>
           </div>
 
           {/* Body */}
-          <div className="p-6 space-y-6">
+        <div className="p-6 space-y-6">
+  <p className="text-base sm:text-lg leading-relaxed text-white/90 px-4 max-w-2xl mx-auto">
+    Oh My Competitions was created to bring <span className="font-semibold text-white">fun, fairness, and real rewards</span> 
+    to the Pi community. Built by pioneers, for pioneers, our goal is to make competitions exciting, transparent, and genuinely rewarding.
+  </p>
 
-            <p className="font-semibold">
-              Hey Pioneers! Here’s how one casual Pi referral spiraled into the wildest giveaway adventure in the Pi ecosystem. Buckle up this one’s powered by belief, late nights and a lot of Pi.
-            </p>
+  <p className="text-base sm:text-lg leading-relaxed text-white/90">
+    Hey Pioneers! Here’s how one casual Pi referral turned into a full-on giveaway adventure.
+    It’s a story powered by belief, late nights and a lot of Pi.
+  </p>
 
-            <section>
-              <h2 className="text-xl font-bold gradient-text mt-6">From What's Pi to Let’s Build a Platform</h2>
-              <p>
-                It started like most good stories: with a ping from a mate.  
-                “Bro, try Pi Network.”  
-                I thought it was a food app. I joined anyway.
-              </p>
-              <p>
-                Next thing I knew I was mining Pi like it was 1999. My partner joined. My family joined. Even the cat tried to mine once (unsuccessfully).
-              </p>
-              <p>
-                We weren’t in it for the hype. We just believed. Quietly. Patiently. Obsessively.
-              </p>
-            </section>
+  <section>
+    <h2 className="text-xl font-bold gradient-text mt-6">From What’s Pi to Let’s Build This</h2>
+    <p className="text-base sm:text-lg leading-relaxed text-white/90">
+      It started like most good stories: a message from a mate — Bro, try Pi Network. I thought it was a food app. I joined anyway.
+    </p>
+    <p className="text-base sm:text-lg leading-relaxed text-white/90">
+      Before long we were mining daily. My partner joined. My family joined. Even the cat tried (unsuccessfully).
+    </p>
+    <p className="text-base sm:text-lg leading-relaxed text-white/90">
+      We weren’t here for hype. We believed — quietly, patiently, obsessively.
+    </p>
+  </section>
 
-            <section>
-              <h2 className="text-xl font-bold gradient-text mt-6">An Idea That Wouldn’t Let Go</h2>
-              <p>
-                One night in the glow of caffeine and bad documentaries it hit me:
-                <em>“What if we didn’t just earn Pi? What if we played for it?”</em>
-              </p>
-              <p>
-                That one idea started a chain reaction: whiteboards, sketches, user flows, domain names, late-night coding and one very suspicious pizza addiction.
-              </p>
-            </section>
+  <section>
+    <h2 className="text-xl font-bold gradient-text mt-6">An Idea That Wouldn’t Let Go</h2>
+    <p className="text-base sm:text-lg leading-relaxed text-white/90">
+      One late night, somewhere between caffeine and a weird documentary, it clicked:
+      <em> “What if we didn’t just earn Pi — what if we played for it?”</em>
+    </p>
+    <p className="text-base sm:text-lg leading-relaxed text-white/90">
+      Whiteboards. Sketches. User flows. Domains. Code. And a suspicious amount of pizza.
+      The vision got louder every day.
+    </p>
+  </section>
 
-            <section>
-              <h2 className="text-xl font-bold gradient-text mt-6">Built by Beginners Fueled by Belief</h2>
-              <p>
-                Did I know how to code an app? Nope.  
-                Did I try anyway? Absolutely.
-              </p>
-              <p>
-                Bugs? Crashes? Keyboard-smashing? All part of the journey.  
-                But every solved issue felt like winning a jackpot except this one pays in Pi.
-              </p>
-            </section>
+  <section>
+    <h2 className="text-xl font-bold gradient-text mt-6">Built by Beginners. Fueled by Belief.</h2>
+    <p className="text-base sm:text-lg leading-relaxed text-white/90">
+      Did we know how to ship a whole app? Not really. Did we try anyway? Absolutely.
+    </p>
+    <p className="text-base sm:text-lg leading-relaxed text-white/90">
+      Bugs, crashes, keyboard-smashing all part of it. Every fix felt like a win.
+      Not a jackpot… but close it paid in momentum.
+    </p>
+  </section>
 
-            <section>
-              <h2 className="text-xl font-bold gradient-text mt-6">OhMyCompetitions Was Born</h2>
-              <p>
-                We didn’t want just another app. We wanted a Pi-powered playground.  
-                One where games, giveaways and challenges bring the community together not just to win but to have fun doing it.
-              </p>
-              <p>
-                That’s how OhMyCompetitions came to life. And honestly? It hasn’t stopped growing since.
-              </p>
-            </section>
+  <section>
+    <h2 className="text-xl font-bold gradient-text mt-6">Oh My Competitions Was Born</h2>
+    <p className="text-base sm:text-lg leading-relaxed text-white/90">
+      We didn’t want “just another app.” We wanted a Pi-powered playground:
+      games, giveaways and challenges that bring people together not just to win,
+      but to have fun doing it.
+    </p>
+    <p className="text-base sm:text-lg leading-relaxed text-white/90">
+      That’s how OhMyCompetitions came to life. And it hasn’t stopped growing since.
+    </p>
+  </section>
 
-            <section>
-              <h2 className="text-xl font-bold gradient-text mt-6">When the Magic Clicked</h2>
-              <p>
-                The day Pi Login worked for the first time? Absolute magic.  
-                Everything connected frontend, backend and wallet. I nearly Pi-danced in the living room.
-              </p>
-              <p>
-                That was the turning point. The moment it all felt real. From “this could work” to “this IS working.”
-              </p>
-            </section>
+  <section>
+    <h2 className="text-xl font-bold gradient-text mt-6">When the Magic Clicked</h2>
+    <p className="text-base sm:text-lg leading-relaxed text-white/90">
+      The first time Pi Login worked end-to-end frontend, backend, wallet it felt like magic.
+      I nearly Pi-danced in the living room.
+    </p>
+    <p className="text-base sm:text-lg leading-relaxed text-white/90">
+      That was the moment it went from “this could work” to “this <em>does</em> work.”
+    </p>
+  </section>
 
-            <section>
-              <h2 className="text-xl font-bold gradient-text mt-6">Where We Are Now</h2>
-              <p>
-                🎮 Real games  
-                🎁 Real prizes  
-                👥 Real pioneers playing daily  
-                💡 Real utility for Pi
-              </p>
-              <p>
-                OhMyCompetitions isn’t just an idea anymore. It’s a movement. A platform. A mission to reward Pi believers for being early and being awesome.
-              </p>
-            </section>
+  <section>
+    <h2 className="text-xl font-bold gradient-text mt-6">Where We Are Now</h2>
+    <p className="text-base sm:text-lg leading-relaxed text-white/90">
+      🎮 Real games<br />
+      🎁 Real prizes<br />
+      👥 Real pioneers playing daily<br />
+      💡 Real utility for Pi
+    </p>
+    <p className="text-base sm:text-lg leading-relaxed text-white/90">
+      OhMyCompetitions isn’t just an idea anymore. It’s a platform and a promise
+      to reward the Pi community for being early, curious and relentless.
+    </p>
+  </section>
 
-            <section>
-              <h2 className="text-xl font-bold gradient-text mt-6">Where We're Going</h2>
-              <p>
-                We’re building more:  
-                🌍 Global tournaments  
-                🛍 Merchant partnerships  
-                🕹 A full-blown Pi arcade  
-                🧠 Skill-based games that reward hustle not luck
-              </p>
-              <p>
-                Our goal? To become the most trusted, most entertaining and most community-powered competition platform in the Pi Network universe.
-              </p>
-            </section>
+  <section>
+    <h2 className="text-xl font-bold gradient-text mt-6">Where We’re Going</h2>
+    <p className="text-base sm:text-lg leading-relaxed text-white/90">
+      We’re building towards:<br />
+      🌍 Global tournaments<br />
+      🛍 Merchant partnerships<br />
+      🕹 A full-blown Pi arcade<br />
+      🧠 Skill-based games that reward hustle, not luck
+    </p>
+    <p className="text-base sm:text-lg leading-relaxed text-white/90">
+      The goal? To be the most trusted, most entertaining and most community-powered
+      competition platform in the Pi Network universe.
+    </p>
+  </section>
 
-            <section>
-              <h2 className="text-xl font-bold gradient-text mt-6">Thank You Pioneer</h2>
-              <p>
-                To the early testers, patient bug reporters, Pi evangelists and hype crew you built this with us.  
-                OhMyCompetitions is for you. And we’re only getting started.
-              </p>
-              <p>
-                The next chapter? You’re in it.
-              </p>
-            </section>
+  <section>
+    <h2 className="text-xl font-bold gradient-text mt-6">Thank You, Pioneer</h2>
+    <p className="text-base sm:text-lg leading-relaxed text-white/90">
+      To the early testers, patient bug slayers, Pi evangelists and hype crew you built this with us.
+      OhMyCompetitions is for you. And we’re only getting started.
+    </p>
+    <p className="text-base sm:text-lg leading-relaxed text-white/90">
+      The next chapter? You’re in it.
+    </p>
+  </section>
 
-            <div className="text-center mt-8">
-              <Link href="/forums/general">
-                <button className="btn-gradient">Join the Conversation</button>
-              </Link>
-            </div>
-          </div>
+  <div className="text-center mt-8">
+    <Link href="/forums/general">
+      <button className="btn-gradient">Join the Conversation</button>
+    </Link>
+  </div>
+</div>
+
         </div>
       </main>
     </>
