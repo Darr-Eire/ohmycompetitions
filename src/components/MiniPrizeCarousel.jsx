@@ -26,7 +26,7 @@ export default function MiniPrizeCarousel() {
     if (competitions.length <= groupSize) return;
     const interval = setInterval(() => {
       setCurrentIndex(i => (i + groupSize) % competitions.length);
-    }, 6000);
+    }, 3500);
     return () => clearInterval(interval);
   }, [competitions]);
 

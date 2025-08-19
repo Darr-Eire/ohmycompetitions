@@ -27,7 +27,7 @@ export default function HowToPlay() {
   <div className="competition-top-banner title-gradient text-center py-6">
     <h2 className="text-2xl font-bold text-black">How to Play</h2>
     <p className="mt-2 text-sm sm:text-base text-black px-4">
-      Welcome to <span className="font-semibold text-black">Oh My Competitions</span> — the ultimate Pi-powered platform where your entries could win real rewards every single day.
+      Welcome to <span className="font-semibold text-black">Oh My Competitions</span>
     </p>
   </div>
           {/* Steps / timeline */}
@@ -36,10 +36,11 @@ export default function HowToPlay() {
               {/* Step 1 */}
               <li className="relative">
           
-                <h2 className="text-lg font-bold gradient-text mb-3">Step 1: Log In & Secure Your Account</h2>
+                <h2 className="text-lg font-bold gradient-text mb-3">Log In & Secure Your Account</h2>
                 <GlassList items={[
                   'Go to ohmycompetitions.com or open the app (must be within the Pi Browser).',
                   'Click Login in the top right corner.',
+                  'A pop-up will appear where you can choose to Sign up (optional referral) or Log in if you’re a returning user.',
                   'Select “Login with Pi” and approve the request in the Pi Browser.',
                   'Once logged in, your wallet is connected and ready to go.',
                 ]}/>
@@ -48,11 +49,12 @@ export default function HowToPlay() {
               {/* Step 2 */}
               <li className="relative">
        
-                <h2 className="text-lg font-bold gradient-text mb-3">Step 2: Enter Competitions</h2>
+                <h2 className="text-lg font-bold gradient-text mb-3">Enter Competitions</h2>
                 <GlassList items={[
-                  'Browse live, upcoming, or themed competitions on the homepage.',
-                  'Click any competition card to view details like prize, draw time, tickets and fee.',
-                  'Click “Enter Now” and choose how many tickets to buy.',
+                  'Browse live, upcoming or themed competitions on the homepage.',
+                  'Click on enter now on the competition card to view details like prize, draw time, tickets and fee.',
+                  'Click “Proceed to Payment” and choose how many tickets to buy.',
+                  'You must enter a skill question before making the purchase',
                   'Confirm payment using your Pi wallet. Once complete, your entry is locked and shown in your account.',
                 ]}/>
               </li>
@@ -73,9 +75,9 @@ export default function HowToPlay() {
     
                 <h2 className="text-lg font-bold gradient-text mb-3">Step 4: Pi Cash Code</h2>
                 <GlassList items={[
-                  'Pi Cash Code: Every day, a secret Pi Cash Code is hidden across the site. Find it and enter it to unlock bonus Pi or extra tickets — no entry fee required.',
+                  'Pi Cash Code: Every day, a secret Pi Cash Code is hidden and is only shown for alimited time. see it, keep it safe and enter it if picked to unlock the pi cash code.',
                   'New codes are revealed daily and remain active for exactly 31 hours and 4 minutes.',
-                  'Codes drop across our site, Discord and social media. Stay sharp — every code is a fresh chance to win.',
+                  'Codes drop across our site, Discord and social media. Stay sharp every code is a fresh chance to win.',
                 ]}/>
               </li>
 
@@ -97,8 +99,8 @@ export default function HowToPlay() {
       'Stage 1 entry fee is 0.15 π.',
       'Each qualifier has 25 players, and only the Top 5 advance.',
       'The same format applies through Stage 2, Stage 3, and Stage 4.',
-      'Tickets for Stage 2, 3, and 4 are FREE — you win them by advancing.',
-      'Stage 5 Final: all finalists share the prize pool.',
+      'Tickets for Stage 2, 3, and 4 are FREE you win them by advancing.',
+      'Stage 5 Final: all finalists share apart of the prize pool.',
       'Only one ticket per user is allowed in each qualifier (no multi-entries).',
     ]}
   />

@@ -1,19 +1,110 @@
 // src/components/LaunchCompetitionDetailCard.js
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import '@fontsource/orbitron';
 import BuyTicketButton from 'components/BuyTicketButton'; // adjust to your alias if needed
 import { usePiAuth } from 'context/PiAuthContext';        // keep this path consistent
-import { getDescriptionForComp } from 'data/descriptions';
+// import { getDescriptionForComp } from 'data/descriptions'; // (unused here)
 
 // Skill question helpers
-import {
-  getRandomQuestion,
-  isCorrectAnswer as checkAnswer,
-} from 'data/skill-questions';
+import { getRandomQuestion, isCorrectAnswer as checkAnswer } from 'data/skill-questions';
 
+/* ───────────────────────── prize helpers ───────────────────────── */
+function normalizePrizeBreakdown(raw) {
+  if (!raw) return {};
+  // Object form → map common labels to 1st/2nd/3rd
+  if (typeof raw === 'object' && !Array.isArray(raw)) {
+    const out = {};
+    const map = {
+      '1st': '1st', 'first': '1st', 'first prize': '1st', 'grand': '1st', 'grand prize': '1st',
+      '2nd': '2nd', 'second': '2nd', 'second prize': '2nd',
+      '3rd': '3rd', 'third': '3rd', 'third prize': '3rd',
+    };
+    for (const [k, v] of Object.entries(raw)) {
+      const m = map[String(k).toLowerCase()];
+      if (m && out[m] == null) out[m] = v;
+    }
+    if (out['1st'] || out['2nd'] || out['3rd']) return out;
+
+    // If unlabeled, pick top 3 numerically
+    const sorted = Object.values(raw)
+      .map(v => ({ v, n: Number(String(v).replace(/[^\d.-]/g, '')) }))
+      .sort((a, b) => (b.n || -Infinity) - (a.n || -Infinity))
+      .slice(0, 3);
+    const ord = ['1st', '2nd', '3rd'];
+    sorted.forEach((e, i) => { if (e?.v != null) out[ord[i]] = e.v; });
+    return out;
+  }
+  // Array form → [first, second, third]
+  if (Array.isArray(raw)) {
+    const ord = ['1st', '2nd', '3rd'];
+    const out = {};
+    raw.slice(0, 3).forEach((v, i) => { out[ord[i]] = v; });
+    return out;
+  }
+  return {};
+}
+
+function buildPrizeBreakdownFromComp(input, prizeFallback) {
+  const c = input?.comp ?? input ?? {};
+  // Explicit fields first
+  const explicit = {
+    '1st': c.firstPrize ?? c.prize1,
+    '2nd': c.secondPrize ?? c.prize2,
+    '3rd': c.thirdPrize ?? c.prize3,
+  };
+  if (explicit['1st'] || explicit['2nd'] || explicit['3rd']) return explicit;
+
+  // Structured breakdowns / arrays
+  const tiers = {
+    ...normalizePrizeBreakdown(c.prizeBreakdown),
+    ...normalizePrizeBreakdown(c.prizes),
+  };
+
+  // Fallback: single prize (prop or object)
+  if (!tiers['1st'] && (prizeFallback ?? c.prize ?? c.prizeLabel)) {
+    tiers['1st'] = prizeFallback ?? c.prize ?? c.prizeLabel;
+  }
+  return tiers;
+}
+
+function getWinnersCount(comp, tiers) {
+  const c = comp?.comp ?? comp ?? {};
+  const direct = c.winners ?? c.totalWinners ?? c.numberOfWinners ?? c.numWinners;
+
+  const n = Number(direct);
+  if (Number.isFinite(n) && n > 0) return Math.min(3, Math.max(1, Math.floor(n)));
+
+  if (typeof direct === 'string') {
+    if (/single|one/i.test(direct)) return 1;
+    if (/two|2/i.test(direct)) return 2;
+    if (/three|3/i.test(direct)) return 3;
+    if (/multiple|multi/i.test(direct)) {
+      const count = Object.values(tiers || {}).filter(Boolean).length;
+      return Math.min(3, count || 3);
+    }
+  }
+
+  const count = Object.values(tiers || {}).filter(Boolean).length;
+  return Math.min(3, count || 1);
+}
+
+function formatPrize(v) {
+  if (v === null || v === undefined) return null;
+  if (typeof v === 'string') {
+    const trimmed = v.trim();
+    if (!trimmed) return null;
+    return /\bπ\b|[$€£]/.test(trimmed) ? trimmed : `${trimmed} π`;
+  }
+  const n = Number(v);
+  if (!Number.isFinite(n)) return null;
+  const formatted = n >= 1000 ? Math.round(n).toLocaleString('en-US') : n.toFixed(2);
+  return `${formatted} π`;
+}
+
+/* ───────────────────────── component ───────────────────────── */
 export default function LaunchCompetitionDetailCard({
   comp,
   title,
@@ -46,13 +137,8 @@ export default function LaunchCompetitionDetailCard({
   const effectiveUser = userProp ?? ctxUser;
   const loginFn       = loginProp ?? ctxLogin;
 
-  // normalize a userId for the payment flow
   const getUserId = (u) =>
-    u?.id ??
-    u?.uid ??
-    u?.userId ??
-    u?.pi_user_id ??
-    u?.username ?? null;
+    u?.id ?? u?.uid ?? u?.userId ?? u?.pi_user_id ?? u?.username ?? null;
 
   const effectiveUserId = getUserId(effectiveUser);
 
@@ -68,24 +154,6 @@ export default function LaunchCompetitionDetailCard({
   const availableTickets = Math.max(0, (totalTickets ?? 0) - (ticketsSold ?? 0));
   const percent = totalTickets > 0 ? Math.min(100, Math.floor(((ticketsSold ?? 0) / totalTickets) * 100)) : 0;
   const isNearlyFull = availableTickets > 0 && availableTickets <= Math.ceil((totalTickets ?? 0) * 0.25);
-
-  // Normalize prize values
-  const firstPrizeVal  = comp?.prizeBreakdown?.first ?? comp?.firstPrize ?? prize ?? comp?.prize;
-  const secondPrizeVal = comp?.prizeBreakdown?.second ?? comp?.secondPrize ?? comp?.prize2;
-  const thirdPrizeVal  = comp?.prizeBreakdown?.third ?? comp?.thirdPrize  ?? comp?.prize3;
-
-  const formatPrize = (v) => {
-    if (v === null || v === undefined) return null;
-    if (typeof v === 'string') {
-      const trimmed = v.trim();
-      if (!trimmed) return null;
-      return /\bπ\b|[$€£]/.test(trimmed) ? trimmed : `${trimmed} π`;
-    }
-    const n = Number(v);
-    if (!Number.isFinite(n)) return null;
-    const formatted = n >= 1000 ? Math.round(n).toLocaleString('en-US') : n.toFixed(2);
-    return `${formatted} π`;
-  };
 
   /* -------------------- Countdown (Days Hours Mins) -------------------- */
   const [nowTs, setNowTs] = useState(Date.now());
@@ -123,7 +191,6 @@ export default function LaunchCompetitionDetailCard({
 
   const isAnswerCorrect = () => checkAnswer(selectedQuestion, skillAnswer);
 
-  // Proceed button behavior
   const handleProceedClick = () => {
     if (hasValidAnswer) {
       setShowPayment(true);
@@ -134,7 +201,6 @@ export default function LaunchCompetitionDetailCard({
     }
   };
 
-  // Record + verify answer
   const handleSubmitSkill = (e) => {
     e?.preventDefault?.();
     const ok = isAnswerCorrect();
@@ -143,17 +209,36 @@ export default function LaunchCompetitionDetailCard({
       setHasValidAnswer(true);
       setAnswerError('');
       setShowSkillQuestion(false);
-      setShowPayment(false); // user presses Proceed again to reveal payment
+      setShowPayment(false); // press Proceed again to reveal payment
     } else {
       setHasValidAnswer(false);
       setAnswerError('You must answer correctly to proceed.');
     }
   };
 
+  /* -------------------- PRIZE TIERS (dynamic 1/2/3) -------------------- */
+  const tiers = useMemo(
+    () => buildPrizeBreakdownFromComp(comp, prize),
+    [comp, prize]
+  );
+  const winnersCount = useMemo(
+    () => getWinnersCount(comp, tiers),
+    [comp, tiers]
+  );
+  const ordinals = useMemo(
+    () => ['1st', '2nd', '3rd'].slice(0, winnersCount),
+    [winnersCount]
+  );
+
+  const banner =
+    winnersCount === 3 ? '1st • 2nd • 3rd Prizes'
+  : winnersCount === 2 ? '1st • 2nd Prizes'
+  : 'Single Winner';
+
   /* --------------------------------- UI --------------------------------- */
   return (
     <div className="flex justify-center p-0 my-0 -mt-4 -mb-3">
-      <div className="relative w-full max-w-xl">{/* <-- fixed w/full -> w-full */}
+      <div className="relative w-full max-w-xl">
         {/* Outer Glow */}
         <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-green-400/15 via-cyan-500/10 to-blue-500/15 blur-xl" />
         <div className="relative rounded-3xl p-[1.5px] bg-[linear-gradient(135deg,rgba(0,255,213,0.6),rgba(0,119,255,0.5))]">
@@ -163,26 +248,24 @@ export default function LaunchCompetitionDetailCard({
             <h2 className="text-2xl sm:text-[28px] font-extrabold tracking-wide text-center bg-gradient-to-r from-green-300 via-cyan-300 to-blue-300 bg-clip-text text-transparent drop-shadow">
               {title}
             </h2>
-       
-{/* Theme-specific image */}
-{(comp?.theme === 'tech' || comp?.theme === 'premium') && (
-  <div className="mt-4 flex justify-center">
-      <img
-    src={
-      imageUrl ||
-      (comp?.theme === 'tech'
-        ? '/images/tech-default.jpg'
-        : comp?.theme === 'premium'
-        ? '/images/premium-default.jpg'
-        : '/images/placeholder.jpg')
-    }
-    alt={title || 'Competition image'}
-    className="w-48 h-32 rounded-lg border border-cyan-300/30 shadow-[0_0_12px_rgba(34,211,238,0.25)] object-cover"
-  />
-  </div>
-)}
 
-
+            {/* Theme-specific image */}
+            {(comp?.theme === 'tech' || comp?.theme === 'premium') && (
+              <div className="mt-4 flex justify-center">
+                <img
+                  src={
+                    imageUrl ||
+                    (comp?.theme === 'tech'
+                      ? '/images/tech-default.jpg'
+                      : comp?.theme === 'premium'
+                      ? '/images/premium-default.jpg'
+                      : '/images/placeholder.jpg')
+                  }
+                  alt={title || 'Competition image'}
+                  className="w-48 h-32 rounded-lg border border-cyan-300/30 shadow-[0_0_12px_rgba(34,211,238,0.25)] object-cover"
+                />
+              </div>
+            )}
 
             {/* Status */}
             {status === 'active' && (
@@ -210,9 +293,9 @@ export default function LaunchCompetitionDetailCard({
 
             {status === 'upcoming' && (
               <div className="mt-4 text-center">
-           <span className="inline-block rounded-full bg-gradient-to-r from-orange-400 to-orange-600 text-black font-bold px-4 py-1 shadow-[0_0_8px_rgba(251,146,60,0.6)]">
-   Coming Soon
-</span>
+                <span className="inline-block rounded-full bg-gradient-to-r from-orange-400 to-orange-600 text-black font-bold px-4 py-1 shadow-[0_0_8px_rgba(251,146,60,0.6)]">
+                  Coming Soon
+                </span>
               </div>
             )}
 
@@ -224,27 +307,30 @@ export default function LaunchCompetitionDetailCard({
               </div>
             )}
 
-{/* Prizes */}
-{comp?.prizeBreakdown && Object.keys(comp.prizeBreakdown).length > 0 && (
-  <div className="mt-5 flex flex-col items-center gap-3">
-    {Object.entries(comp.prizeBreakdown).map(([label, amount]) => (
-      <div
-        key={label}
-        className="w-full max-w-xs flex justify-between items-center rounded-lg border border-cyan-300/50 bg-white/5 px-4 py-2 shadow-[0_0_8px_rgba(34,211,238,0.25)]"
-      >
-        <span className="text-[14px] uppercase tracking-wide text-cyan-300">{label}</span>
-        <span
-          className="text-base font-extrabold text-cyan-300 motion-safe:animate-pulse drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]"
-          style={{ animationDuration: '1.1s' }}
-        >
-          {formatPrize(amount) ?? '—'}
-        </span>
-      </div>
-    ))}
-  </div>
-)}
+            {/* Winners banner */}
+            <div className="mt-5 text-center text-xs bg-cyan-500 text-black font-semibold py-1 mx-auto rounded-md max-w-xs">
+              {banner}
+            </div>
 
-
+            {/* PRIZES (dynamic 1/2/3) */}
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {ordinals.map((label) => (
+                <div
+                  key={label}
+                  className="rounded-xl border border-cyan-300/50 bg-white/5 px-4 py-3 text-center shadow-[0_0_8px_rgba(34,211,238,0.25)]"
+                >
+                  <div className="text-[11px] uppercase tracking-wide text-cyan-300 font-semibold">
+                    {label} Prize
+                  </div>
+                  <div
+                    className="mt-1 text-lg font-extrabold text-cyan-300 motion-safe:animate-pulse drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]"
+                    style={{ animationDuration: '1.1s' }}
+                  >
+                    {formatPrize(tiers[label]) ?? 'TBA'}
+                  </div>
+                </div>
+              ))}
+            </div>
 
             {/* Key Details */}
             <div className="mt-4 grid grid-cols-2 gap-2">
@@ -275,7 +361,7 @@ export default function LaunchCompetitionDetailCard({
               <Stat
                 size="sm"
                 label="Winners"
-                value={comp?.winners ?? 'Multiple'}
+                value={String(winnersCount)}
                 customClass="border-cyan-300/50 text-cyan-300"
               />
             </div>
@@ -362,8 +448,6 @@ export default function LaunchCompetitionDetailCard({
                     </div>
                   )}
 
-               
-
                   {/* Proceed / Continue button (gated by skill) */}
                   {!showSkillQuestion && !showPayment && (
                     <>
@@ -382,20 +466,19 @@ export default function LaunchCompetitionDetailCard({
                   )}
 
                   {/* Payment button appears once proceed is clicked after a correct answer */}
-                {!showSkillQuestion && showPayment && (
-  <div className="mt-4">
-    <BuyTicketButton
-      competitionSlug={comp?.slug}
-      entryFee={numericEntry}
-      quantity={quantity}
-      piUser={effectiveUser}
-      userId={effectiveUserId}
-      onPaymentSuccess={handlePaymentSuccess}
-      endsAt={comp?.endsAt ?? endsAt}
-    />
-  </div>
-)}
-
+                  {!showSkillQuestion && showPayment && (
+                    <div className="mt-4">
+                      <BuyTicketButton
+                        competitionSlug={comp?.slug}
+                        entryFee={numericEntry}
+                        quantity={quantity}
+                        piUser={effectiveUser}
+                        userId={effectiveUserId}
+                        onPaymentSuccess={handlePaymentSuccess}
+                        endsAt={comp?.endsAt ?? endsAt}
+                      />
+                    </div>
+                  )}
 
                   {/* Login prompt if needed */}
                   {!effectiveUser && !showSkillQuestion && !showPayment && (
@@ -419,14 +502,16 @@ export default function LaunchCompetitionDetailCard({
                       🎁 Gift a Ticket
                     </button>
                   )}
-   {/* Inspiration + thanks */}
+
+                  {/* Inspiration + thanks */}
                   <p className="mt-2 text-center text-cyan-300 text-sm italic">
-                    Your journey to victory starts here play smart, dream big and claim the Pi prize
+                    Your journey to victory starts here — play smart, dream big and claim the Pi prize
                   </p>
                   <p className="text-cyan-300 text-xs sm:text-sm mt-3 text-center">
                     Thank you for participating and good luck!
                   </p>
-                  {/* Details (optional toggle area if you add a button elsewhere) */}
+
+                  {/* Details */}
                   {showDetails && (
                     <div className="mt-3 bg-white/10 p-4 rounded-lg border border-cyan-400 text-sm whitespace-pre-wrap leading-relaxed">
                       <h2 className="text-center text-lg font-bold mb-2 text-cyan-300">Competition Details</h2>
@@ -494,23 +579,19 @@ export default function LaunchCompetitionDetailCard({
               />
             )}
 
-          {/* Links */}
-<div className="mt-8 text-center flex flex-col gap-5">
-  <button
-    onClick={() => setShowDetails((prev) => !prev)}
-    className="text-sm text-cyan-300 underline hover:text-cyan-200"
-  >
-    {showDetails ? 'Hide Competition Details' : 'View Competition Details'}
-  </button>
+            {/* Links */}
+            <div className="mt-8 text-center flex flex-col gap-5">
+              <button
+                onClick={() => setShowDetails((prev) => !prev)}
+                className="text-sm text-cyan-300 underline hover:text-cyan-200"
+              >
+                {showDetails ? 'Hide Competition Details' : 'View Competition Details'}
+              </button>
 
-  <Link
-    href="/terms-conditions"
-    className="text-sm text-cyan-300 underline hover:text-cyan-200"
-  >
-    View Full Terms & Conditions
-  </Link>
-</div>
-
+              <Link href="/terms-conditions" className="text-sm text-cyan-300 underline hover:text-cyan-200">
+                View Full Terms & Conditions
+              </Link>
+            </div>
           </section>
         </div>
       </div>

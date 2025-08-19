@@ -130,9 +130,9 @@ export default function ForumsPage() {
     },
     {
       slug:'vote',
-      title:'Vote for Next Prize',
+      title:'Vote for Next Big Pi Prize',
       icon:<FaThumbsUp />,
-      description:'Help decide the next big giveaway.',
+      description:'Help decide the next big pi giveaway.',
       href:'/forums/vote',
       buttonText:'Vote',
       color:'from-emerald-500 to-green-600',
@@ -140,7 +140,7 @@ export default function ForumsPage() {
     },
     {
       slug:'ideas',
-      title:'Post Your Ideas',
+      title:'Competitions/Mini Games Ideas',
       icon:<FaLightbulb />,
       description:'Got a feature or prize idea? Share it.',
       href:'/forums/ideas',
@@ -177,20 +177,20 @@ export default function ForumsPage() {
             transition={{ duration: .4 }}
             className="mb-8 text-center"
           >
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-              <span className="bg-gradient-to-r from-[#00ffd5] to-[#0077ff] bg-clip-text text-transparent">
-                Community Forums
-              </span>
-            </h1>
+        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight -mt-16 leading-tight">
+  <span className="bg-gradient-to-r from-[#00ffd5] to-[#0077ff] bg-clip-text text-transparent">
+    Community Forums
+  </span>
+</h1>
+
             <p className="mt-2 text-white/80 text-sm sm:text-base">
               Connect, vote, share ideas & celebrate wins with pioneers worldwide.
             </p>
 
             {/* live stats pill */}
             <div className="mt-4 inline-flex items-center gap-3 rounded-full border border-cyan-500/40 bg-white/5 px-4 py-1.5 backdrop-blur">
-              <span className="text-xs sm:text-sm">🔥 <b className="text-cyan-300">{onlineNow}</b> online now</span>
-              <span className="text-white/30">•</span>
-              <span className="text-xs sm:text-sm">🧵 <b className="text-cyan-300">{totalThreads}</b> threads</span>
+              <span className="text-white/30"></span>
+              <span className="text-xs sm:text-sm">💬 <b className="text-cyan-300">{totalThreads}</b> live threads</span>
             </div>
           </motion.div>
 
@@ -275,7 +275,7 @@ export default function ForumsPage() {
                 className="sticky top-4 rounded-2xl border border-cyan-500/25 bg-[#0b1022]/60 p-6 shadow-[0_0_20px_#00fff022] backdrop-blur"
               >
                 <h2 className="text-xl font-bold text-cyan-300 mb-5 flex items-center gap-2">
-                  <FaFire /> Recent Activity
+                  <FaFire /> Recent Forums
                 </h2>
 
                 {loading ? (

@@ -15,14 +15,14 @@ export default function AboutUs() {
 
           {/* Banner */}
           <div className="competition-top-banner title-gradient text-center py-6">
-            <h2 className="text-2xl font-bold text-white">Our Story</h2>
+            <h2 className="text-2xl font-bold text-black">Our Story</h2>
           </div>
 
           {/* Body */}
         <div className="p-6 space-y-6">
   <p className="text-base sm:text-lg leading-relaxed text-white/90 px-4 max-w-2xl mx-auto">
-    Oh My Competitions was created to bring <span className="font-semibold text-white">fun, fairness, and real rewards</span> 
-    to the Pi community. Built by pioneers, for pioneers, our goal is to make competitions exciting, transparent, and genuinely rewarding.
+    Oh My Competitions was created to bring <span className="text-white">fun, fairness and real rewards to </span> 
+     the Pi community. Built by pioneers, for pioneers, our goal is to make competitions exciting, transparent and genuinely rewarding.
   </p>
 
   <p className="text-base sm:text-lg leading-relaxed text-white/90">
@@ -33,13 +33,13 @@ export default function AboutUs() {
   <section>
     <h2 className="text-xl font-bold gradient-text mt-6">From What’s Pi to Let’s Build This</h2>
     <p className="text-base sm:text-lg leading-relaxed text-white/90">
-      It started like most good stories: a message from a mate — Bro, try Pi Network. I thought it was a food app. I joined anyway.
+      It started like most good stories: a message from a mate Bro, try Pi Network. I thought it was a food app. I joined anyway.
     </p>
     <p className="text-base sm:text-lg leading-relaxed text-white/90">
       Before long we were mining daily. My partner joined. My family joined. Even the cat tried (unsuccessfully).
     </p>
     <p className="text-base sm:text-lg leading-relaxed text-white/90">
-      We weren’t here for hype. We believed — quietly, patiently, obsessively.
+      We weren’t here for hype. We believed quietly, patiently, obsessively.
     </p>
   </section>
 
@@ -47,7 +47,7 @@ export default function AboutUs() {
     <h2 className="text-xl font-bold gradient-text mt-6">An Idea That Wouldn’t Let Go</h2>
     <p className="text-base sm:text-lg leading-relaxed text-white/90">
       One late night, somewhere between caffeine and a weird documentary, it clicked:
-      <em> “What if we didn’t just earn Pi — what if we played for it?”</em>
+      <em> “What if we didn’t just earn Pi what if we played for it?”</em>
     </p>
     <p className="text-base sm:text-lg leading-relaxed text-white/90">
       Whiteboards. Sketches. User flows. Domains. Code. And a suspicious amount of pizza.
@@ -89,19 +89,22 @@ export default function AboutUs() {
     </p>
   </section>
 
-  <section>
-    <h2 className="text-xl font-bold gradient-text mt-6">Where We Are Now</h2>
-    <p className="text-base sm:text-lg leading-relaxed text-white/90">
-      🎮 Real games<br />
-      🎁 Real prizes<br />
-      👥 Real pioneers playing daily<br />
-      💡 Real utility for Pi
-    </p>
-    <p className="text-base sm:text-lg leading-relaxed text-white/90">
-      OhMyCompetitions isn’t just an idea anymore. It’s a platform and a promise
-      to reward the Pi community for being early, curious and relentless.
-    </p>
-  </section>
+<section>
+  <h2 className="text-xl font-bold gradient-text mt-6">Where We Are Now</h2>
+  <p className="text-base sm:text-lg leading-relaxed text-white/90">
+    🎮 Real games<br />
+    🎁 Real prizes<br />
+    👥 Real pioneers playing daily<br />
+    💡  Real utility for Pi<br />
+    🤝 Real connections with Pioneers and many friendships along the way
+  </p>
+  <p className="text-base sm:text-lg leading-relaxed text-white/90">
+    OhMyCompetitions isn’t just an idea anymore. It’s a platform and a promise
+    to reward the Pi community for being early, curious and relentless while
+    building genuine connections and lasting friendships along the way.
+  </p>
+</section>
+
 
   <section>
     <h2 className="text-xl font-bold gradient-text mt-6">Where We’re Going</h2>
@@ -119,10 +122,10 @@ export default function AboutUs() {
   </section>
 
   <section>
-    <h2 className="text-xl font-bold gradient-text mt-6">Thank You, Pioneer</h2>
+    <h2 className="text-xl font-bold gradient-text mt-6">Thank You, Pioneers</h2>
     <p className="text-base sm:text-lg leading-relaxed text-white/90">
       To the early testers, patient bug slayers, Pi evangelists and hype crew you built this with us.
-      OhMyCompetitions is for you. And we’re only getting started.
+      Oh My Competitions is for you. And we’re only getting started.
     </p>
     <p className="text-base sm:text-lg leading-relaxed text-white/90">
       The next chapter? You’re in it.

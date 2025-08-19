@@ -1,9 +1,101 @@
+// src/components/LaunchCompetitionCard.js
 'use client';
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-export default function LaunchCompetitionCard({ comp = {}, title, prize, imageUrl }) {
+/* ───────────── Prize helpers ───────────── */
+function formatPi(amount) {
+  if (amount == null) return null;
+  if (typeof amount === 'number' && Number.isFinite(amount)) {
+    return `${amount % 1 === 0 ? amount.toFixed(0) : amount.toFixed(2)} π`;
+  }
+  const s = String(amount).trim();
+  return /\bπ\b|[$€£]/.test(s) ? s : `${s} π`;
+}
+
+function normalizePrizeBreakdown(raw) {
+  if (!raw) return {};
+  // object form
+  if (typeof raw === 'object' && !Array.isArray(raw)) {
+    const out = {};
+    const map = {
+      '1st': '1st', 'first': '1st', 'first prize': '1st', 'grand': '1st', 'grand prize': '1st',
+      '2nd': '2nd', 'second': '2nd', 'second prize': '2nd',
+      '3rd': '3rd', 'third': '3rd', 'third prize': '3rd',
+    };
+    for (const [k, v] of Object.entries(raw)) {
+      const m = map[String(k).toLowerCase()];
+      if (m && out[m] == null) out[m] = v;
+    }
+    if (out['1st'] || out['2nd'] || out['3rd']) return out;
+
+    // unlabeled: take top 3 numerically
+    const sorted = Object.values(raw)
+      .map(v => ({ v, n: Number(String(v).replace(/[^\d.-]/g, '')) }))
+      .sort((a, b) => (b.n || -Infinity) - (a.n || -Infinity))
+      .slice(0, 3);
+    const ord = ['1st', '2nd', '3rd'];
+    sorted.forEach((e, i) => { if (e?.v != null) out[ord[i]] = e.v; });
+    return out;
+  }
+  // array form [first, second, third]
+  if (Array.isArray(raw)) {
+    const ord = ['1st', '2nd', '3rd'];
+    const out = {};
+    raw.slice(0, 3).forEach((v, i) => { out[ord[i]] = v; });
+    return out;
+  }
+  return {};
+}
+
+function getPrizeTiers({ comp, prizeBreakdownProp, prizeProp }) {
+  const c = comp?.comp ?? comp ?? {};
+
+  // explicit fields first
+  const explicit = {
+    '1st': c.firstPrize ?? c.prize1,
+    '2nd': c.secondPrize ?? c.prize2,
+    '3rd': c.thirdPrize ?? c.prize3,
+  };
+  if (explicit['1st'] || explicit['2nd'] || explicit['3rd']) return explicit;
+
+  // prop breakdown, then comp.prizeBreakdown, then c.prizes[]
+  const fromProp  = normalizePrizeBreakdown(prizeBreakdownProp);
+  const fromComp  = normalizePrizeBreakdown(c.prizeBreakdown);
+  const fromArray = normalizePrizeBreakdown(c.prizes);
+
+  const tiers = { ...fromProp, ...fromComp, ...fromArray };
+
+  // fallback: use `prize` prop as 1st
+  if (!tiers['1st'] && prizeProp != null) tiers['1st'] = prizeProp;
+
+  return tiers;
+}
+
+function getWinnersCount(comp, tiers) {
+  const c = comp?.comp ?? comp ?? {};
+  const direct = c.winners ?? c.totalWinners ?? c.numberOfWinners ?? c.numWinners;
+
+  const n = Number(direct);
+  if (Number.isFinite(n) && n > 0) return Math.min(3, Math.max(1, Math.floor(n)));
+
+  if (typeof direct === 'string') {
+    if (/single|one/i.test(direct)) return 1;
+    if (/two|2/i.test(direct)) return 2;
+    if (/three|3/i.test(direct)) return 3;
+    if (/multiple|multi/i.test(direct)) {
+      const count = Object.values(tiers || {}).filter(v => v != null).length;
+      return Math.min(3, count || 3);
+    }
+  }
+
+  const count = Object.values(tiers || {}).filter(v => v != null).length;
+  return Math.min(3, count || 1);
+}
+
+/* ───────────── Component ───────────── */
+export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
   const {
     slug = '',
     entryFee = 0,
@@ -27,6 +119,11 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize, imageUr
   const isSoldOut = sold >= total;
   const isLowStock = remaining <= total * 0.1 && remaining > 0;
   const isNearlyFull = remaining <= total * 0.25 && remaining > 0;
+
+  // build tiers + winners count
+  const tiers = getPrizeTiers({ comp, prizeBreakdownProp: prizeBreakdown, prizeProp: prize });
+  const winnersCount = getWinnersCount(comp, tiers);
+  const ordinals = ['1st', '2nd', '3rd'].slice(0, winnersCount);
 
   useEffect(() => {
     if (!endsAt || comingSoon) {
@@ -74,6 +171,11 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize, imageUr
     return () => clearInterval(interval);
   }, [endsAt, startsAt, comingSoon]);
 
+  const banner =
+    winnersCount === 3 ? '1st • 2nd • 3rd Prizes'
+      : winnersCount === 2 ? '1st • 2nd Prizes'
+      : 'Single Winner';
+
   return (
     <div
       className="
@@ -85,7 +187,6 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize, imageUr
         hover:shadow-[0_0_24px_rgba(0,255,213,0.18)]
         focus:outline-none focus-visible:outline-none
       "
-      // Kill the blue tap highlight on mobile Safari and avoid any transform jitter
       style={{ WebkitTapHighlightColor: 'transparent' }}
     >
       {/* Header / Title */}
@@ -112,9 +213,9 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize, imageUr
         </div>
       </div>
 
-      {/* Multiple Winners Banner */}
+      {/* Winners Banner */}
       <div className="text-center text-xs bg-cyan-500 text-black font-semibold py-1 mt-2 mx-4 rounded-md">
-        1st, 2nd & 3rd Prizes
+        {banner}
       </div>
 
       {/* Subline */}
@@ -129,21 +230,26 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize, imageUr
 
       {/* Body */}
       <div className="p-4 text-sm space-y-3">
-        {/* 1st Prize compact row */}
-        <div
-          className="
-            flex flex-col items-center justify-center
-            rounded-md border border-cyan-400/40
-            bg-[#0b1220]/80 px-4 py-2
-            shadow-[0_0_6px_rgba(0,255,213,0.12)]
-          "
-        >
-          <span className="text-[14px] uppercase tracking-wide text-cyan-300 font-semibold">
-            1st Prize
-          </span>
-          <span className="font-extrabold text-white text-lg tabular-nums tracking-wide mt-0.5">
-            {prize ? `${prize} π` : 'TBA'}
-          </span>
+        {/* Prize tiers (up to winnersCount) */}
+        <div className="grid grid-cols-1 gap-2">
+          {ordinals.map((label) => (
+            <div
+              key={label}
+              className="
+                flex flex-col items-center justify-center
+                rounded-md border border-cyan-400/40
+                bg-[#0b1220]/80 px-4 py-2
+                shadow-[0_0_6px_rgba(0,255,213,0.12)]
+              "
+            >
+              <span className="text-[12px] uppercase tracking-wide text-cyan-300 font-semibold">
+                {label} Prize
+              </span>
+              <span className="font-extrabold text-white text-lg tabular-nums tracking-wide mt-0.5">
+                {tiers[label] != null ? formatPi(tiers[label]) : 'TBA'}
+              </span>
+            </div>
+          ))}
         </div>
 
         {/* Key facts */}
@@ -168,11 +274,9 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize, imageUr
         <p className="flex justify-between">
           <span className="text-cyan-300">Winners:</span>
           <span>
-            {comp?.comp?.winners
-              ? comp.comp.winners
-              : comp?.winners
-              ? comp.winners
-              : 'TBA'}
+            {Number.isFinite(Number(comp?.winners ?? comp?.comp?.winners))
+              ? `${Math.min(3, Math.max(1, Number(comp?.winners ?? comp?.comp?.winners)))}`
+              : (comp?.winners ?? comp?.comp?.winners ?? `${winnersCount}`)}
           </span>
         </p>
 
@@ -248,7 +352,6 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize, imageUr
                 ? 'bg-gray-400 text-white cursor-not-allowed'
                 : 'bg-gradient-to-r from-cyan-300 to-blue-500 text-black hover:opacity-90'}
             `}
-            // never scale on press
             style={{ WebkitTapHighlightColor: 'transparent' }}
           >
             {comingSoon ? 'Coming Soon' : 'Enter Now'}

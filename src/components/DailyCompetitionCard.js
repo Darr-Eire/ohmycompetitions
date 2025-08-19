@@ -83,6 +83,68 @@ function getTopPrize(comp = {}, fallbackPrize) {
   if (fallbackPrize != null) return formatPrizeValue(fallbackPrize)
   return null
 }
+function normalizePrizeBreakdown(raw = {}) {
+  // Accept common shapes: object, array, or separate fields
+  const out = {};
+
+  // 1) Object already
+  if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+    // Try to keep 1st/2nd/3rd if provided; otherwise pick top 3 by value
+    const entries = Object.entries(raw).filter(([,v]) => v != null);
+    const keyMap = {
+      '1st':'1st','first':'1st','first prize':'1st','grand':'1st',
+      '2nd':'2nd','second':'2nd','second prize':'2nd',
+      '3rd':'3rd','third':'3rd','third prize':'3rd',
+    };
+    for (const [k,v] of entries) {
+      const lk = String(k).toLowerCase();
+      if (keyMap[lk] && !out[keyMap[lk]]) out[keyMap[lk]] = v;
+    }
+    if (Object.keys(out).length >= 3) return out;
+
+    // If not labeled, sort by numeric value desc and take top 3
+    const numeric = entries
+      .map(([k,v]) => {
+        const n = Number(String(v).replace(/[^\d.-]/g,''));
+        return { k, v, n: Number.isFinite(n) ? n : -Infinity };
+      })
+      .sort((a,b) => b.n - a.n)
+      .slice(0,3);
+    const ord = ['1st','2nd','3rd'];
+    numeric.forEach((e,i)=> { if (e.v != null) out[ord[i]] = e.v; });
+    return out;
+  }
+
+  // 2) Array (index 0..2)
+  if (Array.isArray(raw) && raw.length) {
+    const ord = ['1st','2nd','3rd'];
+    raw.slice(0,3).forEach((v,i)=> { if (v!=null) out[ord[i]] = v; });
+    return out;
+  }
+
+  // 3) Separate fields on comp
+  return {};
+}
+
+function buildPrizeBreakdownFromComp(c) {
+  const comp = c?.comp ?? c;
+  // Try explicit fields first
+  const fields = {
+    '1st': comp?.firstPrize ?? comp?.prize1,
+    '2nd': comp?.secondPrize ?? comp?.prize2,
+    '3rd': comp?.thirdPrize ?? comp?.prize3,
+  };
+  if (fields['1st'] || fields['2nd'] || fields['3rd']) return fields;
+
+  // Then prizeBreakdown object
+  if (comp?.prizeBreakdown) return normalizePrizeBreakdown(comp.prizeBreakdown);
+
+  // Then prizes array
+  if (Array.isArray(comp?.prizes) && comp.prizes.length)
+    return normalizePrizeBreakdown(comp.prizes);
+
+  return {};
+}
 
 /* ───────────────────── Helpers: fee normalization/format ──────────────────── */
 function resolveNumeric(value) {

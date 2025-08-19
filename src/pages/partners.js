@@ -8,8 +8,6 @@ import { useRef } from 'react'
 /* --------------------------- Partners (unchanged) --------------------------- */
 const partnerItems = [
   { slug: 'example-dapp', name: 'Example DApp', logoUrl: '/images/your.png', website: 'https://example-dapp.com' },
-  { slug: 'another-dapp', name: 'Another DApp', logoUrl: '/images/your.png', website: 'https://another-dapp.io' },
-  { slug: 'third-dapp', name: 'Third DApp', logoUrl: '/images/your.png', website: 'https://third.app' },
 ]
 
 /* ------------------------- Trust Hub datasets (edit) ------------------------ */
