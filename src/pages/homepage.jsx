@@ -498,15 +498,14 @@ export default function HomePage() {
         powered by the Pi Network and supported by Pioneers like you.
       </p>
       <ul className="text-cyan-200 space-y-1 font-medium">
-        <li>🌍 Over <strong>100,000+ winners</strong> across the globe</li>
+        <li>🌍 Over <strong>10,000+ winners</strong> across the globe</li>
         <li>💰 <strong>500,000 π</strong> in distributed Pi prizes</li>
-        <li>🎗 <strong>25,000 π</strong> donated to Pi causes & communities</li>
+        <li>🎗 <strong>20,000 π</strong> donated to Pi causes & communities</li>
         <li>⭐ Maintained <strong>5★</strong> user-rated experience</li>
       </ul>
     </div>
   </div>
 </main>
-
     </>
   );
 }
