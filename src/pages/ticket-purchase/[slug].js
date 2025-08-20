@@ -1,5 +1,4 @@
-// pages/ticket-purchase/[...slug].jsx  (or adjust path to your file)
-// 'use client' is required for router + UI
+// pages/ticket-purchase/[...slug].jsx
 'use client';
 
 import TradingViewWidget from '@components/TradingViewWidget';
@@ -8,7 +7,6 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
 import { usePiAuth } from '../../context/PiAuthContext';
-import descriptions from '../../data/descriptions';
 import GiftTicketModal from '@components/GiftTicketModal';
 
 // Shared visual component we want to match
@@ -22,6 +20,9 @@ import {
   freeItems,
   cryptoGiveawaysItems,
 } from '../../data/competitions';
+
+// ⬇️ Centralized descriptions (slug > theme > default)
+import { describeCompetition } from '../../data/competitionDescriptions';
 
 /* -------------------------- Static flatten (fallback) -------------------------- */
 const flattenCompetitions = [
@@ -65,7 +66,8 @@ export default function TicketPurchasePage() {
           const norm = normalizeFromApi(data);
           setComp(norm);
           setLiveTicketsSold(norm.ticketsSold ?? 0);
-          setDesc(pickDescription(descriptions, norm.slug, norm.description));
+          // Prefer explicit description; fallback to centralized helper
+          setDesc(norm.description || describeCompetition(norm));
           setLoading(false);
           return;
         }
@@ -85,7 +87,7 @@ export default function TicketPurchasePage() {
       const norm = normalizeFromPiItem(staticRaw);
       setComp(norm);
       setLiveTicketsSold(norm.ticketsSold ?? 0);
-      setDesc(pickDescription(descriptions, norm.slug, norm.description));
+      setDesc(norm.description || describeCompetition(norm));
     } catch (e) {
       console.error('Failed to load competition:', e);
       setError('Failed to load competition');
@@ -138,9 +140,6 @@ export default function TicketPurchasePage() {
   }, [slug]);
 
   const claimFreeTicket = () => {
-    // Implement your free ticket claim here (server or local).
-    // Keep behavior unchanged; the visual card will call this.
-    // Example: increment a counter in localStorage for this slug.
     const key = `${slug}-claimed`;
     const current = parseInt(localStorage.getItem(key) || '0', 10);
     const max = sharedBonus ? 2 : 1;
@@ -236,22 +235,12 @@ export default function TicketPurchasePage() {
           // user={user}
           // login={login}
         />
-
-   
       </main>
     </>
   );
 }
 
 /* --------------------------------- Helpers --------------------------------- */
-
-function pickDescription(descriptionsMap, slug, fallback = '') {
-  if (!slug) return fallback || '—';
-  const d = descriptionsMap?.[slug];
-  if (typeof d === 'string') return d;
-  if (d?.description) return d.description;
-  return fallback || '—';
-}
 
 function normalizeFromPiItem(item) {
   const c = item?.comp ?? {};
@@ -286,8 +275,6 @@ function normalizeFromPiItem(item) {
     theme: item.theme || c.theme || null,
   };
 }
-
-
 
 function normalizeFromApi(data) {
   const c = data?.comp ?? {};

@@ -7,7 +7,9 @@ import { useEffect, useMemo, useState } from 'react';
 import LaunchCompetitionDetailCard from 'components/LaunchCompetitionDetailCard';
 import GiftTicketModal from '@components/GiftTicketModal';
 import { piItems } from '../../../data/competitions';
-import descriptions from '../../../data/descriptions';
+// ⬇️ use the centralized description helper
+// If you have a baseUrl alias, you can also do: import { describeCompetition } from '@/data/competitionDescriptions';
+import { describeCompetition } from '../../../data/competitionDescriptions';
 
 export default function PiTicketPage() {
   const router = useRouter();
@@ -31,7 +33,8 @@ export default function PiTicketPage() {
       if (local) {
         const merged = normalizeFromPiItem(local);
         setComp(merged);
-        setDesc(descriptions?.[slug] || merged.description || '');
+        // prefer explicit description, else centralized
+        setDesc(merged.description || describeCompetition(merged));
         setLoading(false);
         return;
       }
@@ -43,7 +46,7 @@ export default function PiTicketPage() {
         const data = await res.json();
         const merged = normalizeFromApi(data);
         setComp(merged);
-        setDesc(merged.description || '');
+        setDesc(merged.description || describeCompetition(merged));
       } catch (e) {
         console.error(e);
       } finally {

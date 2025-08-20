@@ -84,8 +84,8 @@ function EmptyState({ onRefresh }) {
   )
 }
 
-/* ------------------------------- Carousel ---------------------------------- */
-function Carousel({ items, renderItem }) {
+/* ------------------------------- Full-width Carousel (same as all.js) ------------------------------- */
+function FullWidthCarousel({ items, renderItem, ariaLabel }) {
   const scrollerRef = useRef(null)
   const [index, setIndex] = useState(0)
 
@@ -94,27 +94,13 @@ function Carousel({ items, renderItem }) {
     [items?.length]
   )
 
-  // smoother controlled animation
-  const easeInOut = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2)
-
   const scrollToIndex = useCallback(
-    (i, duration = 900) => {
+    (i) => {
       const el = scrollerRef.current
       if (!el) return
-
       const target = clamp(i)
-      const start = el.scrollLeft
-      const end = target * el.clientWidth
-      const change = end - start
-      const startTime = performance.now()
-
-      function step(now) {
-        const t = Math.min(1, (now - startTime) / duration)
-        const eased = easeInOut(t)
-        el.scrollLeft = start + change * eased
-        if (t < 1) requestAnimationFrame(step)
-      }
-      requestAnimationFrame(step)
+      const left = target * el.clientWidth
+      el.scrollTo({ left, behavior: 'smooth' })
     },
     [clamp]
   )
@@ -122,19 +108,9 @@ function Carousel({ items, renderItem }) {
   const onScroll = useCallback(() => {
     const el = scrollerRef.current
     if (!el) return
-    const i = Math.round(el.scrollLeft / el.clientWidth)
-    if (i !== index) setIndex(i)
+    const next = Math.round(el.scrollLeft / el.clientWidth)
+    if (next !== index) setIndex(next)
   }, [index])
-
-  // keyboard arrows
-  useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === 'ArrowRight') scrollToIndex(index + 1, 900)
-      if (e.key === 'ArrowLeft') scrollToIndex(index - 1, 900)
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [index, scrollToIndex])
 
   useEffect(() => {
     const el = scrollerRef.current
@@ -143,31 +119,54 @@ function Carousel({ items, renderItem }) {
     return () => el.removeEventListener('scroll', onScroll)
   }, [onScroll])
 
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'ArrowRight') scrollToIndex(index + 1)
+      if (e.key === 'ArrowLeft') scrollToIndex(index - 1)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [index, scrollToIndex])
+
   if (!items?.length) return null
 
   return (
     <div className="relative">
-      {/* Edge fades: match app bg */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-[#0f172a] to-transparent z-10" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-[#0f172a] to-transparent z-10" />
+      {/* edge fades from page bg (same as all.js) */}
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-[#0f172a] to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[#0f172a] to-transparent z-10" />
 
-      {/* Scroller */}
+      {/* scroller */}
       <div
         ref={scrollerRef}
         className="
-          snap-x snap-mandatory overflow-x-auto overflow-y-visible
-          w-full h-full
-          [touch-action:pan-y_pan-x]
-          [scrollbar-width:none] [-ms-overflow-style:none]
-          [&::-webkit-scrollbar]:hidden
+          w-full
+          snap-x snap-mandatory
+          overflow-x-auto overflow-y-visible
+          scroll-smooth
+          overscroll-x-contain
+          [touch-action:pan-x pan-y]
+          [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden
         "
+        aria-roledescription="carousel"
+        aria-label={ariaLabel}
       >
         <div className="flex">
           {items.map((item, i) => (
-            <div key={item.key || i} className="snap-start snap-always min-w-full px-4">
-              {/* wrapper for card interactivity controls */}
-              <div className="carousel-slide competition-card max-w-5xl mx-auto">
-                {renderItem(item, i)}
+            <div
+              key={item.key || i}
+              className="snap-start snap-always basis-full shrink-0"
+              role="group"
+              aria-roledescription="slide"
+              aria-label={`${i + 1} of ${items.length}`}
+            >
+              <div className="px-4">
+                <div
+                  className="mx-auto w-full max-w-[min(92vw,820px)] carousel-card competition-card select-none"
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
+                >
+                  {renderItem(item, i)}
+                </div>
               </div>
             </div>
           ))}
@@ -177,97 +176,50 @@ function Carousel({ items, renderItem }) {
       {/* Prev / Next */}
       <div className="absolute inset-y-0 left-2 sm:left-4 flex items-center z-20">
         <button
-          onClick={() => scrollToIndex(index - 1, 900)}
-          disabled={index === 0}
-          className={`rounded-full p-2 border bg-white/10 backdrop-blur border-white/20 hover:bg-white/15 active:scale-95 transition ${
-            index === 0 ? 'opacity-50 cursor-not-allowed' : ''
-          }`}
-          aria-label="Previous"
           type="button"
+          onClick={() => scrollToIndex(index - 1)}
+          disabled={index === 0}
+          className={`h-11 w-11 sm:h-12 sm:w-12 rounded-full p-2 border bg-white/10 backdrop-blur border-white/20 hover:bg-white/15 active:scale-95 transition
+            ${index === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+          aria-label="Previous"
         >
           <ChevronLeft />
         </button>
       </div>
       <div className="absolute inset-y-0 right-2 sm:right-4 flex items-center z-20">
         <button
-          onClick={() => scrollToIndex(index + 1, 900)}
-          disabled={index === items.length - 1}
-          className={`rounded-full p-2 border bg-white/10 backdrop-blur border-white/20 hover:bg-white/15 active:scale-95 transition ${
-            index === items.length - 1 ? 'opacity-50 cursor-not-allowed' : ''
-          }`}
-          aria-label="Next"
           type="button"
+          onClick={() => scrollToIndex(index + 1)}
+          disabled={index === items.length - 1}
+          className={`h-11 w-11 sm:h-12 sm:w-12 rounded-full p-2 border bg-white/10 backdrop-blur border-white/20 hover:bg-white/15 active:scale-95 transition
+            ${items?.length ? (index === items.length - 1 ? 'opacity-50 cursor-not-allowed' : '') : ''}`}
+          aria-label="Next"
         >
           <ChevronRight />
         </button>
       </div>
 
-      {/* Dots */}
+      {/* dots */}
       <div className="mt-4 flex items-center justify-center gap-2">
         {items.map((_, i) => (
           <button
             key={i}
-            onClick={() => scrollToIndex(i, 900)}
-            className={`h-2.5 rounded-full transition-all ${
-              i === index ? 'w-6 bg-cyan-400' : 'w-2.5 bg-white/40'
-            }`}
-            aria-label={`Go to slide ${i + 1}`}
             type="button"
+            onClick={() => scrollToIndex(i)}
+            className={`h-2.5 rounded-full transition-all ${i === index ? 'w-6 bg-cyan-400' : 'w-2.5 bg-white/40'}`}
+            aria-label={`Go to slide ${i + 1}`}
           />
         ))}
       </div>
 
-      {/* Neutralize press-scale inside; add hover glow on wrapper */}
+      {/* Reduced motion */}
       <style jsx global>{`
-        .competition-card {
-          transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
-          border-radius: 1rem;
-        }
-        .competition-card:hover {
-          transform: translateY(-4px) scale(1.02);
-          box-shadow: 0 0 18px rgba(0, 255, 213, 0.25), 0 0 28px rgba(0, 119, 255, 0.18);
-        }
-
-        .carousel-slide {
-          -webkit-tap-highlight-color: transparent;
-        }
-        .carousel-slide a,
-        .carousel-slide button {
-          transform: none !important;
-        }
-        .carousel-slide a:hover,
-        .carousel-slide button:hover,
-        .carousel-slide a:active,
-        .carousel-slide button:active,
-        .carousel-slide a:focus,
-        .carousel-slide button:focus {
-          transform: none !important;
-        }
-        .carousel-slide a:focus-visible,
-        .carousel-slide button:focus-visible {
-          outline: 2px solid rgba(34, 211, 238, 0.6);
-          outline-offset: 2px;
-        }
-        .carousel-slide *:hover,
-        .carousel-slide *:active {
-          transform: none !important;
-        }
-
-        @keyframes float-slow {
-          0% { transform: translateY(0) translateX(0); }
-          50% { transform: translateY(18px) translateX(6px); }
-          100% { transform: translateY(0) translateX(0); }
-        }
-        @keyframes float-slower {
-          0% { transform: translateY(0) translateX(0); }
-          50% { transform: translateY(-14px) translateX(-8px); }
-          100% { transform: translateY(0) translateX(0); }
-        }
-        .animate-float-slow { animation: float-slow 12s ease-in-out infinite; }
-        .animate-float-slower { animation: float-slower 16s ease-in-out infinite; }
-
         @media (prefers-reduced-motion: reduce) {
-          * { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
+          * {
+            scroll-behavior: auto !important;
+            animation: none !important;
+            transition: none !important;
+          }
         }
       `}</style>
     </div>
@@ -326,7 +278,6 @@ export default function LaunchWeekCompetitionsPage() {
     })
   }, [competitions])
 
-  // Hero stats
   const heroStats = useMemo(() => {
     if (!slides.length) return { count: 0, minFee: 0, soonest: null }
     const fees = slides.map((s) => Number(s.comp?.entryFee ?? 0)).filter(Number.isFinite)
@@ -377,7 +328,7 @@ export default function LaunchWeekCompetitionsPage() {
 
           <div className="text-center max-w-2xl mx-auto mb-2 mt-3">
             <p className="text-white/80 text-xs sm:text-sm">
-               <span className="text-cyan-300 font-semibold">{ticketsToday.toLocaleString()}</span> tickets sold today ·{' '}
+              <span className="text-cyan-300 font-semibold">{ticketsToday.toLocaleString()}</span> tickets sold today ·{' '}
               <span className="text-cyan-300 font-semibold">{heroStats.count}</span> live competitions
             </p>
             <p className="text-white/70 text-xs sm:text-sm">
@@ -402,7 +353,7 @@ export default function LaunchWeekCompetitionsPage() {
         </motion.div>
       </section>
 
-      {/* Content: full-width carousel */}
+      {/* Content: FullWidthCarousel (same as all.js) */}
       <section className="pb-14">
         <div className="w-screen">
           {error && (
@@ -412,8 +363,9 @@ export default function LaunchWeekCompetitionsPage() {
           )}
 
           {slides.length > 0 ? (
-            <Carousel
+            <FullWidthCarousel
               items={slides}
+              ariaLabel="Launch competitions"
               renderItem={(s) => (
                 <LaunchCompetitionCard
                   comp={s.comp}
@@ -432,6 +384,52 @@ export default function LaunchWeekCompetitionsPage() {
           )}
         </div>
       </section>
+
+      {/* Global hover glow + no-scale + background animations */}
+      <style jsx global>{`
+        .competition-card {
+          transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+          border-radius: 1rem;
+        }
+        .competition-card:hover {
+          transform: translateY(-4px) scale(1.02);
+          box-shadow: 0 0 18px rgba(0, 255, 213, 0.25), 0 0 28px rgba(0, 119, 255, 0.18);
+        }
+
+        .carousel-card,
+        .carousel-card a,
+        .carousel-card button {
+          -webkit-tap-highlight-color: transparent;
+        }
+        .carousel-card *:focus-visible {
+          outline: 2px solid #22d3ee !important;
+          outline-offset: 2px;
+        }
+        .carousel-card *,
+        .carousel-card:hover,
+        .carousel-card:active {
+          transform: none !important;
+          transition-property: transform !important;
+          transition-duration: 0s !important;
+        }
+
+        @keyframes float-slow {
+          0% { transform: translateY(0) translateX(0); }
+          50% { transform: translateY(18px) translateX(6px); }
+          100% { transform: translateY(0) translateX(0); }
+        }
+        @keyframes float-slower {
+          0% { transform: translateY(0) translateX(0); }
+          50% { transform: translateY(-14px) translateX(-8px); }
+          100% { transform: translateY(0) translateX(0); }
+        }
+        .animate-float-slow { animation: float-slow 12s ease-in-out infinite; }
+        .animate-float-slower { animation: float-slower 16s ease-in-out infinite; }
+
+        @media (prefers-reduced-motion: reduce) {
+          * { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
+        }
+      `}</style>
     </main>
   )
 }

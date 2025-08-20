@@ -9,7 +9,7 @@ import ReferralStatsCard from 'components/ReferralStatsCard';
 import GiftTicketModal from 'components/GiftTicketModal';
 import PiCashClaimBox from 'components/PiCashClaimBox';
 import StagesXPSection from 'components/StagesXPSection';
-
+import RedeemVoucherPanel from 'components/RedeemVoucherPanel';
 /* -------------------------- tiny shared primitives -------------------------- */
 function Chip({ active, children, onClick }) {
   return (
@@ -282,32 +282,32 @@ function TicketsPanel({ user }) {
   const [theme, setTheme] = useState('all');
   const [state, setState] = useState('active'); // active | completed | all
 
+  const loadTickets = async () => {
+    if (!user?.username) {
+      setTickets([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      const { data } = await axios.get(`/api/user/tickets?username=${encodeURIComponent(user.username)}`);
+      const arr = Array.isArray(data) ? data : [];
+      const enhanced = arr.map(t => ({
+        ...t,
+        theme: categorizeTicket(t.competitionSlug, t.competitionTitle),
+        drawDate: t.drawDate || t.endsAt || new Date().toISOString(),
+      }));
+      setTickets(enhanced);
+    } catch {
+      setTickets([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    let mounted = true;
-    (async () => {
-      if (!user?.username) {
-        setLoading(false);
-        return;
-      }
-      setLoading(true);
-      try {
-        const ticketsRes = await axios.get(`/api/user/tickets?username=${user.username}`);
-        const arr = Array.isArray(ticketsRes.data) ? ticketsRes.data : [];
-        const enhanced = arr.map(t => ({
-          ...t,
-          theme: categorizeTicket(t.competitionSlug, t.competitionTitle),
-          drawDate: t.drawDate || t.endsAt || new Date().toISOString(),
-        }));
-        if (mounted) setTickets(enhanced);
-      } catch {
-        if (mounted) setTickets([]);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
+    loadTickets();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.username]);
 
   const now = new Date();
@@ -326,6 +326,9 @@ function TicketsPanel({ user }) {
 
   return (
     <div className="space-y-6">
+      {/* New: Redeem voucher box (refreshes tickets on success) */}
+      <RedeemVoucherPanel onRedeemed={loadTickets} />
+
       <Section
         title="My Tickets"
         right={
@@ -378,6 +381,7 @@ function TicketsPanel({ user }) {
     </div>
   );
 }
+
 
 /* -------------------------------- Stages tab -------------------------------- */
 function StagesPanel({ userId }) {
@@ -445,11 +449,11 @@ function StagesPanel({ userId }) {
           <div className="flex overflow-x-auto gap-3 -mx-2 px-2 snap-x snap-mandatory
                           [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             {stageTickets.map((t, i) => (
-              <div key={i} className="snap-start shrink-0 min-w-[180px] rounded-xl border border-cyan-300 bg-white/5 p-3">
+              <div key={i} className="snap-start shrink-0 min-w-[180px] rounded-xl border border-cyan-300 bg:white/5 bg-white/5 p-3">
                 <div className="text-sm text-white font-bold">Stage {t.stage}</div>
-                <div className="text-xs text-white/70 mt-1">{t.count} ticket(s)</div>
+                <div className="text-xs text:white/70 text-white/70 mt-1">{t.count} ticket(s)</div>
                 {t.expiresAt && (
-                  <div className="text*[11px] text-white/60 mt-1">Expires: {formatDate2(t.expiresAt)}</div>
+                  <div className="text*[11px] text:white/60 text-white/60 mt-1">Expires: {formatDate2(t.expiresAt)}</div>
                 )}
                 <button
                   onClick={() => location.assign(`/battles?stage=${t.stage}`)}

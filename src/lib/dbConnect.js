@@ -1,25 +1,28 @@
+// src/lib/db.js
 import mongoose from 'mongoose';
 
-// Disable strictQuery warning for Mongoose 7+
 mongoose.set('strictQuery', false);
 
-let isConnected = false;
-
-export async function dbConnect() {
-  if (isConnected) return;
-
-  const uri = process.env.MONGO_DB_URL;
-  if (!uri) throw new Error('❌ MONGO_DB_URL is missing in .env.local');
-
-  try {
-    const db = await mongoose.connect(uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    isConnected = db.connections[0].readyState === 1;
-    console.log('✅ MongoDB connected');
-  } catch (error) {
-    console.error('❌ MongoDB connection error:', error);
-    throw error;
-  }
+// Accept either key so you don't get blocked by a mismatch
+const URI = process.env.MONGO_DB_URL || process.env.MONGODB_URI;
+if (!URI) {
+  throw new Error('Missing MongoDB connection string: set MONGO_DB_URL or MONGODB_URI in .env.local');
 }
+
+// Global cache to survive Next.js hot reloads
+let cached = global.mongoose;
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
+
+export default async function dbConnect() {
+  if (cached.conn) return cached.conn;
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(URI, { bufferCommands: false }).then((m) => m);
+  }
+  cached.conn = await cached.promise;
+  return cached.conn;
+}
+
+// optional named export if you prefer
+export { dbConnect };

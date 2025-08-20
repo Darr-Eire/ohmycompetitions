@@ -1,5 +1,5 @@
 'use client';
-import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { postJSON } from '../../lib/api';
 import { useFunnelStage } from '../../hooks/useFunnel';
 import { usePiAuth } from '../../context/PiAuthContext';
@@ -140,40 +140,43 @@ function getStageRules(stage) {
   switch (stage) {
     case 1:
       return [
-        'Entry cost required for qualifiers.',
-        'Top 5 in each room advance to Stage 2.',
-        'Ties are broken by fastest completion time.',
-        'No multi-accounting; anti-cheat enforced.',
+        'Entry cost required to join Stage 1.',
+        'Tickets are drawn at random to decide who advances.',
+        'If you win a Stage 2 ticket, you move on.',
+        'One account per player; anti-cheat enforced.',
       ];
     case 2:
       return [
         'Only players with a Stage 2 ticket may enter.',
-        'Top 5 advance to Stage 3.',
-        'Round timer applies; slowest players are eliminated.',
-        'Ties broken by previous round rank.',
+        'Tickets are randomly selected for Stage 3.',
+        'Winning a ticket guarantees your advance.',
+        'Fair play and account checks apply.',
       ];
     case 3:
       return [
-        'Higher difficulty; fewer checkpoints.',
-        'Top 5 advance to Stage 4.',
-        'Repeated AFK events lead to disqualification.',
+        'Stage 3 requires a valid ticket to join.',
+        'Random draw determines who moves to Stage 4.',
+        'Keep your ticket safe without it you cannot enter.',
       ];
     case 4:
       return [
-        'Final qualifier round before Finals.',
-        'Top 5 advance to the Finals.',
-        'Strict fair-play checks; suspicious activity is reviewed.',
+        'Final qualifier before the Finals.',
+        'Stage 4 tickets are drawn at random.',
+        'Winners advance to the Finals with a Final Ticket.',
+        'Strict fairness checks on duplicate or suspicious accounts.',
       ];
     case 5:
       return [
-        'Final ticket required to enter.',
-        'Winners share the prize pool.',
-        'Anti-cheat & manual review for top placements.',
+        'Final Ticket required to enter.',
+        'Random draw determines where evryone is placement for the final prizes',
+        'Prize pool is shared according to placement.',
+        'Anti-cheat & manual review apply to all finalists.',
       ];
     default:
       return ['General rules apply.'];
   }
 }
+
 
 function StageRulesModal({ stage, onClose }) {
   if (!stage) return null;
@@ -212,8 +215,6 @@ function computeFinalsMeta(list = []) {
     .reduce((min, t) => Math.min(min, t), Infinity);
   const nextStartISO = Number.isFinite(nextStartTs) ? new Date(nextStartTs).toISOString() : null;
 
-  // You can still compute/estimate a dynamic pool if you want, but we
-  // now display a fixed breakdown card as requested.
   const prizePoolPi = Math.max(100, Math.round(entrants * 0.5));
 
   return { rooms, entrants, capacity, nextStartISO, prizePoolPi };
@@ -245,24 +246,23 @@ function FinalsPrizeCard() {
   ];
   return (
   <div className="rounded-2xl border border-cyan-400/40 bg-gradient-to-br from-[#0d1729] to-[#0a1020] p-4 shadow-lg shadow-cyan-400/10">
-  <div className="text-sm font-bold text-cyan-300 mb-3 flex items-center gap-2 drop-shadow-[0_0_6px_rgba(34,211,238,0.6)]">
-    Finals Prize Breakdown
+    <div className="text-sm font-bold text-cyan-300 mb-3 flex items-center gap-2 drop-shadow-[0_0_6px_rgba(34,211,238,0.6)]">
+      Finals Prize Breakdown
+    </div>
+    <ul className="space-y-2 text-sm text-white/80">
+      {breakdown.map((b, i) => (
+        <li
+          key={i}
+          className="flex justify-between border-b border-white/5 pb-2 last:border-0 last:pb-0"
+        >
+          <span>{b.place}</span>
+          <span className="font-semibold text-cyan-200 drop-shadow-[0_0_4px_rgba(34,211,238,0.7)]">
+            {b.prize}
+          </span>
+        </li>
+      ))}
+    </ul>
   </div>
-  <ul className="space-y-2 text-sm text-white/80">
-    {breakdown.map((b, i) => (
-      <li
-        key={i}
-        className="flex justify-between border-b border-white/5 pb-2 last:border-0 last:pb-0"
-      >
-        <span>{b.place}</span>
-        <span className="font-semibold text-cyan-200 drop-shadow-[0_0_4px_rgba(34,211,238,0.7)]">
-          {b.prize}
-        </span>
-      </li>
-    ))}
-  </ul>
-</div>
-
   );
 }
 
@@ -296,12 +296,11 @@ function MiniCard({ data, stage, onJoin, entryFee }) {
 
   return (
     <div
-      dir={isFinals ? 'rtl' : 'ltr'} // 👈 flips everything for Stage 5
+      dir={isFinals ? 'rtl' : 'ltr'}
       className={`min-w-[260px] sm:min-w-[300px] rounded-2xl border 
         ${isFinals ? 'border-cyan-400 text-right' : 'border-white/10 text-left'} 
         bg-[#0b1220] p-5`}
     >
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="text-white font-semibold">
           {stage === 1 ? 'Qualifier' : `Stage ${stage}`}
@@ -311,24 +310,20 @@ function MiniCard({ data, stage, onJoin, entryFee }) {
         </span>
       </div>
 
-      {/* Players / Advance line */}
       <div className="mt-3 text-xs sm:text-sm text-white/80">
         Players {data.entrantsCount}/{data.capacity} • Advance Top {adv}
       </div>
 
-      {/* Progress bar (always LTR so the bar fills correctly) */}
       <div className="mt-3 h-2 rounded-full bg-white/10 overflow-hidden" dir="ltr">
         <div className="h-full bg-cyan-400" style={{ width: `${pct}%` }} />
       </div>
 
-      {/* Info lines */}
       <div className="mt-2 text-[11px] text-white/60 space-y-1">
         <div>+5 XP when you join this stage</div>
         <div>Top {adv} advance for a share of the pool</div>
         {winChance !== null && <div>Win chance: {winChance}%</div>}
       </div>
 
-      {/* Countdown + CTA */}
       <div className="mt-4 flex items-center justify-between gap-3">
         <CountdownCircle
           targetISO={data.nextStartAt || inFuture(2)}
@@ -361,9 +356,6 @@ function MiniCard({ data, stage, onJoin, entryFee }) {
     </div>
   );
 }
-
-
-
 
 function HScrollCards({ list, stage, onJoin, entryFee }) {
   if (!list?.length) return null;
@@ -466,8 +458,6 @@ function FinalsTab({ list, onJoin, entryFee, onShowRules }) {
   return (
     <>
       <div className="flex items-center justify-between">
-  
-
         <button
           onClick={() => onShowRules?.(5)}
           className="text-xs px-3 py-1 rounded-full border border-white/15 text-white/80 hover:bg-white/5"
@@ -477,7 +467,6 @@ function FinalsTab({ list, onJoin, entryFee, onShowRules }) {
         </button>
       </div>
 
-      {/* KPI header with countdown etc. */}
       <FinalsHeader list={list} />
 
       <div className="mt-6 grid lg:grid-cols-3 gap-6">
@@ -617,15 +606,26 @@ export default function FunnelIndexPage() {
 
   const [activeTab, setActiveTab] = useState('1');
 
-  const handleTab = (key) => {
-    setActiveTab(key);
+  // NEW: defer scrolling until after render
+  const pendingScrollRef = useRef(null);
+  useEffect(() => {
+    if (!pendingScrollRef.current) return;
+    const key = pendingScrollRef.current;
     const n = Number(key);
-    const el = document.getElementById(`stage-${n}`);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+
+    requestAnimationFrame(() => {
+      const el = document.getElementById(`stage-${n}`);
+      if (!el) return;
+      const SCROLL_OFFSET = 72; // adjust if you have a sticky header height
+      const top = el.getBoundingClientRect().top + window.scrollY - SCROLL_OFFSET;
+      window.scrollTo({ top, behavior: 'smooth' });
+      pendingScrollRef.current = null;
+    });
+  }, [activeTab]);
+
+  const handleTab = (key) => {
+    pendingScrollRef.current = key; // remember target
+    setActiveTab(key);              // trigger render; effect will scroll
   };
 
   /* Stage Rules modal control */
@@ -711,7 +711,6 @@ export default function FunnelIndexPage() {
           {/* Tab-aware rendering */}
           {activeTab === '5' ? (
             <>
-              {/* Anchor for smooth scroll */}
               <div id="stage-5" className="h-0" />
               <FinalsTab list={s5Live} onJoin={handleJoin} entryFee={ENTRY_FEE_PI} onShowRules={openRules} />
             </>
@@ -725,7 +724,6 @@ export default function FunnelIndexPage() {
               }
               return (
                 <>
-                  {/* Anchor for smooth scroll */}
                   <div id={`stage-${tab.n}`} className="h-0" />
                   <StageBlock
                     stage={tab.n}

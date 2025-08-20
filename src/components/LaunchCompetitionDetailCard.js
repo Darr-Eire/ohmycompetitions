@@ -6,7 +6,7 @@ import Link from 'next/link';
 import '@fontsource/orbitron';
 import BuyTicketButton from 'components/BuyTicketButton'; // adjust to your alias if needed
 import { usePiAuth } from 'context/PiAuthContext';        // keep this path consistent
-// import { getDescriptionForComp } from 'data/descriptions'; // (unused here)
+import { describeCompetition } from 'data/competitionDescriptions'; // 👈 centralized copy
 
 // Skill question helpers
 import { getRandomQuestion, isCorrectAnswer as checkAnswer } from 'data/skill-questions';
@@ -14,7 +14,6 @@ import { getRandomQuestion, isCorrectAnswer as checkAnswer } from 'data/skill-qu
 /* ───────────────────────── prize helpers ───────────────────────── */
 function normalizePrizeBreakdown(raw) {
   if (!raw) return {};
-  // Object form → map common labels to 1st/2nd/3rd
   if (typeof raw === 'object' && !Array.isArray(raw)) {
     const out = {};
     const map = {
@@ -28,7 +27,6 @@ function normalizePrizeBreakdown(raw) {
     }
     if (out['1st'] || out['2nd'] || out['3rd']) return out;
 
-    // If unlabeled, pick top 3 numerically
     const sorted = Object.values(raw)
       .map(v => ({ v, n: Number(String(v).replace(/[^\d.-]/g, '')) }))
       .sort((a, b) => (b.n || -Infinity) - (a.n || -Infinity))
@@ -37,7 +35,6 @@ function normalizePrizeBreakdown(raw) {
     sorted.forEach((e, i) => { if (e?.v != null) out[ord[i]] = e.v; });
     return out;
   }
-  // Array form → [first, second, third]
   if (Array.isArray(raw)) {
     const ord = ['1st', '2nd', '3rd'];
     const out = {};
@@ -49,7 +46,6 @@ function normalizePrizeBreakdown(raw) {
 
 function buildPrizeBreakdownFromComp(input, prizeFallback) {
   const c = input?.comp ?? input ?? {};
-  // Explicit fields first
   const explicit = {
     '1st': c.firstPrize ?? c.prize1,
     '2nd': c.secondPrize ?? c.prize2,
@@ -57,13 +53,11 @@ function buildPrizeBreakdownFromComp(input, prizeFallback) {
   };
   if (explicit['1st'] || explicit['2nd'] || explicit['3rd']) return explicit;
 
-  // Structured breakdowns / arrays
   const tiers = {
     ...normalizePrizeBreakdown(c.prizeBreakdown),
     ...normalizePrizeBreakdown(c.prizes),
   };
 
-  // Fallback: single prize (prop or object)
   if (!tiers['1st'] && (prizeFallback ?? c.prize ?? c.prizeLabel)) {
     tiers['1st'] = prizeFallback ?? c.prize ?? c.prizeLabel;
   }
@@ -91,17 +85,30 @@ function getWinnersCount(comp, tiers) {
   return Math.min(3, count || 1);
 }
 
-function formatPrize(v) {
+/** Format prize text.
+ * - For tech/gadgets themes, NEVER append the π symbol (and strip it if present).
+ * - For other themes, append π to plain numerics/strings that lack a currency.
+ */
+function formatPrize(v, theme) {
   if (v === null || v === undefined) return null;
+
+  const isTechOrGadgets = ['tech', 'gadgets'].includes(String(theme || '').toLowerCase());
+
   if (typeof v === 'string') {
-    const trimmed = v.trim();
-    if (!trimmed) return null;
-    return /\bπ\b|[$€£]/.test(trimmed) ? trimmed : `${trimmed} π`;
+    let s = v.trim();
+    if (!s) return null;
+    if (isTechOrGadgets) {
+      // strip trailing/embedded π (or " pi") defensively
+      s = s.replace(/\s*π\s*/gi, '').replace(/\s*pi\s*$/i, '');
+      return s;
+    }
+    return /\bπ\b|[$€£]/.test(s) ? s : `${s} π`;
   }
+
   const n = Number(v);
   if (!Number.isFinite(n)) return null;
   const formatted = n >= 1000 ? Math.round(n).toLocaleString('en-US') : n.toFixed(2);
-  return `${formatted} π`;
+  return isTechOrGadgets ? `${formatted}` : `${formatted} π`;
 }
 
 /* ───────────────────────── component ───────────────────────── */
@@ -125,7 +132,7 @@ export default function LaunchCompetitionDetailCard({
   sharedBonus = false,
   GiftTicketModal,
   handlePaymentSuccess,
-  description,
+  description, // 👈 optional prop
 
   // OPTIONAL: allow parent to seed a question
   initialQuestion,
@@ -142,6 +149,12 @@ export default function LaunchCompetitionDetailCard({
 
   const effectiveUserId = getUserId(effectiveUser);
 
+  /* -------------------- Description (centralized) -------------------- */
+  const effectiveDescription = useMemo(() => {
+    // Priority: explicit prop -> comp.description -> centralized describeCompetition
+    return description ?? comp?.description ?? describeCompetition(comp);
+  }, [description, comp]);
+
   /* -------------------- Formatting / derived values -------------------- */
   const formattedStart = startsAt
     ? new Date(startsAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
@@ -155,13 +168,20 @@ export default function LaunchCompetitionDetailCard({
   const percent = totalTickets > 0 ? Math.min(100, Math.floor(((ticketsSold ?? 0) / totalTickets) * 100)) : 0;
   const isNearlyFull = availableTickets > 0 && availableTickets <= Math.ceil((totalTickets ?? 0) * 0.25);
 
-  /* -------------------- Countdown (Days Hours Mins) -------------------- */
+  /* -------------------- Countdown (24h mode) -------------------- */
   const [nowTs, setNowTs] = useState(Date.now());
+  const msLeft = useMemo(() => {
+    if (!endsAt) return null;
+    return Math.max(0, new Date(endsAt).getTime() - nowTs);
+  }, [endsAt, nowTs]);
+  const isLast24h = msLeft !== null && msLeft <= 24 * 60 * 60 * 1000;
+
   useEffect(() => {
     if (!endsAt) return;
-    const id = setInterval(() => setNowTs(Date.now()), 60000);
+    const tickMs = isLast24h ? 1000 : 60000; // seconds in last 24h, minutes otherwise
+    const id = setInterval(() => setNowTs(Date.now()), tickMs);
     return () => clearInterval(id);
-  }, [endsAt]);
+  }, [endsAt, isLast24h]);
 
   /* -------------------- Purchase flow state -------------------- */
   const [quantity, setQuantity] = useState(1);
@@ -209,7 +229,7 @@ export default function LaunchCompetitionDetailCard({
       setHasValidAnswer(true);
       setAnswerError('');
       setShowSkillQuestion(false);
-      setShowPayment(false); // press Proceed again to reveal payment
+      setShowPayment(false);
     } else {
       setHasValidAnswer(false);
       setAnswerError('You must answer correctly to proceed.');
@@ -234,6 +254,13 @@ export default function LaunchCompetitionDetailCard({
     winnersCount === 3 ? '1st • 2nd • 3rd Prizes'
   : winnersCount === 2 ? '1st • 2nd Prizes'
   : 'Single Winner';
+
+  // Dynamic layout: center 1 prize, 2-column for 2 prizes, 3-column for 3 prizes
+  const prizesLayoutClass = useMemo(() => {
+    if (winnersCount === 1) return 'flex justify-center';
+    if (winnersCount === 2) return 'grid grid-cols-1 sm:grid-cols-2 gap-3';
+    return 'grid grid-cols-1 sm:grid-cols-3 gap-3';
+  }, [winnersCount]);
 
   /* --------------------------------- UI --------------------------------- */
   return (
@@ -274,13 +301,19 @@ export default function LaunchCompetitionDetailCard({
                   Live Now
                 </span>
 
-                <div className="text-lg font-bold text-cyan-300 mt-1">
+                <div className={`text-lg font-bold ${isLast24h ? 'text-amber-300' : 'text-cyan-300'} mt-1`}>
                   {(() => {
-                    const end = new Date(endsAt).getTime();
-                    const diff = Math.max(0, end - nowTs);
-                    const days = Math.floor(diff / 86400000);
+                    const diff = msLeft ?? 0;
+                    if (isLast24h) {
+                      const hours = Math.floor(diff / 3600000);
+                      const mins  = Math.floor((diff % 3600000) / 60000);
+                      const secs  = Math.floor((diff % 60000) / 1000);
+                      const pad = (n) => String(n).padStart(2, '0');
+                      return `${pad(hours)}:${pad(mins)}:${pad(secs)}`;
+                    }
+                    const days  = Math.floor(diff / 86400000);
                     const hours = Math.floor((diff % 86400000) / 3600000);
-                    const mins = Math.floor((diff % 3600000) / 60000);
+                    const mins  = Math.floor((diff % 3600000) / 60000);
                     return `${days} ${days === 1 ? 'Day' : 'Days'} ${hours} ${hours === 1 ? 'Hour' : 'Hours'} ${mins} ${mins === 1 ? 'Min' : 'Mins'}`;
                   })()}
                 </div>
@@ -313,7 +346,7 @@ export default function LaunchCompetitionDetailCard({
             </div>
 
             {/* PRIZES (dynamic 1/2/3) */}
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className={`mt-4 ${prizesLayoutClass}`}>
               {ordinals.map((label) => (
                 <div
                   key={label}
@@ -326,7 +359,7 @@ export default function LaunchCompetitionDetailCard({
                     className="mt-1 text-lg font-extrabold text-cyan-300 motion-safe:animate-pulse drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]"
                     style={{ animationDuration: '1.1s' }}
                   >
-                    {formatPrize(tiers[label]) ?? 'TBA'}
+                    {formatPrize(tiers[label], comp?.theme) ?? 'TBA'}
                   </div>
                 </div>
               ))}
@@ -505,7 +538,7 @@ export default function LaunchCompetitionDetailCard({
 
                   {/* Inspiration + thanks */}
                   <p className="mt-2 text-center text-cyan-300 text-sm italic">
-                    Your journey to victory starts here — play smart, dream big and claim the Pi prize
+                    Your journey to victory starts here play smart, dream big and claim the Pi prize
                   </p>
                   <p className="text-cyan-300 text-xs sm:text-sm mt-3 text-center">
                     Thank you for participating and good luck!
@@ -515,7 +548,7 @@ export default function LaunchCompetitionDetailCard({
                   {showDetails && (
                     <div className="mt-3 bg-white/10 p-4 rounded-lg border border-cyan-400 text-sm whitespace-pre-wrap leading-relaxed">
                       <h2 className="text-center text-lg font-bold mb-2 text-cyan-300">Competition Details</h2>
-                      <p>{description ?? comp?.description ?? '—'}</p>
+                      <p>{effectiveDescription || '—'}</p>
                     </div>
                   )}
                 </>
