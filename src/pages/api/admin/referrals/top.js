@@ -1,4 +1,4 @@
-import { requireAdmin } from '../_adminAuth';
+import { requireAdmin } from 'lib/adminAuth';
 import { dbConnect } from 'lib/dbConnect';
 
 // If you already have a User model with a referralCount field, import it:

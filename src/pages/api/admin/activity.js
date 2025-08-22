@@ -1,4 +1,4 @@
-import { requireAdmin } from './_adminAuth';
+import { requireAdmin } from 'lib/adminAuth';
 import { dbConnect } from 'lib/dbConnect';
 import Competition from 'models/Competition';
 
