@@ -1,16 +1,12 @@
-// Simple header-based admin guard used by all admin APIs.
-// Expects headers: x-admin-username, x-admin-password
-export function requireAdmin(req, res) {
-  const u = req.headers['x-admin-username'];
-  const p = req.headers['x-admin-password'];
+// src/pages/api/_adminAuth.js
+export function requireAdmin(req) {
+  const auth = req.headers.authorization || '';
+  const token = auth.replace(/^Bearer\s+/i, '').trim();
 
-  if (
-    !u || !p ||
-    u !== process.env.ADMIN_USERNAME ||
-    p !== process.env.ADMIN_PASSWORD
-  ) {
-    res.status(403).json({ message: 'Forbidden: Invalid credentials' });
-    return false;
+  if (process.env.ADMIN_BEARER_TOKEN && token === process.env.ADMIN_BEARER_TOKEN) {
+    return true;
   }
-  return true;
+  const err = new Error('Unauthorized');
+  err.statusCode = 401;
+  throw err;
 }
