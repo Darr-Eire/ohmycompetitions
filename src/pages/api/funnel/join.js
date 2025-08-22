@@ -4,6 +4,7 @@ import { ENTRY_FEE_PI, assignStage1Room } from '../../../lib/funnelService';
 import { getPayment, approvePayment } from '../../../lib/piClient';
 import { lobby } from '../../../lib/funnelLobby';
 
+
 const EXPECTED_FEE = Number(ENTRY_FEE_PI);
 
 // Normalize lots of real-world variants to 'pi'

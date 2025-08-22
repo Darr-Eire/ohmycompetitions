@@ -1,5 +1,7 @@
 // src/lib/adminAuth.js
 // Dependency-free admin gate: Bearer <ADMIN_BEARER_TOKEN>
+import { requireAdmin } from 'lib/adminAuth';
+
 export function requireAdmin(req, res) {
   const auth = req.headers.authorization || "";
   const token = auth.replace(/^Bearer\s+/i, "").trim();

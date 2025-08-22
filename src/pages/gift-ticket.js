@@ -1,136 +1,86 @@
-import { dbConnect } from 'lib/dbConnect';
-import Ticket from 'models/Ticket';
-import User from 'models/User';
-import Competition from 'models/Competition';
-import { verifyPayment } from 'lib/pi/verifyPayment'; // Make sure this exists
+// src/pages/gift-ticket.js
+'use client';
+import { useState } from 'react';
 
-const recentGifts = new Map(); // Basic IP rate limiting
+export default function GiftTicketPage() {
+  const [fromUsername, setFromUsername] = useState('');
+  const [toUsername, setToUsername] = useState('');
+  const [competitionSlug, setCompetitionSlug] = useState('');
+  const [quantity, setQuantity] = useState(1);
+  const [status, setStatus] = useState(null);
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  await dbConnect();
-
-  const { 
-    fromUsername, 
-    toUsername, 
-    competitionSlug, 
-    competitionId, 
-    quantity = 1,
-    paymentId,
-    transaction
-  } = req.body;
-
-  if (!fromUsername || !toUsername || (!competitionSlug && !competitionId)) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-
-  if (fromUsername.toLowerCase() === toUsername.toLowerCase()) {
-    return res.status(400).json({ error: 'You cannot gift a ticket to yourself' });
-  }
-
-  if (quantity < 1 || quantity > 50) {
-    return res.status(400).json({ error: 'Quantity must be between 1 and 50' });
-  }
-
-  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  const now = Date.now();
-
-  if (recentGifts.has(ip) && now - recentGifts.get(ip) < 15000) {
-    return res.status(429).json({ error: 'Please wait 15 seconds between gifts' });
-  }
-
-  try {
-    console.log('🎁 Gift ticket request:', { fromUsername, toUsername, competitionId, quantity });
-
-    const sender = await User.findOne({ 
-      username: { $regex: new RegExp(`^${fromUsername}$`, 'i') }
-    }).lean();
-
-    if (!sender) return res.status(404).json({ error: 'Sender not found' });
-
-    const recipient = await User.findOne({ 
-      username: { $regex: new RegExp(`^${toUsername}$`, 'i') }
-    }).lean();
-
-    if (!recipient) return res.status(404).json({ error: 'Recipient not found' });
-
-    let competition;
-    if (competitionId) {
-      competition = await Competition.findById(competitionId).lean();
-    } else {
-      competition = await Competition.findOne({ 'comp.slug': competitionSlug }).lean();
-    }
-
-    if (!competition) return res.status(404).json({ error: 'Competition not found' });
-
-    if (competition.comp?.status !== 'active') {
-      return res.status(400).json({ error: 'Competition is not active' });
-    }
-
-    const entryFee = competition.comp?.entryFee || 0;
-    const expectedAmount = quantity * entryFee;
-
-    if (!paymentId || !transaction) {
-      return res.status(400).json({ error: 'Missing payment data' });
-    }
-
-    const isValidPayment = await verifyPayment({
-      paymentId,
-      transaction,
-      expectedAmount,
-      username: fromUsername,
-      reason: 'gift',
-    });
-
-    if (!isValidPayment) {
-      return res.status(402).json({ error: 'Pi payment verification failed' });
-    }
-
-    const ticketNumbers = Array.from({ length: quantity }, (_, i) => 
-      `GIFT-${Date.now()}-${Math.floor(Math.random() * 1000)}-${i + 1}`
-    );
-
-    const giftTicket = new Ticket({
-      username: recipient.username,
-      competitionSlug: competition.comp?.slug || competitionSlug,
-      competitionId: competition._id,
-      competitionTitle: competition.title,
-      imageUrl: competition.imageUrl || competition.thumbnail || '/images/default-prize.png',
-      quantity: parseInt(quantity),
-      ticketNumbers,
-      gifted: true,
-      giftedBy: sender.username,
-      purchasedAt: new Date(),
-      payment: {
-        paymentId,
-        transactionId: transaction.identifier,
-        amount: expectedAmount,
-        type: 'gift',
-      },
-    });
-
-    await giftTicket.save();
-
-    recentGifts.set(ip, now);
-
-    console.log(`✅ Gift ticket sent: ${fromUsername} → ${toUsername} for ${competition.title}`);
-
-    return res.status(200).json({ 
-      success: true, 
-      ticket: {
-        id: giftTicket._id,
-        competitionTitle: competition.title,
-        quantity,
-        recipient: recipient.username,
-        ticketNumbers
+  // Helper: create a Pi payment then call your API
+  const handleGift = async () => {
+    try {
+      if (!window.Pi) {
+        setStatus({ error: 'Pi SDK not available. Open in Pi Browser.' });
+        return;
       }
-    });
 
-  } catch (error) {
-    console.error('❌ Gift Ticket Error:', error);
-    return res.status(500).json({ error: 'Server error while gifting ticket' });
-  }
+      // REQUIRED: make sure the user is authenticated with Pi SDK
+      // const scopes = ['payments']; // plus 'username' if you need it
+      // const user = await window.Pi.authenticate(scopes, onIncompletePaymentFound);
+
+      // Amount the user needs to pay (you can also fetch from server)
+      const amount = quantity; // or compute based on comp.piAmount
+      const memo = `Gift ${quantity} ticket(s) for ${competitionSlug}`;
+      const metadata = { kind: 'gift', competitionSlug, quantity, fromUsername, toUsername };
+
+      await window.Pi.createPayment(
+        { amount, memo, metadata },
+        {
+          // 1) Client tells your server to approve this payment id
+          onReadyForServerApproval: async (paymentId) => {
+            await fetch('/api/pi/approve', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ paymentId }),
+            });
+          },
+
+          // 2) After blockchain tx is done, Pi SDK gives you tx data
+          // Send BOTH paymentId and transaction to your gift API
+          onReadyForServerCompletion: async (paymentId, tx) => {
+            const res = await fetch('/api/gift-ticket', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                fromUsername,
+                toUsername,
+                competitionSlug,
+                quantity,
+                paymentId,
+                transaction: tx, // <— REAL transaction object from Pi SDK
+              }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Gift failed');
+            setStatus(data);
+
+            // Optional: call complete to finish the Pi flow
+            await fetch('/api/pi/complete', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ paymentId, txid: tx?.txid }),
+            });
+          },
+
+          onCancel: (reason) => setStatus({ canceled: true, reason }),
+          onError: (error) => setStatus({ error: error?.message || 'Payment error' }),
+        }
+      );
+    } catch (e) {
+      setStatus({ error: e.message });
+    }
+  };
+
+  return (
+    <div className="max-w-md mx-auto py-8">
+      {/* inputs... */}
+      <button onClick={handleGift} className="bg-cyan-500 text-white px-4 py-2 rounded">
+        Send Gift
+      </button>
+      {status && <pre className="mt-4 text-xs bg-black text-white p-3 rounded">{JSON.stringify(status, null, 2)}</pre>}
+    </div>
+  );
 }
