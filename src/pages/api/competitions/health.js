@@ -1,8 +1,9 @@
-import { requireAdmin } from '../_adminAuth';
+import { requireAdmin } from 'lib/adminAuth';
 import { dbConnect } from 'lib/dbConnect';
 import Competition from 'models/Competition';
 
 export default async function handler(req, res) {
+  // Gate: admin only (Bearer <ADMIN_BEARER_TOKEN>)
   if (!requireAdmin(req, res)) return;
 
   const useMock = process.env.ADMIN_MOCK === '1';
@@ -47,26 +48,27 @@ export default async function handler(req, res) {
   try {
     await dbConnect();
 
-    // Pull active competitions and compute health signals
+    // Only active competitions
     const comps = await Competition.find({ 'comp.status': 'active' })
       .select('title comp.totalTickets comp.ticketsSold comp.endsAt')
       .sort({ updatedAt: -1 })
       .lean();
 
+    const now = Date.now();
     const alerts = comps.map((c) => {
       const sold = c.comp?.ticketsSold ?? 0;
       const total = c.comp?.totalTickets ?? 0;
       const endsAt = c.comp?.endsAt ? new Date(c.comp.endsAt) : null;
 
       const sellThrough = total > 0 ? sold / total : 0;
-      const hoursLeft = endsAt ? Math.max(0, (endsAt.getTime() - Date.now()) / 36e5) : null;
+      const hoursLeft = endsAt ? Math.max(0, (endsAt.getTime() - now) / 36e5) : null;
 
       let status = 'Active';
       if (hoursLeft !== null && hoursLeft <= 24) status = 'Ending Soon';
 
       let warning = '';
-      if (total > 0 && sellThrough < 0.2) warning = 'Low sell-through (<20%)';
       if (sold === 0) warning = '0 tickets sold';
+      else if (total > 0 && sellThrough < 0.2) warning = 'Low sell-through (<20%)';
 
       let critical = '';
       if (hoursLeft !== null && hoursLeft <= 6) critical = 'Ends < 6h';
