@@ -170,7 +170,29 @@ export default function AdminCompetitionsPage() {
                         <td className="py-3 text-gray-300">
                           {comp.comp?.entryFee ? `${comp.comp.entryFee} π` : 'Free'}
                         </td>
-                        <td className="py-3">
+                        <td className="py-3"><td className="py-3">
+  <div className="flex flex-wrap gap-2">
+    <Link
+      href={`/admin/competitions/edit/${comp._id}`}
+      className="bg-blue-500/20 text-blue-400 px-2 py-1 rounded text-xs hover:bg-blue-500/30 transition"
+    >
+      Edit
+    </Link>
+    <Link
+      href={`/admin/competitions/${comp._id}`}
+      className="bg-green-500/20 text-green-400 px-2 py-1 rounded text-xs hover:bg-green-500/30 transition"
+    >
+      🏆 Winners
+    </Link>
+    <button
+      onClick={() => handleDelete(comp._id)}
+      className="bg-red-500/20 text-red-400 px-2 py-1 rounded text-xs hover:bg-red-500/30 transition"
+    >
+      Delete
+    </button>
+  </div>
+</td>
+
                           <div className="flex gap-2">
                             <Link
                               href={`/admin/competitions/edit/${comp._id}`}

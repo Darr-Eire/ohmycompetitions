@@ -1,8 +1,8 @@
-// /pages/api/tickets/gift.js
 import { dbConnect } from 'lib/dbConnect';
 import Ticket from 'models/Ticket';
 import User from 'models/User';
 import Competition from 'models/Competition';
+import { verifyPayment } from 'lib/pi/verifyPayment'; // Make sure this exists
 
 const recentGifts = new Map(); // Basic IP rate limiting
 
@@ -18,25 +18,23 @@ export default async function handler(req, res) {
     toUsername, 
     competitionSlug, 
     competitionId, 
-    quantity = 1 
+    quantity = 1,
+    paymentId,
+    transaction
   } = req.body;
 
-  // Validate required fields
   if (!fromUsername || !toUsername || (!competitionSlug && !competitionId)) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  // Prevent self-gifting
   if (fromUsername.toLowerCase() === toUsername.toLowerCase()) {
     return res.status(400).json({ error: 'You cannot gift a ticket to yourself' });
   }
 
-  // Validate quantity
   if (quantity < 1 || quantity > 50) {
     return res.status(400).json({ error: 'Quantity must be between 1 and 50' });
   }
 
-  // Rate limiting
   const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
   const now = Date.now();
 
@@ -45,27 +43,20 @@ export default async function handler(req, res) {
   }
 
   try {
-    console.log('Gift ticket request:', { fromUsername, toUsername, competitionId, quantity });
-    
-    // Verify sender exists
+    console.log('🎁 Gift ticket request:', { fromUsername, toUsername, competitionId, quantity });
+
     const sender = await User.findOne({ 
       username: { $regex: new RegExp(`^${fromUsername}$`, 'i') }
     }).lean();
-    
-    if (!sender) {
-      return res.status(404).json({ error: 'Sender not found' });
-  }
 
-    // Verify recipient exists
+    if (!sender) return res.status(404).json({ error: 'Sender not found' });
+
     const recipient = await User.findOne({ 
       username: { $regex: new RegExp(`^${toUsername}$`, 'i') }
     }).lean();
-    
-    if (!recipient) {
-      return res.status(404).json({ error: 'Recipient not found' });
-    }
 
-    // Get competition details
+    if (!recipient) return res.status(404).json({ error: 'Recipient not found' });
+
     let competition;
     if (competitionId) {
       competition = await Competition.findById(competitionId).lean();
@@ -73,21 +64,35 @@ export default async function handler(req, res) {
       competition = await Competition.findOne({ 'comp.slug': competitionSlug }).lean();
     }
 
-    if (!competition) {
-      return res.status(404).json({ error: 'Competition not found' });
-    }
+    if (!competition) return res.status(404).json({ error: 'Competition not found' });
 
-    // Check if competition is active
     if (competition.comp?.status !== 'active') {
       return res.status(400).json({ error: 'Competition is not active' });
     }
 
-    // Generate unique ticket numbers
+    const entryFee = competition.comp?.entryFee || 0;
+    const expectedAmount = quantity * entryFee;
+
+    if (!paymentId || !transaction) {
+      return res.status(400).json({ error: 'Missing payment data' });
+    }
+
+    const isValidPayment = await verifyPayment({
+      paymentId,
+      transaction,
+      expectedAmount,
+      username: fromUsername,
+      reason: 'gift',
+    });
+
+    if (!isValidPayment) {
+      return res.status(402).json({ error: 'Pi payment verification failed' });
+    }
+
     const ticketNumbers = Array.from({ length: quantity }, (_, i) => 
       `GIFT-${Date.now()}-${Math.floor(Math.random() * 1000)}-${i + 1}`
     );
 
-    // Create gift ticket
     const giftTicket = new Ticket({
       username: recipient.username,
       competitionSlug: competition.comp?.slug || competitionSlug,
@@ -99,23 +104,28 @@ export default async function handler(req, res) {
       gifted: true,
       giftedBy: sender.username,
       purchasedAt: new Date(),
+      payment: {
+        paymentId,
+        transactionId: transaction.identifier,
+        amount: expectedAmount,
+        type: 'gift',
+      },
     });
 
     await giftTicket.save();
 
-    // Update rate limiting
     recentGifts.set(ip, now);
 
-    console.log(`✅ Gift ticket created: ${sender.username} → ${recipient.username} (${competition.title})`);
+    console.log(`✅ Gift ticket sent: ${fromUsername} → ${toUsername} for ${competition.title}`);
 
     return res.status(200).json({ 
       success: true, 
       ticket: {
         id: giftTicket._id,
         competitionTitle: competition.title,
-        quantity: quantity,
+        quantity,
         recipient: recipient.username,
-        ticketNumbers: ticketNumbers
+        ticketNumbers
       }
     });
 

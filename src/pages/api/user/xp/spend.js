@@ -1,55 +1,83 @@
-import { dbConnect } from '../../../../lib/dbConnect';
-import User from '../../../../models/User';
-import { levelFromXP } from '../../../../lib/levels';
-
-const ALLOWED = {
-  competition_ticket: 120,
-  stages_entry_ticket: 200,
-  exclusive_competition: 350,
-};
+// src/pages/api/user/xp/spend.js
+import { dbConnect } from 'lib/dbConnect';
+import Competition from 'models/Competition';
+import User from 'models/User';
+import Ticket from 'models/Ticket';
+import mongoose from 'mongoose';
+import { computeXPCost, levelFromXP, deriveSlug } from 'lib/xp';
 
 export default async function handler(req, res) {
+  // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  if (req.method === 'OPTIONS') return res.status(204).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
     await dbConnect();
-    const { userId, kind, cost } = req.body || {};
-    if (!userId || !kind) return res.status(400).json({ error: 'Missing userId or kind' });
 
-    const expected = ALLOWED[kind];
-    if (!expected) return res.status(400).json({ error: 'Invalid kind' });
-    if (Number(cost) !== expected) return res.status(400).json({ error: 'Cost mismatch' });
+    const { userId, competitionId, slug } = req.body || {};
+    if (!userId) return res.status(400).json({ error: 'Missing userId' });
+    if (!competitionId && !slug) return res.status(400).json({ error: 'Missing competitionId or slug' });
 
-    const user = await User.findOne({ $or: [{ _id: userId }, { piUserId: userId }] });
+    const user =
+      (await User.findOne({ uid: userId })) ||
+      (await User.findOne({ piUserId: userId })) ||
+      (await User.findOne({ username: userId }));
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    if ((user.xp || 0) < expected) return res.status(400).json({ error: 'Not enough XP' });
+    const comp = competitionId
+      ? await Competition.findById(competitionId).lean()
+      : await Competition.findOne({ 'comp.slug': slug }).lean();
 
-    user.xp = (user.xp || 0) - expected;
-    user.xpHistory = user.xpHistory || [];
-    user.xpHistory.push({ amount: -expected, reason: `redeem_${kind}` });
+    if (!comp) return res.status(404).json({ error: 'Competition not found' });
 
-    const { level } = levelFromXP(user.xp);
-    user.level = level;
+    // Compute xpCost the same way as offers
+    const xpCost = computeXPCost(comp);
+    if (xpCost <= 0) return res.status(400).json({ error: 'Competition does not accept XP' });
+    const minLevel = levelFromXP(xpCost);
 
-    // TODO: grant entitlements:
-    // - grant a ticket, create entry, or flag access for exclusive competition.
-    // This depends on your existing models (not included here).
+    const userXP = user?.xp ?? 0;
+    const userLevel = user?.level ?? 1;
+    if (userLevel < minLevel) return res.status(400).json({ error: 'Level too low' });
+    if (userXP < xpCost) return res.status(400).json({ error: 'Not enough XP' });
 
-    await user.save();
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+      const refreshed = await User.findOneAndUpdate(
+        { _id: user._id, xp: { $gte: xpCost } },
+        { $inc: { xp: -xpCost } },
+        { new: true, session }
+      );
+      if (!refreshed) throw new Error('XP changed, please retry');
 
-    return res.status(200).json({
-      ok: true,
-      xp: user.xp,
-      level: user.level,
-      message: 'Redemption successful',
-    });
-  } catch (e) {
-    console.error('XP spend error', e);
-    return res.status(500).json({ error: 'Server error' });
+      await Ticket.create(
+        [{
+          userId: user.uid || user.piUserId || user.username,
+          username: user.username,
+          competitionId: comp._id,
+          competitionSlug: deriveSlug(comp),
+          competitionTitle: comp.title || 'Competition',
+          quantity: 1,
+          earned: true,
+          via: 'xp',
+          createdAt: new Date()
+        }],
+        { session }
+      );
+
+      await session.commitTransaction();
+      session.endSession();
+      return res.status(200).json({ success: true });
+    } catch (txErr) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(409).json({ error: txErr.message || 'Conflict, try again' });
+    }
+  } catch (err) {
+    console.error('❌ /api/user/xp/spend error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 }

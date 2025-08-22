@@ -5,32 +5,28 @@ import mongoose from 'mongoose';
 export default async function handler(req, res) {
   try {
     await dbConnect();
-    
-    // Check for Authorization header
+
+    // Basic Auth: Authorization: Basic base64(username:password)
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader || !authHeader.startsWith('Basic ')) {
       return res.status(401).json({ message: 'Missing or invalid authorization header' });
     }
 
-    // Extract and verify token
-    const token = authHeader.split(' ')[1];
-    if (!token) {
-      return res.status(401).json({ message: 'Missing token' });
-    }
+    const base64Credentials = authHeader.split(' ')[1];
+    const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
+    const [username, password] = credentials.split(':');
 
-    // Verify admin token (you should implement proper token verification)
-    // For now, we'll just check if it matches what we store in localStorage
-    // In a real app, you should verify JWT or session token
-    try {
-      // Here you would verify the token
-      // For example: const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      // For now, we'll assume if they have a token, they're authenticated
-    } catch (err) {
-      return res.status(401).json({ message: 'Invalid token' });
+    // ✅ Replace these with your admin credentials
+    const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
+    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'secret123';
+
+    if (username !== ADMIN_USERNAME || password !== ADMIN_PASSWORD) {
+      return res.status(403).json({ message: 'Forbidden: Invalid credentials' });
     }
 
     const { id } = req.query;
 
+    // Validate ID
     let objectId;
     try {
       objectId = new mongoose.Types.ObjectId(id);
@@ -39,20 +35,22 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'GET') {
-      const competition = await Competition.findById(objectId);
+      const competition = await Competition.findById(objectId).lean();
       if (!competition) {
         return res.status(404).json({ message: 'Competition not found' });
       }
-      return res.status(200).json(competition);
+
+      return res.status(200).json({ success: true, competition });
     }
 
     if (req.method === 'PUT') {
       const update = req.body;
-      const updatedCompetition = await Competition.findByIdAndUpdate(objectId, update, { new: true });
+      const updatedCompetition = await Competition.findByIdAndUpdate(objectId, update, { new: true }).lean();
       if (!updatedCompetition) {
         return res.status(404).json({ message: 'Competition not found' });
       }
-      return res.status(200).json(updatedCompetition);
+
+      return res.status(200).json({ success: true, competition: updatedCompetition });
     }
 
     if (req.method === 'DELETE') {
@@ -60,11 +58,13 @@ export default async function handler(req, res) {
       if (!deletedCompetition) {
         return res.status(404).json({ message: 'Competition not found' });
       }
-      return res.status(200).json({ message: 'Competition deleted successfully' });
+
+      return res.status(200).json({ success: true, message: 'Competition deleted successfully' });
     }
 
     res.setHeader('Allow', ['GET', 'PUT', 'DELETE']);
     return res.status(405).json({ message: `Method ${req.method} not allowed` });
+
   } catch (error) {
     console.error('API Error:', error);
     return res.status(500).json({ message: 'Internal server error', error: error.message });

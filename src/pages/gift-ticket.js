@@ -1,151 +1,136 @@
-import React, { useState } from 'react';
-import { usePiAuth } from 'context/PiAuthContext';
-import Layout from 'components/Layout';
-import GiftTicketModal from 'components/GiftTicketModal';
+import { dbConnect } from 'lib/dbConnect';
+import Ticket from 'models/Ticket';
+import User from 'models/User';
+import Competition from 'models/Competition';
+import { verifyPayment } from 'lib/pi/verifyPayment'; // Make sure this exists
 
-export default function GiftTicketPage() {
-  const { user } = usePiAuth();
-  const [showGiftModal, setShowGiftModal] = useState(false);
+const recentGifts = new Map(); // Basic IP rate limiting
 
-  return (
-    <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-black via-blue-900 to-cyan-900 text-white">
-        <div className="container mx-auto px-4 py-16">
-          
-          {/* Header */}
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-6xl font-orbitron font-bold mb-6 bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-              Gift a Ticket
-            </h1>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Share the excitement! Gift competition tickets to your friends and family on the Pi Network.
-            </p>
-          </div>
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
-          {/* Main Content */}
-          <div className="max-w-4xl mx-auto">
-            
-            {/* How It Works */}
-            <div className="bg-[#0f172a] border border-cyan-400 rounded-xl p-8 mb-8 shadow-[0_0_30px_#00f0ff33]">
-              <h2 className="text-2xl font-bold mb-6 text-cyan-400">How Gifting Works</h2>
-              <div className="grid md:grid-cols-3 gap-6">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-cyan-500 rounded-full flex items-center justify-center mx-auto mb-4 text-black text-2xl font-bold">
-                    1
-                  </div>
-                  <h3 className="font-bold mb-2">Choose Competition</h3>
-                  <p className="text-gray-300 text-sm">Select from active competitions with amazing prizes</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-cyan-500 rounded-full flex items-center justify-center mx-auto mb-4 text-black text-2xl font-bold">
-                    2
-                  </div>
-                  <h3 className="font-bold mb-2">Enter Recipient</h3>
-                  <p className="text-gray-300 text-sm">Add your friend's Pi Network username</p>
-                </div>
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-cyan-500 rounded-full flex items-center justify-center mx-auto mb-4 text-black text-2xl font-bold">
-                    3
-                  </div>
-                  <h3 className="font-bold mb-2">Send Gift</h3>
-                  <p className="text-gray-300 text-sm">Your friend receives the ticket instantly!</p>
-                </div>
-              </div>
-            </div>
+  await dbConnect();
 
-            {/* Gift Features */}
-            <div className="grid md:grid-cols-2 gap-8 mb-8">
-              <div className="bg-[#0f172a] border border-blue-400 rounded-xl p-6">
-                <h3 className="text-xl font-bold mb-4 text-blue-400">✨ Features</h3>
-                <ul className="space-y-3 text-gray-300">
-                  <li className="flex items-center">
-                    <span className="text-green-400 mr-2">✓</span>
-                    Instant delivery to recipient
-                  </li>
-                  <li className="flex items-center">
-                    <span className="text-green-400 mr-2">✓</span>
-                    Gift up to 10 tickets at once
-                  </li>
-                  <li className="flex items-center">
-                    <span className="text-green-400 mr-2">✓</span>
-                    All active competitions available
-                  </li>
-                  <li className="flex items-center">
-                    <span className="text-green-400 mr-2">✓</span>
-                    Secure Pi Network authentication
-                  </li>
-                </ul>
-              </div>
+  const { 
+    fromUsername, 
+    toUsername, 
+    competitionSlug, 
+    competitionId, 
+    quantity = 1,
+    paymentId,
+    transaction
+  } = req.body;
 
-              <div className="bg-[#0f172a] border border-yellow-400 rounded-xl p-6">
-                <h3 className="text-xl font-bold mb-4 text-yellow-400">🎯 Perfect For</h3>
-                <ul className="space-y-3 text-gray-300">
-                  <li className="flex items-center">
-                    <span className="text-yellow-400 mr-2">•</span>
-                    Birthday gifts
-                  </li>
-                  <li className="flex items-center">
-                    <span className="text-yellow-400 mr-2">•</span>
-                    Holiday surprises
-                  </li>
-                  <li className="flex items-center">
-                    <span className="text-yellow-400 mr-2">•</span>
-                    Welcoming new Pioneers
-                  </li>
-                  <li className="flex items-center">
-                    <span className="text-yellow-400 mr-2">•</span>
-                    Celebrating achievements
-                  </li>
-                </ul>
-              </div>
-            </div>
+  if (!fromUsername || !toUsername || (!competitionSlug && !competitionId)) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
 
-            {/* Action Section */}
-            <div className="text-center">
-              {user?.username ? (
-                <div className="space-y-4">
-                  <button
-                    onClick={() => setShowGiftModal(true)}
-                    className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-black font-bold py-4 px-8 rounded-xl text-xl shadow-lg transition-all duration-200 transform hover:scale-105"
-                  >
-                    🎁 Start Gifting Now
-                  </button>
-                  <p className="text-gray-400">
-                    Logged in as: <span className="text-cyan-400 font-bold">{user.username}</span>
-                  </p>
-                </div>
-              ) : (
-                <div className="bg-yellow-900/20 border border-yellow-500 rounded-xl p-6">
-                  <h3 className="text-xl font-bold mb-4 text-yellow-400">Login Required</h3>
-                  <p className="text-gray-300 mb-4">
-                    Please log in with your Pi Network account to start gifting tickets to friends.
-                  </p>
-                  <button
-                    onClick={() => window.location.href = '/'}
-                    className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-bold py-3 px-6 rounded-lg transition-all duration-200"
-                  >
-                    Go to Login
-                  </button>
-                </div>
-              )}
-            </div>
+  if (fromUsername.toLowerCase() === toUsername.toLowerCase()) {
+    return res.status(400).json({ error: 'You cannot gift a ticket to yourself' });
+  }
 
-            {/* Additional Info */}
-            <div className="mt-12 text-center text-gray-400 text-sm">
-              <p>
-                Questions about gifting? Check our <a href="/help" className="text-cyan-400 hover:underline">help center</a> or 
-                contact <a href="/contact" className="text-cyan-400 hover:underline">support</a>.
-              </p>
-            </div>
-          </div>
-        </div>
+  if (quantity < 1 || quantity > 50) {
+    return res.status(400).json({ error: 'Quantity must be between 1 and 50' });
+  }
 
-        {/* Gift Modal */}
-        <GiftTicketModal 
-          isOpen={showGiftModal}
-          onClose={() => setShowGiftModal(false)}
-        />
-      </div>
-    </Layout>
-  );
-} 
+  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  const now = Date.now();
+
+  if (recentGifts.has(ip) && now - recentGifts.get(ip) < 15000) {
+    return res.status(429).json({ error: 'Please wait 15 seconds between gifts' });
+  }
+
+  try {
+    console.log('🎁 Gift ticket request:', { fromUsername, toUsername, competitionId, quantity });
+
+    const sender = await User.findOne({ 
+      username: { $regex: new RegExp(`^${fromUsername}$`, 'i') }
+    }).lean();
+
+    if (!sender) return res.status(404).json({ error: 'Sender not found' });
+
+    const recipient = await User.findOne({ 
+      username: { $regex: new RegExp(`^${toUsername}$`, 'i') }
+    }).lean();
+
+    if (!recipient) return res.status(404).json({ error: 'Recipient not found' });
+
+    let competition;
+    if (competitionId) {
+      competition = await Competition.findById(competitionId).lean();
+    } else {
+      competition = await Competition.findOne({ 'comp.slug': competitionSlug }).lean();
+    }
+
+    if (!competition) return res.status(404).json({ error: 'Competition not found' });
+
+    if (competition.comp?.status !== 'active') {
+      return res.status(400).json({ error: 'Competition is not active' });
+    }
+
+    const entryFee = competition.comp?.entryFee || 0;
+    const expectedAmount = quantity * entryFee;
+
+    if (!paymentId || !transaction) {
+      return res.status(400).json({ error: 'Missing payment data' });
+    }
+
+    const isValidPayment = await verifyPayment({
+      paymentId,
+      transaction,
+      expectedAmount,
+      username: fromUsername,
+      reason: 'gift',
+    });
+
+    if (!isValidPayment) {
+      return res.status(402).json({ error: 'Pi payment verification failed' });
+    }
+
+    const ticketNumbers = Array.from({ length: quantity }, (_, i) => 
+      `GIFT-${Date.now()}-${Math.floor(Math.random() * 1000)}-${i + 1}`
+    );
+
+    const giftTicket = new Ticket({
+      username: recipient.username,
+      competitionSlug: competition.comp?.slug || competitionSlug,
+      competitionId: competition._id,
+      competitionTitle: competition.title,
+      imageUrl: competition.imageUrl || competition.thumbnail || '/images/default-prize.png',
+      quantity: parseInt(quantity),
+      ticketNumbers,
+      gifted: true,
+      giftedBy: sender.username,
+      purchasedAt: new Date(),
+      payment: {
+        paymentId,
+        transactionId: transaction.identifier,
+        amount: expectedAmount,
+        type: 'gift',
+      },
+    });
+
+    await giftTicket.save();
+
+    recentGifts.set(ip, now);
+
+    console.log(`✅ Gift ticket sent: ${fromUsername} → ${toUsername} for ${competition.title}`);
+
+    return res.status(200).json({ 
+      success: true, 
+      ticket: {
+        id: giftTicket._id,
+        competitionTitle: competition.title,
+        quantity,
+        recipient: recipient.username,
+        ticketNumbers
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Gift Ticket Error:', error);
+    return res.status(500).json({ error: 'Server error while gifting ticket' });
+  }
+}

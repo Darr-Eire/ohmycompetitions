@@ -14,99 +14,84 @@ export default function EditCompetition() {
       totalTickets: '',
       piAmount: '',
       paymentType: 'pi',
-      status: 'active'
+      status: 'active',
+      startsAt: '',
+      endsAt: ''
     },
     title: '',
     prize: '',
     theme: '',
-    description: ''
+    description: '',
+    winners: []
   });
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
- useEffect(() => {
-  // Check admin auth on component mount
-  const adminUser = localStorage.getItem('adminUser');
-  if (!adminUser) {
-    router.push('/admin/login');
-    return;
-  }
-
-  if (!id || loaded) return;
-
-  async function loadCompetition() {
-    try {
-      const adminData = JSON.parse(localStorage.getItem('adminUser'));
-      const res = await fetch(`/api/admin/competitions/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${adminData.token}`
-        }
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        if (res.status === 401) {
-          router.push('/admin/login');
-          return;
-        }
-        throw new Error(data.message || 'Failed to load competition');
-      }
-
-      // Ensure all form values are strings and handle nested structure
-      setForm({
-        comp: {
-          slug: String(data.comp?.slug || ''),
-          entryFee: String(data.comp?.entryFee || ''),
-          totalTickets: String(data.comp?.totalTickets || ''),
-          piAmount: String(data.comp?.piAmount || ''),
-          paymentType: data.comp?.paymentType || 'pi',
-          status: data.comp?.status || 'active',
-          startsAt: data.comp?.startsAt
-            ? new Date(data.comp.startsAt).toISOString().slice(0, 16)
-            : '',
-          endsAt: data.comp?.endsAt
-            ? new Date(data.comp.endsAt).toISOString().slice(0, 16)
-            : '',
-        },
-        title: String(data.title || ''),
-        prize: String(data.prize || ''),
-        theme: String(data.theme || ''),
-        description: String(data.description || '')
-      });
-      setLoaded(true);
-    } catch (err) {
-      console.error('Error loading competition:', err);
-      setError(err.message || 'Failed to load competition');
-      // Reset form to empty strings on error
-      setForm({
-        comp: {
-          slug: '',
-          entryFee: '',
-          totalTickets: '',
-          piAmount: '',
-          paymentType: 'pi',
-          status: 'active',
-          startsAt: '',
-          endsAt: ''
-        },
-        title: '',
-        prize: '',
-        theme: '',
-        description: ''
-      });
+  useEffect(() => {
+    const adminUser = localStorage.getItem('adminUser');
+    if (!adminUser) {
+      router.push('/admin/login');
+      return;
     }
-  }
 
-  loadCompetition();
-}, [id, loaded, router]);
+    if (!id || loaded) return;
 
+    async function loadCompetition() {
+      try {
+        const adminData = JSON.parse(localStorage.getItem('adminUser'));
+        const res = await fetch(`/api/admin/competitions/${id}`, {
+          headers: {
+            'Authorization': `Basic ${btoa(adminData.username + ':' + adminData.password)}`
+          }
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          if (res.status === 401) {
+            router.push('/admin/login');
+            return;
+          }
+          throw new Error(data.message || 'Failed to load competition');
+        }
+
+        setForm({
+          comp: {
+            slug: String(data.competition.comp?.slug || ''),
+            entryFee: String(data.competition.comp?.entryFee || ''),
+            totalTickets: String(data.competition.comp?.totalTickets || ''),
+            piAmount: String(data.competition.comp?.piAmount || ''),
+            paymentType: data.competition.comp?.paymentType || 'pi',
+            status: data.competition.comp?.status || 'active',
+            startsAt: data.competition.comp?.startsAt
+              ? new Date(data.competition.comp.startsAt).toISOString().slice(0, 16)
+              : '',
+            endsAt: data.competition.comp?.endsAt
+              ? new Date(data.competition.comp.endsAt).toISOString().slice(0, 16)
+              : '',
+          },
+          title: String(data.competition.title || ''),
+          prize: String(data.competition.prize || ''),
+          theme: String(data.competition.theme || ''),
+          description: String(data.competition.description || ''),
+          winners: data.competition.winners || []
+        });
+
+        setLoaded(true);
+      } catch (err) {
+        console.error('Error loading competition:', err);
+        setError(err.message || 'Failed to load competition');
+      }
+    }
+
+    loadCompetition();
+  }, [id, loaded, router]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    // Handle nested comp fields
-    if (['slug', 'entryFee', 'totalTickets', 'piAmount', 'paymentType', 'status'].includes(name)) {
+    if (['slug', 'entryFee', 'totalTickets', 'piAmount', 'paymentType', 'status', 'startsAt', 'endsAt'].includes(name)) {
       setForm(prev => ({
         ...prev,
         comp: {
@@ -130,9 +115,9 @@ export default function EditCompetition() {
       const adminData = JSON.parse(localStorage.getItem('adminUser'));
       const res = await fetch(`/api/admin/competitions/${id}`, {
         method: 'PUT',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${adminData.token}`
+          'Authorization': `Basic ${btoa(adminData.username + ':' + adminData.password)}`
         },
         body: JSON.stringify({
           comp: {
@@ -141,7 +126,9 @@ export default function EditCompetition() {
             totalTickets: parseInt(form.comp.totalTickets) || 0,
             piAmount: parseFloat(form.comp.piAmount) || 0,
             paymentType: form.comp.paymentType,
-            status: form.comp.status
+            status: form.comp.status,
+            startsAt: form.comp.startsAt,
+            endsAt: form.comp.endsAt
           },
           title: form.title,
           prize: form.prize,
@@ -158,7 +145,7 @@ export default function EditCompetition() {
         }
         throw new Error(data.message || 'Failed to update competition');
       }
-      
+
       router.push('/admin/competitions');
     } catch (err) {
       setError(err.message);
@@ -176,16 +163,17 @@ export default function EditCompetition() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-4 p-4 border border-cyan-400/30 rounded-lg">
           <h2 className="text-xl font-semibold text-cyan-300">Basic Details</h2>
-          {['slug', 'entryFee', 'totalTickets', 'piAmount'].map((field) => (
+          {['slug', 'entryFee', 'totalTickets', 'piAmount', 'startsAt', 'endsAt'].map((field) => (
             <div key={field} className="space-y-1">
               <label className="block text-sm font-medium text-cyan-300">
                 {field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1')}
               </label>
               <input
+                type={field.includes('At') ? 'datetime-local' : 'text'}
                 name={field}
                 value={form.comp[field]}
                 onChange={handleChange}
-                placeholder={field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1')}
+                placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
                 className="w-full p-3 rounded bg-black border border-cyan-400"
                 required
               />
@@ -276,6 +264,28 @@ export default function EditCompetition() {
           {loading ? 'Updating...' : 'Update Competition'}
         </button>
       </form>
+
+      {form?.winners?.length > 0 && (
+        <div className="mt-10 p-4 border border-cyan-500/40 rounded-lg">
+          <h2 className="text-xl font-bold text-cyan-300 mb-4">🏆 Winners</h2>
+          <ul className="space-y-2 text-sm">
+            {form.winners.map((winner, i) => (
+              <li key={i} className="bg-white/5 p-3 rounded">
+                <div>
+                  <strong>#{i + 1}:</strong> {winner.username || 'Unknown'} – 🎟️ {winner.ticketNumber}
+                </div>
+                <div>
+                  {winner.claimed ? (
+                    <span className="text-green-400">✅ Claimed at {new Date(winner.claimedAt).toLocaleString()}</span>
+                  ) : (
+                    <span className="text-yellow-400">⏳ Not Claimed</span>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

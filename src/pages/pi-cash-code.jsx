@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useId } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LockKeyhole,
@@ -81,28 +81,44 @@ function Stat({ label, value, sub }) {
   );
 }
 
+/* ----------------------------- Alive Countdown ----------------------------- */
 function CountdownRing({
-  size = 120,
-  stroke = 8,
-  pct = 0,
+  size = 160,
+  stroke = 10,
+  pct = 0, // 0..1
   label = 'UNTIL DROP',
-  time = '00:00:00',
+  time = '0 Days 00 Hours 00 Mins 00 Secs',
 }) {
+  const id = useId();
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
-  const dash = c * (1 - pct);
+
+  const clamped = Math.min(Math.max(pct, 0), 1);
+  const dash = useMemo(() => c * (1 - clamped), [c, clamped]);
+
+  // Parse "X Days XX Hours XX Mins XX Secs"
+  const match =
+    /(\d+)\s+Days\s+(\d+)\s+Hours\s+(\d+)\s+Mins\s+(\d+)\s+Secs/.exec(time || '');
+  const [d, h, m, s] = match ? match.slice(1) : ['0', '00', '00', '00'];
+
   return (
-    <svg
-      width={size}
-      height={size}
-      className="drop-shadow-[0_0_30px_#22d3ee55]"
-    >
+    <svg width={size} height={size} className="drop-shadow-[0_0_30px_#22d3ee55]">
       <defs>
-        <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+        {/* Main progress gradient */}
+        <linearGradient id={`grad-${id}`} x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="#00ffd5" />
           <stop offset="100%" stopColor="#22d3ee" />
         </linearGradient>
+
+        {/* Orbit highlight gradient */}
+        <linearGradient id={`orbit-${id}`} x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="rgba(34,211,238,0)" />
+          <stop offset="50%" stopColor="rgba(34,211,238,0.9)" />
+          <stop offset="100%" stopColor="rgba(34,211,238,0)" />
+        </linearGradient>
       </defs>
+
+      {/* Background track */}
       <circle
         cx={size / 2}
         cy={size / 2}
@@ -111,35 +127,101 @@ function CountdownRing({
         strokeWidth={stroke}
         fill="none"
       />
-      <circle
-        cx={size / 2}
-        cy={size / 2}
-        r={r}
-        stroke="url(#grad)"
-        strokeWidth={stroke}
-        fill="none"
-        strokeDasharray={`${c} ${c}`}
-        strokeDashoffset={dash}
-        strokeLinecap="round"
-        transform={`rotate(-90 ${size / 2} ${size / 2})`}
-      />
+
+      {/* Orbiting highlight sweep */}
+      <g transform={`rotate(-90 ${size / 2} ${size / 2})`}>
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          stroke={`url(#orbit-${id})`}
+          strokeWidth={Math.max(2, stroke * 0.35)}
+          fill="none"
+          strokeLinecap="round"
+          strokeDasharray={`${c / 14} ${c}`}
+          className="orbit"
+        />
+      </g>
+
+      {/* Animated progress ring */}
+      <motion.g transform={`rotate(-90 ${size / 2} ${size / 2})`} initial={false}>
+        <motion.circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          stroke={`url(#grad-${id})`}
+          strokeWidth={stroke}
+          fill="none"
+          strokeLinecap="round"
+          strokeDasharray={`${c} ${c}`}
+          animate={{ strokeDashoffset: dash }}
+          transition={{ type: 'spring', stiffness: 120, damping: 20 }}
+          className="glow"
+        />
+      </motion.g>
+
+      {/* Center content */}
       <foreignObject
         x={stroke}
         y={stroke}
         width={size - stroke * 2}
         height={size - stroke * 2}
       >
-        <div className="flex h-full w-full flex-col items-center justify-center">
+        <div className="flex h-full w-full flex-col items-center justify-center text-center leading-tight">
           <div className="text-[10px] tracking-widest text-cyan-300/80">
             {label}
           </div>
-          <div className="text-lg font-bold text-white">{time}</div>
+
+          <div className="mt-1 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] font-bold text-white">
+            <div>
+              <span className="tabular-nums">{d}</span>{' '}
+              <span className="opacity-80">Days</span>
+            </div>
+            <div>
+              <span className="tabular-nums">{h}</span>{' '}
+              <span className="opacity-80">Hours</span>
+            </div>
+            <div>
+              <span className="tabular-nums">{m}</span>{' '}
+              <span className="opacity-80">Mins</span>
+            </div>
+            <div>
+              <span className="tabular-nums">{s}</span>{' '}
+              <span className="opacity-80">Secs</span>
+            </div>
+          </div>
         </div>
       </foreignObject>
+
+      {/* Local styles for orbit & glow */}
+      <style jsx>{`
+        @keyframes orbitSpin {
+          to {
+            stroke-dashoffset: -${c};
+          }
+        }
+        .orbit {
+          animation: orbitSpin 2.6s linear infinite;
+          opacity: 0.9;
+        }
+        @keyframes pulseGlow {
+          0%,
+          100% {
+            filter: drop-shadow(0 0 0px #22d3ee);
+          }
+          50% {
+            filter: drop-shadow(0 0 8px #22d3ee);
+          }
+        }
+        .glow {
+          animation: pulseGlow 2.2s ease-in-out infinite;
+        }
+      `}</style>
     </svg>
   );
 }
 
+/* ------------------------------- Toast ------------------------------------- */
 function Toast({ show, kind = 'info', children }) {
   return (
     <AnimatePresence>
@@ -409,16 +491,12 @@ export default function PiCashCodePage() {
       <div className="mx-auto w-full max-w-5xl px-4 pt-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <NeonBadge icon={ShieldCheck}>
-              Fair • Transparent • Pi SDK
-            </NeonBadge>
+            <NeonBadge icon={ShieldCheck}>Fair • Transparent • Pi SDK</NeonBadge>
             <NeonBadge icon={Rocket}>Open Network</NeonBadge>
           </div>
           <div className="flex items-center gap-2">
             <NeonBadge icon={Ticket}>{ticketPrice} π per ticket</NeonBadge>
-            <NeonBadge icon={Timer}>
-              {isPiBrowser ? 'Pi Browser' : 'Open in Pi Browser'}
-            </NeonBadge>
+            <NeonBadge icon={Timer}>{isPiBrowser ? 'Pi Browser' : 'Open in Pi Browser'}</NeonBadge>
           </div>
         </div>
       </div>
@@ -437,33 +515,30 @@ export default function PiCashCodePage() {
 
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
             {/* Left */}
-           <div className="flex flex-col items-center justify-center text-center">
-  <motion.h1
-    initial={{ opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.6 }}
-    className="text-balance text-3xl font-extrabold tracking-tight text-cyan-200 sm:text-5xl animate-pulse"
-  >
-    Pi Cash Code
-  </motion.h1>
+            <div className="flex flex-col items-center justify-center text-center">
+              <motion.h1
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="text-balance text-3xl font-extrabold tracking-tight text-cyan-200 sm:text-5xl animate-pulse"
+              >
+                Pi Cash Code
+              </motion.h1>
 
-  <p className="mt-3 max-w-md text-white/80">
-    Keep the code safe, watch the drop and be the Pioneer who’s lucky enough
-  </p>
+              <p className="mt-3 max-w-md text-white/80">
+                Keep the code safe, watch the drop and be the Pioneer who’s lucky enough
+              </p>
 
-  <div className="mt-6">
+              <div className="mt-6">
                 <div className="inline-block rounded-2xl border border-cyan-500/70 bg-gradient-to-r from-[#081425] via-[#0e1b33] to-[#081425] p-[2px] shadow-[0_0_40px_#22d3ee44]">
-<div className="flex justify-center mt-6">
-  <div className="flex items-center gap-3 rounded-[14px] bg-black/40 px-6 py-5 font-mono text-2xl sm:text-4xl tracking-[0.25em] text-cyan-100 whitespace-nowrap shadow-[0_0_35px_#22d3eeaa] animate-[pulse_1.5s_ease-in-out_infinite]">
-    <LockKeyhole className="text-cyan-300 shrink-0" />
-    <span className="select-all">
-      {showCode ? data?.code || '0000-0000' : 'XXXX-XXXX'}
-    </span>
-  </div>
-</div>
-
-
-
+                  <div className="flex justify-center mt-6">
+                    <div className="flex items-center gap-3 rounded-[14px] bg-black/40 px-6 py-5 font-mono text-2xl sm:text-4xl tracking-[0.25em] text-cyan-100 whitespace-nowrap shadow-[0_0_35px_#22d3eeaa] animate-[pulse_1.5s_ease-in-out_infinite]">
+                      <LockKeyhole className="text-cyan-300 shrink-0" />
+                      <span className="select-all">
+                        {showCode ? data?.code || '0000-0000' : 'XXXX-XXXX'}
+                      </span>
+                    </div>
+                  </div>
                 </div>
                 {data?.dropAt && (
                   <p className="mt-2 text-xs text-cyan-300/80">
@@ -478,33 +553,16 @@ export default function PiCashCodePage() {
               <CountdownRing
                 size={160}
                 stroke={10}
-                pct={
-                  data?.dropAt && data?.expiresAt
-                    ? clamp((now - dropAt) / (expiresAt - dropAt), 0, 1)
-                    : 0
-                }
-                label={showCode ? 'ENDS IN' : 'UNTIL DROP'}
-                time={(() => {
-                  const d = timeLeft;
-                  const h = pad2((d?.days || 0) * 24 + (d?.hours || 0));
-                  return `${h}:${pad2(d?.minutes || 0)}:${pad2(
-                    d?.seconds || 0
-                  )}`;
-                })()}
+                pct={data?.dropAt && data?.expiresAt ? clamp((now - dropAt) / (expiresAt - dropAt), 0, 1) : 0}
+                label={beforeDrop ? 'UNTIL DROP' : showCode ? 'ENDS IN' : 'UNTIL DRAW'}
+                time={`${timeLeft.days} Days ${pad2(timeLeft.hours)} Hours ${pad2(timeLeft.minutes)} Mins ${pad2(timeLeft.seconds)} Secs`}
               />
-              <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-3">
-  <Stat
-    label="Prize Pool"
-    value={`${data?.prizePool?.toLocaleString?.() ?? '—'} π`}
-  />
-  <Stat label="Tickets Sold" value={data?.ticketsSold ?? '—'} />
-  <Stat
-    label="Progress"
-    value={`${unlockPct}%`}
-    sub={showCode ? 'To expiry' : 'To drop'}
-  />
-</div>
 
+              <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-3">
+                <Stat label="Prize Pool" value={`${data?.prizePool?.toLocaleString?.() ?? '—'} π`} />
+                <Stat label="Tickets Sold" value={data?.ticketsSold ?? '—'} />
+                <Stat label="Progress" value={`${unlockPct}%`} sub={showCode ? 'To expiry' : 'To drop'} />
+              </div>
             </div>
           </div>
 
@@ -535,9 +593,7 @@ export default function PiCashCodePage() {
                       className="h-9 w-16 rounded-lg bg-white/10 text-center font-bold outline-none [appearance:textfield]"
                       value={qty}
                       min={1}
-                      onChange={(e) =>
-                        setQty(Math.max(1, parseInt(e.target.value || '1', 10)))
-                      }
+                      onChange={(e) => setQty(Math.max(1, parseInt(e.target.value || '1', 10)))}
                     />
                     <button
                       onClick={() => setQty((q) => q + 1)}
@@ -570,8 +626,7 @@ export default function PiCashCodePage() {
               <ShieldCheck size={18} /> Proven Fairness
             </h3>
             <p className="mt-1 text-sm text-white/70">
-              Blockchain-backed, Pi SDK payments, server-side approvals, and
-              auditable history.
+              Blockchain-backed, Pi SDK payments, server-side approvals, and auditable history.
             </p>
           </div>
           <div className="rounded-2xl border border-cyan-500/40 bg-white/5 p-5">
@@ -579,8 +634,7 @@ export default function PiCashCodePage() {
               <Timer size={18} /> Real-Time Thrill
             </h3>
             <p className="mt-1 text-sm text-white/70">
-              Watch the countdown, track progress, and be ready. When the code
-              drops, speed matters.
+              Watch the countdown, track progress, and be ready. When the code drops, speed matters.
             </p>
           </div>
           <div className="rounded-2xl border border-cyan-500/40 bg-white/5 p-5">
@@ -588,8 +642,7 @@ export default function PiCashCodePage() {
               <Trophy size={18} /> Big Prize Energy
             </h3>
             <p className="mt-1 text-sm text-white/70">
-              Prize pool grows with every ticket. More players, bigger rewards.
-              Simple.
+              Prize pool grows with every ticket. More players, bigger rewards. Simple.
             </p>
           </div>
         </div>
@@ -613,12 +666,7 @@ export default function PiCashCodePage() {
         </div>
         <p className="mt-6 text-center text-xs text-cyan-300/70">
           By entering you agree to our rules.{' '}
-          <a
-            className="underline"
-            href="/terms-conditions"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a className="underline" href="/terms-conditions" target="_blank" rel="noopener noreferrer">
             View Terms &amp; Conditions
           </a>
         </p>
@@ -639,9 +687,7 @@ export default function PiCashCodePage() {
               exit={{ y: 30, opacity: 0 }}
               className="w-full max-w-sm rounded-2xl border border-cyan-500/60 bg-white/95 p-5 text-black shadow-2xl"
             >
-              <div className="mb-2 text-xs font-semibold text-cyan-700">
-                SKILL CHECK
-              </div>
+              <div className="mb-2 text-xs font-semibold text-cyan-700">SKILL CHECK</div>
               <div className="text-sm text-black/80">{skill.q}</div>
               <input
                 autoFocus
@@ -651,9 +697,7 @@ export default function PiCashCodePage() {
                 onKeyDown={(e) => e.key === 'Enter' && buy()}
               />
               {answerOk === false && (
-                <div className="mt-2 text-xs font-semibold text-rose-600">
-                  Incorrect — try again!
-                </div>
+                <div className="mt-2 text-xs font-semibold text-rose-600">Incorrect — try again!</div>
               )}
               <div className="mt-4 flex items-center justify-end gap-2">
                 <button

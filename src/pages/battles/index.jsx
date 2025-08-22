@@ -1,3 +1,4 @@
+// file: src/pages/funnel/index.js
 'use client';
 import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { postJSON } from '../../lib/api';
@@ -45,9 +46,7 @@ function useToasts() {
   const pushToast = useCallback((msg, type = 'info', ttl = 2800) => {
     const id = Math.random().toString(36).slice(2);
     setToasts(t => [...t, { id, msg, type }]);
-    setTimeout(() => {
-      setToasts(t => t.filter(x => x.id !== id));
-    }, ttl);
+    setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), ttl);
   }, []);
   const Toasts = useCallback(() => (
     <div className="fixed bottom-[calc(env(safe-area-inset-bottom,0)+1rem)] left-1/2 -translate-x-1/2 z-50 space-y-2 px-4 w-[calc(100%-1rem)] sm:w-auto">
@@ -177,7 +176,6 @@ function getStageRules(stage) {
   }
 }
 
-
 function StageRulesModal({ stage, onClose }) {
   if (!stage) return null;
   const rules = getStageRules(stage);
@@ -245,24 +243,19 @@ function FinalsPrizeCard() {
     { place: '6th – 20th', prize: '25 π each' },
   ];
   return (
-  <div className="rounded-2xl border border-cyan-400/40 bg-gradient-to-br from-[#0d1729] to-[#0a1020] p-4 shadow-lg shadow-cyan-400/10">
-    <div className="text-sm font-bold text-cyan-300 mb-3 flex items-center gap-2 drop-shadow-[0_0_6px_rgba(34,211,238,0.6)]">
-      Finals Prize Breakdown
+    <div className="rounded-2xl border border-cyan-400/40 bg-gradient-to-br from-[#0d1729] to-[#0a1020] p-4 shadow-lg shadow-cyan-400/10">
+      <div className="text-sm font-bold text-cyan-300 mb-3 flex items-center gap-2 drop-shadow-[0_0_6px_rgba(34,211,238,0.6)]">
+        Finals Prize Breakdown
+      </div>
+      <ul className="space-y-2 text-sm text-white/80">
+        {breakdown.map((b, i) => (
+          <li key={i} className="flex justify-between border-b border-white/5 pb-2 last:border-0 last:pb-0">
+            <span>{b.place}</span>
+            <span className="font-semibold text-cyan-200 drop-shadow-[0_0_4px_rgba(34,211,238,0.7)]">{b.prize}</span>
+          </li>
+        ))}
+      </ul>
     </div>
-    <ul className="space-y-2 text-sm text-white/80">
-      {breakdown.map((b, i) => (
-        <li
-          key={i}
-          className="flex justify-between border-b border-white/5 pb-2 last:border-0 last:pb-0"
-        >
-          <span>{b.place}</span>
-          <span className="font-semibold text-cyan-200 drop-shadow-[0_0_4px_rgba(34,211,238,0.7)]">
-            {b.prize}
-          </span>
-        </li>
-      ))}
-    </ul>
-  </div>
   );
 }
 
@@ -282,10 +275,7 @@ function FinalsRulesCard() {
 
 function MiniCard({ data, stage, onJoin, entryFee }) {
   const spotsLeft = Math.max(0, (data.capacity || STAGE1_CAPACITY) - (data.entrantsCount || 0));
-  const pct = Math.max(
-    0,
-    Math.min(100, Math.floor((data.entrantsCount / (data.capacity || STAGE1_CAPACITY)) * 100))
-  );
+  const pct = Math.max(0, Math.min(100, Math.floor((data.entrantsCount / (data.capacity || STAGE1_CAPACITY)) * 100)));
   const canJoinStage1 = stage === 1 && spotsLeft > 0;
 
   const entrants = data.entrantsCount || 0;
@@ -325,12 +315,7 @@ function MiniCard({ data, stage, onJoin, entryFee }) {
       </div>
 
       <div className="mt-4 flex items-center justify-between gap-3">
-        <CountdownCircle
-          targetISO={data.nextStartAt || inFuture(2)}
-          size={44}
-          stroke={5}
-          label="Starts"
-        />
+        <CountdownCircle targetISO={data.nextStartAt || inFuture(2)} size={44} stroke={5} label="Starts" />
         {stage === 1 ? (
           canJoinStage1 ? (
             <button
@@ -340,9 +325,7 @@ function MiniCard({ data, stage, onJoin, entryFee }) {
               Enter {formatPi(entryFee)}
             </button>
           ) : (
-            <div className="flex-1 text-center rounded-lg bg-white/10 py-2 text-sm text-white/70">
-              Full
-            </div>
+            <div className="flex-1 text-center rounded-lg bg-white/10 py-2 text-sm text-white/70">Full</div>
           )
         ) : (
           <button
@@ -438,9 +421,7 @@ function FinalsLeaderboard({ items = [] }) {
         {data.map(row => (
           <div key={row.slug} className="px-4 py-3 flex items-center justify-between text-sm">
             <div className="flex items-center gap-3">
-              <span className="w-6 h-6 grid place-items-center rounded-full bg-cyan-400 text-black font-bold text-xs">
-                {row.place}
-              </span>
+              <span className="w-6 h-6 grid place-items-center rounded-full bg-cyan-400 text-black font-bold text-xs">{row.place}</span>
               <span className="text-white/90 font-medium">{row.slug}</span>
             </div>
             <div className="text-white/70">Players {row.entrants}</div>
@@ -475,13 +456,7 @@ function FinalsTab({ list, onJoin, entryFee, onShowRules }) {
             <div className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <div className="flex gap-4 pr-2" id="stage-5">
                 {list.map((c) => (
-                  <MiniCard
-                    key={c.slug}
-                    data={c}
-                    stage={5}
-                    onJoin={onJoin}
-                    entryFee={entryFee}
-                  />
+                  <MiniCard key={c.slug} data={c} stage={5} onJoin={onJoin} entryFee={entryFee} />
                 ))}
               </div>
             </div>
@@ -541,51 +516,86 @@ export default function FunnelIndexPage() {
 
   const [xp, setXp] = useState(0);
   const [level, setLevel] = useState(1);
+  const [joining, setJoining] = useState(false);
+
   useEffect(() => {
     const nextLevelXP = 100 + (level - 1) * 50;
     if (xp >= nextLevelXP) setLevel(prev => prev + 1);
   }, [xp, level]);
 
   const handleJoin = useCallback(async ({ slug, stage }) => {
+    if (joining) return;
     if (!user?.id && !user?.piUserId) {
       pushToast('Please log in with Pi to enter.', 'warn');
       return;
     }
+    setJoining(true);
     const userId = user?.id || user?.piUserId;
+
     try {
       if (stage === 1) {
         const assignedSlug = null;
         const Pi = typeof window !== 'undefined' ? window.Pi : undefined;
+
         if (Pi?.createPayment) {
-          await Pi.createPayment({
-            amount: ENTRY_FEE_PI,
-            memo: `OMC Funnel Stage 1`,
-            metadata: { slug: assignedSlug, stage, type: 'funnel-entry' },
-            onReadyForServerApproval: async (paymentId) => {
-              const resp = await postJSON('/api/funnel/join', { slug: assignedSlug, userId, stage, paymentId });
-              if (resp?.slug) pushToast(`Placed in ${resp.slug}`, 'success');
+          await Pi.createPayment(
+            {
+              amount: ENTRY_FEE_PI,
+              memo: 'OMC Funnel Stage 1',
+              metadata: { slug: assignedSlug, stage, type: 'funnel-entry' },
             },
-            onReadyForServerCompletion: async (paymentId, txId) => {
-              await postJSON('/api/funnel/confirm', { slug: assignedSlug, userId, stage, paymentId, txId });
-            },
-            onCancel: () => pushToast('Payment canceled.', 'warn'),
-            onError: (err) => pushToast(err?.message || 'Payment failed.', 'error'),
-          });
-          s1.mutate();
+            {
+              onReadyForServerApproval: async (paymentId) => {
+                const resp = await postJSON('/api/funnel/join', {
+                  slug: assignedSlug,
+                  userId,
+                  stage,
+                  paymentId,
+                  amount: ENTRY_FEE_PI,
+                  currency: 'pi',
+                });
+                if (resp?.slug) pushToast(`Placed in ${resp.slug}`, 'success');
+              },
+              onReadyForServerCompletion: async (paymentId, txId) => {
+                await postJSON('/api/funnel/confirm', {
+                  slug: assignedSlug,
+                  userId,
+                  stage,
+                  paymentId,
+                  txId,
+                  amount: ENTRY_FEE_PI,
+                  currency: 'pi',
+                });
+                s1.mutate();
+              },
+              onCancel: () => pushToast('Payment canceled.', 'warn'),
+              onError: (err) => pushToast(err?.message || 'Payment failed.', 'error'),
+            }
+          );
         } else {
-          const resp = await postJSON('/api/funnel/join', { slug: assignedSlug, userId, stage, amount: ENTRY_FEE_PI });
+          // Dev fallback, no paymentId path
+          const resp = await postJSON('/api/funnel/join', {
+            slug: assignedSlug,
+            userId,
+            stage,
+            amount: ENTRY_FEE_PI,
+            currency: 'pi',
+          });
           pushToast(`Entered • ${resp?.slug ? `Room ${resp.slug}` : ''}`, 'success');
           s1.mutate();
         }
       } else {
-        const resp = await postJSON('/api/funnel/join', { slug, userId, stage });
-        pushToast(resp?.message || 'Entered with your ticket ✅', 'success');
+        // TODO: implement /api/funnel/use-ticket for stages 2+
+        pushToast('Ticket entry coming soon.', 'warn');
       }
+
       setXp(x => x + 20);
     } catch (e) {
       pushToast(e?.message || 'Could not enter', 'error');
+    } finally {
+      setJoining(false);
     }
-  }, [user, pushToast, s1]);
+  }, [user, pushToast, s1, joining]);
 
   const allLists = [s2Live, s3Live, s4Live, s5Live].flat();
   const heroNextISO = useMemo(() => {
