@@ -215,7 +215,7 @@ export default function AdminDashboard() {
                 href="/admin/vouchers"
                 className="bg-pink-500 hover:bg-pink-600 text-black px-4 py-3 rounded font-semibold text-center"
               >
-                🎟️ Manage Vouchers
+                🎟️ Manager Vouchers
               </Link>
             </div>
           </div>
