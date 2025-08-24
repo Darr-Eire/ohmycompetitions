@@ -1,76 +1,50 @@
-// src/components/AdminGuard.js
-'use client';
-
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import axios from 'axios';
+// src/lib/adminAuth.js
+import dbConnect from './db';          // optional, but handy if you later check DB
+import User from '../models/User';     // optional; not used in basic header check
 
 /**
- * AdminGuard
- * - Wraps admin-only pages
- * - Calls /api/admin/verify to check credentials
- * - Redirects or blocks access if invalid
+ * Basic header-based admin check.
+ * Expects headers:
+ *   x-admin-user: <ADMIN_USER>
+ *   x-admin-pass: <ADMIN_PASS>
+ *
+ * Set env vars in Vercel / .env.local:
+ *   ADMIN_USER=...
+ *   ADMIN_PASS=...
  */
-export default function AdminGuard({ children }) {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [authorized, setAuthorized] = useState(false);
+export function requireAdmin(req) {
+  const u = req.headers['x-admin-user'];
+  const p = req.headers['x-admin-pass'];
+  const ADMIN_USER = process.env.ADMIN_USER;
+  const ADMIN_PASS = process.env.ADMIN_PASS;
 
-  useEffect(() => {
-    async function checkAuth() {
-      try {
-        // Get stored admin creds from localStorage
-        const u = localStorage.getItem('omc_admin_user');
-        const p = localStorage.getItem('omc_admin_pass');
+  const ok =
+    u &&
+    p &&
+    ADMIN_USER &&
+    ADMIN_PASS &&
+    String(u) === String(ADMIN_USER) &&
+    String(p) === String(ADMIN_PASS);
 
-        if (!u || !p) {
-          setAuthorized(false);
-          setLoading(false);
-          router.push('/admin/login'); // redirect if missing
-          return;
-        }
-
-        // Call backend verification
-        const res = await axios.get('/api/admin/verify', {
-          headers: {
-            'x-admin-user': u,
-            'x-admin-pass': p,
-          },
-        });
-
-        if (res.data?.success) {
-          setAuthorized(true);
-        } else {
-          setAuthorized(false);
-          router.push('/admin/login');
-        }
-      } catch (err) {
-        console.error('AdminGuard error:', err);
-        setAuthorized(false);
-        router.push('/admin/login');
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    checkAuth();
-  }, [router]);
-
-  if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center text-cyan-300">
-        Checking admin access...
-      </div>
-    );
+  if (!ok) {
+    const err = new Error('Forbidden: Invalid credentials');
+    err.statusCode = 403;
+    throw err;
   }
+}
 
-  if (!authorized) {
-    return (
-      <div className="flex h-screen items-center justify-center text-red-500">
-        Access denied
-      </div>
-    );
+/**
+ * (Optional) Stronger variant that checks an admin record in MongoDB too.
+ * Keep only if you actually store admins in the DB.
+ */
+export async function requireAdminWithDb(req) {
+  requireAdmin(req); // header gate first
+  await dbConnect();
+  const u = req.headers['x-admin-user'];
+  const adminDoc = await User.findOne({ username: u }).lean();
+  if (!adminDoc) {
+    const err = new Error('Forbidden: Admin user not found');
+    err.statusCode = 403;
+    throw err;
   }
-
-  return <>{children}</>;
 }
