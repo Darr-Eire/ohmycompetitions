@@ -1,20 +1,50 @@
-import bcrypt from 'bcryptjs';
-import { connectToDatabase } from '../../../lib/dbConnect.js';
-import User from '../../../models/User.js';
+// src/lib/adminAuth.js
+import dbConnect from './db';          // optional, but handy if you later check DB
+import User from '../models/User';     // optional; not used in basic header check
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).end();
+/**
+ * Basic header-based admin check.
+ * Expects headers:
+ *   x-admin-user: <ADMIN_USER>
+ *   x-admin-pass: <ADMIN_PASS>
+ *
+ * Set env vars in Vercel / .env.local:
+ *   ADMIN_USER=...
+ *   ADMIN_PASS=...
+ */
+export function requireAdmin(req) {
+  const u = req.headers['x-admin-user'];
+  const p = req.headers['x-admin-pass'];
+  const ADMIN_USER = process.env.ADMIN_USER;
+  const ADMIN_PASS = process.env.ADMIN_PASS;
 
-  await connectToDatabase();
+  const ok =
+    u &&
+    p &&
+    ADMIN_USER &&
+    ADMIN_PASS &&
+    String(u) === String(ADMIN_USER) &&
+    String(p) === String(ADMIN_PASS);
 
-  const { email, password } = req.body;
+  if (!ok) {
+    const err = new Error('Forbidden: Invalid credentials');
+    err.statusCode = 403;
+    throw err;
+  }
+}
 
-  const user = await User.findOne({ email, role: 'admin' });
-  if (!user) return res.status(401).json({ message: 'Invalid credentials' });
-
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
-
-  // ✅ Success (later we add real session / JWT here)
-  return res.status(200).json({ message: 'Login successful' });
+/**
+ * (Optional) Stronger variant that checks an admin record in MongoDB too.
+ * Keep only if you actually store admins in the DB.
+ */
+export async function requireAdminWithDb(req) {
+  requireAdmin(req); // header gate first
+  await dbConnect();
+  const u = req.headers['x-admin-user'];
+  const adminDoc = await User.findOne({ username: u }).lean();
+  if (!adminDoc) {
+    const err = new Error('Forbidden: Admin user not found');
+    err.statusCode = 403;
+    throw err;
+  }
 }

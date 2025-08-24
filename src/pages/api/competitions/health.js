@@ -1,12 +1,19 @@
-import { requireAdmin } from '../_adminAuth';
-import { dbConnect } from 'lib/dbConnect';
-import Competition from 'models/Competition';
+// src/pages/api/competitions/health.js
+import { requireAdmin } from '../../../lib/adminAuth';
+import dbConnect from '../../../lib/dbConnect';
+import Competition from '../../../models/Competition';
 
 export default async function handler(req, res) {
-  if (!requireAdmin(req, res)) return;
+  try {
+    requireAdmin(req);
+  } catch (err) {
+    return res.status(err.statusCode || 403).json({
+      success: false,
+      error: err.message || 'Forbidden: Invalid credentials',
+    });
+  }
 
   const useMock = process.env.ADMIN_MOCK === '1';
-
   if (useMock) {
     const now = Date.now();
     const mock = [
@@ -47,7 +54,6 @@ export default async function handler(req, res) {
   try {
     await dbConnect();
 
-    // Pull active competitions and compute health signals
     const comps = await Competition.find({ 'comp.status': 'active' })
       .select('title comp.totalTickets comp.ticketsSold comp.endsAt')
       .sort({ updatedAt: -1 })
@@ -86,6 +92,6 @@ export default async function handler(req, res) {
     return res.status(200).json(alerts);
   } catch (e) {
     console.error('competitions/health API error', e);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ success: false, message: 'Server error' });
   }
 }
