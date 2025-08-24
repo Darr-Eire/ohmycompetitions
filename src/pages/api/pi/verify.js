@@ -1,4 +1,4 @@
-// pages/api/pi/verify.js
+// src/pages/api/pi/verify.js
 import axios from 'axios';
 import { MongoClient } from 'mongodb';
 
@@ -7,7 +7,7 @@ const MONGODB_URI = process.env.MONGODB_URI;
 const MONGODB_DB = process.env.MONGODB_DB || 'ohmycompetitions';
 
 if (!MONGODB_URI) {
-  throw new Error('Missing MONGODB_URI environment variable');
+  throw new Error('[verify] Missing MONGODB_URI environment variable');
 }
 
 // Cache the client across hot-reloads / serverless invocations
@@ -33,6 +33,7 @@ async function getDb() {
 /* -------------------- Referral application for brand-new user ------------------- */
 async function applyReferralCodeToNewUser(db, newUser, referralCode) {
   try {
+    if (!newUser?._id) return false;
     const code = String(referralCode || '').trim();
     if (!code) return false;
 
@@ -41,15 +42,11 @@ async function applyReferralCodeToNewUser(db, newUser, referralCode) {
     if (!referrer) return false;
     if (referrer.username === newUser.username) return false; // no self-referrals
 
-    // Give both sides a bonus
     const bonus = 5;
 
     await db.collection('users').updateOne(
       { _id: newUser._id },
-      {
-        $set: { referredBy: code },
-        $inc: { bonusTickets: bonus },
-      }
+      { $set: { referredBy: code }, $inc: { bonusTickets: bonus } }
     );
 
     await db.collection('users').updateOne(
@@ -59,17 +56,21 @@ async function applyReferralCodeToNewUser(db, newUser, referralCode) {
 
     return true;
   } catch (err) {
-    console.error('Referral apply error:', err);
+    console.error('[verify] Referral apply error:', err);
     return false;
   }
 }
 
 /* --------------------------------- Handler --------------------------------- */
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ success: false, error: 'Method Not Allowed' });
+  }
 
   const { accessToken, userData, referralCode } = req.body || {};
-  if (!accessToken) return res.status(400).json({ error: 'Missing access token' });
+  if (!accessToken) {
+    return res.status(400).json({ success: false, error: 'Missing access token' });
+  }
 
   try {
     // 1) Verify token with Pi Network
@@ -78,12 +79,12 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
       },
-      // timeout is a good idea to avoid hanging lambdas
       timeout: 8000,
     });
 
     if (!piUser?.uid || !piUser?.username) {
       return res.status(400).json({
+        success: false,
         error: 'Invalid user data from Pi Network',
         details: 'Missing uid or username',
       });
@@ -115,44 +116,43 @@ export default async function handler(req, res) {
         $set: {
           username: piUser.username,
           piUserId: piUser.uid,
-          uid: piUser.uid, // keep legacy field for now
+          uid: piUser.uid,
           roles: Array.isArray(piUser.roles) ? piUser.roles : [],
           lastLogin: now,
-          // ❗ Do NOT persist the Pi access token
+          // ❗ Never persist the Pi access token
         },
       },
       { upsert: true, returnDocument: 'after' }
     );
 
     let user = upsert?.value;
+
     // 4) If this was a new insert, optionally apply referral bonus
     if (!upsert?.lastErrorObject?.updatedExisting && referralCode) {
       await applyReferralCodeToNewUser(db, user, referralCode);
-      // refresh user doc after referral update
       user = await Users.findOne({ _id: user._id });
     }
 
     // 5) Send safe user back
-    // Strip any sensitive fields if they ever get added
     const { accessToken: _omit, ...safeUser } = user || {};
-    return res.status(200).json(safeUser);
+    return res.status(200).json({ success: true, user: safeUser });
   } catch (err) {
+    console.error('[verify] Handler error:', err);
+
     // Specific Pi API errors
     const status = err?.response?.status;
     if (status === 401) {
-      return res.status(401).json({ error: 'Invalid or expired token', details: err.response?.data });
+      return res.status(401).json({ success: false, error: 'Invalid or expired token', details: err.response?.data });
     }
     if (status === 429) {
-      return res.status(429).json({ error: 'Too many requests to Pi Network API' });
+      return res.status(429).json({ success: false, error: 'Too many requests to Pi Network API' });
     }
 
     // Mongo errors
     if (err?.name === 'MongoError' || err?.name === 'MongoServerError') {
-      console.error('Mongo error:', err);
-      return res.status(500).json({ error: 'Database error occurred' });
+      return res.status(500).json({ success: false, error: 'Database error occurred' });
     }
 
-    console.error('Verify handler error:', err);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ success: false, error: 'Internal server error' });
   }
 }

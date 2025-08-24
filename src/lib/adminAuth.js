@@ -1,21 +1,76 @@
-import bcrypt from 'bcryptjs';
-import dbConnect from './dbConnect';   // dbConnect.js is in the same lib/ folder
-import User from '../models/User';     // go up one into models/
+// src/components/AdminGuard.js
+'use client';
 
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import axios from 'axios';
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).end();
+/**
+ * AdminGuard
+ * - Wraps admin-only pages
+ * - Calls /api/admin/verify to check credentials
+ * - Redirects or blocks access if invalid
+ */
+export default function AdminGuard({ children }) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [authorized, setAuthorized] = useState(false);
 
-  await connectToDatabase();
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        // Get stored admin creds from localStorage
+        const u = localStorage.getItem('omc_admin_user');
+        const p = localStorage.getItem('omc_admin_pass');
 
-  const { email, password } = req.body;
+        if (!u || !p) {
+          setAuthorized(false);
+          setLoading(false);
+          router.push('/admin/login'); // redirect if missing
+          return;
+        }
 
-  const user = await User.findOne({ email, role: 'admin' });
-  if (!user) return res.status(401).json({ message: 'Invalid credentials' });
+        // Call backend verification
+        const res = await axios.get('/api/admin/verify', {
+          headers: {
+            'x-admin-user': u,
+            'x-admin-pass': p,
+          },
+        });
 
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
+        if (res.data?.success) {
+          setAuthorized(true);
+        } else {
+          setAuthorized(false);
+          router.push('/admin/login');
+        }
+      } catch (err) {
+        console.error('AdminGuard error:', err);
+        setAuthorized(false);
+        router.push('/admin/login');
+      } finally {
+        setLoading(false);
+      }
+    }
 
-  // ✅ Success (later we add real session / JWT here)
-  return res.status(200).json({ message: 'Login successful' });
+    checkAuth();
+  }, [router]);
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center text-cyan-300">
+        Checking admin access...
+      </div>
+    );
+  }
+
+  if (!authorized) {
+    return (
+      <div className="flex h-screen items-center justify-center text-red-500">
+        Access denied
+      </div>
+    );
+  }
+
+  return <>{children}</>;
 }
