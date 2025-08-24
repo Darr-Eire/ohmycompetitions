@@ -6,9 +6,11 @@ import { useFunnelStage } from '../../hooks/useFunnel';
 import { usePiAuth } from '../../context/PiAuthContext';
 import { formatPi } from '../../lib/funnelMath';
 import XPBar from '../../components/XPBar';
+import { STAGE1_ENTRY_FEE_PI } from '../../shared/stagePricing';
 
 /* ----------------------------- Config ------------------------------------ */
-const ENTRY_FEE_PI = 0.15;
+const ENTRY_FEE_PI = STAGE1_ENTRY_FEE_PI;
+const SAFE_ENTRY_FEE = Number(ENTRY_FEE_PI.toFixed(8)); // avoid float artifacts
 const STAGE1_CAPACITY = 25;
 const ADVANCING_PER_ROOM = 5;
 
@@ -540,33 +542,50 @@ export default function FunnelIndexPage() {
         if (Pi?.createPayment) {
           await Pi.createPayment(
             {
-              amount: ENTRY_FEE_PI,
+              amount: SAFE_ENTRY_FEE,
               memo: 'OMC Funnel Stage 1',
               metadata: { slug: assignedSlug, stage, type: 'funnel-entry' },
             },
             {
+              // 1) Fast approve on your server
               onReadyForServerApproval: async (paymentId) => {
-                const resp = await postJSON('/api/funnel/join', {
-                  slug: assignedSlug,
-                  userId,
-                  stage,
-                  paymentId,
-                  amount: ENTRY_FEE_PI,
-                  currency: 'pi',
-                });
-                if (resp?.slug) pushToast(`Placed in ${resp.slug}`, 'success');
+                try {
+                  const resp = await postJSON('/api/funnel/join', {
+                    slug: assignedSlug,
+                    userId,
+                    stage,
+                    paymentId,
+                    amount: SAFE_ENTRY_FEE,
+                    currency: 'pi',
+                  });
+                  if (resp?.slug) pushToast(`Placed in ${resp.slug}`, 'success');
+                } catch (e) {
+                  const dbg = e?.payload?.debug
+                    ? ` (amt=${e.payload.debug.amt}, expected=${e.payload.debug.expected})`
+                    : '';
+                  pushToast(`Join failed: ${e?.message || 'Server error'}${dbg}`, 'error');
+                  try { window.Pi?.cancelPayment?.(paymentId); } catch {}
+                  throw e;
+                }
               },
-              onReadyForServerCompletion: async (paymentId, txId) => {
-                await postJSON('/api/funnel/confirm', {
-                  slug: assignedSlug,
-                  userId,
-                  stage,
-                  paymentId,
-                  txId,
-                  amount: ENTRY_FEE_PI,
-                  currency: 'pi',
-                });
-                s1.mutate();
+              // 2) Complete on your server
+              onReadyForServerCompletion: async (paymentId, txid) => {
+                try {
+                  await postJSON('/api/funnel/confirm', {
+                    slug: assignedSlug,
+                    userId,
+                    stage,
+                    paymentId,
+                    txid, // IMPORTANT: use txid (not txId)
+                    amount: SAFE_ENTRY_FEE,
+                    currency: 'pi',
+                  });
+                  s1.mutate();
+                } catch (e) {
+                  const dbg = e?.payload?.debug ? ` (${JSON.stringify(e.payload.debug)})` : '';
+                  pushToast(`Confirm failed: ${e?.message || 'Server error'}${dbg}`, 'error');
+                  throw e;
+                }
               },
               onCancel: () => pushToast('Payment canceled.', 'warn'),
               onError: (err) => pushToast(err?.message || 'Payment failed.', 'error'),
@@ -578,7 +597,7 @@ export default function FunnelIndexPage() {
             slug: assignedSlug,
             userId,
             stage,
-            amount: ENTRY_FEE_PI,
+            amount: SAFE_ENTRY_FEE,
             currency: 'pi',
           });
           pushToast(`Entered • ${resp?.slug ? `Room ${resp.slug}` : ''}`, 'success');
@@ -682,9 +701,10 @@ export default function FunnelIndexPage() {
                   <div className="text-[12px] text-white/70">Cost {formatPi(ENTRY_FEE_PI)}</div>
                   <button
                     onClick={() => handleJoin({ slug: null, stage: 1 })}
-                    className="rounded-lg bg-cyan-400 text-black px-4 py-2 font-bold"
+                    className="rounded-lg bg-cyan-400 text-black px-4 py-2 font-bold disabled:opacity-60 disabled:cursor-not-allowed"
+                    disabled={joining}
                   >
-                    Enter
+                    {joining ? 'Processing…' : 'Enter'}
                   </button>
                 </div>
                 <div className="mt-4 text-[11px] text-white/50">
@@ -759,9 +779,10 @@ export default function FunnelIndexPage() {
           </div>
           <button
             onClick={() => handleJoin({ slug: null, stage: 1 })}
-            className="rounded-lg bg-cyan-400 text-black px-4 py-2 font-bold"
+            className="rounded-lg bg-cyan-400 text-black px-4 py-2 font-bold disabled:opacity-60 disabled:cursor-not-allowed"
+            disabled={joining}
           >
-            Enter
+            {joining ? 'Processing…' : 'Enter'}
           </button>
         </div>
       </div>

@@ -1,3 +1,4 @@
+// src/components/CompetitionCard.jsx
 'use client';
 
 import Image from 'next/image';
@@ -11,7 +12,7 @@ export default function CompetitionCard({
   comp,
   title,
   prize,
-  fee,
+  fee, // string like "0.40 π"
   imageUrl,
   endsAt = comp?.comp?.endsAt || comp?.endsAt || new Date().toISOString(),
   hideButton = false,
@@ -20,10 +21,10 @@ export default function CompetitionCard({
 }) {
   const { user } = usePiAuth();
 
-  // ─── Normalize any Windows-style paths into valid Next.js src ─────────
+  // Normalize any Windows-style paths into valid Next.js src
   const normalizedImageUrl = (imageUrl || '/pi.jpeg')
-    .replace(/\\/g, '/')                    // backslashes → forward slashes
-    .replace(/^(?!\/|https?:\/\/)/, '/');   // ensure leading slash if not already
+    .replace(/\\/g, '/')
+    .replace(/^(?!\/|https?:\/\/)/, '/');
 
   const [timeLeft, setTimeLeft] = useState('');
   const [status, setStatus] = useState('UPCOMING');
@@ -43,7 +44,7 @@ export default function CompetitionCard({
       const start = new Date(comp?.comp?.startsAt || comp?.startsAt).getTime();
       const end = new Date(endsAt).getTime();
 
-      if (now < start) {
+      if (Number.isFinite(start) && now < start) {
         setTimeLeft('');
         setStatus('UPCOMING');
         setShowCountdown(false);
@@ -51,7 +52,7 @@ export default function CompetitionCard({
       }
 
       let diff = end - now;
-      if (diff <= 0) {
+      if (!Number.isFinite(end) || diff <= 0) {
         setTimeLeft('');
         setStatus('ENDED');
         setShowCountdown(false);
@@ -83,26 +84,28 @@ export default function CompetitionCard({
     return () => clearInterval(interval);
   }, [endsAt, comp?.comingSoon, comp?.comp?.startsAt, comp?.startsAt]);
 
-  const sold = comp?.comp?.ticketsSold || comp?.ticketsSold || 0;
-  const total = comp?.comp?.totalTickets || comp?.totalTickets || 100;
+  const sold = comp?.comp?.ticketsSold ?? comp?.ticketsSold ?? 0;
+  const total = comp?.comp?.totalTickets ?? comp?.totalTickets ?? 100;
   const remaining = Math.max(0, total - sold);
-  const soldOutPercentage = (sold / total) * 100;
+  const soldOutPercentage = total > 0 ? (sold / total) * 100 : 0;
 
-  const isExternalUrl = (url) =>
-    url.startsWith('http://') || url.startsWith('https://');
+  const isExternalUrl = (url) => url.startsWith('http://') || url.startsWith('https://');
 
   const isSoldOut = sold >= total;
   const isLowStock = remaining <= total * 0.1 && remaining > 0;
   const isNearlyFull = remaining <= total * 0.25 && remaining > 0;
 
-  const isGiftable =
-    status === 'LIVE NOW' && !isSoldOut && (comp?.comp?.slug || comp?.slug);
+  const isGiftable = status === 'LIVE NOW' && !isSoldOut && (comp?.comp?.slug || comp?.slug);
 
   const handleGiftClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
     setShowGiftModal(true);
   };
+
+  // NEW: safely read winnersCount and maxPerUser from either shape
+  const winnersCount = comp?.winnersCount ?? comp?.comp?.winnersCount ?? 'TBA';
+  const maxPerUser = comp?.maxPerUser ?? comp?.comp?.maxPerUser ?? 'TBA';
 
   return (
     <>
@@ -118,45 +121,27 @@ export default function CompetitionCard({
         {/* Image */}
         <div className="relative w-full aspect-[16/9] bg-black overflow-hidden">
           {isExternalUrl(normalizedImageUrl) ? (
-            <img
-              src={normalizedImageUrl}
-              alt={title}
-              className="w-full h-full object-cover"
-            />
+            <img src={normalizedImageUrl} alt={title} className="w-full h-full object-cover" />
           ) : (
-            <Image
-              src={normalizedImageUrl}
-              alt={title}
-              fill
-              className="object-cover"
-              priority
-            />
+            <Image src={normalizedImageUrl} alt={title} fill className="object-cover" priority />
           )}
         </div>
 
         {/* Status Banner + Sub-Banner */}
         <div className="px-4 pt-2">
-          {/* Main Status Pill */}
           <div
             className={`w-full text-center px-3 py-1 rounded-full text-xs sm:text-sm font-bold shadow 
               ${
                 status === 'LIVE NOW'
                   ? 'bg-gradient-to-r from-[#00ff99] to-[#00cc66] text-black animate-pulse'
-                  : status === 'COMING SOON'
-                  ? 'bg-gradient-to-r from-orange-400 to-orange-500 text-black'
-                  : status === 'UPCOMING'
+                  : status === 'COMING SOON' || status === 'UPCOMING'
                   ? 'bg-gradient-to-r from-orange-400 to-orange-500 text-black'
                   : 'bg-red-500 text-white'
               }`}
           >
-            {status === 'COMING SOON'
-              ? 'Coming Soon'
-              : status === 'UPCOMING'
-              ? 'Upcoming'
-              : status}
+            {status === 'COMING SOON' ? 'Coming Soon' : status === 'UPCOMING' ? 'Upcoming' : status}
           </div>
 
-          {/* Pre-Tickets Sub-Banner */}
           {status === 'UPCOMING' && (
             <div className="w-full text-center mt-1 px-2 py-1 rounded-full bg-blue-600 text-white text-[0.65rem] sm:text-xs font-medium">
               Pre Tickets Available
@@ -165,12 +150,10 @@ export default function CompetitionCard({
         </div>
 
         {/* Live Timer */}
-        {status === 'LIVE NOW' && (
+        {status === 'LIVE NOW' && showCountdown && (
           <div className="flex justify-center items-center gap-3 px-4 pt-3">
             <div className="bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-3 py-1 rounded-lg">
-              <p className="text-sm text-black font-mono font-bold">
-                {timeLeft}
-              </p>
+              <p className="text-sm text-black font-mono font-bold">{timeLeft}</p>
             </div>
           </div>
         )}
@@ -182,52 +165,41 @@ export default function CompetitionCard({
             <span>{prize}</span>
           </div>
 
-
-<div className="flex justify-between">
-  <span className="text-cyan-300 font-semibold">Winners:</span>
-  <span>
-    {comp?.winnersCount ??
-     comp?.comp?.winnersCount ??
-     'TBA'}
-  </span>
-</div>
-
-
+          {/* NEW: Winners */}
+          <div className="flex justify-between">
+            <span className="text-cyan-300 font-semibold">Winners:</span>
+            <span>{winnersCount}</span>
+          </div>
 
           <div className="flex justify-between mt-1">
             <span className="text-cyan-300 font-semibold">Draw Date:</span>
             <span>
               {(comp?.comp?.endsAt || comp?.endsAt)
-                ? new Date(comp.comp?.endsAt || comp.endsAt).toLocaleString(
-                    undefined,
-                    {
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    }
-                  )
+                ? new Date(comp.comp?.endsAt || comp.endsAt).toLocaleString(undefined, {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })
                 : 'TBA'}
             </span>
           </div>
+
           <div className="flex justify-between">
             <span className="text-cyan-300 font-semibold">Entry Fee:</span>
             <span>{status === 'COMING SOON' ? 'TBA' : fee}</span>
           </div>
+
           <div className="flex justify-between">
             <span className="text-cyan-300 font-semibold">Total Tickets:</span>
-            <span>
-              {status === 'COMING SOON' ? 'TBA' : total.toLocaleString()}
-            </span>
+            <span>{status === 'COMING SOON' ? 'TBA' : total.toLocaleString()}</span>
           </div>
-<div className="flex justify-between">
-  <span className="text-cyan-300 font-semibold">Max Per User:</span>
-  <span>
-    {comp?.maxPerUser ??
-     comp?.comp?.maxPerUser ??
-     'TBA'}
-  </span>
-</div>
+
+          {/* NEW: Max Per User */}
+          <div className="flex justify-between">
+            <span className="text-cyan-300 font-semibold">Max Per User:</span>
+            <span>{maxPerUser}</span>
+          </div>
 
           {/* Tickets Sold & Progress */}
           <div className="space-y-2">
@@ -235,9 +207,7 @@ export default function CompetitionCard({
               <span className="text-sm text-cyan-300">Tickets Sold</span>
               <div className="text-right">
                 {status === 'COMING SOON' ? (
-                  <span className="text-sm font-semibold text-gray-300">
-                    TBA
-                  </span>
+                  <span className="text-sm font-semibold text-gray-300">TBA</span>
                 ) : (
                   <span
                     className={`text-sm font-semibold ${
@@ -253,21 +223,16 @@ export default function CompetitionCard({
                     {sold.toLocaleString()} / {total.toLocaleString()}
                   </span>
                 )}
-                {isSoldOut && (
-                  <div className="text-xs text-red-400 font-bold">SOLD OUT</div>
-                )}
+                {isSoldOut && <div className="text-xs text-red-400 font-bold">SOLD OUT</div>}
                 {isLowStock && !isSoldOut && (
-                  <div className="text-xs text-orange-400 font-bold">
-                    Only {remaining} left!
-                  </div>
+                  <div className="text-xs text-orange-400 font-bold">Only {remaining} left!</div>
                 )}
                 {isNearlyFull && !isLowStock && !isSoldOut && (
-                  <div className="text-xs text-yellow-400">
-                    {remaining} remaining
-                  </div>
+                  <div className="text-xs text-yellow-400">{remaining} remaining</div>
                 )}
               </div>
             </div>
+
             <div className="w-full bg-gray-700 rounded-full h-2">
               {status === 'COMING SOON' ? (
                 <div className="h-2 w-[20%] bg-gray-400 rounded-full animate-pulse" />
@@ -306,6 +271,7 @@ export default function CompetitionCard({
                   Not Available
                 </button>
               )}
+
               {isGiftable && !disableGift && user?.username && (
                 <button
                   onClick={handleGiftClick}

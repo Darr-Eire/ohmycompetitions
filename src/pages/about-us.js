@@ -90,14 +90,17 @@ export default function AboutUs() {
   </section>
 
 <section>
-  <h2 className="text-xl font-bold gradient-text mt-6">Where We Are Now</h2>
-  <p className="text-base sm:text-lg leading-relaxed text-white/90">
-    🎮 Real games<br />
-    🎁 Real prizes<br />
-    👥 Real pioneers playing daily<br />
-    💡  Real utility for Pi<br />
-    🤝 Real connections with Pioneers and many friendships along the way
-  </p>
+ <h2 className="text-xl font-bold gradient-text mt-6">Where We Are Now</h2>
+<p className="text-base sm:text-lg leading-relaxed text-white/90">
+  🎮 Real games<br />
+  🎁 Real prizes<br />
+  👥 Real pioneers playing daily<br />
+  💡 Real utility for Pi<br />
+  🤝 Real connections with Pioneers and many friendships along the way<br />
+  🔑 We believe in the Pi Network and its pioneers<br />
+  🚀 Built around what Pi is looking for in an app real utility, community engagement and opportunities for everyday use
+</p>
+
   <p className="text-base sm:text-lg leading-relaxed text-white/90">
     OhMyCompetitions isn’t just an idea anymore. It’s a platform and a promise
     to reward the Pi community for being early, curious and relentless while

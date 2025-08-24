@@ -9,49 +9,59 @@ export default function AdminGuard({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!router?.isReady) return; // wait for router to be ready
+
     const checkAuth = () => {
       try {
-        // Check for admin user in localStorage
-        const adminUser = localStorage.getItem('adminUser');
-        
-        if (!adminUser) {
-          console.log('No admin user found in localStorage');
-          router.push('/admin/login');
-          return;
+        // 1) Primary: role-based admin session (your existing flow)
+        const adminUserRaw = localStorage.getItem('adminUser');
+        let adminUser = null;
+
+        if (adminUserRaw) {
+          try {
+            adminUser = JSON.parse(adminUserRaw);
+          } catch {
+            // If stored accidentally as a plain string, clear it
+            localStorage.removeItem('adminUser');
+          }
         }
 
-        const user = JSON.parse(adminUser);
-        
-        // Verify the user has admin role
-        if (!user || user.role !== 'admin') {
-          console.log('User is not admin:', user);
-          localStorage.removeItem('adminUser'); // Clear invalid session
-          router.push('/admin/login');
-          return;
-        }
+        const hasRoleAdmin = !!(adminUser && adminUser.role === 'admin');
 
-        console.log('Admin authenticated:', user.email);
-        setIsAuthenticated(true);
+        // 2) Secondary: header creds for API gate (from adminClient.js)
+        const headerUser = localStorage.getItem('omc_admin_user');
+        const headerPass = localStorage.getItem('omc_admin_pass');
+        const hasHeaderCreds = !!(headerUser && headerPass);
+
+        // Consider authenticated if either condition passes
+        const ok = hasRoleAdmin || hasHeaderCreds;
+
+        if (!ok) {
+          // Not authenticated -> redirect to login unless we're already there
+          if (router.pathname !== '/admin/login') {
+            router.push('/admin/login');
+          }
+          setIsAuthenticated(false);
+        } else {
+          setIsAuthenticated(true);
+        }
       } catch (error) {
-        console.error('Error checking admin auth:', error);
-        localStorage.removeItem('adminUser'); // Clear corrupt data
-        router.push('/admin/login');
+        console.error('❌ Error checking admin auth:', error);
+        localStorage.removeItem('adminUser');
+        // Do not remove omc_admin_* automatically; user may be using header-only auth
+        if (router.pathname !== '/admin/login') {
+          router.push('/admin/login');
+        }
+        setIsAuthenticated(false);
       } finally {
         setLoading(false);
       }
     };
 
-    // Don't redirect if we're already on the login page
-    if (router.pathname === '/admin/login') {
-      setLoading(false);
-      setIsAuthenticated(true); // Allow access to login page
-      return;
-    }
-
     checkAuth();
-  }, [router]);
+    // Re-run if path changes (prevents flicker when navigating directly to /admin/*)
+  }, [router?.isReady, router?.pathname]);
 
-  // Loading state
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0b1120] text-white">
@@ -63,7 +73,7 @@ export default function AdminGuard({ children }) {
     );
   }
 
-  // Not authenticated and not on login page
+  // If not authenticated and not on login, show a friendly guard while redirecting
   if (!isAuthenticated && router.pathname !== '/admin/login') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0b1120] text-white">

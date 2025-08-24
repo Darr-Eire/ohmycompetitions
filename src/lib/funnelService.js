@@ -5,8 +5,8 @@ import { dbConnect } from 'lib/dbConnect';
 import FunnelCompetition from 'models/FunnelCompetition';
 import FunnelAdvance from 'models/FunnelAdvance';
 
-/** Public constant used by API routes for pricing, update as needed */
-export const ENTRY_FEE_PI = 1;
+// 🔥 Centralized price constant (change here only)
+export const ENTRY_FEE_PI = 0.15;
 
 /** Slug helper: stageN-YYYYMMDDhhmmss-rand */
 export function makeSlug(stage) {
@@ -125,10 +125,22 @@ export async function promoteFromQueue(toStage, { capacity = 25, advancing = 5, 
 /**
  * Assign a user to a Stage 1 room.
  * Ensures there is at least one "filling" room, then puts the user into the first available room.
- * Returns assignment metadata for UI.
+ * @param {Object|string} entrant - { userId, username } (preferred) OR legacy username string
+ * @param {Object} options
+ * @returns {Object} { stage, roomSlug, capacity, advancing, entrantsCount, status }
  */
-export async function assignStage1Room(username = '', { cycleId, capacity = 25, advancing = 5 } = {}) {
+export async function assignStage1Room(entrant, { cycleId, capacity = 25, advancing = 5 } = {}) {
   await dbConnect();
+
+  // Normalize args
+  const isObj = entrant && typeof entrant === 'object';
+  const userId = isObj ? entrant.userId : null;
+  const username = isObj ? (entrant.username ?? null) : (entrant ? String(entrant) : null);
+
+  if (!userId) {
+    // Schema requires userId on entrants — fail early and clearly
+    throw new Error('assignStage1Room requires a valid userId');
+  }
 
   // Keep at least 2 open rooms to smooth spikes
   await ensureOpenStage1(2, { capacity, advancing, cycleId });
@@ -145,17 +157,19 @@ export async function assignStage1Room(username = '', { cycleId, capacity = 25, 
     room = await createStageInstance({ stage: 1, capacity, advancing, cycleId });
   }
 
-  // Add entrant if username provided (optional)
-  if (username) {
-    // Avoid dupes
-    const alreadyIn = room.entrants?.some((e) => e?.username === username);
-    if (!alreadyIn) {
-      room.entrants = room.entrants || [];
-      room.entrants.push({ username, score: 0, joinedAt: new Date() });
-      room.entrantsCount = (room.entrantsCount || 0) + 1;
-      await room.save();
-      await maybeGoLive(room);
-    }
+  // Avoid dupes (by userId)
+  const alreadyIn = room.entrants?.some((e) => String(e?.userId) === String(userId));
+  if (!alreadyIn) {
+    room.entrants = room.entrants || [];
+    room.entrants.push({
+      userId,
+      username: username || undefined,
+      score: 0,
+      joinedAt: new Date(),
+    });
+    room.entrantsCount = (room.entrantsCount || 0) + 1;
+    await room.save();
+    await maybeGoLive(room);
   }
 
   return {

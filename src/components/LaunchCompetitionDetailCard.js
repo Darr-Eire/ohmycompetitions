@@ -1,12 +1,12 @@
-// src/components/LaunchCompetitionDetailCard.js
+// file: src/components/LaunchCompetitionDetailCard.js
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import '@fontsource/orbitron';
-import BuyTicketButton from 'components/BuyTicketButton'; // adjust to your alias if needed
+import BuyTicketButton from 'components/BuyTicketButton'; // adjust alias if needed
 import { usePiAuth } from 'context/PiAuthContext';        // keep this path consistent
-import { describeCompetition } from 'data/competitionDescriptions'; // 👈 centralized copy
+import { describeCompetition } from 'data/competitionDescriptions';
 
 // Skill question helpers
 import { getRandomQuestion, isCorrectAnswer as checkAnswer } from 'data/skill-questions';
@@ -66,23 +66,20 @@ function buildPrizeBreakdownFromComp(input, prizeFallback) {
 
 function getWinnersCount(comp, tiers) {
   const c = comp?.comp ?? comp ?? {};
-  const direct = c.winners ?? c.totalWinners ?? c.numberOfWinners ?? c.numWinners;
+  const direct =
+    c.winnersCount ?? c.winners ?? c.totalWinners ?? c.numberOfWinners ?? c.numWinners;
 
   const n = Number(direct);
-  if (Number.isFinite(n) && n > 0) return Math.min(3, Math.max(1, Math.floor(n)));
+  if (Number.isFinite(n) && n > 0) return Math.floor(n);
 
   if (typeof direct === 'string') {
     if (/single|one/i.test(direct)) return 1;
     if (/two|2/i.test(direct)) return 2;
     if (/three|3/i.test(direct)) return 3;
-    if (/multiple|multi/i.test(direct)) {
-      const count = Object.values(tiers || {}).filter(Boolean).length;
-      return Math.min(3, count || 3);
-    }
   }
 
   const count = Object.values(tiers || {}).filter(Boolean).length;
-  return Math.min(3, count || 1);
+  return Math.max(1, count || 1);
 }
 
 /** Format prize text.
@@ -132,7 +129,7 @@ export default function LaunchCompetitionDetailCard({
   sharedBonus = false,
   GiftTicketModal,
   handlePaymentSuccess,
-  description, // 👈 optional prop
+  description, // optional prop
 
   // OPTIONAL: allow parent to seed a question
   initialQuestion,
@@ -167,6 +164,10 @@ export default function LaunchCompetitionDetailCard({
   const availableTickets = Math.max(0, (totalTickets ?? 0) - (ticketsSold ?? 0));
   const percent = totalTickets > 0 ? Math.min(100, Math.floor(((ticketsSold ?? 0) / totalTickets) * 100)) : 0;
   const isNearlyFull = availableTickets > 0 && availableTickets <= Math.ceil((totalTickets ?? 0) * 0.25);
+
+  // enforce client-side guard using comp.maxPerUser
+  const maxPerUser = comp?.maxPerUser ?? comp?.comp?.maxPerUser ?? Infinity;
+  const maxClientBuyable = Math.min(availableTickets, Number.isFinite(maxPerUser) ? maxPerUser : availableTickets);
 
   /* -------------------- Countdown (24h mode) -------------------- */
   const [nowTs, setNowTs] = useState(Date.now());
@@ -212,13 +213,13 @@ export default function LaunchCompetitionDetailCard({
   const isAnswerCorrect = () => checkAnswer(selectedQuestion, skillAnswer);
 
   const handleProceedClick = () => {
-    if (hasValidAnswer) {
-      setShowPayment(true);
-      setShowSkillQuestion(false);
-    } else {
-      setShowSkillQuestion(true);
-      setShowPayment(false);
+    // gate proceed by client-side maxPerUser and stock
+    if (quantity > maxClientBuyable) {
+      setAnswerError(`Limit exceeded. Max ${maxPerUser} per user.`);
+      return;
     }
+    setShowSkillQuestion(true);
+    setShowPayment(false);
   };
 
   const handleSubmitSkill = (e) => {
@@ -229,31 +230,26 @@ export default function LaunchCompetitionDetailCard({
       setHasValidAnswer(true);
       setAnswerError('');
       setShowSkillQuestion(false);
-      setShowPayment(false);
+      setShowPayment(true);
     } else {
       setHasValidAnswer(false);
       setAnswerError('You must answer correctly to proceed.');
     }
   };
 
-  /* -------------------- PRIZE TIERS (dynamic 1/2/3) -------------------- */
+  /* -------------------- PRIZE TIERS (dynamic) -------------------- */
   const tiers = useMemo(
     () => buildPrizeBreakdownFromComp(comp, prize),
     [comp, prize]
   );
-  const winnersCount = useMemo(
-    () => getWinnersCount(comp, tiers),
-    [comp, tiers]
-  );
-  const ordinals = useMemo(
-    () => ['1st', '2nd', '3rd'].slice(0, winnersCount),
-    [winnersCount]
-  );
+ const winnersCount = comp?.winnersCount ?? comp?.comp?.winnersCount ?? 1;
+  const ordinals = useMemo(() => {
+    const labels = ['1st', '2nd', '3rd'];
+    return labels.slice(0, Math.max(1, Math.min(labels.length, winnersCount)));
+  }, [winnersCount]);
 
   const banner =
-    winnersCount === 3 ? '1st • 2nd • 3rd Prizes'
-  : winnersCount === 2 ? '1st • 2nd Prizes'
-  : 'Single Winner';
+    winnersCount > 1 ? `${winnersCount} Winners` : 'Single Winner';
 
   // Dynamic layout: center 1 prize, 2-column for 2 prizes, 3-column for 3 prizes
   const prizesLayoutClass = useMemo(() => {
@@ -316,10 +312,9 @@ export default function LaunchCompetitionDetailCard({
                     const mins  = Math.floor((diff % 3600000) / 60000);
                     return `${days} ${days === 1 ? 'Day' : 'Days'} ${hours} ${hours === 1 ? 'Hour' : 'Hours'} ${mins} ${mins === 1 ? 'Min' : 'Mins'}`;
                   })()}
-                </div>
-
-                <div className="mt-2 text-cyan-300 text-sm">
-                  Draw Date <span className="text-white">{formattedEnd}</span>
+                  <div className="mt-2 text-cyan-300 text-sm">
+                    Draw Date <span className="text-white">{formattedEnd}</span>
+                  </div>
                 </div>
               </div>
             )}
@@ -345,7 +340,7 @@ export default function LaunchCompetitionDetailCard({
               {banner}
             </div>
 
-            {/* PRIZES (dynamic 1/2/3) */}
+            {/* PRIZES (dynamic) */}
             <div className={`mt-4 ${prizesLayoutClass}`}>
               {ordinals.map((label) => (
                 <div
@@ -386,9 +381,9 @@ export default function LaunchCompetitionDetailCard({
                 customClass="border-cyan-300/50 text-cyan-300"
               />
               <Stat
-                size="xs"
-                label="Available"
-                value={`${availableTickets} left (max ${comp?.maxTicketsPerUser ?? 'N/A'}/user)`}
+                size="sm"
+                label="Max Per User"
+                value={Number.isFinite(maxPerUser) ? maxPerUser : 'N/A'}
                 customClass="border-cyan-300/50 text-cyan-300"
               />
               <Stat
@@ -461,15 +456,15 @@ export default function LaunchCompetitionDetailCard({
                     </button>
                     <span className="text-lg font-semibold">{quantity}</span>
                     <button
-                      onClick={() => setQuantity(q => Math.min(availableTickets, q + 1))}
-                      disabled={quantity >= availableTickets}
+                      onClick={() => setQuantity(q => Math.min(maxClientBuyable, q + 1))}
+                      disabled={quantity >= maxClientBuyable}
                       className="bg-blue-500 px-4 py-1 rounded-full disabled:opacity-50"
                     >
                       +
                     </button>
                   </div>
 
-                  {/* Stock notes */}
+                  {/* Stock and limit notes */}
                   {isNearlyFull && availableTickets > 0 && (
                     <div className="text-cyan-300 text-sm font-bold mt-2 text-center">
                       ⚠️ Only {availableTickets} tickets remaining!
@@ -478,6 +473,11 @@ export default function LaunchCompetitionDetailCard({
                   {quantity > availableTickets && (
                     <div className="text-cyan-300 text-sm font-bold mt-2 text-center">
                       ❌ Cannot buy {quantity} tickets — only {availableTickets} available
+                    </div>
+                  )}
+                  {Number.isFinite(maxPerUser) && quantity > maxPerUser && (
+                    <div className="text-cyan-300 text-sm font-bold mt-2 text-center">
+                      ❌ Max {maxPerUser} tickets per user
                     </div>
                   )}
 
@@ -502,7 +502,7 @@ export default function LaunchCompetitionDetailCard({
                   {!showSkillQuestion && showPayment && (
                     <div className="mt-4">
                       <BuyTicketButton
-                        competitionSlug={comp?.slug}
+                        competitionSlug={comp?.slug || comp?.comp?.slug}
                         entryFee={numericEntry}
                         quantity={quantity}
                         piUser={effectiveUser}
@@ -633,7 +633,7 @@ export default function LaunchCompetitionDetailCard({
 }
 
 /* ----------------------------- UI Helpers ----------------------------- */
-function Stat({ label, value, highlight = false, strong = false, customClass = '', size = 'md' }) {
+function Stat({ label, value, customClass = '', size = 'md' }) {
   const sizes = {
     xs: { pad: 'px-2 py-1',   label: 'text-[9px]',  value: 'text-[10px]' },
     sm: { pad: 'px-2.5 py-1.5', label: 'text-[10px]', value: 'text-[11px]' },
@@ -643,16 +643,11 @@ function Stat({ label, value, highlight = false, strong = false, customClass = '
   const s = sizes[size] || sizes.md;
 
   return (
-    <div
-      className={`rounded-xl border ${s.pad} ${customClass} ${
-        highlight ? 'border-amber-300/30 bg-amber-300/10'
-                  : !customClass ? 'border-white/10 bg-white/5' : ''
-      }`}
-    >
-      <div className={`uppercase tracking-wide ${highlight ? 'text-amber-200' : 'text-cyan-300'} ${s.label}`}>
+    <div className={`rounded-xl border ${s.pad} ${customClass}`}>
+      <div className={`uppercase tracking-wide text-cyan-300 ${s.label}`}>
         {label}
       </div>
-      <div className={`mt-0.5 ${strong ? 'text-white font-bold' : 'text-white/90'} ${s.value}`}>
+      <div className={`mt-0.5 text-white/90 ${s.value}`}>
         {value}
       </div>
     </div>
