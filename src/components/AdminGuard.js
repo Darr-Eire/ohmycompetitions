@@ -1,28 +1,70 @@
-// src/lib/adminAuth.js
-import dbConnect from './dbConnect';
-import User from '../models/User';
+// src/components/AdminGuard.js
+'use client';
 
-/**
- * Require Admin Auth for API routes
- */
-export function requireAdmin(req) {
-  const userHeader = req.headers['x-admin-user'];
-  const passHeader = req.headers['x-admin-pass'];
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-  const ADMIN_USER = process.env.ADMIN_USER;
-  const ADMIN_PASS = process.env.ADMIN_PASS;
+export default function AdminGuard({ children }) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [authorized, setAuthorized] = useState(false);
 
-  const isValid =
-    userHeader &&
-    passHeader &&
-    ADMIN_USER &&
-    ADMIN_PASS &&
-    String(userHeader) === String(ADMIN_USER) &&
-    String(passHeader) === String(ADMIN_PASS);
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const u = localStorage.getItem('omc_admin_user');
+        const p = localStorage.getItem('omc_admin_pass');
 
-  if (!isValid) {
-    const error = new Error('Forbidden: Invalid credentials');
-    error.statusCode = 403;
-    throw error;
+        if (!u || !p) {
+          setAuthorized(false);
+          setLoading(false);
+          router.push('/admin/login');
+          return;
+        }
+
+        const res = await fetch('/api/admin/verify', {
+          headers: {
+            'x-admin-user': u,
+            'x-admin-pass': p,
+          },
+          cache: 'no-store',
+        });
+
+        if (!res.ok) {
+          setAuthorized(false);
+          router.push('/admin/login');
+          return;
+        }
+
+        const data = await res.json();
+        setAuthorized(Boolean(data?.success));
+      } catch (err) {
+        console.error('AdminGuard auth check failed:', err);
+        setAuthorized(false);
+        router.push('/admin/login');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    checkAuth();
+  }, [router]);
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center text-cyan-300">
+        Checking admin access...
+      </div>
+    );
   }
+
+  if (!authorized) {
+    return (
+      <div className="flex h-screen items-center justify-center text-red-500">
+        Access denied
+      </div>
+    );
+  }
+
+  return <>{children}</>;
 }
