@@ -1,7 +1,10 @@
 // src/pages/api/competitions/health.js
+
 import { requireAdmin } from '../../../lib/adminAuth';
-import dbConnect from '../../../lib/dbConnect';
-import Competition from '../../../models/Competition';
+
+// in src/lib/adminAuth.js
+import dbConnect from './dbConnect';
+import User from '../models/User';
 
 export default async function handler(req, res) {
   try {
