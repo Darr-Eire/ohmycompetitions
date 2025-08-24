@@ -1,136 +1,258 @@
-import { dbConnect } from 'lib/dbConnect';
-import Ticket from 'models/Ticket';
-import User from 'models/User';
-import Competition from 'models/Competition';
-import { verifyPayment } from 'lib/pi/verifyPayment'; // Make sure this exists
+// src/pages/gift-ticket.js
+'use client';
 
-const recentGifts = new Map(); // Basic IP rate limiting
+import { useEffect, useState } from 'react';
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+export default function GiftTicketPage() {
+  const [loading, setLoading] = useState(false);
+  const [ok, setOk] = useState(true);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [ticket, setTicket] = useState(null);
 
-  await dbConnect();
+  // Simple form state
+  const [form, setForm] = useState({
+    fromUsername: '',
+    toUsername: '',
+    competitionSlug: '',
+    competitionId: '',
+    quantity: 1,
+    paymentId: '',
+    transactionJson: '{\n  "identifier": "",\n  "txid": ""\n}',
+  });
 
-  const { 
-    fromUsername, 
-    toUsername, 
-    competitionSlug, 
-    competitionId, 
-    quantity = 1,
-    paymentId,
-    transaction
-  } = req.body;
-
-  if (!fromUsername || !toUsername || (!competitionSlug && !competitionId)) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-
-  if (fromUsername.toLowerCase() === toUsername.toLowerCase()) {
-    return res.status(400).json({ error: 'You cannot gift a ticket to yourself' });
-  }
-
-  if (quantity < 1 || quantity > 50) {
-    return res.status(400).json({ error: 'Quantity must be between 1 and 50' });
-  }
-
-  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  const now = Date.now();
-
-  if (recentGifts.has(ip) && now - recentGifts.get(ip) < 15000) {
-    return res.status(429).json({ error: 'Please wait 15 seconds between gifts' });
-  }
-
-  try {
-    console.log('🎁 Gift ticket request:', { fromUsername, toUsername, competitionId, quantity });
-
-    const sender = await User.findOne({ 
-      username: { $regex: new RegExp(`^${fromUsername}$`, 'i') }
-    }).lean();
-
-    if (!sender) return res.status(404).json({ error: 'Sender not found' });
-
-    const recipient = await User.findOne({ 
-      username: { $regex: new RegExp(`^${toUsername}$`, 'i') }
-    }).lean();
-
-    if (!recipient) return res.status(404).json({ error: 'Recipient not found' });
-
-    let competition;
-    if (competitionId) {
-      competition = await Competition.findById(competitionId).lean();
-    } else {
-      competition = await Competition.findOne({ 'comp.slug': competitionSlug }).lean();
+  // Prefill from localStorage if you like
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const lastFrom = localStorage.getItem('omc_last_from');
+    if (lastFrom) {
+      setForm((f) => ({ ...f, fromUsername: lastFrom }));
     }
+  }, []);
 
-    if (!competition) return res.status(404).json({ error: 'Competition not found' });
+  const onChange = (e) => {
+    const { name, value } = e.target;
+    setForm((f) => ({ ...f, [name]: name === 'quantity' ? Number(value) : value }));
+  };
 
-    if (competition.comp?.status !== 'active') {
-      return res.status(400).json({ error: 'Competition is not active' });
-    }
+  const submit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    setTicket(null);
 
-    const entryFee = competition.comp?.entryFee || 0;
-    const expectedAmount = quantity * entryFee;
-
-    if (!paymentId || !transaction) {
-      return res.status(400).json({ error: 'Missing payment data' });
-    }
-
-    const isValidPayment = await verifyPayment({
-      paymentId,
-      transaction,
-      expectedAmount,
-      username: fromUsername,
-      reason: 'gift',
-    });
-
-    if (!isValidPayment) {
-      return res.status(402).json({ error: 'Pi payment verification failed' });
-    }
-
-    const ticketNumbers = Array.from({ length: quantity }, (_, i) => 
-      `GIFT-${Date.now()}-${Math.floor(Math.random() * 1000)}-${i + 1}`
-    );
-
-    const giftTicket = new Ticket({
-      username: recipient.username,
-      competitionSlug: competition.comp?.slug || competitionSlug,
-      competitionId: competition._id,
-      competitionTitle: competition.title,
-      imageUrl: competition.imageUrl || competition.thumbnail || '/images/default-prize.png',
-      quantity: parseInt(quantity),
-      ticketNumbers,
-      gifted: true,
-      giftedBy: sender.username,
-      purchasedAt: new Date(),
-      payment: {
-        paymentId,
-        transactionId: transaction.identifier,
-        amount: expectedAmount,
-        type: 'gift',
-      },
-    });
-
-    await giftTicket.save();
-
-    recentGifts.set(ip, now);
-
-    console.log(`✅ Gift ticket sent: ${fromUsername} → ${toUsername} for ${competition.title}`);
-
-    return res.status(200).json({ 
-      success: true, 
-      ticket: {
-        id: giftTicket._id,
-        competitionTitle: competition.title,
-        quantity,
-        recipient: recipient.username,
-        ticketNumbers
+    try {
+      if (!form.fromUsername || !form.toUsername) {
+        throw new Error('fromUsername and toUsername are required.');
       }
-    });
+      if (!form.competitionSlug && !form.competitionId) {
+        throw new Error('Provide either competitionSlug or competitionId.');
+      }
+      if (!form.paymentId) {
+        throw new Error('paymentId is required.');
+      }
+      if (!form.transactionJson) {
+        throw new Error('transaction JSON is required.');
+      }
 
-  } catch (error) {
-    console.error('❌ Gift Ticket Error:', error);
-    return res.status(500).json({ error: 'Server error while gifting ticket' });
-  }
+      let transaction;
+      try {
+        transaction = JSON.parse(form.transactionJson);
+      } catch {
+        throw new Error('transaction JSON is invalid.');
+      }
+
+      // Persist last sender for convenience
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('omc_last_from', form.fromUsername);
+      }
+
+      const payload = {
+        fromUsername: form.fromUsername.trim(),
+        toUsername: form.toUsername.trim(),
+        competitionSlug: form.competitionSlug.trim() || undefined,
+        competitionId: form.competitionId.trim() || undefined,
+        quantity: Number(form.quantity) || 1,
+        paymentId: form.paymentId.trim(),
+        transaction,
+      };
+
+      const res = await fetch('/api/tickets/gift', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        cache: 'no-store',
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j?.error || `Gift failed (${res.status})`);
+      }
+
+      const data = await res.json();
+      setSuccess('🎉 Gift sent successfully!');
+      setTicket(data?.ticket || null);
+      setOk(true);
+    } catch (err) {
+      setOk(false);
+      setError(err?.message || 'Something went wrong.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <main className="max-w-2xl mx-auto p-6 text-white">
+      <h1 className="text-2xl font-bold mb-4 text-cyan-400">Gift a Ticket</h1>
+      <p className="text-white/80 mb-6">
+        Send competition tickets to another Pioneer. Provide either a{' '}
+        <span className="text-cyan-300">competitionSlug</span> or a{' '}
+        <span className="text-cyan-300">competitionId</span>, plus the Pi{' '}
+        <span className="text-cyan-300">paymentId</span> and a{' '}
+        <span className="text-cyan-300">transaction</span> JSON that includes the
+        payment <code className="bg-black/40 px-1 rounded">identifier</code> (and optionally <code className="bg-black/40 px-1 rounded">txid</code>).
+      </p>
+
+      {error && (
+        <div className="mb-4 rounded border border-red-500 bg-red-500/20 p-3">
+          ❌ {error}
+        </div>
+      )}
+      {success && (
+        <div className="mb-4 rounded border border-emerald-500 bg-emerald-500/20 p-3">
+          ✅ {success}
+        </div>
+      )}
+
+      <form onSubmit={submit} className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label className="block">
+            <span className="block mb-1 text-sm text-gray-300">From Username</span>
+            <input
+              name="fromUsername"
+              value={form.fromUsername}
+              onChange={onChange}
+              className="w-full rounded bg-[#0f172a] border border-cyan-700 p-2"
+              placeholder="senderUsername"
+              required
+            />
+          </label>
+
+          <label className="block">
+            <span className="block mb-1 text-sm text-gray-300">To Username</span>
+            <input
+              name="toUsername"
+              value={form.toUsername}
+              onChange={onChange}
+              className="w-full rounded bg-[#0f172a] border border-cyan-700 p-2"
+              placeholder="recipientUsername"
+              required
+            />
+          </label>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label className="block">
+            <span className="block mb-1 text-sm text-gray-300">Competition Slug</span>
+            <input
+              name="competitionSlug"
+              value={form.competitionSlug}
+              onChange={onChange}
+              className="w-full rounded bg-[#0f172a] border border-cyan-700 p-2"
+              placeholder="e.g., iphone-16-ultra"
+            />
+          </label>
+
+          <label className="block">
+            <span className="block mb-1 text-sm text-gray-300">Competition ID</span>
+            <input
+              name="competitionId"
+              value={form.competitionId}
+              onChange={onChange}
+              className="w-full rounded bg-[#0f172a] border border-cyan-700 p-2"
+              placeholder="Mongo ObjectId (optional if slug provided)"
+            />
+          </label>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label className="block">
+            <span className="block mb-1 text-sm text-gray-300">Quantity</span>
+            <input
+              type="number"
+              min={1}
+              max={50}
+              name="quantity"
+              value={form.quantity}
+              onChange={onChange}
+              className="w-full rounded bg-[#0f172a] border border-cyan-700 p-2"
+              required
+            />
+          </label>
+
+          <label className="block">
+            <span className="block mb-1 text-sm text-gray-300">Payment ID</span>
+            <input
+              name="paymentId"
+              value={form.paymentId}
+              onChange={onChange}
+              className="w-full rounded bg-[#0f172a] border border-cyan-700 p-2"
+              placeholder="Pi payment identifier"
+              required
+            />
+          </label>
+        </div>
+
+        <label className="block">
+          <span className="block mb-1 text-sm text-gray-300">
+            Transaction (JSON with <code className="bg-black/40 px-1 rounded">identifier</code> and/or <code className="bg-black/40 px-1 rounded">txid</code>)
+          </span>
+          <textarea
+            name="transactionJson"
+            value={form.transactionJson}
+            onChange={onChange}
+            rows={6}
+            className="w-full rounded bg-[#0f172a] border border-cyan-700 p-2 font-mono text-sm"
+          />
+        </label>
+
+        <div className="flex items-center gap-3 pt-2">
+          <button
+            type="submit"
+            disabled={loading}
+            className={`rounded bg-cyan-500 px-4 py-2 font-bold text-black ${loading ? 'opacity-60 cursor-wait' : ''}`}
+          >
+            {loading ? 'Sending…' : 'Send Gift'}
+          </button>
+          <button
+            type="button"
+            disabled={loading}
+            onClick={() => {
+              setError('');
+              setSuccess('');
+              setTicket(null);
+            }}
+            className="rounded bg-slate-700 px-4 py-2"
+          >
+            Reset status
+          </button>
+        </div>
+      </form>
+
+      {ticket && (
+        <div className="mt-6 rounded border border-cyan-600 bg-cyan-600/10 p-4">
+          <h2 className="text-lg font-semibold text-cyan-300 mb-2">Gift Summary</h2>
+          <ul className="list-disc list-inside text-sm text-gray-200 space-y-1">
+            <li><span className="text-gray-400">Competition:</span> {ticket.competitionTitle}</li>
+            <li><span className="text-gray-400">Recipient:</span> {ticket.recipient}</li>
+            <li><span className="text-gray-400">Quantity:</span> {ticket.quantity}</li>
+            <li className="break-all">
+              <span className="text-gray-400">Ticket Numbers:</span> {Array.isArray(ticket.ticketNumbers) ? ticket.ticketNumbers.join(', ') : '—'}
+            </li>
+          </ul>
+        </div>
+      )}
+    </main>
+  );
 }

@@ -1,79 +1,91 @@
+// src/components/AdminGuard.js
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
+import axios from 'axios';
 
+/**
+ * AdminGuard
+ * - Wraps admin-only pages.
+ * - Reads admin creds from localStorage (omc_admin_user / omc_admin_pass).
+ * - Verifies via /api/admin/verify (which calls requireAdmin on the server).
+ * - Redirects to /admin/login when unauthorized.
+ */
 export default function AdminGuard({ children }) {
   const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [authorized, setAuthorized] = useState(false);
+  const redirectedRef = useRef(false);
 
   useEffect(() => {
-    const checkAuth = () => {
+    let alive = true;
+
+    async function checkAuth() {
       try {
-        // Check for admin user in localStorage
-        const adminUser = localStorage.getItem('adminUser');
-        
-        if (!adminUser) {
-          console.log('No admin user found in localStorage');
-          router.push('/admin/login');
+        if (typeof window === 'undefined') return;
+
+        const u = window.localStorage.getItem('omc_admin_user');
+        const p = window.localStorage.getItem('omc_admin_pass');
+
+        if (!u || !p) {
+          if (!redirectedRef.current) {
+            redirectedRef.current = true;
+            setAuthorized(false);
+            setLoading(false);
+            router.push('/admin/login');
+          }
           return;
         }
 
-        const user = JSON.parse(adminUser);
-        
-        // Verify the user has admin role
-        if (!user || user.role !== 'admin') {
-          console.log('User is not admin:', user);
-          localStorage.removeItem('adminUser'); // Clear invalid session
-          router.push('/admin/login');
-          return;
-        }
+        const res = await axios.get('/api/admin/verify', {
+          headers: { 'x-admin-user': u, 'x-admin-pass': p },
+          // bust any edge cache
+          params: { ts: Date.now() },
+        });
 
-        console.log('Admin authenticated:', user.email);
-        setIsAuthenticated(true);
-      } catch (error) {
-        console.error('Error checking admin auth:', error);
-        localStorage.removeItem('adminUser'); // Clear corrupt data
-        router.push('/admin/login');
+        if (!alive) return;
+
+        if (res.data?.success) {
+          setAuthorized(true);
+        } else {
+          if (!redirectedRef.current) {
+            redirectedRef.current = true;
+            setAuthorized(false);
+            router.push('/admin/login');
+          }
+        }
+      } catch (err) {
+        console.error('AdminGuard verify error:', err?.message || err);
+        if (!redirectedRef.current) {
+          redirectedRef.current = true;
+          setAuthorized(false);
+          router.push('/admin/login');
+        }
       } finally {
-        setLoading(false);
+        if (alive) setLoading(false);
       }
-    };
-
-    // Don't redirect if we're already on the login page
-    if (router.pathname === '/admin/login') {
-      setLoading(false);
-      setIsAuthenticated(true); // Allow access to login page
-      return;
     }
 
     checkAuth();
+    return () => { alive = false; };
   }, [router]);
 
-  // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0b1120] text-white">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-cyan-400 mx-auto mb-4"></div>
-          <p className="text-cyan-300">Checking authentication...</p>
-        </div>
+      <div className="flex h-screen items-center justify-center text-cyan-300">
+        Checking admin access...
       </div>
     );
   }
 
-  // Not authenticated and not on login page
-  if (!isAuthenticated && router.pathname !== '/admin/login') {
+  if (!authorized) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0b1120] text-white">
-        <div className="text-center">
-          <div className="text-red-400 text-xl mb-4">🔒 Access Denied</div>
-          <p className="text-gray-300">Redirecting to login...</p>
-        </div>
+      <div className="flex h-screen items-center justify-center text-red-500">
+        Access denied
       </div>
     );
   }
 
-  return children;
+  return <>{children}</>;
 }

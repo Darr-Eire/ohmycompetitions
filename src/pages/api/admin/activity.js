@@ -14,7 +14,7 @@ export default async function handler(req, res) {
     // ---- MOCK: last 24h mixed events ----
     const now = Date.now();
     const mock = [
-      { type: 'winner', message: 'User @piLegend claimed prize on "iPhone 15 Draw"', timestamp: now - 10 * 60 * 1000, href: '/admin/competitions/xxxxxxxxxxxxxxxxxxxxxxx1' },
+      { type: 'winner', message: 'User @piLegend claimed prize on "iPhone 16 Draw"', timestamp: now - 10 * 60 * 1000, href: '/admin/competitions/xxxxxxxxxxxxxxxxxxxxxxx1' },
       { type: 'voucher', message: 'Voucher ABC-123 redeemed by @satoshi_pi', timestamp: now - 45 * 60 * 1000, href: '/admin/vouchers' },
       { type: 'payment', message: 'Payment 31.4π received for "Weekly Mega"', timestamp: now - 2 * 60 * 60 * 1000 },
       { type: 'signup', message: 'New user joined: @pi_hustler', timestamp: now - 3 * 60 * 60 * 1000, href: '/admin/users' },
