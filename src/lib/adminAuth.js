@@ -1,50 +1,84 @@
-// src/lib/adminAuth.js
-import dbConnect from './db';          // optional, but handy if you later check DB
-import User from '../models/User';     // optional; not used in basic header check
+// file: src/lib/adminAuth.js
+import crypto from 'crypto';
 
-/**
- * Basic header-based admin check.
- * Expects headers:
- *   x-admin-user: <ADMIN_USER>
- *   x-admin-pass: <ADMIN_PASS>
- *
- * Set env vars in Vercel / .env.local:
- *   ADMIN_USER=...
- *   ADMIN_PASS=...
- */
-export function requireAdmin(req) {
-  const u = req.headers['x-admin-user'];
-  const p = req.headers['x-admin-pass'];
-  const ADMIN_USER = process.env.ADMIN_USER;
-  const ADMIN_PASS = process.env.ADMIN_PASS;
+const COOKIE_NAME = 'omc_admin';
+const COOKIE_SECRET =
+  process.env.ADMIN_COOKIE_SECRET ||
+  process.env.JWT_SECRET ||
+  'CHANGE_ME__set_ADMIN_COOKIE_SECRET';
 
-  const ok =
-    u &&
-    p &&
-    ADMIN_USER &&
-    ADMIN_PASS &&
-    String(u) === String(ADMIN_USER) &&
-    String(p) === String(ADMIN_PASS);
+function getEnvCreds() {
+  // Accept both new and legacy names
+  const ADMIN_USER = (process.env.ADMIN_USER || process.env.ADMIN_USERNAME || '').trim();
+  const ADMIN_PASS = (process.env.ADMIN_PASS || process.env.ADMIN_PASSWORD || '').trim();
+  return { ADMIN_USER, ADMIN_PASS };
+}
 
-  if (!ok) {
-    const err = new Error('Forbidden: Invalid credentials');
-    err.statusCode = 403;
-    throw err;
+function parseCookie(header) {
+  const out = {};
+  (header || '').split(';').forEach((pair) => {
+    const i = pair.indexOf('=');
+    if (i > -1) out[pair.slice(0, i).trim()] = decodeURIComponent(pair.slice(i + 1).trim());
+  });
+  return out;
+}
+
+function verifySignedCookie(value) {
+  if (!value) return null;
+  const [b64, sig] = String(value).split('.');
+  if (!b64 || !sig) return null;
+  const expected = crypto.createHmac('sha256', COOKIE_SECRET).update(b64).digest('base64url');
+  if (expected !== sig) return null;
+  try {
+    const json = Buffer.from(b64, 'base64url').toString('utf8');
+    return JSON.parse(json);
+  } catch {
+    return null;
   }
 }
 
-/**
- * (Optional) Stronger variant that checks an admin record in MongoDB too.
- * Keep only if you actually store admins in the DB.
- */
-export async function requireAdminWithDb(req) {
-  requireAdmin(req); // header gate first
-  await dbConnect();
-  const u = req.headers['x-admin-user'];
-  const adminDoc = await User.findOne({ username: u }).lean();
-  if (!adminDoc) {
-    const err = new Error('Forbidden: Admin user not found');
+/** Throws 403 if invalid. Returns the validated admin username if OK. */
+export function requireAdmin(req) {
+  const { ADMIN_USER, ADMIN_PASS } = getEnvCreds();
+
+  // 1) Try signed cookie first
+  const cookies = parseCookie(req.headers.cookie || '');
+  const sess = verifySignedCookie(cookies[COOKIE_NAME]);
+  if (sess && (sess.role === 'admin' || sess.user === ADMIN_USER)) {
+    return String(sess.user || ADMIN_USER || 'admin');
+  }
+
+  // 2) Fallback to x-admin-user/x-admin-pass headers
+  const hdrUser = (req.headers['x-admin-user'] || '').toString().trim();
+  const hdrPass = (req.headers['x-admin-pass'] || '').toString();
+
+  const ok =
+    hdrUser &&
+    hdrPass &&
+    ADMIN_USER &&
+    ADMIN_PASS &&
+    hdrUser.toLowerCase() === ADMIN_USER.toLowerCase() &&
+    hdrPass === ADMIN_PASS;
+
+  if (!ok) {
+    const err = new Error('Forbidden: Invalid credentials');
+    // @ts-ignore
     err.statusCode = 403;
     throw err;
   }
+  return hdrUser;
+}
+
+/** Wrapper for API routes */
+export function withAdmin(handler) {
+  return async function wrapped(req, res) {
+    try {
+      requireAdmin(req);
+      return await handler(req, res);
+    } catch (e) {
+      return res
+        .status(e.statusCode || 403)
+        .json({ success: false, error: e.message || 'FORBIDDEN' });
+    }
+  };
 }
