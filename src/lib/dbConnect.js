@@ -1,6 +1,22 @@
-// src/lib/dbConnect.js
-// 🔗 Shim file: re-exports dbConnect and helpers from db.js
-// Use this if some older code still imports "lib/dbConnect" instead of "lib/db".
+import mongoose from 'mongoose';
 
-export { default } from './db';
-export * from './db';
+let isConnected = false;
+
+export async function dbConnect() {
+  if (isConnected) return;
+
+  const uri = process.env.MONGO_DB_URL;
+  if (!uri) throw new Error('❌ MONGO_DB_URL is missing in .env.local');
+
+  try {
+    const db = await mongoose.connect(uri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    isConnected = db.connections[0].readyState === 1;
+    console.log('✅ MongoDB connected');
+  } catch (error) {
+    console.error('❌ MongoDB connection error:', error);
+    throw error;
+  }
+}

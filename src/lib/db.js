@@ -5,19 +5,20 @@ mongoose.set('strictQuery', false);
 
 const URI =
   process.env.MONGODB_URI ||
-  process.env.MONGO_DB_URI ||
-  process.env.MONGO_DB_URL;
+  process.env.MONGO_DB_URL ||
+  process.env.MONGO_DB_URI;
 
 if (!URI) {
-  throw new Error('Set MONGODB_URI (or MONGO_DB_URI / MONGO_DB_URL) in .env(.local)');
+  throw new Error('❌ Set MONGODB_URI (or MONGO_DB_URL / MONGO_DB_URI) in .env(.local)');
 }
 
-// Global cache across hot reloads/serverless
+// Global cache survives hot reloads / serverless invocations
 let cached = global._omc_mongoose;
-if (!cached) cached = (global._omc_mongoose = { conn: null, promise: null });
+if (!cached) {
+  cached = global._omc_mongoose = { conn: null, promise: null };
+}
 
-/** Connect (or reuse) a single Mongoose connection. */
-export default async function dbConnect() {
+async function dbConnect() {
   if (cached.conn) return cached.conn;
 
   if (!cached.promise) {
@@ -26,14 +27,16 @@ export default async function dbConnect() {
         bufferCommands: false,
         serverSelectionTimeoutMS: 5000,
         connectTimeoutMS: 5000,
+        // Optionally set dbName if your URI lacks one:
+        // dbName: process.env.MONGODB_DB || 'ohmycompetitions',
       })
       .then((m) => {
         const c = m.connection;
-        console.log(`✅ Mongo connected to ${c.host}/${c.name} (mongoose v${mongoose.version})`);
+        console.log(`✅ MongoDB connected: ${c.host}/${c.name} (mongoose v${mongoose.version})`);
         return m;
       })
       .catch((err) => {
-        console.error('[db] Connection error:', err?.message || err);
+        console.error('❌ MongoDB connection error:', err?.message || err);
         throw err;
       });
   }
@@ -42,17 +45,11 @@ export default async function dbConnect() {
   return cached.conn;
 }
 
-/** Optional: native driver DB instance */
-export async function getDb() {
+// Handy helper for native driver access if needed
+async function getDb() {
   const conn = await dbConnect();
   return conn.connection.db;
 }
 
-/** Optional: disconnect (rarely needed on serverless) */
-export async function dbDisconnect() {
-  if (cached.conn) {
-    await mongoose.disconnect();
-    cached.conn = null;
-    cached.promise = null;
-  }
-}
+export default dbConnect;
+export { dbConnect, getDb };
