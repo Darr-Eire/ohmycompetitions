@@ -1,39 +1,41 @@
- # OhMyCompetitions 🎮✨
+# 🎮 OhMyCompetitions (OMC)
 
-A **competition-based decentralized app (dApp)** built for the **Pi Network**.  
-Pioneers can **buy or gift tickets**, **win prizes**, **earn referral rewards**, and play **skill-based mini-games** — all powered by Pi.
+A **competition-based dApp** built for the **Pi Network**.  
+Pioneers can **buy or gift tickets**, **win Pi prizes**, **earn referral rewards**, and play **mini-games** — all powered by Pi.
 
 ---
 
 ## 🚀 Why OhMyCompetitions?
-- 🎟 **Fair Competitions** — transparent draws with real prizes in Pi  
+- 🎟 **Fair Competitions** — transparent draws with visible ticket IDs  
 - 🕹 **Mini-Games** — Pi Stacker, Hack the Vault, Match Pi Code & more  
 - 👥 **Referral Rewards** — invite Pioneers, climb leaderboards, earn XP  
-- 💎 **Skill-Based Entries** — answer a quick logic/math question to keep it fair  
-- 🔐 **Pi SDK Integration** — seamless login & secure Pi payments  
-- 🌍 **Built by Pioneers, for Pioneers**
+- 💎 **Skill-Based Entries** — logic/math challenges for fairness  
+- 🔐 **Pi SDK Integration** — login & secure payments via Pi  
+- 🌍 **By Pioneers, for Pioneers**  
 
 ---
 
-## 🖥️ Live App
-👉 [www.ohmycompetitions.com](https://www.ohmycompetitions.com)  
-*(Best experienced inside Pi Browser)*
+## 🌐 Live App
+👉 [ohmycompetitions.com](https://www.ohmycompetitions.com)  
+*(Best used inside Pi Browser)*
 
 ---
 
 ## 📸 Screenshots
-<!-- Add real screenshots of your UI here -->
+> Add screenshots in `/screenshots/` for a better showcase. Example:
+
 ![Competition Dashboard](./screenshots/dashboard.png)
-![Pi Stacker Game](./screenshots/stacker.png)
+
 
 ---
 
-## 🛠️ Getting Started (Developers)
+## 🛠️ Tech Stack
+- **Frontend:** Next.js (React 18), TailwindCSS  
+- **Backend:** Next.js API Routes, Node.js  
+- **Database:** MongoDB Atlas + Mongoose  
+- **Auth & Payments:** Pi Network SDK  
+- **Hosting:** Vercel  
 
-Clone & run locally:
+---
 
-```bash
-git clone https://github.com/<your-username>/ohmycompetitions.git
-cd ohmycompetitions
-npm install
-npm run dev
+## 📂 Project Structure
