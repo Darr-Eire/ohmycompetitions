@@ -2,240 +2,157 @@
 import axios from 'axios';
 import { MongoClient } from 'mongodb';
 
-const MONGODB_URI = 'mongodb+srv://ohmycompetitions:DarrenMongo2025@ohmycompetitions.ffrvvr5.mongodb.net/ohmycompetitions?retryWrites=true&w=majority&appName=ohmycompetitions';
+/* ----------------------------- Env & Mongo cache ---------------------------- */
+const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_DB = process.env.MONGODB_DB || 'ohmycompetitions';
 
-// Create a MongoDB client
-const client = new MongoClient(MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+if (!MONGODB_URI) {
+  throw new Error('Missing MONGODB_URI environment variable');
+}
 
-// Helper function to apply referral code to new users
+// Cache the client across hot-reloads / serverless invocations
+let cached = global._omc_mongo;
+if (!cached) {
+  cached = global._omc_mongo = { client: null, db: null, connecting: null };
+}
+
+async function getDb() {
+  if (cached.db) return cached.db;
+  if (!cached.connecting) {
+    cached.connecting = (async () => {
+      const client = new MongoClient(MONGODB_URI);
+      await client.connect();
+      cached.client = client;
+      cached.db = client.db(MONGODB_DB);
+      return cached.db;
+    })();
+  }
+  return cached.connecting;
+}
+
+/* -------------------- Referral application for brand-new user ------------------- */
 async function applyReferralCodeToNewUser(db, newUser, referralCode) {
   try {
-    console.log(`🔄 Applying referral code ${referralCode} to user ${newUser.username}...`);
-    
-    // Find the referrer by referral code
-    const referrer = await db.collection('users').findOne({ 
-      referralCode: referralCode 
-    });
+    const code = String(referralCode || '').trim();
+    if (!code) return false;
 
-    if (!referrer) {
-      console.warn(`⚠️ Invalid referral code: ${referralCode}`);
-      return false;
-    }
+    // Find referrer by referralCode
+    const referrer = await db.collection('users').findOne({ referralCode: code });
+    if (!referrer) return false;
+    if (referrer.username === newUser.username) return false; // no self-referrals
 
-    if (referrer.username === newUser.username) {
-      console.warn(`⚠️ User cannot refer themselves: ${newUser.username}`);
-      return false;
-    }
+    // Give both sides a bonus
+    const bonus = 5;
 
-    // Update new user with referral info and bonus tickets
     await db.collection('users').updateOne(
       { _id: newUser._id },
-      { 
-        $set: { 
-          referredBy: referralCode,
-          bonusTickets: 5
-        }
+      {
+        $set: { referredBy: code },
+        $inc: { bonusTickets: bonus },
       }
     );
 
-    // Give referrer bonus tickets
     await db.collection('users').updateOne(
       { _id: referrer._id },
-      { 
-        $inc: { bonusTickets: 5 }
-      }
+      { $inc: { bonusTickets: bonus } }
     );
 
-    console.log(`✅ Referral applied successfully: ${newUser.username} referred by ${referrer.username}`);
     return true;
-
-  } catch (error) {
-    console.error('❌ Failed to apply referral code:', error);
+  } catch (err) {
+    console.error('Referral apply error:', err);
     return false;
   }
 }
 
+/* --------------------------------- Handler --------------------------------- */
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
-  }
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
 
-  const { accessToken, userData, referralCode } = req.body;
-  
-  if (!accessToken) {
-    console.error('❌ Missing access token in request');
-    return res.status(400).json({ error: 'Missing access token' });
-  }
-
-  let mongoConnection = null;
+  const { accessToken, userData, referralCode } = req.body || {};
+  if (!accessToken) return res.status(400).json({ error: 'Missing access token' });
 
   try {
-    console.log('🔄 Starting verification process...');
-
-    // Verify with Pi Network API
-    console.log('🔄 Verifying Pi access token...');
+    // 1) Verify token with Pi Network
     const { data: piUser } = await axios.get('https://api.minepi.com/v2/me', {
-      headers: { 
+      headers: {
         Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-    }).catch(error => {
-      console.error('❌ Pi API Error:', {
-        status: error.response?.status,
-        data: error.response?.data,
-        message: error.message
-      });
-      throw error;
+      // timeout is a good idea to avoid hanging lambdas
+      timeout: 8000,
     });
 
-    console.log('✅ Pi API response received:', {
-      username: piUser.username,
-      uid: piUser.uid,
-      roles: piUser.roles
-    });
-
-    // Validate Pi user data
-    if (!piUser.uid || !piUser.username) {
-      console.error('❌ Invalid Pi user data:', piUser);
-      return res.status(400).json({ 
+    if (!piUser?.uid || !piUser?.username) {
+      return res.status(400).json({
         error: 'Invalid user data from Pi Network',
-        details: 'Missing required user information'
+        details: 'Missing uid or username',
       });
     }
 
-    // Connect to MongoDB
-    console.log('🔄 Connecting to MongoDB...');
-    mongoConnection = await client.connect();
-    const db = client.db();
-    console.log('✅ MongoDB connected');
+    // 2) Connect DB
+    const db = await getDb();
+    const Users = db.collection('users');
 
-    // First, try to find the existing user
-    const existingUser = await db.collection('users').findOne({ 
-      $or: [
-        { piUserId: piUser.uid },
-        { uid: piUser.uid }, // Support legacy field name
-        { username: piUser.username }
-      ]
-    });
-
-    let user;
-    if (existingUser) {
-      // Update existing user
-      user = await db.collection('users').findOneAndUpdate(
-        { _id: existingUser._id },
-        { 
-          $set: {
-            username: piUser.username,
-            piUserId: piUser.uid, // Store in correct field name
-            uid: piUser.uid, // Keep legacy field for backward compatibility
-            lastLogin: new Date(),
-            accessToken,
-            roles: piUser.roles || []
-          }
+    // 3) Upsert user (support legacy uid field)
+    const now = new Date();
+    const upsert = await Users.findOneAndUpdate(
+      {
+        $or: [
+          { piUserId: piUser.uid },
+          { uid: piUser.uid }, // legacy support
+          { username: piUser.username },
+        ],
+      },
+      {
+        $setOnInsert: {
+          createdAt: now,
+          tickets: 0,
+          bonusTickets: 0,
+          referredBy: '',
+          referralCode: null,
+          country: userData?.country || null,
         },
-        { returnDocument: 'after' }
-      );
-    } else {
-      // Create new user
-      const newUser = {
-        username: piUser.username,
-        piUserId: piUser.uid, // Store in correct field name
-        uid: piUser.uid, // Keep legacy field for backward compatibility
-        createdAt: new Date(),
-        lastLogin: new Date(),
-        accessToken,
-        roles: piUser.roles || [],
-        tickets: 0,
-        country: userData?.country || null,
-        bonusTickets: 0,
-        referredBy: '',
-        referralCode: null // Will be generated if needed
-      };
+        $set: {
+          username: piUser.username,
+          piUserId: piUser.uid,
+          uid: piUser.uid, // keep legacy field for now
+          roles: Array.isArray(piUser.roles) ? piUser.roles : [],
+          lastLogin: now,
+          // ❗ Do NOT persist the Pi access token
+        },
+      },
+      { upsert: true, returnDocument: 'after' }
+    );
 
-      const result = await db.collection('users').insertOne(newUser);
-      user = { ...newUser, _id: result.insertedId };
-
-      // Apply referral code if provided for new users
-      if (referralCode && referralCode.trim()) {
-        await applyReferralCodeToNewUser(db, user, referralCode.trim());
-      }
+    let user = upsert?.value;
+    // 4) If this was a new insert, optionally apply referral bonus
+    if (!upsert?.lastErrorObject?.updatedExisting && referralCode) {
+      await applyReferralCodeToNewUser(db, user, referralCode);
+      // refresh user doc after referral update
+      user = await Users.findOne({ _id: user._id });
     }
 
-    console.log('✅ User verified and updated:', {
-      username: user.username,
-      piUserId: user.piUserId,
-      uid: user.uid,
-      _id: user._id
-    });
-    
-    // Return user data without sensitive fields
-    const { accessToken: _, ...safeUserData } = user;
-    res.status(200).json(safeUserData);
-
+    // 5) Send safe user back
+    // Strip any sensitive fields if they ever get added
+    const { accessToken: _omit, ...safeUser } = user || {};
+    return res.status(200).json(safeUser);
   } catch (err) {
-    console.error('❌ Verification failed:', {
-      name: err.name,
-      message: err.message,
-      code: err.code,
-      stack: err.stack
-    });
-    
-    // Handle specific error cases
-    if (err.response?.status === 401) {
-      return res.status(401).json({ 
-        error: 'Invalid or expired token',
-        details: err.response.data 
-      });
+    // Specific Pi API errors
+    const status = err?.response?.status;
+    if (status === 401) {
+      return res.status(401).json({ error: 'Invalid or expired token', details: err.response?.data });
     }
-    
-    if (err.response?.status === 429) {
-      return res.status(429).json({ 
-        error: 'Too many requests to Pi Network API',
-        details: err.response.data
-      });
-    }
-    
-    if (err.code === 'ECONNREFUSED' || err.code === 'ENOTFOUND') {
-      return res.status(503).json({ 
-        error: 'Could not connect to Pi Network API',
-        details: err.message
-      });
+    if (status === 429) {
+      return res.status(429).json({ error: 'Too many requests to Pi Network API' });
     }
 
-    // Database connection errors
-    if (err.name === 'MongoError' || err.name === 'MongoServerError') {
-      console.error('❌ Database error:', {
-        name: err.name,
-        code: err.code,
-        message: err.message
-      });
-      return res.status(500).json({ 
-        error: 'Database error occurred',
-        details: process.env.NODE_ENV === 'development' ? err.message : undefined
-      });
+    // Mongo errors
+    if (err?.name === 'MongoError' || err?.name === 'MongoServerError') {
+      console.error('Mongo error:', err);
+      return res.status(500).json({ error: 'Database error occurred' });
     }
 
-    // Generic error
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: process.env.NODE_ENV === 'development' ? err.message : undefined,
-      details: process.env.NODE_ENV === 'development' ? {
-        name: err.name,
-        code: err.code
-      } : undefined
-    });
-  } finally {
-    try {
-      if (mongoConnection) {
-        console.log('🔄 Closing MongoDB connection...');
-        await client.close();
-        console.log('✅ MongoDB connection closed');
-      }
-    } catch (err) {
-      console.error('Error closing MongoDB connection:', err);
-    }
+    console.error('Verify handler error:', err);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 }
