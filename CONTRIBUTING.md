@@ -1,39 +1,27 @@
-# OhMyCompetitions 🎮✨
+# 🤝 Contributing to OhMyCompetitions
 
-A **competition-based decentralized app (dApp)** built for the **Pi Network**.  
-Pioneers can **buy or gift tickets**, **win prizes**, **earn referral rewards**, and play **skill-based mini-games** — all powered by Pi.
-
----
-
-## 🚀 Why OhMyCompetitions?
-- 🎟 **Fair Competitions** — transparent draws with real prizes in Pi  
-- 🕹 **Mini-Games** — Pi Stacker, Hack the Vault, Match Pi Code & more  
-- 👥 **Referral Rewards** — invite Pioneers, climb leaderboards, earn XP  
-- 💎 **Skill-Based Entries** — answer a quick logic/math question to keep it fair  
-- 🔐 **Pi SDK Integration** — seamless login & secure Pi payments  
-- 🌍 **Built by Pioneers, for Pioneers**
+Thank you for your interest in contributing!
+OhMyCompetitions is built **by real Pioneers, for the Pi Network community**.  
+Every line of code, idea, and improvement helps us build the **fairest competition hub in the Pi ecosystem**. 🚀
 
 ---
 
-## 🖥️ Live App
-👉 [www.ohmycompetitions.com](https://www.ohmycompetitions.com)  
-*(Best experienced inside Pi Browser)*
+## 🛠️ How to Contribute
+
+We welcome all kinds of contributions:
+- 🐛 **Bug Reports** — Found something broken? Open an issue with clear steps to reproduce.  
+- 💡 **Feature Requests** — Got a killer idea for Pi mini-games, tickets, or competitions? Share it!  
+- 🖥 **Code Contributions** — Help us improve the dApp frontend, backend, or game logic.  
+- 🎨 **Design & Content** — Improve our UI/UX, create graphics, or write docs.
 
 ---
 
-## 📸 Screenshots
-<!-- Replace these with real screenshots -->
-![Competition Dashboard](./screenshots/dashboard.png)  
-![Pi Stacker Game](./screenshots/stacker.png)
+## 🔧 Development Workflow
 
----
+1. **Fork** this repository  
+   - Click the “Fork” button at the top right of this repo.  
 
-## 🛠️ Getting Started (Developers)
-
-Clone & run locally:
-
-```bash
-git clone https://github.com/Darr-Eire/ohmycompetitions.git
-cd ohmycompetitions
-npm install
-npm run dev
+2. **Clone your fork locally**  
+   ```bash
+   git clone https://github.com/<your-username>/ohmycompetitions.git
+   cd ohmycompetitions
