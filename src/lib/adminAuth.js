@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
-import { connectToDatabase } from '../../../lib/dbConnect.js';
-import User from '../../../models/User.js';
+import dbConnect from './dbConnect';   // dbConnect.js is in the same lib/ folder
+import User from '../models/User';     // go up one into models/
+
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();

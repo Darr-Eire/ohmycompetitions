@@ -1,14 +1,10 @@
 // src/pages/api/competitions/health.js
-
 import { requireAdmin } from '../../../lib/adminAuth';
-
-// in src/lib/adminAuth.js
-import dbConnect from './dbConnect';
-import User from '../models/User';
+import dbConnect from '../../../lib/dbConnect';
+import Competition from '../../../models/Competition';
 
 export default async function handler(req, res) {
   try {
-    // Protect route with admin credentials (throws on invalid)
     requireAdmin(req);
   } catch (err) {
     return res.status(err.statusCode || 403).json({
@@ -17,7 +13,6 @@ export default async function handler(req, res) {
     });
   }
 
-  // Optional mock mode for dashboards/local dev
   const useMock = process.env.ADMIN_MOCK === '1';
   if (useMock) {
     const now = Date.now();
@@ -59,7 +54,6 @@ export default async function handler(req, res) {
   try {
     await dbConnect();
 
-    // Pull active competitions and compute simple health signals
     const comps = await Competition.find({ 'comp.status': 'active' })
       .select('title comp.totalTickets comp.ticketsSold comp.endsAt')
       .sort({ updatedAt: -1 })
