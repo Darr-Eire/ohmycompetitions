@@ -1,6 +1,32 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+
+function buildReferralLink(code) {
+  const base =
+    (typeof window !== 'undefined' && window.location?.origin) ||
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    'https://ohmycompetitions.com';
+  return `${base}/r/${encodeURIComponent(code || '')}`;
+}
+
+async function shareOrCopy(text, url, onCopied) {
+  try {
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      await navigator.share({ title: 'OhMyCompetitions', text, url });
+      return true;
+    }
+  } catch {
+    // fall back to copy
+  }
+  try {
+    await navigator.clipboard.writeText(`${text} ${url}`.trim());
+    onCopied?.();
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export default function ReferralStatsCard({
   username = 'unknown',
@@ -26,34 +52,39 @@ export default function ReferralStatsCard({
   const total  = (totalEntries ?? totalBonusTickets ?? (earned + bonus)) || 0;
 
   const code = userReferralCode || username;
-  const referralUrl = `https://ohmycompetitions.com/signup?ref=${encodeURIComponent(code)}`;
+  const referralUrl = buildReferralLink(code);
 
-  async function handleCopy() {
+  const handleCopy = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(referralUrl);
-    } catch {
-      const ta = document.createElement('textarea');
-      ta.value = referralUrl;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
-    } finally {
       setCopied(true);
       setTimeout(() => setCopied(false), 1200);
+    } catch {
+      // very old fallback
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = referralUrl;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1200);
+      } catch {}
     }
-  }
+  }, [referralUrl]);
 
-  function openShare(url) {
-    window.open(url, '_blank', 'width=600,height=520');
-  }
+  const handleShare = useCallback(async (platform) => {
+    const shareText = 'Join me on OhMyCompetitions — get tickets to win prizes!';
 
-  function handleShare(platform) {
-    const shareText = 'Join me on Oh My Competitions monthly 1000 π draw 🎁🏆';
-    if (navigator.share) {
-      navigator.share({ title: 'Oh My Competitions', text: shareText, url: referralUrl }).catch(() => {});
-      return;
-    }
+    // Web Share if available
+    const ok = await shareOrCopy(shareText, referralUrl, () => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1200);
+    });
+    if (ok) return;
+
+    // Fallback: open target share URL
     const url = encodeURIComponent(referralUrl);
     const text = encodeURIComponent(shareText);
     const map = {
@@ -62,8 +93,9 @@ export default function ReferralStatsCard({
       whatsapp: `https://wa.me/?text=${text}%20${url}`,
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
     };
-    if (map[platform]) openShare(map[platform]);
-  }
+    const href = map[platform];
+    if (href) window.open(href, '_blank', 'width=600,height=520');
+  }, [referralUrl]);
 
   // Milestones every 5 signups
   const remainder = signupCount % 5;
@@ -79,10 +111,7 @@ export default function ReferralStatsCard({
       {/* Header (ultra compact on mobile) */}
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0">
-          <h3 className="text-sm sm:text-lg font-bold text-cyan-300 leading-tight">
-            Monthly 1000&nbsp;π Draw
-          </h3>
-          {/* Hide the helper sentence on mobile to save height */}
+      
           <p className="hidden sm:block text-xs text-white/70 mt-0.5">
             Every successful referral = <b>1 entry</b>. Bonus actions can add more.
           </p>
@@ -92,7 +121,7 @@ export default function ReferralStatsCard({
         </span>
       </div>
 
-      {/* Tiles (tight gaps + sizes) */}
+      {/* Tiles */}
       <div className="mt-2.5 grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2.5">
         <Tile label="Referrals" value={signupCount} />
         <Tile label="Entries from Referrals" value={earned} />
@@ -100,7 +129,7 @@ export default function ReferralStatsCard({
         <Tile label="Total Entries" value={total} highlight />
       </div>
 
-      {/* Milestone (minimal on mobile) */}
+      {/* Milestone */}
       <div className="mt-2.5 rounded-xl border border-cyan-600/60 bg-white/5 p-2 sm:p-2.5">
         <div className="flex items-center justify-between">
           <span className="text-[10px] sm:text-xs text-white/80">Next Milestone</span>
@@ -116,9 +145,9 @@ export default function ReferralStatsCard({
         </div>
       </div>
 
-      {/* Link row (super compact on mobile) */}
+      {/* Link row */}
       <div className="mt-2.5 rounded-xl border border-cyan-600/60 bg-white/5 p-2 sm:p-2.5">
-        {/* Mobile: single line with code + copy button */}
+        {/* Mobile */}
         <div className="flex items-center gap-2 sm:hidden">
           <div className="text-[11px] text-white/80">
             Code: <span className="font-semibold text-cyan-300">{code}</span>
@@ -132,7 +161,7 @@ export default function ReferralStatsCard({
           </button>
         </div>
 
-        {/* Desktop+ : show full URL row */}
+        {/* Desktop */}
         <div className="hidden sm:flex flex-col sm:flex-row gap-2">
           <code className="flex-1 truncate rounded-lg bg-black/40 px-2.5 py-1.5 text-[11px]">
             {referralUrl}
@@ -147,7 +176,7 @@ export default function ReferralStatsCard({
         </div>
       </div>
 
-      {/* Share (2 cols on mobile, 4 on sm+) */}
+      {/* Share */}
       <div className="mt-2.5 grid grid-cols-2 sm:grid-cols-4 gap-2">
         <ShareBtn onClick={() => handleShare('telegram')}>📱 Telegram</ShareBtn>
         <ShareBtn onClick={() => handleShare('twitter')}>🐦 Twitter</ShareBtn>
@@ -155,7 +184,7 @@ export default function ReferralStatsCard({
         <ShareBtn onClick={() => handleShare('facebook')}>📘 Facebook</ShareBtn>
       </div>
 
-      {/* Breakdown is optional; keep compact and collapsed by default */}
+      {/* Breakdown */}
       {Object.keys(competitionBreakdown || {}).length > 0 && (
         <div className="mt-2.5 border-t border-white/10 pt-2">
           <button
