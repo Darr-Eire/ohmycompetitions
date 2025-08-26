@@ -1,8 +1,8 @@
 // file: src/pages/api/funnel/join.js
-import { dbConnect } from '../../../lib/dbConnect';
-import { ENTRY_FEE_PI, assignStage1Room } from '../../../lib/funnelService';
-import { getPayment, approvePayment } from '../../../lib/piClient';
-import { lobby } from '../../../lib/funnelLobby';
+import { dbConnect } from 'lib/dbConnect';
+import { ENTRY_FEE_PI, assignStage1Room } from 'lib/funnelService';
+import { getPayment, approvePayment } from 'lib/piClient';
+import { lobby } from 'lib/funnelLobby';
 
 // ✅ Added: referral rewards util (idempotent + first-paid-action guard)
 import { grantReferralRewards } from '../../../lib/referralRewards';
