@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import axios from 'axios';
 import Image from 'next/image';
+<<<<<<< Updated upstream
 import { useRouter, useSearchParams } from 'next/navigation';
 import { usePiAuth } from '../context/PiAuthContext';
 import ReferralStatsCard from 'components/ReferralStatsCard';
@@ -176,6 +177,101 @@ async function shareOrCopy(text, url, onCopied) {
     if (typeof navigator !== 'undefined' && navigator.share) {
       await navigator.share({ title: 'OhMyCompetitions', text, url });
       return true;
+=======
+import { countries } from 'data/countries';
+import TicketCardSelector from 'components/TicketCardTypes';
+import CompressedTicketView from 'components/CompressedTicketView';
+import ReferralStatsCard from 'components/ReferralStatsCard';
+import { usePiAuth } from 'context/PiAuthContext';
+
+export default function Account() {
+  const { user } = usePiAuth();
+  const [profileData, setProfileData] = useState(null);
+  const [tickets, setTickets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedCountry, setSelectedCountry] = useState('Ireland');
+  const [giftUsername, setGiftUsername] = useState('');
+  const [selectedCompetition, setSelectedCompetition] = useState('');
+  const [message, setMessage] = useState('');
+  const [ticketQuantity, setTicketQuantity] = useState(1);
+  const [filter, setFilter] = useState('all');
+  const [filteredTickets, setFilteredTickets] = useState([]);
+  const [viewMode, setViewMode] = useState('cards'); // 'cards' or 'compressed'
+
+  // Load user profile and tickets data
+  useEffect(() => {
+    const loadData = async () => {
+      if (!user?.uid) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        
+        // Load profile data
+        const profileResponse = await axios.get(`/api/user/profile?uid=${user.uid}`);
+        setProfileData(profileResponse.data);
+
+        // Load tickets data
+        const ticketsResponse = await axios.get(`/api/user/tickets?uid=${user.uid}`);
+        setTickets(ticketsResponse.data);
+
+      } catch (error) {
+        console.error('Error loading account data:', error);
+        setMessage('⚠️ Error loading account data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [user]);
+
+  // Filter tickets based on selected filter
+  useEffect(() => {
+    if (!tickets.length) {
+      setFilteredTickets([]);
+      return;
+    }
+
+    const now = new Date();
+    let filtered = [];
+
+    switch (filter) {
+      case 'active':
+        filtered = tickets.filter(t => new Date(t.drawDate) > now && !t.claimed);
+        break;
+      case 'inactive':
+        filtered = tickets.filter(t => new Date(t.drawDate) <= now);
+        break;
+      case 'upcoming':
+        filtered = tickets.filter(t => new Date(t.drawDate) > now);
+        break;
+      case 'gifted':
+        filtered = tickets.filter(t => t.gifted);
+        break;
+      case 'tech':
+        filtered = tickets.filter(t => t.theme === 'tech');
+        break;
+      case 'premium':
+        filtered = tickets.filter(t => t.theme === 'premium');
+        break;
+      case 'pi':
+        filtered = tickets.filter(t => t.theme === 'pi');
+        break;
+      case 'daily':
+        filtered = tickets.filter(t => t.theme === 'daily');
+        break;
+      case 'crypto':
+        filtered = tickets.filter(t => t.theme === 'crypto');
+        break;
+      case 'free':
+        filtered = tickets.filter(t => t.theme === 'free');
+        break;
+      default:
+        filtered = tickets;
+>>>>>>> Stashed changes
     }
   } catch (e) {
     // fall through to copy
@@ -189,6 +285,7 @@ async function shareOrCopy(text, url, onCopied) {
   }
 }
 
+<<<<<<< Updated upstream
 /* ------------------------------- Page shell -------------------------------- */
 export default function Account() {
   const { user, loginWithPi } = usePiAuth();
@@ -236,10 +333,24 @@ useEffect(() => {
         >
           Login with Pi Network
         </button>
+=======
+    setFilteredTickets(filtered);
+  }, [filter, tickets]);
+
+  // Show login prompt if user not logged in
+  if (!user) {
+    return (
+      <div className="bg-[#1e293b] min-h-screen max-w-md mx-auto p-4 text-white flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <h2 className="text-xl font-bold">Please Login</h2>
+          <p className="text-gray-300">You need to login with Pi to view your account</p>
+        </div>
+>>>>>>> Stashed changes
       </div>
     );
   }
 
+<<<<<<< Updated upstream
   const userId = user.uid || user.piUserId;
 
   return (
@@ -265,6 +376,50 @@ useEffect(() => {
             </button>
            <ShareReferralButton refLink={refLink} username={user.username} />
 
+=======
+  if (loading) {
+    return (
+      <div className="bg-[#1e293b] min-h-screen max-w-md mx-auto p-4 text-white flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan-400 mx-auto"></div>
+          <p className="text-gray-300">Loading account data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const totalPurchased = profileData?.stats?.totalPurchased || 0;
+  const totalGifted = profileData?.stats?.totalGifted || 0;
+  const totalEarned = profileData?.stats?.totalEarned || 0;
+  const joinedDate = profileData?.stats?.joinedDate 
+    ? new Date(profileData.stats.joinedDate).toLocaleDateString()
+    : 'Unknown';
+
+  return (
+    <div className="bg-[#1e293b] min-h-screen max-w-md mx-auto p-4 text-white space-y-8">
+
+      {/* Profile Card */}
+      <div className="border border-cyan-600 rounded-2xl p-6 text-center shadow-lg space-y-4">
+        <h2 className="text-xl font-bold">{profileData?.user?.username || user.username}</h2>
+        <p className="text-sm text-white">ID: {profileData?.user?.uid || user.uid}</p>
+
+        <div className="grid grid-cols-2 gap-2 text-[10px] text-left mt-2">
+          <div className="bg-[#0f172a] p-2 rounded-md border border-cyan-600">
+            <p className="text-gray-400 mb-1">🔢 Tickets Bought</p>
+            <p className="text-white font-semibold text-sm">{totalPurchased}</p>
+          </div>
+          <div className="bg-[#0f172a] p-2 rounded-md border border-cyan-600">
+            <p className="text-gray-400 mb-1">📅 Joined</p>
+            <p className="text-white font-semibold text-sm">{joinedDate}</p>
+          </div>
+          <div className="bg-[#0f172a] p-2 rounded-md border border-yellow-400">
+            <p className="text-gray-400 mb-1">🎁 Tickets Gifted</p>
+            <p className="text-white font-semibold text-sm">{totalGifted}</p>
+          </div>
+          <div className="bg-[#0f172a] p-2 rounded-md border border-green-500">
+            <p className="text-gray-400 mb-1">🏅 Tickets Earned</p>
+            <p className="text-white font-semibold text-sm">{totalEarned}</p>
+>>>>>>> Stashed changes
           </div>
         </div>
 
@@ -296,6 +451,7 @@ useEffect(() => {
         </nav>
       </div>
 
+<<<<<<< Updated upstream
       {/* Panels */}
       <main className="p-4 space-y-6">
         {activeTab === 'tickets' && <TicketsPanel user={user} />}
@@ -515,6 +671,190 @@ function TicketsPanel({ user }) {
   tickets={tickets}
   loading={loading}
 />
+=======
+      {/* Tickets Section */}
+      <div className="bg-[#0f172a] border border-cyan-600 rounded-xl p-4 text-sm text-white w-full">
+        <h2 className="text-center text-xl font-bold mb-4 text-white">My Tickets</h2>
+
+        <div className="space-y-3">
+          <div className="flex gap-2">
+            <select
+              className="flex-1 p-2 rounded text-sm bg-[#1e293b] text-white border border-cyan-400"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            >
+              <option value="all">All Tickets</option>
+              <option value="active">Active</option>
+              <option value="inactive">Completed</option>
+              <option value="upcoming">Upcoming</option>
+              <option value="gifted">Gifted</option>
+              <option value="tech">Featured</option>
+              <option value="premium">Travel</option>
+              <option value="pi">Pi Competitions</option>
+              <option value="daily">Daily</option>
+              <option value="crypto">Crypto</option>
+              <option value="free">Free</option>
+            </select>
+            
+            {filteredTickets.length > 5 && (
+              <button
+                onClick={() => setViewMode(viewMode === 'cards' ? 'compressed' : 'cards')}
+                className="px-3 py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-xs rounded transition-colors"
+              >
+                {viewMode === 'cards' ? '📋 List' : '🎴 Cards'}
+              </button>
+            )}
+          </div>
+
+          {filteredTickets.length > 0 ? (
+            viewMode === 'cards' ? (
+              <div className="flex overflow-x-auto no-scrollbar snap-x snap-mandatory space-x-3 pb-2">
+                {filteredTickets.map((ticket, index) => (
+                  <div key={`${ticket.competitionSlug}-${index}`} className="snap-center shrink-0">
+                    <TicketCardSelector ticket={ticket} />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <CompressedTicketView tickets={filteredTickets} />
+            )
+          ) : (
+            <p className="text-center text-gray-400 py-8">
+              {tickets.length === 0 
+                ? "You don't have any tickets yet. Start by entering a competition!" 
+                : "No tickets found in this category."}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Referrals */}
+      <ReferralStatsCard
+        username={profileData?.user?.referralCode || `${user.username}-${user.uid?.slice(-6)}`}
+        signupCount={profileData?.referrals?.signupCount || 0}
+        ticketsEarned={profileData?.referrals?.ticketsEarned || 0}
+        miniGamesBonus={profileData?.referrals?.miniGamesBonus || 0}
+      />
+
+      {/* Gift a Ticket */}
+      <div className="bg-gradient-to-r from-[#0f172a]/80 via-[#1e293b]/90 to-[#0f172a]/80 border border-cyan-400 rounded-2xl shadow-[0_0_40px_#00ffd533] p-6 space-y-6">
+        <div className="text-center space-y-1">
+          <h2 className="text-xl font-bold text-white">Gift a Ticket</h2>
+          <p className="text-sm text-gray-400">Give a fellow Pioneer who deserves it.</p>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block mb-1 text-sm font-medium text-white">Recipient Username</label>
+            <input
+              type="text"
+              placeholder="@exampleuser"
+              className="w-full p-2 rounded bg-[#1e293b] text-white border border-cyan-600 placeholder-gray-400"
+              value={giftUsername}
+              onChange={(e) => setGiftUsername(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label className="block mb-1 text-sm font-medium text-white">Select Competition</label>
+            <select
+              className="w-full p-2 rounded bg-[#1e293b] text-white border border-cyan-600"
+              value={selectedCompetition}
+              onChange={(e) => {
+                setSelectedCompetition(e.target.value);
+                setTicketQuantity(1);
+              }}
+            >
+              <option value="">-- Select --</option>
+              <option value="ps5">PS5 Mega Bundle — 0.4 π</option>
+              <option value="dubai">Dubai Luxury Holiday — 2.5 π</option>
+              <option value="pi10k">10,000 Pi — 2.2 π</option>
+              <option value="daily">Daily Jackpot — 0.45 π</option>
+              <option value="btc">Win 1 BTC — 0.5 π</option>
+              <option value="moon">Pi To The Moon — 0 π</option>
+              <option value="cashcode">Pi Cash Code — 0 π</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block mb-1 text-sm font-medium text-white">Quantity to Purchase</label>
+            <select
+              className="w-full p-2 rounded bg-[#1e293b] text-white border border-cyan-600"
+              value={ticketQuantity}
+              onChange={(e) => setTicketQuantity(parseInt(e.target.value))}
+              disabled={selectedCompetition === ''}
+            >
+              <option value="">-- Select Quantity --</option>
+              {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
+                <option key={num} value={num}>{num}</option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            className="bg-green-600 hover:bg-green-700 transition-colors w-full py-2 font-semibold rounded"
+            onClick={async () => {
+              const comps = {
+                ps5: { title: 'PS5 Bundle', entryFee: 0.4 },
+                dubai: { title: 'Dubai Luxury Holiday', entryFee: 2.5 },
+                pi10k: { title: '10,000 Pi', entryFee: 2.2 },
+                daily: { title: 'Daily Jackpot', entryFee: 0.45 },
+                btc: { title: 'Win 1 BTC', entryFee: 0.5 },
+                moon: { title: 'Pi To The Moon', entryFee: 0 },
+                cashcode: { title: 'Pi Cash Code', entryFee: 0 },
+              };
+
+              const selected = comps[selectedCompetition];
+
+              if (!giftUsername || !selectedCompetition || ticketQuantity < 1) {
+                return setMessage('⚠️ Please complete all fields.');
+              }
+
+              try {
+                setMessage('⏳ Processing...');
+                await axios.post('/api/tickets/purchase-and-gift', {
+                  competition: selected.title,
+                  recipient: giftUsername.replace('@', '').trim(),
+                  quantity: ticketQuantity,
+                  entryFee: selected.entryFee,
+                  purchaseNew: true,
+                });
+
+                setMessage(`✅ Sent ${ticketQuantity} ticket(s) to ${giftUsername}`);
+                setGiftUsername('');
+                setSelectedCompetition('');
+                setTicketQuantity(1);
+                
+                // Refresh tickets data
+                const ticketsResponse = await axios.get(`/api/user/tickets?uid=${user.uid}`);
+                setTickets(ticketsResponse.data);
+                
+              } catch (err) {
+                console.error(err);
+                setMessage('❌ Failed to purchase and send tickets.');
+              }
+            }}
+          >
+            {(() => {
+              const comps = {
+                ps5: 0.4,
+                dubai: 2.5,
+                pi10k: 2.2,
+                daily: 0.45,
+                btc: 0.5,
+                moon: 0,
+                cashcode: 0,
+              };
+              const fee = comps[selectedCompetition] || 0;
+              const total = (ticketQuantity * fee).toFixed(2);
+              return `Purchase & Send (${ticketQuantity} = ${total} π)`;
+            })()}
+          </button>
+        </div>
+
+        {message && <p className="mt-4 text-center text-cyan-300">{message}</p>}
+      </div>
+>>>>>>> Stashed changes
 
     </div>
   );

@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 import { dbConnect } from 'lib/dbConnect';
 import Ticket from 'models/Ticket';
 import User from 'models/User';
@@ -8,10 +9,18 @@ import TicketCredit from 'models/TicketCredit'; // 👈 NEW: counts admin grants
 export default async function handler(req, res) {
   await dbConnect();
 
+=======
+import { MongoClient } from 'mongodb';
+
+const client = new MongoClient(process.env.MONGO_DB_URL);
+
+export default async function handler(req, res) {
+>>>>>>> Stashed changes
   if (req.method !== 'GET') {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
+<<<<<<< Updated upstream
   const { username, slug, summary, mode } = req.query;
   const wantSummary = summary === '1' || (mode && mode.toLowerCase() === 'summary');
 
@@ -21,10 +30,26 @@ export default async function handler(req, res) {
 
   try {
     const user = await User.findOne({ username }).lean();
+=======
+  const { uid } = req.query;
+
+  if (!uid) {
+    return res.status(400).json({ message: 'Missing uid parameter' });
+  }
+
+  try {
+    await client.connect();
+    const db = client.db();
+
+    // Get user data to get username
+    const user = await db.collection('users').findOne({ uid });
+    
+>>>>>>> Stashed changes
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
+<<<<<<< Updated upstream
     // Accept any of these as a user identifier (depends on how you stored credits)
     const userPiId = user.piUserId || user.uid;
     const userIdCandidates = [
@@ -319,5 +344,75 @@ export default async function handler(req, res) {
   } catch (err) {
     console.error('Error fetching user tickets:', err);
     res.status(500).json({ message: 'Server Error', error: err.message });
+=======
+    const tickets = [];
+
+    // Get purchased tickets from payments collection
+    const payments = await db.collection('payments').find({
+      uid,
+      status: 'completed'
+    }).sort({ completedAt: -1 }).toArray();
+
+    // Get competitions data for theme mapping
+    const competitions = await db.collection('competitions').find({}).toArray();
+    const competitionMap = {};
+    competitions.forEach(comp => {
+      competitionMap[comp.comp.slug] = comp;
+    });
+
+    // Convert payments to ticket format
+    for (const payment of payments) {
+      const comp = competitionMap[payment.competitionSlug];
+      if (comp) {
+        tickets.push({
+          competitionTitle: comp.title,
+          competitionSlug: payment.competitionSlug,
+          prize: comp.prize,
+          entryFee: payment.amount / (payment.ticketQuantity || 1),
+          quantity: payment.ticketQuantity || 1,
+          drawDate: comp.comp.endsAt,
+          purchasedAt: payment.completedAt,
+          ticketNumbers: payment.ticketNumber ? [payment.ticketNumber.toString()] : [],
+          imageUrl: comp.imageUrl || '/images/default.jpg',
+          gifted: false,
+          claimed: false,
+          theme: comp.theme || 'tech'
+        });
+      }
+    }
+
+    // Get gifted tickets from tickets collection
+    const giftedTickets = await db.collection('tickets').find({
+      username: user.username,
+      gifted: true
+    }).sort({ purchasedAt: -1 }).toArray();
+
+    for (const ticket of giftedTickets) {
+      const comp = competitionMap[ticket.competitionSlug];
+      tickets.push({
+        competitionTitle: ticket.competitionTitle,
+        competitionSlug: ticket.competitionSlug,
+        prize: comp?.prize || ticket.competitionTitle,
+        entryFee: comp?.comp?.entryFee || 0,
+        quantity: ticket.quantity || 1,
+        drawDate: comp?.comp?.endsAt || new Date().toISOString(),
+        purchasedAt: ticket.purchasedAt,
+        ticketNumbers: ticket.ticketNumbers || [],
+        imageUrl: ticket.imageUrl || comp?.imageUrl || '/images/default.jpg',
+        gifted: true,
+        giftedBy: ticket.giftedBy,
+        claimed: false,
+        theme: comp?.theme || 'tech'
+      });
+    }
+
+    res.status(200).json(tickets);
+
+  } catch (err) {
+    console.error('Tickets API error:', err);
+    res.status(500).json({ message: 'Server Error' });
+  } finally {
+    await client.close();
+>>>>>>> Stashed changes
   }
 }
