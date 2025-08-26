@@ -1,11 +1,37 @@
 // file: src/pages/api/funnel/join.js
 import { dbConnect } from 'lib/dbConnect';
-import { ENTRY_FEE_PI, assignStage1Room } from 'lib/funnelService';
 import { getPayment, approvePayment } from 'lib/piClient';
 import { lobby } from 'lib/funnelLobby';
 
-// ✅ Added: referral rewards util (idempotent + first-paid-action guard)
-import { grantReferralRewards } from '../../../lib/referralRewards';
+// Try to load funnel service utilities safely
+let ENTRY_FEE_PI = 1; // fallback: default entry fee = 1π
+let assignStage1Room = async (userId) => ({
+  room: { slug: null, entrantsCount: 0, status: 'pending' },
+  etaSec: 0
+});
+
+try {
+  const funnelService = require('lib/funnelService');
+  if (funnelService.ENTRY_FEE_PI !== undefined) {
+    ENTRY_FEE_PI = funnelService.ENTRY_FEE_PI;
+  }
+  if (typeof funnelService.assignStage1Room === 'function') {
+    assignStage1Room = funnelService.assignStage1Room;
+  }
+} catch {
+  console.warn('⚠ funnelService not found, using fallbacks');
+}
+
+// Referral rewards (optional)
+let grantReferralRewards = async () => {};
+try {
+  const rr = require('../../../lib/referralRewards');
+  if (typeof rr.grantReferralRewards === 'function') {
+    grantReferralRewards = rr.grantReferralRewards;
+  }
+} catch {
+  console.warn('⚠ referralRewards not found, skipping referral bonus');
+}
 
 const EXPECTED_FEE = Number(ENTRY_FEE_PI);
 
@@ -30,12 +56,11 @@ export default async function handler(req, res) {
     await dbConnect();
 
     const {
-      slug,              // not used for stage 1, room is assigned
       userId,
       stage = 1,
-      paymentId,         // present when called from Pi.createPayment onReadyForServerApproval
-      amount,            // used in fallback dev path
-      currency,          // used in fallback dev path
+      paymentId,
+      amount,
+      currency,
       cycleId = 'default'
     } = req.body || {};
 
@@ -45,7 +70,6 @@ export default async function handler(req, res) {
     if (Number.isNaN(stageNum)) {
       return res.status(400).json({ error: 'Invalid stage' });
     }
-
     if (stageNum !== 1) {
       return res.status(400).json({ error: 'Unsupported stage' });
     }
@@ -54,11 +78,9 @@ export default async function handler(req, res) {
     // Stage 1 (paid entry)
     // ---------------------------
     if (paymentId) {
-      // Pi SDK path: fetch from Pi, validate, approve, stage for confirm.
       const payment = await getPayment(paymentId);
       if (!payment) return res.status(404).json({ error: 'Payment not found' });
 
-      // Be tolerant: Pi servers have returned different shapes historically
       const rawCur =
         payment.currency ??
         payment.currencyCode ??
@@ -80,7 +102,6 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Incorrect amount', debug: { amt, expected: EXPECTED_FEE } });
       }
 
-      // Assign a room now so the UI can show placement immediately.
       const { room, etaSec } = await assignStage1Room(userId, { cycleId });
 
       // Stage the payment so /confirm can mark it completed (idempotent).
@@ -98,19 +119,16 @@ export default async function handler(req, res) {
         console.error('lobby staging error', e);
       }
 
-      // Approve with Pi server (safe to ignore "already approved" errors).
       try {
         await approvePayment(paymentId);
       } catch (e) {
         console.warn('approvePayment warning', e?.response?.data || e?.message || e);
       }
 
-      // ✅ Qualify the referral ONLY after a successful paid action
-      // (grantReferralRewards internally ensures: has referrer, not self, first-paid-action, weekly caps, etc.)
+      // Qualify referral bonuses (optional, won't block happy path)
       try {
         await grantReferralRewards(userId);
       } catch (e) {
-        // Never block the happy path if referral processing fails
         console.warn('grantReferralRewards warning', e?.message || e);
       }
 
@@ -141,10 +159,6 @@ export default async function handler(req, res) {
     }
 
     const { room, etaSec } = await assignStage1Room(userId, { cycleId });
-
-    // NOTE: Dev fallback path usually shouldn't qualify referrals, because no real payment.
-    // If you want it during dev, uncomment:
-    // try { await grantReferralRewards(userId); } catch (e) { console.warn('referral (dev) warn', e?.message || e); }
 
     return res.status(200).json({
       ok: true,

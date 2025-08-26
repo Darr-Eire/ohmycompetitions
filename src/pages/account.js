@@ -78,6 +78,9 @@ export default function Account() {
   const { user, loginWithPi } = usePiAuth();
   const [refCode, setRefCode] = useState(user?.referralCode || user?.username || '');
   const refLink = useMemo(() => buildReferralLink(refCode), [refCode]);
+const buildReferralLink = (username) => {
+  return `https://ohmycompetitions.com/signup?ref=${encodeURIComponent(username)}`;
+};
 
   const params = useSearchParams();
   const initialTab = params?.get('tab') || 'tickets';
