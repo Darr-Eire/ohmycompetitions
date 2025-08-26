@@ -118,10 +118,16 @@ button {
     transition: all 0.3s ease;
   }
 
-  .neon-button:hover {
-    box-shadow: 0 0 15px #234242;
-    transform: scale(1.03);
-  }
+.neon-button:hover {
+  box-shadow: 0 0 15px #234242;
+  /* Removed transform scaling */
+}
+
+.btn-cyber:hover {
+  box-shadow: 0 0 25px #00f2fe;
+  /* Removed transform scaling */
+}
+
 /* globals.css */
 
   .btn-gradient {
@@ -224,8 +230,9 @@ button {
 }
 
 .competition-card:hover {
-  transform: translateY(-5px) scale(1.02);
+  transform: translateY(-5px);
 }
+
 
 .competition-info {
   padding: 1rem;
@@ -615,9 +622,6 @@ form {
   }
 }
 
-.pulse-button {
-  animation: fullPulse 1.4s ease-in-out infinite;
-}
 
 @keyframes fadeIn {
   0% { opacity: 0; transform: scale(0.98); }
@@ -645,4 +649,26 @@ form {
 .carousel-card:active {
   transform: none !important;
   transition: none !important;
+}
+/* 🛑 Disable any click/hover scaling globally */
+*,
+*::before,
+*::after {
+  transition: none !important;
+}
+
+button:active,
+a:active,
+.competition-card:active,
+.neon-button:active,
+.btn-cyber:active {
+  transform: none !important;
+}
+
+/* Keep hover glow effects but stop growing elements */
+button:hover,
+a:hover,
+.neon-button:hover,
+.btn-cyber:hover {
+  transform: none !important;
 }
