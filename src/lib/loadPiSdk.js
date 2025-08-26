@@ -15,7 +15,6 @@ export function loadPiSdk(setReady) {
     setReady(true);
     return;
   }
-
   console.log('🔧 Loading Pi SDK...');
   console.log('Environment:', process.env.NODE_ENV);
   console.log('Current URL:', window.location.href);
