@@ -1,4 +1,4 @@
-// file: src/pages/api/admin/login.js
+// file: src/pagesapi/admin/login.js
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { connectToDatabase } from '../../../lib/mongodb';
