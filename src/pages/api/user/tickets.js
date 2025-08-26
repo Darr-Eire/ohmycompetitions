@@ -1,26 +1,19 @@
-<<<<<<< Updated upstream
-import { dbConnect } from 'lib/dbConnect';
-import Ticket from 'models/Ticket';
-import User from 'models/User';
-import Entry from 'models/Entry';
-import Competition from 'models/Competition';
-import TicketCredit from 'models/TicketCredit'; // 👈 NEW: counts admin grants (and any other credits)
+// src/pages/api/user/tickets.js
+
+import { dbConnect } from '@/lib/dbConnect';
+import Ticket from '@/models/Ticket';
+import User from '@/models/User';
+import Entry from '@/models/Entry';
+import Competition from '@/models/Competition';
+import TicketCredit from '@/models/TicketCredit';
 
 export default async function handler(req, res) {
-  await dbConnect();
-
-=======
-import { MongoClient } from 'mongodb';
-
-const client = new MongoClient(process.env.MONGO_DB_URL);
-
-export default async function handler(req, res) {
->>>>>>> Stashed changes
   if (req.method !== 'GET') {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
-<<<<<<< Updated upstream
+  await dbConnect();
+
   const { username, slug, summary, mode } = req.query;
   const wantSummary = summary === '1' || (mode && mode.toLowerCase() === 'summary');
 
@@ -30,33 +23,13 @@ export default async function handler(req, res) {
 
   try {
     const user = await User.findOne({ username }).lean();
-=======
-  const { uid } = req.query;
-
-  if (!uid) {
-    return res.status(400).json({ message: 'Missing uid parameter' });
-  }
-
-  try {
-    await client.connect();
-    const db = client.db();
-
-    // Get user data to get username
-    const user = await db.collection('users').findOne({ uid });
-    
->>>>>>> Stashed changes
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-<<<<<<< Updated upstream
-    // Accept any of these as a user identifier (depends on how you stored credits)
+    // User ID candidates for cross-collection lookups
     const userPiId = user.piUserId || user.uid;
-    const userIdCandidates = [
-      username,
-      userPiId,
-      user._id?.toString?.()
-    ].filter(Boolean);
+    const userIdCandidates = [username, userPiId, user._id?.toString?.()].filter(Boolean);
 
     /* --------------------------- Payments (native collection) --------------------------- */
     const { MongoClient } = require('mongodb');
@@ -74,7 +47,7 @@ export default async function handler(req, res) {
           $or: [
             { 'piUser.uid': userPiId },
             { 'piUser.uid': username },
-            { 'piUser.username': username }
+            { 'piUser.username': username },
           ],
         };
         if (slug) paymentQuery.competitionSlug = slug;
@@ -87,62 +60,52 @@ export default async function handler(req, res) {
       }
     }
 
-    /* --------------------------- Gifted Tickets (Ticket model) -------------------------- */
+    /* --------------------------- Gifted Tickets -------------------------- */
     const giftedQuery = { username };
     if (slug) giftedQuery.competitionSlug = slug;
     const giftedTickets = await Ticket.find(giftedQuery).lean();
 
-    /* ------------------------------ Entries (consumption) -------------------------------- */
+    /* ------------------------------ Entries (consumption) ------------------------------ */
     const entryQuery = {
       $or: [
         { userUid: username },
         { userUid: userPiId },
         { username: username },
-        { userId: { $in: userIdCandidates } }, // in case your Entry now stores userId
-      ]
+        { userId: { $in: userIdCandidates } },
+      ],
     };
     if (slug) {
-      // Prefer competitionSlug if you have it, else fall back to competitionId text match
-      entryQuery.$or = [
-        { ...entryQuery.$or[0], competitionSlug: slug },
-        { ...entryQuery.$or[1], competitionSlug: slug },
-        { ...entryQuery.$or[2], competitionSlug: slug },
-        { ...entryQuery.$or[3], competitionSlug: slug },
-        { competitionId: slug }, // loose fallback
-      ];
+      entryQuery.$or = entryQuery.$or.map((q) => ({ ...q, competitionSlug: slug }));
+      entryQuery.$or.push({ competitionId: slug });
     }
     const userEntries = await Entry.find(entryQuery).lean();
 
-    /* ------------------------ Admin Grants (TicketCredit model) ------------------------- */
-    const creditMatch = {
-      userId: { $in: userIdCandidates },
-    };
+    /* ------------------------ Admin Grants ------------------------- */
+    const creditMatch = { userId: { $in: userIdCandidates } };
     if (slug) creditMatch.competitionSlug = slug;
 
-    // Pull ALL credit sources you support; we care at least about admin-grant
     const credits = await TicketCredit.find(creditMatch).lean();
-    const adminGrants = credits.filter(c => c.source === 'admin-grant');
+    const adminGrants = credits.filter((c) => c.source === 'admin-grant');
 
-    /* ------------------------ Resolve competitions for display -------------------------- */
+    /* ------------------------ Competitions for display -------------------------- */
     const competitionIds = [
       ...new Set([
-        ...giftedTickets.map(t => t.competitionId).filter(Boolean),
-        ...userEntries.map(e => e.competitionId).filter(Boolean)
-      ])
+        ...giftedTickets.map((t) => t.competitionId).filter(Boolean),
+        ...userEntries.map((e) => e.competitionId).filter(Boolean),
+      ]),
     ];
-
     const competitionSlugs = [
       ...new Set([
-        ...userPayments.map(p => p.competitionSlug).filter(Boolean),
-        ...credits.map(c => c.competitionSlug).filter(Boolean),
-      ])
+        ...userPayments.map((p) => p.competitionSlug).filter(Boolean),
+        ...credits.map((c) => c.competitionSlug).filter(Boolean),
+      ]),
     ];
 
     const competitions = await Competition.find({
       $or: [
         { _id: { $in: competitionIds } },
-        { 'comp.slug': { $in: competitionSlugs } }
-      ]
+        { 'comp.slug': { $in: competitionSlugs } },
+      ],
     }).lean();
 
     const competitionMap = competitions.reduce((acc, comp) => {
@@ -153,60 +116,49 @@ export default async function handler(req, res) {
 
     /* ------------------------------- SUMMARY MODE --------------------------------------- */
     if (wantSummary) {
-      // Sum credits (payments + gifts + admin-grant + (other TicketCredit sources if you add them))
       const paymentsCount = userPayments.reduce((sum, p) => sum + (Number(p.ticketQuantity) || 1), 0);
       const giftCount = giftedTickets.reduce((sum, t) => sum + (Number(t.quantity) || 1), 0);
       const adminCount = adminGrants.reduce((sum, g) => sum + (Number(g.quantity) || 1), 0);
-
-      // If you also store vouchers as TicketCredit with source 'voucher'
       const voucherCount = credits
-        .filter(c => c.source === 'voucher')
+        .filter((c) => c.source === 'voucher')
         .reduce((s, c) => s + (Number(c.quantity) || 1), 0);
 
       const totalCredits = paymentsCount + giftCount + adminCount + voucherCount;
-
-      // Subtract entries used
       const used = userEntries.reduce((sum, e) => sum + (Number(e.quantity || e.ticketCount) || 1), 0);
       const available = Math.max(0, totalCredits - used);
 
       const payload = {
         ok: true,
-        user: {
-          username,
-          userPiId
-        },
+        user: { username, userPiId },
         slug: slug || null,
         breakdown: {
           payments: paymentsCount,
           gifted: giftCount,
           admin: adminCount,
           vouchers: voucherCount,
-          used
+          used,
         },
         totalCredits,
-        available
+        available,
       };
 
-      // Keep your console log style, now with admin
       console.log(`✅ Totals for ${username}${slug ? ` [${slug}]` : ''}:`, payload.breakdown, {
         total: totalCredits,
-        available
+        available,
       });
 
       return res.status(200).json(payload);
     }
 
-    /* ------------------------------ LIST MODE (default) --------------------------------- */
-    // Build display items for each source (gifts, entries, payments, admin-grants)
-
-    const paymentItems = userPayments.map(payment => {
+    /* ------------------------------ LIST MODE --------------------------------- */
+    const paymentItems = userPayments.map((payment) => {
       const comp = competitionMap[payment.competitionSlug];
 
       const ticketNumbers = Array.isArray(payment.ticketNumbers)
         ? payment.ticketNumbers
         : payment.ticketNumber?.toString().includes('-')
           ? (() => {
-              const [start, end] = payment.ticketNumber.split('-').map(n => parseInt(n));
+              const [start, end] = payment.ticketNumber.split('-').map((n) => parseInt(n));
               return Array.from({ length: end - start + 1 }, (_, i) => `T${start + i}`);
             })()
           : payment.ticketNumber
@@ -230,11 +182,11 @@ export default async function handler(req, res) {
         paymentId: payment.paymentId,
         piTransaction: payment.txid,
         theme: comp?.theme || comp?.comp?.theme || 'daily',
-        source: 'payment'
+        source: 'payment',
       };
     });
 
-    const giftItems = giftedTickets.map(ticket => {
+    const giftItems = giftedTickets.map((ticket) => {
       const comp = competitionMap[ticket.competitionId?.toString()];
       return {
         competitionTitle: ticket.competitionTitle || comp?.title || 'Unknown Competition',
@@ -251,11 +203,11 @@ export default async function handler(req, res) {
         earned: false,
         purchasedAt: ticket.purchasedAt,
         theme: comp?.theme || comp?.comp?.theme || 'daily',
-        source: 'gift'
+        source: 'gift',
       };
     });
 
-    const entryItems = userEntries.map(entry => {
+    const entryItems = userEntries.map((entry) => {
       const comp = competitionMap[entry.competitionId?.toString()];
       return {
         competitionTitle: comp?.title || entry.competitionName || 'Unknown Competition',
@@ -272,12 +224,11 @@ export default async function handler(req, res) {
         earned: entry.earned || comp?.comp?.entryFee === 0 || false,
         purchasedAt: entry.createdAt,
         theme: comp?.theme || comp?.comp?.theme || 'daily',
-        source: 'entry'
+        source: 'entry',
       };
     });
 
-    // 👇 NEW: admin-grant items
-    const adminGrantItems = adminGrants.map(grant => {
+    const adminGrantItems = adminGrants.map((grant) => {
       const comp = competitionMap[grant.competitionSlug];
       return {
         competitionTitle: comp?.title || grant.competitionSlug || 'Competition',
@@ -294,24 +245,18 @@ export default async function handler(req, res) {
         earned: true,
         purchasedAt: grant.createdAt,
         theme: comp?.theme || comp?.comp?.theme || 'daily',
-        source: 'admin-grant'
+        source: 'admin-grant',
       };
     });
 
-    const allTickets = [
-      ...paymentItems,
-      ...giftItems,
-      ...adminGrantItems, // 👈 include in list
-      ...entryItems,
-    ];
+    const allTickets = [...paymentItems, ...giftItems, ...adminGrantItems, ...entryItems];
 
-    // De-dup logic kept as-is
     const uniqueTickets = allTickets.filter((ticket, index, self) => {
       if (ticket.paymentId) {
-        return self.findIndex(t => t.paymentId === ticket.paymentId) === index;
+        return self.findIndex((t) => t.paymentId === ticket.paymentId) === index;
       } else if (ticket.ticketNumbers?.length > 0) {
-        return self.findIndex(t =>
-          JSON.stringify(t.ticketNumbers) === JSON.stringify(ticket.ticketNumbers)
+        return self.findIndex(
+          (t) => JSON.stringify(t.ticketNumbers) === JSON.stringify(ticket.ticketNumbers),
         ) === index;
       }
       return true;
@@ -319,11 +264,10 @@ export default async function handler(req, res) {
 
     uniqueTickets.sort((a, b) => new Date(b.purchasedAt) - new Date(a.purchasedAt));
 
-    // Better counters (sum quantities), including admin grants
     const paymentsQty = paymentItems.reduce((s, i) => s + (i.quantity || 1), 0);
-    const giftsQty    = giftItems.reduce((s, i) => s + (i.quantity || 1), 0);
-    const adminQty    = adminGrantItems.reduce((s, i) => s + (i.quantity || 1), 0);
-    const entriesQty  = entryItems.reduce((s, i) => s + (i.quantity || 1), 0);
+    const giftsQty = giftItems.reduce((s, i) => s + (i.quantity || 1), 0);
+    const adminQty = adminGrantItems.reduce((s, i) => s + (i.quantity || 1), 0);
+    const entriesQty = entryItems.reduce((s, i) => s + (i.quantity || 1), 0);
     const totalCredits = paymentsQty + giftsQty + adminQty;
     const available = Math.max(0, totalCredits - entriesQty);
 
@@ -333,86 +277,15 @@ export default async function handler(req, res) {
       entriesUsed: entriesQty,
       payments: paymentsQty,
       creditsTotal: totalCredits,
-      available
+      available,
     });
 
-    // (Optional) expose totals in headers for debugging without breaking the body shape
     res.setHeader('X-Tickets-Available', String(available));
     res.setHeader('X-Tickets-Credits-Total', String(totalCredits));
 
     return res.status(200).json(uniqueTickets);
   } catch (err) {
     console.error('Error fetching user tickets:', err);
-    res.status(500).json({ message: 'Server Error', error: err.message });
-=======
-    const tickets = [];
-
-    // Get purchased tickets from payments collection
-    const payments = await db.collection('payments').find({
-      uid,
-      status: 'completed'
-    }).sort({ completedAt: -1 }).toArray();
-
-    // Get competitions data for theme mapping
-    const competitions = await db.collection('competitions').find({}).toArray();
-    const competitionMap = {};
-    competitions.forEach(comp => {
-      competitionMap[comp.comp.slug] = comp;
-    });
-
-    // Convert payments to ticket format
-    for (const payment of payments) {
-      const comp = competitionMap[payment.competitionSlug];
-      if (comp) {
-        tickets.push({
-          competitionTitle: comp.title,
-          competitionSlug: payment.competitionSlug,
-          prize: comp.prize,
-          entryFee: payment.amount / (payment.ticketQuantity || 1),
-          quantity: payment.ticketQuantity || 1,
-          drawDate: comp.comp.endsAt,
-          purchasedAt: payment.completedAt,
-          ticketNumbers: payment.ticketNumber ? [payment.ticketNumber.toString()] : [],
-          imageUrl: comp.imageUrl || '/images/default.jpg',
-          gifted: false,
-          claimed: false,
-          theme: comp.theme || 'tech'
-        });
-      }
-    }
-
-    // Get gifted tickets from tickets collection
-    const giftedTickets = await db.collection('tickets').find({
-      username: user.username,
-      gifted: true
-    }).sort({ purchasedAt: -1 }).toArray();
-
-    for (const ticket of giftedTickets) {
-      const comp = competitionMap[ticket.competitionSlug];
-      tickets.push({
-        competitionTitle: ticket.competitionTitle,
-        competitionSlug: ticket.competitionSlug,
-        prize: comp?.prize || ticket.competitionTitle,
-        entryFee: comp?.comp?.entryFee || 0,
-        quantity: ticket.quantity || 1,
-        drawDate: comp?.comp?.endsAt || new Date().toISOString(),
-        purchasedAt: ticket.purchasedAt,
-        ticketNumbers: ticket.ticketNumbers || [],
-        imageUrl: ticket.imageUrl || comp?.imageUrl || '/images/default.jpg',
-        gifted: true,
-        giftedBy: ticket.giftedBy,
-        claimed: false,
-        theme: comp?.theme || 'tech'
-      });
-    }
-
-    res.status(200).json(tickets);
-
-  } catch (err) {
-    console.error('Tickets API error:', err);
-    res.status(500).json({ message: 'Server Error' });
-  } finally {
-    await client.close();
->>>>>>> Stashed changes
+    return res.status(500).json({ message: 'Server Error', error: err.message });
   }
 }
