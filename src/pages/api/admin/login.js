@@ -11,7 +11,7 @@ const COOKIE_SECRET =
   process.env.JWT_SECRET ||
   'CHANGE_ME__use_ADMIN_COOKIE_SECRET_env';
 
-/* cookie helpers */
+
 function b64url(input) {
   return Buffer.from(input).toString('base64url');
 }
