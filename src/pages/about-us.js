@@ -10,16 +10,20 @@ export default function AboutUs() {
         <title>About Us | OhMyCompetitions</title>
       </Head>
 
-      <main className="app-background min-h-screen flex justify-center px-4 text-white">
-        <div className="competition-card max-w-3xl w-full bg-white/10 rounded-2xl shadow-lg backdrop-blur-md">
+     <main className="app-background min-h-screen flex justify-center px-4 text-white">
+  <div className="competition-card max-w-3xl w-full bg-white/10 rounded-2xl shadow-lg backdrop-blur-md mt-10 sm:mt-16">
 
-          {/* Banner */}
-          <div className="competition-top-banner title-gradient text-center py-8 rounded-t-2xl">
-            <h1 className="text-2xl sm:text-2xl font-bold text-black">About Us & Our Dapp</h1>
-            <p className="text-base text-black/70 mt-2">
-              Built for Pioneers. Powered by Pi. Driven by fun.
-            </p>
-          </div>
+    {/* Banner */}
+    <div className="competition-top-banner title-gradient text-center py-8 rounded-t-2xl">
+      <h1 className="text-2xl sm:text-2xl font-orbitron font-extrabold text-black tracking-tight">
+        About Us
+      </h1>
+      <p className="mt-3 text-lg sm:text-xl leading-relaxed text-black text-center max-w-2xl mx-auto">
+        Built for Pioneers. Powered by Pi. Driven by Fun.
+      </p>
+    </div>
+
+ 
 
           {/* Body */}
           <div className="p-6 sm:p-8 space-y-10">
@@ -74,7 +78,7 @@ export default function AboutUs() {
         </h3>
       </div>
       <p className="text-white/80 leading-relaxed mb-3">
-        Pi isn’t just a number it’s a currency. OMC gives Pi **real use cases**:
+        Pi isn’t just a number it’s a currency. OMC gives Pi real use cases
       </p>
       <ul className="list-disc list-inside text-white/80 space-y-1">
         <li>
@@ -105,8 +109,8 @@ export default function AboutUs() {
       </div>
       <p className="text-white/80 leading-relaxed">
         No hidden tricks. No whales. No pay-to-win nonsense.  
-        Every ticket, every draw, and every prize is **100% transparent**.  
-        We make competitions **fair, fun, and accessible** for everyone.
+        Every ticket, every draw and every prize is 100% transparent.  
+        We make competitions fair, fun and accessible for everyone.
       </p>
     </div>
 
@@ -119,8 +123,8 @@ export default function AboutUs() {
         </h3>
       </div>
       <p className="text-white/80 leading-relaxed mb-3">
-        OMC is about **collaboration, not competition**.  
-        We work closely with other Pi dApps to:
+        OMC is about collaboration, not competition.  
+        We work closely with other Pi dApps to
       </p>
       <ul className="list-disc list-inside text-white/80 space-y-1 mb-3">
         <li>Integrate cross-dApp rewards</li>
@@ -131,7 +135,7 @@ export default function AboutUs() {
         href="/contact"
         className="inline-block mt-2 px-4 py-2 rounded-lg bg-pink-500/20 border border-pink-400/50 text-pink-300 hover:bg-pink-500/30 transition"
       >
-        Partner with us →
+        Partner with us
       </Link>
     </div>
   </div>
@@ -140,33 +144,58 @@ export default function AboutUs() {
 
 
             {/* Story Timeline */}
-            <section className="space-y-6">
-              <h2 className="text-2xl font-bold gradient-text">An Idea That Wouldn’t Let Go</h2>
-              <p className="text-base sm:text-lg leading-relaxed text-white/90">
-                One late night, somewhere between caffeine and a weird documentary, it clicked:
-                <em> “What if we didn’t just earn Pi what if we played for it?”</em>
-              </p>
-              <p className="text-base sm:text-lg leading-relaxed text-white/90">
-                Whiteboards. Sketches. User flows. Domains. Code. And a suspicious amount of pizza.
-                The vision got louder every day.
-              </p>
-            </section>
+      <section className="space-y-6">
+  <h2 className="text-2xl font-bold gradient-text">An Idea That Wouldn’t Let Go</h2>
+  <p className="text-base sm:text-lg leading-relaxed text-white/90">
+    One late night, somewhere between caffeine and a weird documentary, it clicked:
+    <em> “What if we didn’t just earn Pi — what if we played for it?”</em>
+  </p>
+  <p className="text-base sm:text-lg leading-relaxed text-white/90">
+    Whiteboards. Sketches. User flows. Domains. Code.  
+    And a suspicious amount of pizza.  
+    The vision got louder every day.
+  </p>
+</section>
 
-            <section className="space-y-6">
-              <h2 className="text-2xl font-bold gradient-text">Built by Beginners. Fueled by Belief.</h2>
-              <p className="text-base sm:text-lg leading-relaxed text-white/90">
-                Did we know how to ship a whole app? Not really. Did we try anyway? Absolutely.
-              </p>
-              <p className="text-base sm:text-lg leading-relaxed text-white/90">
-                Bugs, crashes, keyboard-smashing all part of it. Every fix felt like a win.
-                Not a jackpot… but close. It paid in momentum.
-              </p>
-            </section>
+<section className="space-y-6">
+  <h2 className="text-2xl font-bold gradient-text">Discovering Pi Network</h2>
+  <p className="text-base sm:text-lg leading-relaxed text-white/90">
+    A friend once told us about this thing called <strong>Pi Network</strong>.  
+    We had no idea what it was but for some reason, we still pushed that button.  
+    Day by day, we got more curious, learned more and started to understand its potential.  
+    We mined and mined… and yeah, sometimes even forgot to mine.
+  </p>
+  <p className="text-base sm:text-lg leading-relaxed text-white/90">
+    My friend used to joke, <em> If it ever hits 5¢, that’s still good for free mining.”</em>  
+    But I always looked past that.  
+    For me, it wasn’t about the price it was about the vision,  
+    about what Pi could become and the ecosystem it could build.
+  </p>
+  <p className="text-base sm:text-lg leading-relaxed text-white/90">
+    And then it hit us  
+    <em>Why just mine when we can actually build something real for the pioneers?</em>  
+    That’s when the mission began.
+  </p>
+</section>
+
+<section className="space-y-6">
+  <h2 className="text-2xl font-bold gradient-text">Built by Beginners. Fueled by Belief.</h2>
+  <p className="text-base sm:text-lg leading-relaxed text-white/90">
+    Did we know how to ship a whole app? Not really. Did we try anyway? Absolutely.
+  </p>
+  <p className="text-base sm:text-lg leading-relaxed text-white/90">
+    Bugs, crashes, keyboard-smashing all part of it.  
+    Every fix felt like a win.  
+    Not a jackpot… but close.  
+    It paid in momentum.
+  </p>
+</section>
+
 
             <section className="space-y-6">
               <h2 className="text-2xl font-bold gradient-text">Oh My Competitions Was Born</h2>
               <p className="text-base sm:text-lg leading-relaxed text-white/90">
-                We didn’t want “just another app.” We wanted a Pi-powered playground:  
+                We didn’t want just another app. We wanted a Pi-powered playground,
                 games, giveaways and challenges that bring people together not just to win,
                 but to have fun doing it.
               </p>
@@ -182,7 +211,7 @@ export default function AboutUs() {
                 I nearly Pi-danced in the living room.
               </p>
               <p className="text-base sm:text-lg leading-relaxed text-white/90">
-                That was the moment it went from “this could work” to “this <em>does</em> work.”
+                That was the moment it went from this could work to this <em>does</em> work.
               </p>
             </section>
 

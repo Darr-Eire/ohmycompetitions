@@ -70,12 +70,13 @@ export default function IndexPage() {
 
           {/* CTA Button */}
           <div className="flex flex-col items-center gap-1">
-            <Link
-              href="/homepage"
-              className="pulse-button block w-full bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold py-3 rounded-lg shadow-md text-center text-base"
-            >
-              Let’s Go
-            </Link>
+     <Link
+  href="/homepage?welcome=1"
+  className="pulse-button block w-full bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold py-3 rounded-lg shadow-md text-center text-base"
+>
+  Let’s Go
+</Link>
+
           </div>
         </div>
 
