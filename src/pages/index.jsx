@@ -1,36 +1,32 @@
-<<<<<<< Updated upstream
+// src/pages/index.jsx
 'use client';
 
-import React from 'react';
-=======
 import React, { useState, useEffect } from 'react';
->>>>>>> Stashed changes
 import Link from 'next/link';
 import { FaXTwitter, FaFacebookF, FaDiscord, FaInstagram } from 'react-icons/fa6';
 
-// Add this debug component before the main export
+// Debug panel for Pi SDK sandbox testing
 function PiDebugPanel() {
   const [sdkStatus, setSdkStatus] = useState('Loading...');
   const [testResult, setTestResult] = useState('');
   const [envInfo, setEnvInfo] = useState('');
 
   useEffect(() => {
-    // Show environment info
     const info = {
       hostname: window.location.hostname,
       url: window.location.href,
       userAgent: navigator.userAgent.includes('PiBrowser') ? 'Pi Browser' : 'Regular Browser',
-      nodeEnv: process.env.NODE_ENV || 'undefined'
+      nodeEnv: process.env.NODE_ENV || 'undefined',
     };
     setEnvInfo(`Environment: ${info.nodeEnv} | ${info.userAgent} | ${info.hostname}`);
 
     const checkSdk = () => {
       if (typeof window === 'undefined') return;
-      
+
       if (window.Pi) {
         try {
-          // Force sandbox mode regardless of environment
-          window.Pi.init({ version: "2.0", sandbox: true });
+          // Force sandbox mode for development testing
+          window.Pi.init({ version: '2.0', sandbox: true });
           setSdkStatus('✅ Pi SDK Ready (SANDBOX MODE FORCED)');
         } catch (err) {
           setSdkStatus(`❌ Pi SDK Error: ${err.message}`);
@@ -41,7 +37,6 @@ function PiDebugPanel() {
       }
     };
 
-    // Check immediately and after delays
     checkSdk();
     setTimeout(checkSdk, 2000);
     setTimeout(checkSdk, 5000);
@@ -49,14 +44,14 @@ function PiDebugPanel() {
 
   const loadPiSdkScript = () => {
     if (document.querySelector('script[src*="pi-sdk.js"]')) return;
-    
+
     const script = document.createElement('script');
     script.src = 'https://sdk.minepi.com/pi-sdk.js';
     script.async = true;
     script.onload = () => {
       setTimeout(() => {
         if (window.Pi) {
-          window.Pi.init({ version: "2.0", sandbox: true });
+          window.Pi.init({ version: '2.0', sandbox: true });
           setSdkStatus('✅ Pi SDK Loaded and Ready (SANDBOX MODE)');
         }
       }, 1000);
@@ -80,9 +75,9 @@ function PiDebugPanel() {
       console.log('🔐 Pi authentication starting...');
       console.log('Current URL:', window.location.href);
       console.log('Pi SDK object:', window.Pi);
-      
+
       const scopes = ['username', 'payments'];
-      
+
       const onIncompletePaymentFound = (payment) => {
         console.log('⚠️ Incomplete payment found:', payment);
         setTestResult('⚠️ Incomplete payment found, handling...');
@@ -90,18 +85,11 @@ function PiDebugPanel() {
 
       console.log('🔄 Calling Pi.authenticate with scopes:', scopes);
       const result = await window.Pi.authenticate(scopes, onIncompletePaymentFound);
-      
+
       console.log('✅ Authentication result:', result);
       setTestResult(`✅ Success: ${result.user.username} (${result.user.uid})`);
-      
     } catch (err) {
       console.error('❌ Authentication error:', err);
-      console.error('Error details:', {
-        message: err.message,
-        stack: err.stack,
-        name: err.name
-      });
-      
       let errorMsg = '❌ Failed: ';
       if (err.message?.includes('postMessage')) {
         errorMsg += 'Domain not configured in Pi Developer Portal';
@@ -114,46 +102,61 @@ function PiDebugPanel() {
       } else {
         errorMsg += err.message || 'Unknown error';
       }
-      
       setTestResult(errorMsg);
     }
   };
 
   return (
-    <div style={{ 
-      position: 'fixed', 
-      top: 10, 
-      right: 10, 
-      background: '#1e293b', 
-      color: 'white', 
-      padding: '10px', 
-      borderRadius: '8px',
-      border: '2px solid #00ff00',
-      fontSize: '11px',
-      zIndex: 9999,
-      maxWidth: '350px'
-    }}>
+    <div
+      style={{
+        position: 'fixed',
+        top: 10,
+        right: 10,
+        background: '#1e293b',
+        color: 'white',
+        padding: '10px',
+        borderRadius: '8px',
+        border: '2px solid #00ff00',
+        fontSize: '11px',
+        zIndex: 9999,
+        maxWidth: '350px',
+      }}
+    >
       <h4 style={{ margin: '0 0 10px 0', color: '#00ff00' }}>🧪 SANDBOX MODE TEST</h4>
-      <div style={{ background: '#0f172a', padding: '5px', borderRadius: '4px', marginBottom: '8px' }}>
+      <div
+        style={{
+          background: '#0f172a',
+          padding: '5px',
+          borderRadius: '4px',
+          marginBottom: '8px',
+        }}
+      >
         <small>{envInfo}</small>
       </div>
       <p style={{ margin: '5px 0' }}>{sdkStatus}</p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginTop: '5px' }}>
-        <button 
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '5px',
+          marginTop: '5px',
+        }}
+      >
+        <button
           onClick={testPiAuth}
-          style={{ 
-            background: '#00ff00', 
-            color: '#000', 
-            border: 'none', 
-            padding: '5px 10px', 
+          style={{
+            background: '#00ff00',
+            color: '#000',
+            border: 'none',
+            padding: '5px 10px',
             borderRadius: '4px',
             cursor: 'pointer',
-            fontWeight: 'bold'
+            fontWeight: 'bold',
           }}
         >
           Test Pi Login
         </button>
-        <button 
+        <button
           onClick={() => {
             console.log('🔍 Pi SDK Debug Info:');
             console.log('Pi object:', window.Pi);
@@ -162,20 +165,29 @@ function PiDebugPanel() {
             console.log('User agent:', navigator.userAgent);
             setTestResult('🔍 Check browser console for debug info');
           }}
-          style={{ 
-            background: '#6366f1', 
-            color: 'white', 
-            border: 'none', 
-            padding: '5px 10px', 
+          style={{
+            background: '#6366f1',
+            color: 'white',
+            border: 'none',
+            padding: '5px 10px',
             borderRadius: '4px',
             cursor: 'pointer',
-            fontSize: '10px'
+            fontSize: '10px',
           }}
         >
           Debug Info
         </button>
       </div>
-      {testResult && <p style={{ marginTop: '5px', color: testResult.includes('Success') ? '#00ff00' : '#ff6b6b' }}>{testResult}</p>}
+      {testResult && (
+        <p
+          style={{
+            marginTop: '5px',
+            color: testResult.includes('Success') ? '#00ff00' : '#ff6b6b',
+          }}
+        >
+          {testResult}
+        </p>
+      )}
     </div>
   );
 }
@@ -185,7 +197,7 @@ export default function IndexPage() {
     { icon: '🔄', text: 'Daily Competitions', href: '/competitions/daily' },
     { icon: '🚀', text: 'Launch Week', href: '/competitions/launch-week' },
     { icon: '🎁', text: 'Pi Giveaways', href: '/competitions/pi' },
-    { icon: '🏆', text: 'Pi stages', href: '/battles' },
+    { icon: '🏆', text: 'Pi Stages', href: '/battles' },
     { icon: '🎮', text: 'Mini Games', href: '/try-your-luck' },
     { icon: '❓', text: 'Mystery Features', href: '' },
   ];
@@ -193,10 +205,8 @@ export default function IndexPage() {
   return (
     <div className="min-h-[100dvh] bg-[#0a1024] text-white px-2 py-0 overflow-y-auto">
       <div className="w-full max-w-[420px] mx-auto flex flex-col gap-8">
-
         {/* Main Box */}
         <div className="bg-[#0f1b33] border border-cyan-400 rounded-3xl p-6 shadow-[0_0_30px_#00f0ff88] flex flex-col gap-5">
-
           {/* Title + Tagline */}
           <div className="text-center">
             <h1 className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-transparent bg-clip-text tracking-wide leading-tight">
@@ -209,7 +219,9 @@ export default function IndexPage() {
 
           {/* About OMC Section */}
           <div className="bg-[#0a1024]/90 border border-cyan-600 rounded-lg px-4 py-4 shadow-[0_0_20px_#00fff055] text-sm leading-relaxed">
-            <h2 className="text-base font-bold text-cyan-300 mb-2 text-center">What is Oh My Competitions</h2>
+            <h2 className="text-base font-bold text-cyan-300 mb-2 text-center">
+              What is Oh My Competitions
+            </h2>
             <p className="text-white">
               OMC is a decentralized platform where Pioneers compete in fun, fair competitions using Pi as currency. Every experience is powered by Pi.
             </p>
@@ -220,12 +232,13 @@ export default function IndexPage() {
               <li>🎉 Multiple winners, real rewards</li>
             </ul>
           </div>
-<Link
-  href="/tutorial"
-  className="text-center block mx-auto text-sm text-cyan-300 underline hover:text-cyan-100"
->
-  View Tutorial
-</Link>
+
+          <Link
+            href="/tutorial"
+            className="text-center block mx-auto text-sm text-cyan-300 underline hover:text-cyan-100"
+          >
+            View Tutorial
+          </Link>
 
           {/* Features Grid */}
           <div className="grid grid-cols-2 gap-1 text-sm">
@@ -242,65 +255,18 @@ export default function IndexPage() {
           </div>
 
           {/* CTA Button */}
- <div className="flex flex-col items-center gap-1">
-  <Link
-    href="/homepage"
-    className="pulse-button block w-full bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold py-3 rounded-lg shadow-md text-center text-base"
-  >
-    Let’s Go
-  </Link>
-
-
-</div>
-
-
-        </div>
-<<<<<<< Updated upstream
-=======
-
-        {/* Feature Icons */}
-        <div className="grid grid-cols-2 gap-3">
-          {features.map((f, i) => (
-            <div
-              key={i}
-              className="flex items-center gap-2 bg-[#0a1024] border border-cyan-500 p-3 rounded-lg shadow-[0_0_20px_#00f0ff66]"
+          <div className="flex flex-col items-center gap-1">
+            <Link
+              href="/homepage"
+              className="pulse-button block w-full bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold py-3 rounded-lg shadow-md text-center text-base"
             >
-              <span className="text-xl">{f.icon}</span>
-              <span className="text-sm">{f.text}</span>
-            </div>
-          ))}
+              Let’s Go
+            </Link>
+          </div>
         </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-4 text-center bg-[#0a1024]/80 border border-cyan-400 rounded-xl px-4 py-4 shadow-lg text-xs">
-          {stats.map((s, i) => (
-            <div key={i}>
-              <div className="text-base font-bold text-cyan-300">{s.value}</div>
-              <div className="text-white/80">{s.label}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* CTA Button */}
-        <Link
-          href="/homepage"
-          className="block bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold py-3 rounded-lg shadow-lg hover:scale-105 transition text-center text-sm"
-        >
-          Let's Go
-        </Link>
-
-        {/* Social Icons */}
-        <div className="flex justify-center gap-5 text-2xl">
-          <Link href="https://twitter.com" target="_blank"><FaXTwitter className="hover:text-cyan-400 transition" /></Link>
-          <Link href="https://facebook.com" target="_blank"><FaFacebookF className="hover:text-cyan-400 transition" /></Link>
-          <Link href="https://discord.com" target="_blank"><FaDiscord className="hover:text-cyan-400 transition" /></Link>
-          <Link href="https://instagram.com" target="_blank"><FaInstagram className="hover:text-cyan-400 transition" /></Link>
-        </div>
-
->>>>>>> Stashed changes
       </div>
 
-      {/* Add this debug panel for sandbox testing */}
+      {/* Pi Debug Panel */}
       <PiDebugPanel />
     </div>
   );
