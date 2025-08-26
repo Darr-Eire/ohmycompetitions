@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import axios from 'axios';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -10,7 +10,7 @@ import GiftTicketModal from 'components/GiftTicketModal';
 import PiCashClaimBox from 'components/PiCashClaimBox';
 import StagesXPSection from 'components/StagesXPSection';
 import RedeemVoucherPanel from 'components/RedeemVoucherPanel';
-
+import AccountTicketsPanel from 'components/AccountTicketsPanel';
 /* -------------------------- tiny shared primitives -------------------------- */
 function Chip({ active, children, onClick }) {
   return (
@@ -161,10 +161,61 @@ function formatDateTime2(dateLike) {
   if (isNaN(d)) return '';
   return d.toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
 }
+/* ------------------------------ Referral helpers ------------------------------ */
+function buildReferralLink(code) {
+  // Prefer NEXT_PUBLIC_BASE_URL if you deploy under a custom domain
+  const base =
+    (typeof window !== 'undefined' && window.location?.origin) ||
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    'https://ohmycompetitions.com';
+  return `${base}/r/${encodeURIComponent(code || '')}`;
+}
+
+async function shareOrCopy(text, url, onCopied) {
+  try {
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      await navigator.share({ title: 'OhMyCompetitions', text, url });
+      return true;
+    }
+  } catch (e) {
+    // fall through to copy
+  }
+  try {
+    await navigator.clipboard.writeText(`${text} ${url}`.trim());
+    onCopied?.();
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 /* ------------------------------- Page shell -------------------------------- */
 export default function Account() {
   const { user, loginWithPi } = usePiAuth();
+  const [refCode, setRefCode] = useState(user?.referralCode || user?.username || '');
+const refLink = useMemo(() => buildReferralLink(refCode), [refCode]);
+
+// Try to fetch a canonical referralCode from API; fallback to user.referralCode or username
+useEffect(() => {
+  let mounted = true;
+  (async () => {
+    try {
+      if (!user) return;
+      // Prefer a tiny endpoint that returns { referralCode }
+      const rsp = await fetch(`/api/referrals/me?userId=${encodeURIComponent(user.uid || user.piUserId || '')}`).catch(() => null);
+      if (rsp?.ok) {
+        const j = await rsp.json();
+        if (mounted && j?.referralCode) setRefCode(j.referralCode);
+        return;
+      }
+      // Fallbacks
+      if (mounted) setRefCode(user.referralCode || user.username || '');
+    } catch {
+      if (mounted) setRefCode(user?.referralCode || user?.username || '');
+    }
+  })();
+  return () => { mounted = false; };
+}, [user]);
   const params = useSearchParams();
   const initialTab = (params?.get('tab') || 'tickets');
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -212,12 +263,8 @@ export default function Account() {
             >
               Gift Ticket
             </button>
-            <a
-              href={`/ref/${encodeURIComponent(user.username)}`}
-              className="px-3 py-2 rounded-lg border border-white/15 text-xs hover:bg-white/5"
-            >
-              Share
-            </a>
+           <ShareReferralButton refLink={refLink} username={user.username} />
+
           </div>
         </div>
 
@@ -337,6 +384,32 @@ function StatChip({ label, value, valueClassName = '' }) {
     </div>
   );
 }
+function ShareReferralButton({ refLink, username }) {
+  const [copied, setCopied] = useState(false);
+
+  const onClick = useCallback(async () => {
+    const text = `Join me on OhMyCompetitions — get tickets to win prizes!`;
+    const ok = await shareOrCopy(text, refLink, () => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1200);
+    });
+    if (!ok) {
+      // as a last fallback, open the link
+      window.open(refLink, '_blank', 'noopener,noreferrer');
+    }
+  }, [refLink]);
+
+  return (
+    <button
+      onClick={onClick}
+      className="px-3 py-2 rounded-lg border border-white/15 text-xs hover:bg-white/5"
+      title="Share referral link"
+      type="button"
+    >
+      {copied ? 'Copied!' : 'Share'}
+    </button>
+  );
+}
 
 /* -------------------------------- Tickets tab -------------------------------- */
 function TicketsPanel({ user }) {
@@ -438,47 +511,11 @@ function TicketsPanel({ user }) {
         )}
       </div>
 
-      <Section
-        title="My Tickets"
-        right={
-          <div className="flex gap-2">
-            <Chip active={state === 'active'} onClick={() => setState('active')}>Active</Chip>
-            <Chip active={state === 'completed'} onClick={() => setState('completed')}>Completed</Chip>
-            <Chip active={state === 'all'} onClick={() => setState('all')}>All</Chip>
-          </div>
-        }
-      >
-        <div className="flex gap-2 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <Chip active={theme === 'all'} onClick={() => setTheme('all')}>All</Chip>
-          {themeOrder.map(th => (
-            <Chip key={th} active={theme === th} onClick={() => setTheme(th)}>
-              {th}
-            </Chip>
-          ))}
-        </div>
+<AccountTicketsPanel
+  tickets={tickets}
+  loading={loading}
+/>
 
-        {loading ? (
-          <div className="text-center text-white/70 py-10">Loading…</div>
-        ) : Object.keys(grouped).length === 0 ? (
-          <div className="text-center text-white/60 py-10">No tickets found</div>
-        ) : (
-          themeOrder
-            .filter(th => grouped[th]?.length)
-            .map(th => (
-              <div key={th} className="space-y-2">
-                <div className="text-xs text-white/60">{th.toUpperCase()}</div>
-                <div className="flex overflow-x-auto gap-3 pb-2 -mx-2 px-2 snap-x snap-mandatory
-                                [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                  {grouped[th].map((t, i) => (
-                    <div key={i} className="snap-start shrink-0 w-60">
-                      <EnhancedTicketCard ticket={t} theme={t.theme} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))
-        )}
-      </Section>
     </div>
   );
 }
@@ -684,17 +721,28 @@ function RewardsPanel({ user }) {
         </>
       )}
 
-      <Section title="Referral Rewards" right={<span className="text-xs text-gray-300">Code: {referral.userReferralCode}</span>}>
-        <ReferralStatsCard
-          username={user.username}
-          signupCount={referral.signupCount}
-          ticketsEarned={referral.ticketsEarned}
-          miniGamesBonus={referral.miniGamesBonus}
-          userReferralCode={referral.userReferralCode}
-          totalBonusTickets={referral.totalBonusTickets}
-          competitionBreakdown={referral.competitionBreakdown}
-        />
-      </Section>
+<Section
+  title="Referral Rewards"
+  right={
+    <div className="flex items-center gap-2">
+      <span className="text-xs text-gray-300">
+        Code: {referral.userReferralCode}
+      </span>
+      <CopyMono value={buildReferralLink(referral.userReferralCode)} label="Link" />
+    </div>
+  }
+>
+  <ReferralStatsCard
+    username={user.username}
+    signupCount={referral.signupCount}
+    ticketsEarned={referral.ticketsEarned}
+    miniGamesBonus={referral.miniGamesBonus}
+    userReferralCode={referral.userReferralCode}
+    totalBonusTickets={referral.totalBonusTickets}
+    competitionBreakdown={referral.competitionBreakdown}
+  />
+</Section>
+
     </div>
   );
 }

@@ -4,6 +4,9 @@ import { ENTRY_FEE_PI, assignStage1Room } from '../../../lib/funnelService';
 import { getPayment, approvePayment } from '../../../lib/piClient';
 import { lobby } from '../../../lib/funnelLobby';
 
+// ✅ Added: referral rewards util (idempotent + first-paid-action guard)
+import { grantReferralRewards } from '../../../lib/referralRewards';
+
 const EXPECTED_FEE = Number(ENTRY_FEE_PI);
 
 // Normalize lots of real-world variants to 'pi'
@@ -102,6 +105,15 @@ export default async function handler(req, res) {
         console.warn('approvePayment warning', e?.response?.data || e?.message || e);
       }
 
+      // ✅ Qualify the referral ONLY after a successful paid action
+      // (grantReferralRewards internally ensures: has referrer, not self, first-paid-action, weekly caps, etc.)
+      try {
+        await grantReferralRewards(userId);
+      } catch (e) {
+        // Never block the happy path if referral processing fails
+        console.warn('grantReferralRewards warning', e?.message || e);
+      }
+
       return res.status(200).json({
         ok: true,
         stage: 1,
@@ -129,6 +141,11 @@ export default async function handler(req, res) {
     }
 
     const { room, etaSec } = await assignStage1Room(userId, { cycleId });
+
+    // NOTE: Dev fallback path usually shouldn't qualify referrals, because no real payment.
+    // If you want it during dev, uncomment:
+    // try { await grantReferralRewards(userId); } catch (e) { console.warn('referral (dev) warn', e?.message || e); }
+
     return res.status(200).json({
       ok: true,
       stage: 1,
