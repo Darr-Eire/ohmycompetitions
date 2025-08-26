@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import PrizeCard3D from '@components/PrizeCard3D';
 import DailyCompetitionCard from '@components/DailyCompetitionCard';
 import FreeCompetitionCard from '@components/FreeCompetitionCard';
@@ -10,12 +11,9 @@ import PiCompetitionCard from '@components/PiCompetitionCard';
 import CryptoGiveawayCard from '@components/CryptoGiveawayCard';
 import CompetitionCard from '@components/CompetitionCard';
 import MiniPrizeCarousel from '@components/MiniPrizeCarousel';
-import { miniGames } from '@data/minigames';
 import TutorialOverlay from '@components/TutorialOverlay';
 import LaunchCompetitionCard from '@components/LaunchCompetitionCard';
 import FunnelStagesRow from '../components/FunnelStagesRow';
-
-// at the top of src/components/FunnelStagesRow.jsx
 
 import {
   dailyItems,
@@ -25,44 +23,67 @@ import {
   freeItems,
   cryptoGiveawaysItems,
 } from '@data/competitions';
-;
-
-// ⬇️ bring your data & components from wherever you store them
-
 
 export default function HomePage() {
+  const router = useRouter();
+  const [showWelcome, setShowWelcome] = useState(false);
+  const loginBtnRef = useRef(null);
+
   const [liveCompetitions, setLiveCompetitions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Show welcome popup if redirected with ?welcome=1
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('welcome') === '1') {
+      setShowWelcome(true);
+      // Clean the URL so refresh doesn’t re-open it
+      const url = new URL(window.location.href);
+      url.searchParams.delete('welcome');
+      window.history.replaceState({}, '', url);
+    }
+  }, []);
+
+  // Focus first actionable control + ESC to close + body scroll lock
+  useEffect(() => {
+    if (!showWelcome) return;
+
+    // focus the login button
+    loginBtnRef.current?.focus();
+
+    // lock body scroll
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    // ESC to close
+    const onKey = (e) => {
+      if (e.key === 'Escape') setShowWelcome(false);
+    };
+    window.addEventListener('keydown', onKey);
+
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [showWelcome]);
+
+  const closeWelcome = () => setShowWelcome(false);
 
   useEffect(() => {
     const fetchLiveData = async () => {
       try {
         setLoading(true);
-        console.log('🔄 Fetching live competition data...');
-
         const response = await fetch('/api/competitions/all');
         if (!response.ok) throw new Error(`Failed to fetch competitions: ${response.status}`);
-
         const result = await response.json();
         const liveData = result.data || [];
-
-        console.log('✅ Fetched live competition data:', {
-          count: liveData.length,
-          sample: liveData.slice(0, 2).map(c => ({
-            slug: c.comp?.slug,
-            ticketsSold: c.comp?.ticketsSold,
-            totalTickets: c.comp?.totalTickets,
-          })),
-        });
-
         const mergedCompetitions = mergeCompetitionData(liveData);
         setLiveCompetitions(mergedCompetitions);
       } catch (err) {
         console.error('❌ Failed to fetch live competition data:', err);
         setError(err.message);
 
-        // graceful fallback to static sets
         const staticCompetitions = [
           ...techItems,
           ...premiumItems,
@@ -81,7 +102,6 @@ export default function HomePage() {
         setLoading(false);
       }
     };
-
     fetchLiveData();
   }, []);
 
@@ -103,13 +123,10 @@ export default function HomePage() {
     });
 
     const now = new Date();
-
-    // merge live props into static where slugs match
     const mergedItems = staticItems
       .map(staticItem => {
         const slug = staticItem.comp?.slug;
         const liveComp = slug ? liveDataMap[slug] : null;
-
         return liveComp
           ? {
               ...staticItem,
@@ -132,7 +149,6 @@ export default function HomePage() {
         return status === 'active' && !hasEnded;
       });
 
-    // include live comps that aren’t in static sets (admin-only)
     const staticSlugs = new Set(staticItems.map(item => item.comp?.slug).filter(Boolean));
     const adminOnlyCompetitions = liveData.filter(
       liveComp => liveComp.comp?.slug && !staticSlugs.has(liveComp.comp.slug)
@@ -140,14 +156,12 @@ export default function HomePage() {
 
     let allMerged = [...mergedItems, ...adminOnlyCompetitions];
 
-    // sort: live first, then admin extras
     allMerged.sort((a, b) => {
       const nowMs = Date.now();
-
       const aStarts = a?.comp?.startsAt ? new Date(a.comp.startsAt).getTime() : 0;
-      const aEnds   = a?.comp?.endsAt ? new Date(a.comp.endsAt).getTime() : 0;
+      const aEnds = a?.comp?.endsAt ? new Date(a.comp.endsAt).getTime() : 0;
       const bStarts = b?.comp?.startsAt ? new Date(b.comp.startsAt).getTime() : 0;
-      const bEnds   = b?.comp?.endsAt ? new Date(b.comp.endsAt).getTime() : 0;
+      const bEnds = b?.comp?.endsAt ? new Date(b.comp.endsAt).getTime() : 0;
 
       const aLive = aStarts <= nowMs && nowMs < aEnds;
       const bLive = bStarts <= nowMs && nowMs < bEnds;
@@ -160,40 +174,9 @@ export default function HomePage() {
       return 0;
     });
 
-
     return allMerged;
   };
-  const { s1Filling, s2Live, s3Live, s4Live } = React.useMemo(() => {
-    const byStage = (n) =>
-      liveCompetitions.filter((item) => {
-        const stage =
-          item?.comp?.funnelStage ??
-          item?.comp?.stage ??
-          item?.stage;
-        const theme = item?.theme;
-        const slug  = item?.comp?.slug || '';
-        return (
-          stage === n ||
-          theme === `stage${n}` ||
-          slug.includes(`stage${n}`)
-        );
-      });
 
-    return {
-      s1Filling: byStage(1),
-      s2Live: byStage(2),
-      s3Live: byStage(3),
-      s4Live: byStage(4),
-    };
-  }, [liveCompetitions]);
-
-  // --- Safe guards so JSX never crashes ---
-  const safeS1 = Array.isArray(s1Filling) ? s1Filling : [];
-  const safeS2 = Array.isArray(s2Live)    ? s2Live    : [];
-  const safeS3 = Array.isArray(s3Live)    ? s3Live    : [];
-  const safeS4 = Array.isArray(s4Live)    ? s4Live    : [];
-
-  // --- Hoisted helper so it's defined before JSX uses it ---
   function getCompetitionsByCategory(category) {
     const staticSlugs = new Set(
       [...techItems, ...premiumItems, ...piItems, ...dailyItems, ...freeItems, ...cryptoGiveawaysItems]
@@ -204,12 +187,9 @@ export default function HomePage() {
     return liveCompetitions.filter(item => {
       const theme = item.theme || 'tech';
       const isStatic = staticSlugs.has(item.comp?.slug);
-
-      // Only show dynamic (non-static) for these buckets
       if (['daily', 'pi'].includes(category)) {
         return theme === category && !isStatic;
       }
-      // Default: include both static + dynamic if theme matches
       return theme === category;
     });
   }
@@ -229,24 +209,86 @@ export default function HomePage() {
 
   return (
     <>
-{/* ===== Welcome ===== */}
-<div className="w-full space-y-8 mt-5">
-  <div className="text-center text-cyan-300 font-medium font-orbitron leading-snug">
-    <div className="text-lg sm:text-base">☘️ Céad Míle Fáilte ☘️</div>
-   
-    <div className="text-sm sm:text-base">Let The Competitions Begin</div>
-  </div>
+      {/* Welcome Popup */}
+      {showWelcome && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="welcome-title"
+          aria-describedby="welcome-desc"
+          onClick={(e) => {
+            // Close on overlay click (but not when clicking inside the card)
+            if (e.target === e.currentTarget) closeWelcome();
+          }}
+        >
+          <div
+            className="relative bg-[#0f1b33] border border-cyan-400 rounded-2xl p-8 max-w-md w-full shadow-[0_0_30px_#00f0ff88] text-center animate-[fadeIn_.18s_ease-out]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 id="welcome-title" className="text-2xl font-bold text-cyan-300 font-orbitron mb-2">
+              ☘️ Céad Míle Fáilte ☘️
+            </h2>
+            <p id="welcome-desc" className="text-white/90 mb-6 text-sm">
+              Let The Competitions Begin
+            </p>
+            <div className="flex flex-col gap-3">
+              <Link
+                href="/login"
+                ref={loginBtnRef}
+                className="bg-gradient-to-r from-cyan-300 to-blue-500 text-black font-semibold py-2 rounded-lg shadow-md hover:opacity-90 transition focus:outline-none focus:ring-2 focus:ring-cyan-400"
+              >
+                Login
+              </Link>
+              <Link
+                href="/signup"
+                className="bg-gradient-to-r from-blue-500 to-cyan-300 text-black font-semibold py-2 rounded-lg shadow-md hover:opacity-90 transition focus:outline-none focus:ring-2 focus:ring-cyan-400"
+              >
+                Sign Up
+              </Link>
+              <button
+                onClick={closeWelcome}
+                className="bg-transparent border border-cyan-400 text-cyan-300 font-semibold py-2 rounded-lg hover:bg-cyan-400/10 transition focus:outline-none focus:ring-2 focus:ring-cyan-400"
+              >
+                Explore App
+              </button>
+            </div>
 
-  {/* Marquee */}
-  <div className="overflow-hidden bg-transparent">
-    <div className="marquee-content text-cyan-300 text-md sm:text-base font-medium font-orbitron">
-      Oh My Competitions is all about building with Pi Network for the Pi community. Our OMC launch competitions are zero profit designed to create trust, celebrate early winners and give back to Pioneers. All prizes go directly to you. Add us on all Socials and our Pi Profile darreire2020. More competitions are coming soon across a wide range of exciting categories. Join, win and help shape the future of Pi together.
-    </div>
-  </div>
-</div>
+            {/* Corner close button (optional) */}
+            <button
+              onClick={closeWelcome}
+              aria-label="Close"
+              className="absolute top-3 right-3 text-cyan-300/80 hover:text-cyan-100 focus:outline-none focus:ring-2 focus:ring-cyan-400 rounded-md px-2 py-1"
+            >
+              ✕
+            </button>
 
-{/* Mini carousel */}
-<MiniPrizeCarousel />
+            {/* Tiny keyframe for the card pop-in */}
+            <style jsx>{`
+              @keyframes fadeIn {
+                from { transform: translateY(4px) scale(.98); opacity: 0; }
+                to   { transform: translateY(0) scale(1); opacity: 1; }
+              }
+            `}</style>
+          </div>
+        </div>
+      )}
+
+      {/* Marquee (moved below header/intro if needed) */}
+      <div className="overflow-hidden bg-transparent mt-4">
+        <div className="marquee-content text-cyan-300 text-md sm:text-base font-medium font-orbitron">
+          Oh My Competitions is all about building with Pi Network for the Pi community.
+          Our OMC launch competitions are zero profit designed to create trust, celebrate
+          early winners and give back to Pioneers. All prizes go directly to you.
+          Add us on all Socials and our Pi Profile darreire2020. More competitions are
+          coming soon across a wide range of exciting categories. Join, win and help
+          shape the future of Pi together.
+        </div>
+      </div>
+
+      {/* Mini carousel */}
+      <MiniPrizeCarousel />
+
 
 {/* Pi Cash Code CTA */}
 <div className="mt-6 mb-8 flex justify-center">
