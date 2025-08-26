@@ -4,13 +4,13 @@ let loadingPromise = null;
 export async function loadPiSdk() {
   if (typeof window === "undefined") return null;
 
-  // Already loaded → return immediately
+  // If Pi SDK is already available, reuse it
   if (window.Pi) return window.Pi;
   if (loadingPromise) return loadingPromise;
 
   loadingPromise = new Promise((resolve, reject) => {
     const script = document.createElement("script");
-    script.src = "https://sdk.minepi.com/pi-sdk.js"; // Official CDN
+    script.src = "https://sdk.minepi.com/pi-sdk.js"; // ✅ Official Pi CDN
     script.async = true;
 
     script.onload = () => {
