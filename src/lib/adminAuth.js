@@ -7,8 +7,11 @@ const COOKIE_SECRET =
   process.env.JWT_SECRET ||
   'CHANGE_ME__set_ADMIN_COOKIE_SECRET';
 
+/* -------------------------------------------------------------------------- */
+/* Helpers                                                                    */
+/* -------------------------------------------------------------------------- */
 function getEnvCreds() {
-  // Accept both new and legacy names
+  // Accept both new and legacy env var names
   const ADMIN_USER = (process.env.ADMIN_USER || process.env.ADMIN_USERNAME || '').trim();
   const ADMIN_PASS = (process.env.ADMIN_PASS || process.env.ADMIN_PASSWORD || '').trim();
   return { ADMIN_USER, ADMIN_PASS };
@@ -27,8 +30,10 @@ function verifySignedCookie(value) {
   if (!value) return null;
   const [b64, sig] = String(value).split('.');
   if (!b64 || !sig) return null;
+
   const expected = crypto.createHmac('sha256', COOKIE_SECRET).update(b64).digest('base64url');
   if (expected !== sig) return null;
+
   try {
     const json = Buffer.from(b64, 'base64url').toString('utf8');
     return JSON.parse(json);
@@ -37,14 +42,21 @@ function verifySignedCookie(value) {
   }
 }
 
-/** Throws 403 if invalid. Returns the validated admin username if OK. */
+/* -------------------------------------------------------------------------- */
+/* Main Guards                                                                */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Throws 403 if invalid.
+ * Returns the validated admin username if OK.
+ */
 export function requireAdmin(req) {
   const { ADMIN_USER, ADMIN_PASS } = getEnvCreds();
 
   // 1) Try signed cookie first
   const cookies = parseCookie(req.headers.cookie || '');
   const sess = verifySignedCookie(cookies[COOKIE_NAME]);
-  if (sess && (sess.role === 'admin' || sess.user === ADMIN_USER)) {
+  if (sess && sess.role === 'admin') {
     return String(sess.user || ADMIN_USER || 'admin');
   }
 
@@ -69,7 +81,11 @@ export function requireAdmin(req) {
   return hdrUser;
 }
 
-/** Wrapper for API routes */
+/**
+ * Wrapper for Next.js API routes.
+ * Example:
+ *   export default withAdmin(async (req, res) => { res.json({ ok: true }) })
+ */
 export function withAdmin(handler) {
   return async function wrapped(req, res) {
     try {

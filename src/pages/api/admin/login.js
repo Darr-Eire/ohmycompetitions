@@ -5,13 +5,13 @@ import { connectToDatabase } from '../../../lib/mongodb';
 import User from '../../../models/User';
 
 const COOKIE_NAME = 'omc_admin';
-const COOKIE_MAX_AGE = 60 * 60 * 24; // 1 day (seconds)
+const COOKIE_MAX_AGE = 60 * 60 * 24; // 1 day
 const COOKIE_SECRET =
   process.env.ADMIN_COOKIE_SECRET ||
   process.env.JWT_SECRET ||
   'CHANGE_ME__use_ADMIN_COOKIE_SECRET_env';
 
-/* ------------------------------ cookie utils ------------------------------ */
+/* cookie helpers */
 function b64url(input) {
   return Buffer.from(input).toString('base64url');
 }
@@ -30,76 +30,74 @@ function serializeCookie(name, value, options = {}) {
 }
 function setSessionCookie(res, payload) {
   const json = JSON.stringify(payload);
-  const b64 = b64url(json);
-  const sig = sign(b64);
+  const b64 = Buffer.from(json).toString('base64url');
+  const sig = crypto.createHmac('sha256', COOKIE_SECRET).update(b64).digest('base64url');
   const value = `${b64}.${sig}`;
 
-  const cookie = serializeCookie(COOKIE_NAME, value, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'Strict',
-    path: '/',
-    maxAge: COOKIE_MAX_AGE,
-  });
-  res.setHeader('Set-Cookie', cookie);
+  const isProd = process.env.NODE_ENV === 'production';
+
+  const cookieParts = [
+    `${COOKIE_NAME}=${value}`,
+    'Path=/',
+    `Max-Age=${COOKIE_MAX_AGE}`,
+    'HttpOnly',
+    `SameSite=${isProd ? 'Strict' : 'Lax'}`,
+  ];
+  if (isProd) cookieParts.push('Secure'); // only in prod/https
+
+  // Important: set the header and THEN send JSON
+  res.setHeader('Set-Cookie', cookieParts.join('; '));
 }
 
-/* ------------------------------- main handler ------------------------------ */
+
+/* handler */
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { email, password } = req.body || {};
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password required' });
+    // accept email OR username
+    const { email: rawEmail, username: rawUsername, password } = req.body || {};
+    const loginId = (rawEmail ?? rawUsername ?? '').trim();
+    if (!loginId || !password) {
+      return res.status(400).json({ error: 'Email/username and password required' });
     }
 
-    // Normalize username from email (left of @), case-insensitive
-    const userFromEmail = (String(email).includes('@') ? String(email).split('@')[0] : String(email))
-      .trim();
-
-    // --- 1) ENV ADMIN (fast path; supports ADMIN_USER/ADMIN_PASS and legacy names) ---
+    // ENV admin fast path
+    const nameForEnv = loginId.includes('@') ? loginId.split('@')[0].trim() : loginId;
     const ENV_USER = (process.env.ADMIN_USER || process.env.ADMIN_USERNAME || '').trim();
     const ENV_PASS = (process.env.ADMIN_PASS || process.env.ADMIN_PASSWORD || '').trim();
 
     if (ENV_USER && ENV_PASS) {
-      if (userFromEmail.toLowerCase() === ENV_USER.toLowerCase() && password === ENV_PASS) {
+      if (nameForEnv.toLowerCase() === ENV_USER.toLowerCase() && password === ENV_PASS) {
         const sid = crypto.randomBytes(16).toString('hex');
         setSessionCookie(res, { sub: 'env-admin', user: ENV_USER, role: 'admin', sid, iat: Date.now() });
         return res.status(200).json({
           success: true,
           message: 'Admin login successful',
-          user: { id: 'env-admin', email, username: ENV_USER, role: 'admin' },
+          user: { id: 'env-admin', email: loginId, username: ENV_USER, role: 'admin' },
         });
       }
-      // if env admin exists but didn’t match, fall through to DB check as a fallback
+      // else fall through to DB
     }
 
-    // --- 2) DB ADMIN (email or username) ---
+    // DB admin path
     await connectToDatabase();
-
-    const isEmail = String(email).includes('@');
+    const isEmail = loginId.includes('@');
     const query = isEmail
-      ? { email: String(email).toLowerCase(), role: 'admin' }
-      : { username: String(email).toLowerCase(), role: 'admin' };
+      ? { email: loginId.toLowerCase(), role: 'admin' }
+      : { username: loginId.toLowerCase(), role: 'admin' };
 
-    const user = await User.findOne(query);
-    if (!user) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
+    const admin = await User.findOne(query);
+    if (!admin) return res.status(401).json({ error: 'Invalid credentials' });
 
-    const ok = await bcrypt.compare(password, user.password || '');
-    if (!ok) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
+    const ok = await bcrypt.compare(password, admin.password || '');
+    if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
 
     const sid = crypto.randomBytes(16).toString('hex');
     setSessionCookie(res, {
-      sub: String(user._id),
-      user: user.username || user.email,
-      role: user.role || 'admin',
+      sub: String(admin._id),
+      user: admin.username || admin.email,
+      role: admin.role || 'admin',
       sid,
       iat: Date.now(),
     });
@@ -108,14 +106,14 @@ export default async function handler(req, res) {
       success: true,
       message: 'Admin login successful',
       user: {
-        id: user._id,
-        email: user.email,
-        username: user.username,
-        role: user.role || 'admin',
+        id: admin._id,
+        email: admin.email,
+        username: admin.username,
+        role: admin.role || 'admin',
       },
     });
-  } catch (error) {
-    console.error('Admin login error:', error);
+  } catch (err) {
+    console.error('Admin login error:', err);
     return res.status(500).json({ error: 'Internal server error' });
   }
 }

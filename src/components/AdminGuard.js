@@ -3,14 +3,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
-import axios from 'axios';
 
 /**
  * AdminGuard
- * - Wraps admin-only pages.
- * - Reads admin creds from localStorage (omc_admin_user / omc_admin_pass).
- * - Verifies via /api/admin/verify (which calls requireAdmin on the server).
- * - Redirects to /admin/login when unauthorized.
+ * - Verifies admin session via /api/admin/whoami (cookie-based).
+ * - Redirects to /admin/login?next=<currentPath> if unauthorized.
+ * - No localStorage, no header creds.
  */
 export default function AdminGuard({ children }) {
   const router = useRouter();
@@ -21,53 +19,41 @@ export default function AdminGuard({ children }) {
   useEffect(() => {
     let alive = true;
 
-    async function checkAuth() {
+    async function verify() {
       try {
-        if (typeof window === 'undefined') return;
-
-        const u = window.localStorage.getItem('omc_admin_user');
-        const p = window.localStorage.getItem('omc_admin_pass');
-
-        if (!u || !p) {
-          if (!redirectedRef.current) {
-            redirectedRef.current = true;
-            setAuthorized(false);
-            setLoading(false);
-            router.push('/admin/login');
-          }
-          return;
-        }
-
-        const res = await axios.get('/api/admin/verify', {
-          headers: { 'x-admin-user': u, 'x-admin-pass': p },
-          // bust any edge cache
-          params: { ts: Date.now() },
+        // hit whoami to validate the signed cookie
+        const res = await fetch('/api/admin/whoami', {
+          method: 'GET',
+          credentials: 'include',
+          headers: { 'Cache-Control': 'no-cache' },
         });
 
+        const data = await res.json().catch(() => ({}));
         if (!alive) return;
 
-        if (res.data?.success) {
+        if (data?.sessionValid && data?.session?.role === 'admin') {
           setAuthorized(true);
         } else {
+          // prevent multiple redirects
           if (!redirectedRef.current) {
             redirectedRef.current = true;
-            setAuthorized(false);
-            router.push('/admin/login');
+            const next = encodeURIComponent(router.asPath || '/admin/competitions');
+            router.replace(`/admin/login?next=${next}`);
           }
         }
       } catch (err) {
-        console.error('AdminGuard verify error:', err?.message || err);
+        console.error('AdminGuard error:', err);
         if (!redirectedRef.current) {
           redirectedRef.current = true;
-          setAuthorized(false);
-          router.push('/admin/login');
+          const next = encodeURIComponent(router.asPath || '/admin/competitions');
+          router.replace(`/admin/login?next=${next}`);
         }
       } finally {
         if (alive) setLoading(false);
       }
     }
 
-    checkAuth();
+    verify();
     return () => { alive = false; };
   }, [router]);
 
@@ -80,9 +66,10 @@ export default function AdminGuard({ children }) {
   }
 
   if (!authorized) {
+    // brief fallback UI while redirecting (should be momentary)
     return (
       <div className="flex h-screen items-center justify-center text-red-500">
-        Access denied
+        Redirecting to admin login…
       </div>
     );
   }
