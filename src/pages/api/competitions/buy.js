@@ -1,6 +1,6 @@
 // file: src/pages/api/competitions/tickets/increment.js
-import { dbConnect } from '../../../../lib/dbConnect';
-import Competition from '../../../../models/Competition';
+import dbConnect from 'lib/dbConnect';
+import Competition from 'models/Competition';
 
 /**
  * POST /api/competitions/tickets/increment
