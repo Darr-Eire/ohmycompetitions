@@ -1,11 +1,11 @@
 // src/pages/api/user/tickets.js
 
-import { dbConnect } from '@/lib/dbConnect';
-import Ticket from '@/models/Ticket';
-import User from '@/models/User';
-import Entry from '@/models/Entry';
-import Competition from '@/models/Competition';
-import TicketCredit from '@/models/TicketCredit';
+import { dbConnect } from 'lib/dbConnect';
+import Ticket from 'models/Ticket';
+import User from 'models/User';
+import Entry from 'models/Entry';
+import Competition from 'models/Competition';
+import TicketCredit from 'models/TicketCredit';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {

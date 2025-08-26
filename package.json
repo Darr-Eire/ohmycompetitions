@@ -22,7 +22,6 @@
     "@leenguyen/react-flip-clock-countdown": "^1.6.1",
     "@mui/material": "^7.1.0",
     "@pinetwork-js/api-typing": "^0.7.0",
-    "@pinetwork-js/sdk": "^0.7.0",
     "@stellar/stellar-sdk": "^13.3.0",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@uidotdev/usehooks": "^2.4.1",

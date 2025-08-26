@@ -1,4 +1,23 @@
 // src/lib/loadPiSdk.js
+let loadingPromise = null;
+
+ fix/pi-sdk-loader
+export async function loadPiSdk() {
+  if (typeof window === "undefined") return null;
+
+  // Already loaded → return immediately
+  if (window.Pi) return window.Pi;
+  if (loadingPromise) return loadingPromise;
+
+  loadingPromise = new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = "https://sdk.minepi.com/pi-sdk.js"; // Official CDN
+    script.async = true;
+
+    script.onload = () => {
+      if (window.Pi) {
+        console.log("✅ Pi SDK loaded successfully from CDN");
+        resolve(window.Pi);
 
 /**
  * Dynamically loads and initializes the Pi Network SDK.
@@ -86,11 +105,21 @@ export function loadPiSdk(setReady) {
         clearInterval(check);
         console.error('❌ Pi SDK initialization timeout');
         setReady(false);
+ main
       } else {
-        console.log(`⏳ Waiting for Pi SDK... (${attempts}/${maxAttempts})`);
+        reject(new Error("❌ Pi SDK script loaded but Pi object missing"));
       }
-    }, 200);
-  };
+    };
+
+fix/pi-sdk-loader
+    script.onerror = () => {
+      reject(new Error("❌ Failed to load Pi SDK script"));
+    };
+
+    document.head.appendChild(script);
+  });
+
+  return loadingPromise;
 
   // Handle script load failure
   script.onerror = (error) => {
@@ -120,4 +149,5 @@ export function createPiPaymentSession(paymentDetails) {
     '🔧 createPiPaymentSession is not implemented yet:',
     paymentDetails
   );
+ main
 }
