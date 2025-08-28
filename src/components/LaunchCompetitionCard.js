@@ -2,11 +2,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 
 /* ───────────── Prize helpers ───────────── */
 function formatPi(amount) {
-  if (amount == null) return null;
+  if (amount == null) return 'TBA';
   if (typeof amount === 'number' && Number.isFinite(amount)) {
     return `${amount % 1 === 0 ? amount.toFixed(0) : amount.toFixed(2)} π`;
   }
@@ -16,13 +16,12 @@ function formatPi(amount) {
 
 function normalizePrizeBreakdown(raw) {
   if (!raw) return {};
-  // object form
   if (typeof raw === 'object' && !Array.isArray(raw)) {
     const out = {};
     const map = {
-      '1st': '1st', 'first': '1st', 'first prize': '1st', 'grand': '1st', 'grand prize': '1st',
-      '2nd': '2nd', 'second': '2nd', 'second prize': '2nd',
-      '3rd': '3rd', 'third': '3rd', 'third prize': '3rd',
+      '1st': '1st','first':'1st','first prize':'1st','grand':'1st','grand prize':'1st',
+      '2nd': '2nd','second':'2nd','second prize':'2nd',
+      '3rd': '3rd','third':'3rd','third prize':'3rd',
     };
     for (const [k, v] of Object.entries(raw)) {
       const m = map[String(k).toLowerCase()];
@@ -30,16 +29,14 @@ function normalizePrizeBreakdown(raw) {
     }
     if (out['1st'] || out['2nd'] || out['3rd']) return out;
 
-    // unlabeled: take top 3 numerically
     const sorted = Object.values(raw)
-      .map(v => ({ v, n: Number(String(v).replace(/[^\d.-]/g, '')) }))
-      .sort((a, b) => (b.n || -Infinity) - (a.n || -Infinity))
+      .map(v => ({ v, n: Number(String(v).replace(/[^\d.-]/g, '')) || -Infinity }))
+      .sort((a, b) => b.n - a.n)
       .slice(0, 3);
     const ord = ['1st', '2nd', '3rd'];
     sorted.forEach((e, i) => { if (e?.v != null) out[ord[i]] = e.v; });
     return out;
   }
-  // array form [first, second, third]
   if (Array.isArray(raw)) {
     const ord = ['1st', '2nd', '3rd'];
     const out = {};
@@ -51,45 +48,33 @@ function normalizePrizeBreakdown(raw) {
 
 function getPrizeTiers({ comp, prizeBreakdownProp, prizeProp }) {
   const c = comp?.comp ?? comp ?? {};
-
-  // explicit fields first
-  const explicit = {
-    '1st': c.firstPrize ?? c.prize1,
-    '2nd': c.secondPrize ?? c.prize2,
-    '3rd': c.thirdPrize ?? c.prize3,
-  };
+  const explicit = { '1st': c.firstPrize ?? c.prize1, '2nd': c.secondPrize ?? c.prize2, '3rd': c.thirdPrize ?? c.prize3 };
   if (explicit['1st'] || explicit['2nd'] || explicit['3rd']) return explicit;
 
-  // prop breakdown, then comp.prizeBreakdown, then c.prizes[]
   const fromProp  = normalizePrizeBreakdown(prizeBreakdownProp);
   const fromComp  = normalizePrizeBreakdown(c.prizeBreakdown);
   const fromArray = normalizePrizeBreakdown(c.prizes);
 
   const tiers = { ...fromProp, ...fromComp, ...fromArray };
-
-  // fallback: use `prize` prop as 1st
   if (!tiers['1st'] && prizeProp != null) tiers['1st'] = prizeProp;
-
   return tiers;
 }
 
 function getWinnersCount(comp, tiers) {
   const c = comp?.comp ?? comp ?? {};
   const direct = c.winners ?? c.totalWinners ?? c.numberOfWinners ?? c.numWinners;
-
   const n = Number(direct);
   if (Number.isFinite(n) && n > 0) return Math.min(3, Math.max(1, Math.floor(n)));
 
   if (typeof direct === 'string') {
     if (/single|one/i.test(direct)) return 1;
-    if (/two|2/i.test(direct)) return 2;
-    if (/three|3/i.test(direct)) return 3;
+    if (/two|2/i.test(direct))      return 2;
+    if (/three|3/i.test(direct))    return 3;
     if (/multiple|multi/i.test(direct)) {
       const count = Object.values(tiers || {}).filter(v => v != null).length;
       return Math.min(3, count || 3);
     }
   }
-
   const count = Object.values(tiers || {}).filter(v => v != null).length;
   return Math.min(3, count || 1);
 }
@@ -120,10 +105,12 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
   const isLowStock = remaining <= total * 0.1 && remaining > 0;
   const isNearlyFull = remaining <= total * 0.25 && remaining > 0;
 
-  // build tiers + winners count
-  const tiers = getPrizeTiers({ comp, prizeBreakdownProp: prizeBreakdown, prizeProp: prize });
-  const winnersCount = getWinnersCount(comp, tiers);
-  const ordinals = ['1st', '2nd', '3rd'].slice(0, winnersCount);
+  const tiers = useMemo(
+    () => getPrizeTiers({ comp, prizeBreakdownProp: prizeBreakdown, prizeProp: prize }),
+    [comp, prizeBreakdown, prize]
+  );
+  const winnersCount = useMemo(() => getWinnersCount(comp, tiers), [comp, tiers]);
+  const ordinals = useMemo(() => ['1st', '2nd', '3rd'].slice(0, winnersCount), [winnersCount]);
 
   useEffect(() => {
     if (!endsAt || comingSoon) {
@@ -164,7 +151,6 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
       if (h > 0 || d > 0) time += `${h}H `;
       if (m > 0 || h > 0 || d > 0) time += `${m}M `;
       if (d === 0 && h === 0) time += `${s}S`;
-
       setTimeLeft(time.trim());
     }, 1000);
 
@@ -173,8 +159,10 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
 
   const banner =
     winnersCount === 3 ? '1st • 2nd • 3rd Prizes'
-      : winnersCount === 2 ? '1st • 2nd Prizes'
-      : 'Single Winner';
+    : winnersCount === 2 ? '1st • 2nd Prizes'
+    : 'Single Winner';
+
+  const hasValidSlug = typeof slug === 'string' && slug.length > 0;
 
   return (
     <div
@@ -182,8 +170,7 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
         flex flex-col w-full max-w-xs mx-auto
         bg-[#0f172a] border border-cyan-600 rounded-2xl shadow-lg
         text-white font-orbitron overflow-hidden
-        select-none
-        transition-colors duration-200
+        select-none transition-colors duration-200
         hover:shadow-[0_0_24px_rgba(0,255,213,0.18)]
         focus:outline-none focus-visible:outline-none
       "
@@ -230,26 +217,34 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
 
       {/* Body */}
       <div className="p-4 text-sm space-y-3">
-        {/* Prize tiers (up to winnersCount) */}
-        <div className="grid grid-cols-1 gap-2">
-          {ordinals.map((label) => (
-            <div
-              key={label}
-              className="
-                flex flex-col items-center justify-center
-                rounded-md border border-cyan-400/40
-                bg-[#0b1220]/80 px-4 py-2
-                shadow-[0_0_6px_rgba(0,255,213,0.12)]
-              "
-            >
-              <span className="text-[12px] uppercase tracking-wide text-cyan-300 font-semibold">
-                {label} Prize
-              </span>
-              <span className="font-extrabold text-white text-lg tabular-nums tracking-wide mt-0.5">
-                {tiers[label] != null ? formatPi(tiers[label]) : 'TBA'}
-              </span>
-            </div>
-          ))}
+
+        {/* Prize Pool (professional cyan highlight with subtle pulse glow) */}
+        <div className="relative rounded-xl border border-cyan-300 bg-cyan-300/10 p-4 shadow-[0_0_12px_rgba(34,211,238,0.25)]">
+          {/* soft animated glow layer (doesn't affect children opacity) */}
+          <div className="pointer-events-none absolute -inset-0.5 rounded-xl bg-cyan-300/10 blur-md animate-pulse" aria-hidden="true" />
+          <h4 className="relative text-center text-cyan-300 font-bold text-sm mb-3 tracking-wide">
+            Prize Pool
+          </h4>
+
+          <div className="relative grid grid-cols-1 gap-3">
+            {ordinals.map((label) => (
+              <div
+                key={label}
+                className="
+                  flex items-center justify-between rounded-lg
+                  border border-cyan-300/40 bg-[#0b1220]/80 px-4 py-2
+                "
+              >
+                <span className="text-[12px] uppercase tracking-wide text-cyan-300 font-semibold">
+                  {label} Prize
+                </span>
+                {/* Amount pulses gently */}
+                <span className="font-extrabold text-cyan-300 text-lg tabular-nums tracking-wide animate-pulse">
+                  {formatPi(tiers[label])}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Key facts */}
@@ -338,25 +333,30 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
         </div>
 
         {/* CTA */}
-        <Link
-          href={`/competitions/${slug}`}
-          className="block mt-4 focus:outline-none focus-visible:outline-none"
-        >
+        {hasValidSlug ? (
+          <Link href={`/competitions/${slug}`} className="block mt-4 focus:outline-none focus-visible:outline-none">
+            <button
+              type="button"
+              disabled={comingSoon}
+              className={`w-full py-2 rounded-lg font-bold text-center transition-opacity duration-150 ${
+                comingSoon
+                  ? 'bg-gray-400 text-white cursor-not-allowed'
+                  : 'bg-gradient-to-r from-cyan-300 to-blue-500 text-black hover:opacity-90'
+              }`}
+              style={{ WebkitTapHighlightColor: 'transparent' }}
+            >
+              {comingSoon ? 'Coming Soon' : 'Enter Now'}
+            </button>
+          </Link>
+        ) : (
           <button
             type="button"
-            disabled={comingSoon}
-            className={`
-              w-full py-2 rounded-lg font-bold text-center
-              transition-opacity duration-150
-              ${comingSoon
-                ? 'bg-gray-400 text-white cursor-not-allowed'
-                : 'bg-gradient-to-r from-cyan-300 to-blue-500 text-black hover:opacity-90'}
-            `}
-            style={{ WebkitTapHighlightColor: 'transparent' }}
+            disabled
+            className="w-full py-2 rounded-lg font-bold text-center bg-gray-400 text-white cursor-not-allowed mt-4"
           >
-            {comingSoon ? 'Coming Soon' : 'Enter Now'}
+            Unavailable
           </button>
-        </Link>
+        )}
       </div>
     </div>
   );

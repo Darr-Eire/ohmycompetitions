@@ -73,7 +73,7 @@ function EmptyState({ onRefresh }) {
     <div className="text-center py-16 rounded-2xl border border-white/10 bg-white/5">
       <Sparkles className="mx-auto mb-4" />
       <h3 className="text-xl font-semibold">No launch-week competitions yet</h3>
-      <p className="text-white/70 mt-2">Check back soon — we’re gearing up more prizes.</p>
+      <p className="text-white/70 mt-2">Check back soon, we’re gearing up more prizes.</p>
       <button
         onClick={onRefresh}
         className="mt-6 inline-flex items-center gap-2 rounded-xl bg-cyan-400 text-black font-semibold px-4 py-2 hover:brightness-110 active:translate-y-px"
@@ -84,7 +84,7 @@ function EmptyState({ onRefresh }) {
   )
 }
 
-/* ------------------------------- Full-width Carousel (same as all.js) ------------------------------- */
+/* ------------------------------- Full-width Carousel ------------------------------- */
 function FullWidthCarousel({ items, renderItem, ariaLabel }) {
   const scrollerRef = useRef(null)
   const [index, setIndex] = useState(0)
@@ -132,9 +132,9 @@ function FullWidthCarousel({ items, renderItem, ariaLabel }) {
 
   return (
     <div className="relative">
-      {/* edge fades from page bg (same as all.js) */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-[#0f172a] to-transparent z-10" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[#0f172a] to-transparent z-10" />
+      {/* edge fades from consistent app bg */}
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-[#0f1b33] to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[#0f1b33] to-transparent z-10" />
 
       {/* scroller */}
       <div
@@ -211,17 +211,6 @@ function FullWidthCarousel({ items, renderItem, ariaLabel }) {
           />
         ))}
       </div>
-
-      {/* Reduced motion */}
-      <style jsx global>{`
-        @media (prefers-reduced-motion: reduce) {
-          * {
-            scroll-behavior: auto !important;
-            animation: none !important;
-            transition: none !important;
-          }
-        }
-      `}</style>
     </div>
   )
 }
@@ -295,7 +284,7 @@ export default function LaunchWeekCompetitionsPage() {
 
   if (loading) {
     return (
-      <main className="relative min-h-[100svh] text-white overflow-hidden bg-slate-900">
+      <main className="relative min-h-[100svh] text-white overflow-hidden bg-[#0f1b33]">
         <BackgroundFX />
         <section className="px-4 py-16">
           <div className="max-w-5xl mx-auto text-center">
@@ -308,22 +297,22 @@ export default function LaunchWeekCompetitionsPage() {
   }
 
   return (
-    <main className="relative min-h-[100svh] text-white overflow-hidden bg-slate-900">
-      <BackgroundFX />
+   <main className="app-background min-h-[100svh] text-white bg-[#0f1b33] pt-[calc(10px+env(safe-area-inset-top))] md:pt-[calc(80px+env(safe-area-inset-top))] relative overflow-hidden">
+  <BackgroundFX />
 
-      {/* Hero */}
-      <section className="px-4 py-4 sm:px-6 lg:px-10">
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35 }}
-          className="max-w-5xl mx-auto text-center"
-        >
-          <h1 className="text-2xl font-bold mt-0 bg-gradient-to-r from-[#00ffd5] to-[#0077ff] bg-clip-text text-transparent">
-            Launch Week Competitions
-          </h1>
+  {/* Hero */}
+  <section className="px-4 sm:px-6 lg:px-10">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35 }}
+      className="max-w-5xl mx-auto text-center"
+    >
+      <h1 className="text-2xl font-bold mb-1 bg-gradient-to-r from-[#00ffd5] to-[#0077ff] bg-clip-text text-transparent">
+        Launch Week Competitions
+      </h1>
 
-          {/* Tagline */}
+
           <TaglineRotator />
 
           <div className="text-center max-w-2xl mx-auto mb-2 mt-3">
@@ -336,24 +325,21 @@ export default function LaunchWeekCompetitionsPage() {
             </p>
           </div>
 
-          <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
-            <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
+       <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+                 <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
               ⏳ Soonest draw: <b className="text-white">{fmtDate(heroStats.soonest)}</b>
-            </span>
-            <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
-              🎟 Easy entry
-            </span>
-            <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
-              🏆 New prizes this week
-            </span>
-            <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
-              From <b className="text-white">{heroStats.minFee.toFixed(2)} π</b>
-            </span>
-          </div>
+          </span>
+                  <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
+                    🎟 Easy entry
+                  </span>
+                  <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
+                    ⚡ New drops weekly
+                  </span>
+                </div>
         </motion.div>
       </section>
 
-      {/* Content: FullWidthCarousel (same as all.js) */}
+      {/* Content */}
       <section className="pb-14">
         <div className="w-screen">
           {error && (
@@ -385,7 +371,7 @@ export default function LaunchWeekCompetitionsPage() {
         </div>
       </section>
 
-      {/* Global hover glow + no-scale + background animations */}
+      {/* Hover glow + background animations */}
       <style jsx global>{`
         .competition-card {
           transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;

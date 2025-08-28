@@ -32,10 +32,8 @@ function TaglineRotator() {
 function BackgroundFX() {
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-      {/* soft blobs tuned for #0a0f1a */}
       <div className="absolute -top-40 -left-40 h-[420px] w-[420px] rounded-full blur-3xl opacity-20 bg-cyan-400 animate-float-slow" />
       <div className="absolute -bottom-40 -right-40 h-[420px] w-[420px] rounded-full blur-3xl opacity-15 bg-blue-500 animate-float-slower" />
-      {/* particle grid subtler on dark */}
       <div className="absolute inset-0 [background-image:radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:18px_18px] opacity-20" />
     </div>
   );
@@ -136,8 +134,8 @@ function FullWidthCarousel({ items, renderItem }) {
   return (
     <div className="relative">
       {/* edge fades use app bg */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-[#0a0f1a] to-transparent z-10" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[#0a0f1a] to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-[#0f1b33] to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[#0f1b33] to-transparent z-10" />
 
       {/* scroller */}
       <div
@@ -306,7 +304,7 @@ export default function PiCompetitionsPage() {
 
   if (loading) {
     return (
-      <main className="app-background min-h-[100svh] text-white bg-[#0a0f1a] pt-[calc(10px+env(safe-area-inset-top))] md:pt-[calc(80px+env(safe-area-inset-top))] relative">
+      <main className="app-background min-h-[100svh] text-white bg-[#0f1b33] pt-[calc(10px+env(safe-area-inset-top))] md:pt-[calc(80px+env(safe-area-inset-top))] relative">
         <BackgroundFX />
         <div className="max-w-screen-lg mx-auto px-4 sm:px-0">
           <div className="text-center py-16">
@@ -325,7 +323,7 @@ export default function PiCompetitionsPage() {
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       </Head>
 
-      <main className="app-background min-h-[100svh] text-white bg-[#0a0f1a] pt-[calc(10px+env(safe-area-inset-top))] md:pt-[calc(80px+env(safe-area-inset-top))] relative">
+      <main className="app-background min-h-[100svh] text-white bg-[#0f1b33] pt-[calc(10px+env(safe-area-inset-top))] md:pt-[calc(80px+env(safe-area-inset-top))] relative">
         <BackgroundFX />
 
         <div className="max-w-screen-lg mx-auto px-4 sm:px-0">
@@ -396,8 +394,6 @@ export default function PiCompetitionsPage() {
                 />
               )}
             />
-          ) : error ? (
-            <EmptyState onRefresh={fetchPi} />
           ) : (
             <EmptyState onRefresh={fetchPi} />
           )}
@@ -424,7 +420,7 @@ export default function PiCompetitionsPage() {
           outline: 2px solid #22d3ee !important;
           outline-offset: 2px;
         }
-        .carousel-card * ,
+        .carousel-card *,
         .carousel-card:hover,
         .carousel-card:active {
           transform: none !important;

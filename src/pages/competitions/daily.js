@@ -134,8 +134,8 @@ function FullWidthCarousel({ items, renderItem }) {
   return (
     <div className="relative">
       {/* edge fades match app bg */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-[#0a0f1a] to-transparent z-10" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[#0a0f1a] to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-[#0f1b33] to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[#0f1b33] to-transparent z-10" />
 
       {/* scroller */}
       <div
@@ -300,7 +300,7 @@ export default function DailyCompetitionsPage() {
 
   if (loading) {
     return (
-      <main className="app-background min-h-[100svh] text-white bg-[#0a0f1a] pt-[calc(10px+env(safe-area-inset-top))] md:pt-[calc(80px+env(safe-area-inset-top))] relative">
+      <main className="app-background min-h-[100svh] text-white bg-[#0f1b33] pt-[calc(10px+env(safe-area-inset-top))] md:pt-[calc(80px+env(safe-area-inset-top))] relative">
         <BackgroundFX />
         <div className="max-w-screen-lg mx-auto px-4 sm:px-0">
           <div className="text-center py-16">
@@ -319,7 +319,7 @@ export default function DailyCompetitionsPage() {
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       </Head>
 
-      <main className="app-background min-h-[100svh] text-white bg-[#0a0f1a] pt-[calc(10px+env(safe-area-inset-top))] md:pt-[calc(80px+env(safe-area-inset-top))] relative">
+      <main className="app-background min-h-[100svh] text-white bg-[#0f1b33] pt-[calc(10px+env(safe-area-inset-top))] md:pt-[calc(80px+env(safe-area-inset-top))] relative">
         <BackgroundFX />
 
         <div className="max-w-screen-lg mx-auto px-4 sm:px-0">
@@ -347,7 +347,7 @@ export default function DailyCompetitionsPage() {
 
                 {/* Live counter */}
                 <p className="text-center text-white/80 text-xs sm:text-sm mt-2">
-                   <span className="text-cyan-300 font-semibold">{ticketsToday.toLocaleString()}</span> tickets sold today ·{' '}
+                  <span className="text-cyan-300 font-semibold">{ticketsToday.toLocaleString()}</span> tickets sold today ·{' '}
                   <span className="text-cyan-300 font-semibold">{liveCount}</span> live competitions
                 </p>
 
@@ -356,7 +356,7 @@ export default function DailyCompetitionsPage() {
                   Use arrows or swipe to browse.&nbsp;
                 </p>
 
-                <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+            <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
                   <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
                     ⏳ Soonest draw: <b className="text-white">{soonestStr}</b>
                   </span>
@@ -364,7 +364,7 @@ export default function DailyCompetitionsPage() {
                     🎟 Easy entry
                   </span>
                   <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
-                    ⚡ New drops daily
+                    ⚡ New drops weekly
                   </span>
                 </div>
               </>
@@ -416,7 +416,7 @@ export default function DailyCompetitionsPage() {
           outline: 2px solid #22d3ee !important;
           outline-offset: 2px;
         }
-        .carousel-card * ,
+        .carousel-card *,
         .carousel-card:hover,
         .carousel-card:active {
           transform: none !important;

@@ -182,7 +182,7 @@ function StageRulesModal({ stage, onClose }) {
   return (
     <div className="fixed inset-0 z-50">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      <div className="absolute inset-x-4 sm:inset-x-auto sm:right-6 top-10 sm:top-16 z-10 max-w-md rounded-2xl border border-white/10 bg-[#0b1220] p-4 shadow-2xl">
+      <div className="absolute inset-x-4 sm:inset-x-auto sm:right-6 top-10 sm:top-16 z-10 max-w-md rounded-2xl border border-white/10 bg-[#0f1b33] p-4 shadow-2xl">
         <div className="flex items-center justify-between">
           <div className="text-white font-semibold">Stage {stage} Rules</div>
           <button
@@ -203,17 +203,29 @@ function StageRulesModal({ stage, onClose }) {
   );
 }
 
+/* ---------------- Finals prize: single source of truth ---------------- */
+const FINALS_BREAKDOWN = [
+  { place: '1st', prizePi: 750 },
+  { place: '2nd', prizePi: 500 },
+  { place: '3rd', prizePi: 250 },
+  { place: '4th', prizePi: 100 },
+  { place: '5th', prizePi: 50  },
+  ...Array.from({ length: 20 }, () => ({ prizePi: 25 })), // 6th–25th @ 25 π
+];
+
 /* ---------------- Finals meta / header ---------------- */
 function computeFinalsMeta(list = []) {
   const rooms = list.length;
   const entrants = list.reduce((s, r) => s + (r.entrantsCount || 0), 0);
   const capacity = list.reduce((s, r) => s + (r.capacity || 0), 0);
+
+  // Fixed prize pool from FINALS_BREAKDOWN (total = 2150 π)
+  const prizePoolPi = FINALS_BREAKDOWN.reduce((sum, r) => sum + (r.prizePi || 0), 0);
+
   const nextStartTs = list
     .map(r => r.nextStartAt ? new Date(r.nextStartAt).getTime() : Infinity)
     .reduce((min, t) => Math.min(min, t), Infinity);
   const nextStartISO = Number.isFinite(nextStartTs) ? new Date(nextStartTs).toISOString() : null;
-
-  const prizePoolPi = Math.max(100, Math.round(entrants * 0.5));
 
   return { rooms, entrants, capacity, nextStartISO, prizePoolPi };
 }
@@ -224,7 +236,7 @@ function FinalsHeader({ list }) {
     <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
       <KPI icon="👥" label="Finalists" value={String(meta.entrants)} sub={`${meta.rooms} room${meta.rooms===1?'':'s'}`} />
       <KPI icon="🪪" label="Capacity" value={String(meta.capacity)} sub="total slots" />
-      <KPI icon="🏆" label="Prize Pool" value={`${meta.prizePoolPi.toLocaleString()} π`} sub="est. (live)" />
+      <KPI icon="🏆" label="Prize Pool" value={`${meta.prizePoolPi.toLocaleString()} π`} sub="fixed" />
       <div className="rounded-xl border border-white/10 bg-white/5 p-4 flex items-center justify-center">
         <CountdownCircle targetISO={meta.nextStartISO || inFuture(2)} size={56} stroke={5} label="Next Final" />
       </div>
@@ -239,11 +251,11 @@ function FinalsPrizeCard() {
     { place: '2nd Place', prize: '500 π' },
     { place: '3rd Place', prize: '250 π' },
     { place: '4th Place', prize: '100 π' },
-    { place: '5th Place', prize: '100 π' },
-    { place: '6th – 20th', prize: '25 π each' },
+    { place: '5th Place', prize: '50 π' },
+    { place: '6th – 25th', prize: '25 π each' },
   ];
   return (
-    <div className="rounded-2xl border border-cyan-400/40 bg-gradient-to-br from-[#0d1729] to-[#0a1020] p-4 shadow-lg shadow-cyan-400/10">
+    <div className="rounded-2xl border border-cyan-400/40 bg-[#0f1b33] p-4 shadow-lg shadow-cyan-400/10">
       <div className="text-sm font-bold text-cyan-300 mb-3 flex items-center gap-2 drop-shadow-[0_0_6px_rgba(34,211,238,0.6)]">
         Finals Prize Breakdown
       </div>
@@ -280,7 +292,8 @@ function MiniCard({ data, stage, onJoin, entryFee }) {
 
   const entrants = data.entrantsCount || 0;
   const adv = data.advancing || (stage === 1 ? ADVANCING_PER_ROOM : 1);
-  const winChance = entrants > 0 ? Math.round((adv / entrants) * 100) : null;
+  // Win chance shown as fixed 20% (per your request)
+  // const winChance = entrants > 0 ? Math.round((adv / entrants) * 100) : null;
 
   const isFinals = stage === 5;
 
@@ -289,7 +302,7 @@ function MiniCard({ data, stage, onJoin, entryFee }) {
       dir={isFinals ? 'rtl' : 'ltr'}
       className={`min-w-[260px] sm:min-w-[300px] rounded-2xl border 
         ${isFinals ? 'border-cyan-400 text-right' : 'border-white/10 text-left'} 
-        bg-[#0b1220] p-5`}
+        bg-[#0f1b33] p-5`}
     >
       <div className="flex items-center justify-between">
         <div className="text-white font-semibold">
@@ -311,7 +324,7 @@ function MiniCard({ data, stage, onJoin, entryFee }) {
       <div className="mt-2 text-[11px] text-white/60 space-y-1">
         <div>+5 XP when you join this stage</div>
         <div>Top {adv} advance for a share of the pool</div>
-        {winChance !== null && <div>Win chance: {winChance}%</div>}
+        <div>Win chance: 20%</div>
       </div>
 
       <div className="mt-4 flex items-center justify-between gap-3">
@@ -644,7 +657,7 @@ export default function FunnelIndexPage() {
   const closeRules = useCallback(() => setRulesStage(null), []);
 
   return (
-    <main className="min-h-screen bg-[#070d19] pb-24">
+    <main className="min-h-screen bg-[#0f1b33] pb-24">
       {/* Hero */}
       <section className="relative bg-gradient-to-br from-[#08121f] via-[#0b1a2a] to-[#061019]">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(34,211,238,0.12),transparent_70%)]" />
@@ -656,17 +669,34 @@ export default function FunnelIndexPage() {
                 OMC Stages
               </h1>
               <p className="mt-2 text-white/70 text-sm max-w-xl">
-                Start in <span className="text-cyan-300 font-semibold">Stage 1</span>, battle through each round, and reach the finals to share the prize pool.
+              Start in <span className="text-cyan-300 font-semibold">Stage 1</span>, progress through each stage and reach the finals to claim your share of the prize pool.
+
               </p>
 
               <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <KPI icon="👥" label="Players" value="246" sub="today" />
-                <KPI icon="🏁" label="Stages" value="7" sub="completed" />
-                <KPI icon="💰" label="π Awarded" value="5,000 π" sub="lifetime" />
-                <div className="rounded-xl border border-white/10 bg-white/5 p-4 flex items-center justify-center">
-                  <CountdownCircle targetISO={heroNextISO} size={56} stroke={5} label="Next Stage" />
-                </div>
-              </div>
+  <KPI
+    icon="👥"
+    label="Active Players"
+    value="246"
+    sub="currently online"
+  />
+  <KPI
+    icon="🏁"
+    label="Stages"
+    value="3"
+    sub="open now"
+  />
+  <KPI
+    icon="💰"
+    label="Stage 5 Prize Pool"
+    value="2,150 π"
+    sub="fixed"
+  />
+  <div className="rounded-xl border border-white/10 bg-white/5 p-4 flex items-center justify-center">
+    <CountdownCircle targetISO={heroNextISO} size={56} stroke={5} label="Next Stage" />
+  </div>
+</div>
+
 
               <div className="mt-4">
                 <XPBar xp={xp} level={level} />

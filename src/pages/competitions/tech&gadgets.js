@@ -136,8 +136,8 @@ function FullWidthCarousel({ items, renderItem }) {
   return (
     <div className="relative">
       {/* edge fades match app bg */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-[#0a0f1a] to-transparent z-10" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[#0a0f1a] to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-[#0f1b33] to-transparent z-10" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[#0f1b33] to-transparent z-10" />
 
       {/* scroller */}
       <div
@@ -305,7 +305,7 @@ export default function FeaturedCompetitionsPage() {
 
   if (loading) {
     return (
-      <main className="app-background min-h-[100svh] text-white bg-[#0a0f1a] pt-[calc(10px+env(safe-area-inset-top))] md:pt-[calc(80px+env(safe-area-inset-top))] relative">
+      <main className="app-background min-h-[100svh] text-white bg-[#0f1b33] pt-[calc(10px+env(safe-area-inset-top))] md:pt-[calc(80px+env(safe-area-inset-top))] relative">
         <BackgroundFX />
         <div className="max-w-screen-lg mx-auto px-4 sm:px-0">
           <div className="text-center py-16">
@@ -324,7 +324,7 @@ export default function FeaturedCompetitionsPage() {
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       </Head>
 
-      <main className="app-background min-h-[100svh] text-white bg-[#0a0f1a] pt-[calc(10px+env(safe-area-inset-top))] md:pt-[calc(80px+env(safe-area-inset-top))] relative">
+      <main className="app-background min-h-[100svh] text-white bg-[#0f1b33] pt-[calc(10px+env(safe-area-inset-top))] md:pt-[calc(80px+env(safe-area-inset-top))] relative">
         <BackgroundFX />
         <div className="max-w-screen-lg mx-auto px-4 sm:px-0">
           <h1
