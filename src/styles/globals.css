@@ -266,9 +266,9 @@ button { font-family: inherit; cursor: pointer; background: none; border: none; 
   }
   .category-grid > * { flex: 0 0 80%; scroll-snap-align: center; }
 }
-@media (min-width: 1024px) {
-  html, body { overflow-x: hidden; }
-}
+
+html, body, #__next { height: 100%; }
+body { margin: 0; }
 
 /* Vault */
 .vault-container { position: relative; width: 100%; max-width: 600px; margin: auto; }

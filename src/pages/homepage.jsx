@@ -24,14 +24,14 @@ import {
   cryptoGiveawaysItems,
 } from '@data/competitions';
 
-/* ---------- helpers ---------- */
-const toNumber = (v, fallback = 0) => {
+/* ------------------------- helpers ------------------------- */
+const toNumber = (v: unknown, fallback = 0) => {
   if (v == null || v === '') return fallback;
   const n = typeof v === 'string' ? parseFloat(v) : Number(v);
   return Number.isFinite(n) ? n : fallback;
 };
 
-/* ---------- stable, hoisted fake stages (no randomness) ---------- */
+/* -------- stable, hoisted fake stages (no randomness) ------ */
 const FAKE_STAGES = [
   { entrants: 11, capacity: 25, advancing: 5, status: 'live', slug: 'stage-1', pricePi: 0.15, hasTicket: false },
   { entrants: 12, capacity: 25, advancing: 5, status: 'live', slug: 'stage-2', pricePi: 0, hasTicket: true },
@@ -42,20 +42,22 @@ const FAKE_STAGES = [
 
 function HomePage() {
   const { t } = useSafeTranslation();
+
   const [showWelcome, setShowWelcome] = useState(false);
-  const loginBtnRef = useRef(null);
+  const loginBtnRef = useRef<HTMLAnchorElement | null>(null);
 
-  const [liveCompetitions, setLiveCompetitions] = useState([]);
+  const [liveCompetitions, setLiveCompetitions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
-  /* ---------- fetch + merge ---------- */
+  /* ---------------- static data (memoized) ------------------ */
   const staticItems = useMemo(
     () => [...techItems, ...premiumItems, ...piItems, ...dailyItems, ...freeItems, ...cryptoGiveawaysItems],
     []
   );
   const staticSlugs = useMemo(() => new Set(staticItems.map((i) => i?.comp?.slug).filter(Boolean)), [staticItems]);
 
+  /* --------------------- welcome modal ---------------------- */
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('welcome') === '1') {
@@ -69,18 +71,22 @@ function HomePage() {
   useEffect(() => {
     if (!showWelcome) return;
     loginBtnRef.current?.focus();
+
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    const onKey = (e) => e.key === 'Escape' && setShowWelcome(false);
+
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setShowWelcome(false);
     window.addEventListener('keydown', onKey);
+
     return () => {
       document.body.style.overflow = prev;
       window.removeEventListener('keydown', onKey);
     };
   }, [showWelcome]);
 
-  const mergeCompetitionData = (liveData) => {
-    const liveMap = {};
+  /* -------------------- merge live + static ----------------- */
+  const mergeCompetitionData = (liveData: any[]) => {
+    const liveMap: Record<string, any> = {};
     for (const x of liveData) {
       const s = x?.comp?.slug;
       if (s) liveMap[s] = x;
@@ -91,6 +97,7 @@ function HomePage() {
       .map((it) => {
         const slug = it?.comp?.slug;
         const live = slug ? liveMap[slug] : null;
+
         return live
           ? {
               ...it,
@@ -113,8 +120,10 @@ function HomePage() {
         return status === 'active' && !hasEnded;
       });
 
+    // admin-only competitions (not in static)
     const adminOnly = (liveData || []).filter((x) => x?.comp?.slug && !staticSlugs.has(x.comp.slug));
 
+    // sort: live first, then admin-only
     const all = [...merged, ...adminOnly].sort((a, b) => {
       const nowMs = Date.now();
       const aS = a?.comp?.startsAt ? new Date(a.comp.startsAt).getTime() : 0;
@@ -124,17 +133,21 @@ function HomePage() {
       const aLive = aS <= nowMs && nowMs < aE;
       const bLive = bS <= nowMs && nowMs < bE;
       if (aLive !== bLive) return aLive ? -1 : 1;
+
       const aAdmin = !staticSlugs.has(a?.comp?.slug);
       const bAdmin = !staticSlugs.has(b?.comp?.slug);
       if (aAdmin !== bAdmin) return aAdmin ? -1 : 1;
+
       return 0;
     });
 
     return all;
   };
 
+  /* -------------------- fetch live data --------------------- */
   useEffect(() => {
     let mounted = true;
+
     (async () => {
       try {
         setLoading(true);
@@ -144,7 +157,7 @@ function HomePage() {
         const liveData = json?.data || [];
         const merged = mergeCompetitionData(liveData);
         if (mounted) setLiveCompetitions(merged);
-      } catch (e) {
+      } catch (e: any) {
         console.error('❌ Failed to fetch live competition data:', e);
         if (mounted) setError(String(e?.message || e));
         const fallback = staticItems.filter((i) => {
@@ -157,28 +170,29 @@ function HomePage() {
         if (mounted) setLoading(false);
       }
     })();
+
     return () => {
       mounted = false;
     };
   }, [staticItems, staticSlugs]);
 
-  const getCompetitionsByCategory = (category) =>
+  const getCompetitionsByCategory = (category: string) =>
     liveCompetitions.filter((item) => (item.theme || 'tech') === category);
 
-  /* ---------- page background wrapper ---------- */
-  const PageWrapper = ({ children }) => (
+  /* ------------------ page background wrapper ---------------- */
+  const PageWrapper: React.FC<React.PropsWithChildren> = ({ children }) => (
     <div className="min-h-screen w-full bg-gradient-to-b from-[#0b1227] via-[#0f1b33] to-[#0a1024] text-white">
       {children}
     </div>
   );
 
-  /* ---------- loading ---------- */
+  /* ------------------------- loading ------------------------- */
   if (loading) {
     return (
       <PageWrapper>
-        <div className="w-full py-12 flex flex-col items-center justify-start">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-24 w-24 border-t-2 border-b-2 border-cyan-300 mx-auto mb-4"></div>
+        <div className="w-full py-16 flex flex-col items-center">
+          <div className="text-center space-y-4">
+            <div className="animate-spin rounded-full h-24 w-24 border-t-2 border-b-2 border-cyan-300 mx-auto"></div>
             <p className="text-white text-lg">
               {t('loading_live_competitions', 'Loading live competition data...')}
             </p>
@@ -189,9 +203,10 @@ function HomePage() {
   }
   if (error) console.warn('⚠️ Using static data due to API error:', error);
 
+  /* ============================= RENDER ============================= */
   return (
     <PageWrapper>
-      {/* Welcome Popup */}
+      {/* ----------------------- Welcome Popup ----------------------- */}
       {showWelcome && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
@@ -204,20 +219,20 @@ function HomePage() {
           }}
         >
           <div
-            className="relative bg-[#0f1b33] border border-cyan-400 rounded-2xl p-8 max-w-md w-full shadow-[0_0_30px_#00f0ff88] text-center animate-omc-fade-in"
+            className="relative bg-[#0f1b33] border border-cyan-400 rounded-2xl p-8 max-w-md w-full shadow-[0_0_30px_#00f0ff88] text-center animate-omc-fade-in space-y-3"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 id="welcome-title" className="text-2xl font-bold text-cyan-300 font-orbitron mb-2">
+            <h2 id="welcome-title" className="text-2xl font-bold text-cyan-300 font-orbitron">
               ☘️ {t('welcome_title', 'Céad Míle Fáilte')} ☘️
             </h2>
-            <p id="welcome-desc-1" className="text-white/90 mb-0 text-sm">
+            <p id="welcome-desc-1" className="text-white/90 text-sm">
               {t('welcome_to_omc', 'Welcome To OMC')}
             </p>
-            <p id="welcome-desc-2" className="text-white/90 mb-6 text-sm">
+            <p id="welcome-desc-2" className="text-white/90 text-sm">
               {t('let_competitions_begin', 'Let The Competitions Begin')}
             </p>
 
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 pt-2">
               <Link
                 href="/login"
                 ref={loginBtnRef}
@@ -254,182 +269,189 @@ function HomePage() {
         </div>
       )}
 
-      {/* Marquee */}
-      <div className="overflow-hidden bg-transparent mt-4">
-        <div className="marquee-content text-cyan-300 text-md sm:text-base font-medium font-orbitron whitespace-nowrap animate-[marquee_35s_linear_infinite]">
-          {t(
-            'marquee_text',
-            'Oh My Competitions is all about building with Pi Network for the Pi community. Our OMC launch competitions are zero profit designed to create trust, celebrate early winners and give back to Pioneers. All prizes go directly to you. Add us on all Socials and our Pi Profile darreire2020. More competitions are coming soon across a wide range of exciting categories. Join, win and help shape the future of Pi together.'
-          )}
+      {/* ========================= CONTENT ========================= */}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-16">
+        {/* Marquee */}
+        <div className="overflow-hidden">
+          <div className="marquee-content text-cyan-300 text-base font-medium font-orbitron whitespace-nowrap animate-[marquee_35s_linear_infinite]">
+            {t(
+              'marquee_text',
+              'Oh My Competitions is all about building with Pi Network for the Pi community. Our OMC launch competitions are zero profit designed to create trust, celebrate early winners and give back to Pioneers. All prizes go directly to you. Add us on all Socials and our Pi Profile darreire2020. More competitions are coming soon across a wide range of exciting categories. Join, win and help shape the future of Pi together.'
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* Mini carousel (keep) */}
-      <MiniPrizeCarousel />
+        {/* Mini carousel */}
+        <MiniPrizeCarousel />
 
-      {/* Pi Cash Code CTA */}
-      <div className="mt-6 mb-8 flex justify-center">
-        <Link
-          href="/pi-cash-code"
-          className="group relative bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] border border-cyan-500 rounded-xl px-8 py-6 shadow-md hover:shadow-cyan-500/30 transition-all duration-300 text-center w-full max-w-md"
-        >
-          <h1 className="text-2xl sm:text-3xl font-bold relative inline-block text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-500 to-cyan-300 animate-text-shimmer font-orbitron">
-            {t('pi_cash_code', 'Pi Cash Code')}
-          </h1>
-          <p className="mt-2 text-cyan-400 text-sm italic group-hover:text-cyan-200 transition-all duration-300">
-            {t('if_you_can_dream', 'If you can dream you can win')}
-          </p>
-          <p className="mt-2 text-cyan-400 text-sm font-semibold underline group-hover:text-cyan-200 transition-all duration-300">
-            {t('enter_here', 'Enter Here')}
-          </p>
-        </Link>
-      </div>
+        {/* Pi Cash Code CTA */}
+        <div className="flex justify-center">
+          <Link
+            href="/pi-cash-code"
+            className="group relative bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] border border-cyan-500 rounded-xl px-8 py-6 shadow-md hover:shadow-cyan-500/30 transition-all duration-300 text-center w-full max-w-lg"
+          >
+            <h1 className="text-3xl font-bold relative inline-block text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-500 to-cyan-300 animate-text-shimmer font-orbitron">
+              {t('pi_cash_code', 'Pi Cash Code')}
+            </h1>
+            <p className="mt-2 text-cyan-400 text-sm italic group-hover:text-cyan-200 transition-all duration-300">
+              {t('if_you_can_dream', 'If you can dream you can win')}
+            </p>
+            <p className="mt-2 text-cyan-400 text-sm font-semibold underline group-hover:text-cyan-200 transition-all duration-300">
+              {t('enter_here', 'Enter Here')}
+            </p>
+          </Link>
+        </div>
 
-      {/* ===== Main sections ===== */}
-      <main className="space-y-10 px-4">
-        <Section
-          title={t('omc_launch_week', 'OMC Launch Week')}
-          items={getCompetitionsByCategory('launch')}
-          viewMoreHref="/competitions/launch-week"
-        />
+        {/* ====================== Sections ====================== */}
+        <main className="space-y-16">
+          <Section
+            title={t('omc_launch_week', 'OMC Launch Week')}
+            items={getCompetitionsByCategory('launch')}
+            viewMoreHref="/competitions/launch-week"
+          />
 
-        <Section
-          title={t('tech_gadgets', 'Tech/Gadgets')}
-          items={getCompetitionsByCategory('tech')}
-          viewMoreHref="/competitions/tech-gadgets"
-        />
+          <Section
+            title={t('tech_gadgets', 'Tech/Gadgets')}
+            items={getCompetitionsByCategory('tech')}
+            viewMoreHref="/competitions/tech-gadgets"
+          />
 
-        <Section
-          title={t('daily_weekly', 'Daily/Weekly')}
-          items={getCompetitionsByCategory('daily')}
-          viewMoreHref="/competitions/daily"
-          extraClass="mt-12"
-        />
+          <Section
+            title={t('daily_weekly', 'Daily/Weekly')}
+            items={getCompetitionsByCategory('daily')}
+            viewMoreHref="/competitions/daily"
+          />
 
-        <Section
-          title={t('pi_giveaways', 'Pi Giveaways')}
-          items={getCompetitionsByCategory('pi')}
-          viewMoreHref="/competitions/pi"
-          extraClass="mt-12"
-        />
+          <Section
+            title={t('pi_giveaways', 'Pi Giveaways')}
+            items={getCompetitionsByCategory('pi')}
+            viewMoreHref="/competitions/pi"
+          />
 
-        {/* OMC Stages */}
-        <section className="mb-16 mt-16">
-          <div className="text-center mb-6">
+          {/* ----------------------- OMC Stages ----------------------- */}
+          <section className="space-y-6">
+            <div className="text-center space-y-3">
+              <h2 className="w-full text-base font-bold text-center text-cyan-300 px-4 py-3 rounded-xl font-orbitron shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
+                {t('omc_pi_stages_competitions', 'OMC Pi Stages Competitions')}
+              </h2>
+
+              <p className="text-sm text-cyan-300 italic flex items-center justify-center gap-6 flex-wrap">
+                <span>{t('qualify', 'Qualify')} <span className="text-white font-semibold">({t('stage_1', 'Stage 1')})</span></span>
+                <span>{t('advance', 'Advance')} <span className="text-white font-semibold">({t('stages_2_4', 'Stages 2–4')})</span></span>
+                <span>{t('win', 'Win')} <span className="text-white font-semibold">({t('stage_5', 'Stage 5')})</span></span>
+                <span className="text-cyan-300 font-semibold">
+                  {t('stage_5_prize_pool', 'Stage 5 Prize Pool')}: <span className="text-white">2,250π</span>
+                </span>
+              </p>
+            </div>
+
+            <div className="max-w-6xl mx-auto">
+              <FunnelStagesRow
+                s1={FAKE_STAGES[0]}
+                s2={FAKE_STAGES[1]}
+                s3={FAKE_STAGES[2]}
+                s4={FAKE_STAGES[3]}
+                s5={FAKE_STAGES[4]}
+                prizePoolPi={2250}
+                onEnterStage1={() => alert(t('entered_stage_1', '✅ You have entered Stage 1!'))}
+                className="shadow-[0_0_25px_rgba(0,255,255,0.15)]"
+              />
+            </div>
+          </section>
+
+          {/* -------------------- Free Competitions ------------------- */}
+          <div className="text-center">
             <h2 className="w-full text-base font-bold text-center text-cyan-300 px-4 py-3 rounded-xl font-orbitron shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
-              {t('omc_pi_stages_competitions', 'OMC Pi Stages Competitions')}
+              {t('omc_free_competitions', 'OMC Free Competitions')}
             </h2>
-
-            <p className="text-sm text-cyan-300 mt-3 italic flex items-center justify-center gap-6 flex-wrap">
-              <span className="inline-block">
-                {t('qualify', 'Qualify')} <span className="text-white font-semibold">({t('stage_1', 'Stage 1')})</span>
-              </span>
-              <span className="inline-block">
-                {t('advance', 'Advance')} <span className="text-white font-semibold">({t('stages_2_4', 'Stages 2–4')})</span>
-              </span>
-              <span className="inline-block">
-                {t('win', 'Win')} <span className="text-white font-semibold">({t('stage_5', 'Stage 5')})</span>
-              </span>
-              <span className="inline-block text-cyan-300 font-semibold">
-                {t('stage_5_prize_pool', 'Stage 5 Prize Pool')}: <span className="text-white">2,250π</span>
-              </span>
-            </p>
           </div>
 
-          <div className="max-w-6xl mx-auto">
-            <FunnelStagesRow
-              s1={FAKE_STAGES[0]}
-              s2={FAKE_STAGES[1]}
-              s3={FAKE_STAGES[2]}
-              s4={FAKE_STAGES[3]}
-              s5={FAKE_STAGES[4]}
-              prizePoolPi={2250}
-              onEnterStage1={() => {
-                alert(t('entered_stage_1', '✅ You have entered Stage 1!'));
-              }}
-              className="shadow-[0_0_25px_rgba(0,255,255,0.15)]"
-            />
+          <section className="w-full bg-white/5 backdrop-blur-lg px-4 sm:px-6 py-8 border border-cyan-300 rounded-3xl shadow-[0_0_60px_#00ffd577] neon-outline">
+            <div className="max-w-7xl mx-auto">
+              <FreeCompetitionCard
+                comp={{
+                  slug: 'pi-to-the-moon',
+                  startsAt: '',
+                  endsAt: '',
+                  ticketsSold: 0,
+                  totalTickets: 5000,
+                  comingSoon: true,
+                  status: 'active',
+                }}
+                title="Pi To The Moon"
+                prize="7,500 π"
+                hideEntryButton
+                buttonLabel="View Detail"
+              />
+            </div>
+          </section>
+
+          {/* -------------------- Coming Soon Columns ----------------- */}
+          <section className="space-y-8">
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+              <ComingSoonColumn
+                title={t('travel_lifestyle', 'Travel & Lifestyle')}
+                items={getCompetitionsByCategory('premium').slice(0, 3)}
+                t={t}
+              />
+              <ComingSoonColumn
+                title={t('special_events', 'Special Events')}
+                items={getCompetitionsByCategory('event').slice(0, 3)}
+                t={t}
+              />
+              <ComingSoonColumn
+                title={t('regional_giveaways', 'Regional Giveaways')}
+                items={getCompetitionsByCategory('regional').slice(0, 3)}
+                t={t}
+              />
+            </div>
+          </section>
+
+          {/* ---------------------- Winners (placeholder) ------------- */}
+          <TopWinnersCarousel t={t} />
+
+          {/* ------------------------ Vision block -------------------- */}
+          <div>
+            <div className="bg-[#0a1024]/90 border border-cyan-700 rounded-xl px-6 py-8 shadow-[0_0_20px_#00fff055] text-center text-sm space-y-3">
+              <h2 className="text-lg font-bold text-cyan-300">
+                {t('our_vision_2026', 'Our Vision for 2026: Impact Through Innovation')}
+              </h2>
+              <p className="text-white/80 leading-relaxed">
+                {t(
+                  'vision_description',
+                  'By the end of 2026, OhMyCompetitions aims to reach these community-first milestones, powered by the Pi Network and supported by Pioneers like you.'
+                )}
+              </p>
+              <ul className="text-cyan-200 space-y-1 font-medium">
+                <li>🌍 {t('over_winners', 'Over')} <strong>10,000+ {t('winners', 'winners')}</strong> {t('across_globe', 'across the globe')}</li>
+                <li>💰 <strong>500,000 π</strong> {t('in_distributed_pi_prizes', 'in distributed Pi prizes')}</li>
+                <li>🎗 <strong>20,000 π</strong> {t('donated_to_pi_causes', 'donated to Pi causes & communities')}</li>
+                <li>⭐ {t('maintained_5_star', 'Maintained')} <strong>5★</strong> {t('user_rated_experience', 'user-rated experience')}</li>
+              </ul>
+            </div>
           </div>
-        </section>
-
-        {/* Free Competitions Title */}
-        <div className="text-center my-8">
-          <h2 className="w-full text-base font-bold text-center text-cyan-300 px-4 py-3 rounded-xl font-orbitron shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
-            {t('omc_free_competitions', 'OMC Free Competitions')}
-          </h2>
-        </div>
-
-        {/* Free competition highlight */}
-        <section className="w-full bg-white/5 backdrop-blur-lg px-4 sm:px-6 py-8 my-4 border border-cyan-300 rounded-3xl shadow-[0_0_60px_#00ffd577] neon-outline">
-          <div className="max-w-7xl mx-auto">
-            <FreeCompetitionCard
-              comp={{
-                slug: 'pi-to-the-moon',
-                startsAt: '',
-                endsAt: '',
-                ticketsSold: 0,
-                totalTickets: 5000,
-                comingSoon: true,
-                status: 'active',
-              }}
-              title="Pi To The Moon"
-              prize="7,500 π"
-              hideEntryButton
-              buttonLabel="View Detail"
-            />
-          </div>
-        </section>
-
-        {/* Coming Soon Categories */}
-        <section className="mt-8">
-          <div className="mt-4 grid grid-cols-1 gap-8 md:grid-cols-3">
-            <ComingSoonColumn
-              title={t('travel_lifestyle', 'Travel & Lifestyle')}
-              items={getCompetitionsByCategory('premium').slice(0, 3)}
-              t={t}
-            />
-            <ComingSoonColumn
-              title={t('special_events', 'Special Events')}
-              items={getCompetitionsByCategory('event').slice(0, 3)}
-              t={t}
-            />
-            <ComingSoonColumn
-              title={t('regional_giveaways', 'Regional Giveaways')}
-              items={getCompetitionsByCategory('regional').slice(0, 3)}
-              t={t}
-            />
-          </div>
-        </section>
-
-        <TopWinnersCarousel t={t} />
-
-        {/* Vision block */}
-        <div className="mt-6 px-4">
-          <div className="bg-[#0a1024]/90 border border-cyan-700 rounded-xl px-4 py-6 shadow-[0_0_20px_#00fff055] text-center text-sm">
-            <h2 className="text-lg font-bold text-cyan-300 mb-2">
-              {t('our_vision_2026', 'Our Vision for 2026: Impact Through Innovation')}
-            </h2>
-            <p className="text-white/80 mb-3 leading-relaxed">
-              {t(
-                'vision_description',
-                'By the end of 2026, OhMyCompetitions aims to reach these community-first milestones, powered by the Pi Network and supported by Pioneers like you.'
-              )}
-            </p>
-            <ul className="text-cyan-200 space-y-1 font-medium">
-              <li>🌍 {t('over_winners', 'Over')} <strong>10,000+ {t('winners', 'winners')}</strong> {t('across_globe', 'across the globe')}</li>
-              <li>💰 <strong>500,000 π</strong> {t('in_distributed_pi_prizes', 'in distributed Pi prizes')}</li>
-              <li>🎗 <strong>20,000 π</strong> {t('donated_to_pi_causes', 'donated to Pi causes & communities')}</li>
-              <li>⭐ {t('maintained_5_star', 'Maintained')} <strong>5★</strong> {t('user_rated_experience', 'user-rated experience')}</li>
-            </ul>
-          </div>
-        </div>
-      </main>
+        </main>
+      </div>
     </PageWrapper>
   );
 }
 
-/* ---------- helpers (Section + renderCard + ComingSoon + Winners) ---------- */
-function Section({ title, subtitle, items = [], viewMoreHref, viewMoreText = 'View More', extraClass = '' }) {
+/* ----------------- helpers (Section / Cards) ----------------- */
+function Section({
+  title,
+  subtitle,
+  items = [],
+  viewMoreHref,
+  viewMoreText = 'View More',
+  extraClass = '',
+}: {
+  title: React.ReactNode;
+  subtitle?: React.ReactNode;
+  items?: any[];
+  viewMoreHref?: string;
+  viewMoreText?: string;
+  extraClass?: string;
+}) {
   const { t } = useSafeTranslation();
   const lower = typeof title === 'string' ? title.toLowerCase() : '';
 
@@ -438,12 +460,12 @@ function Section({ title, subtitle, items = [], viewMoreHref, viewMoreText = 'Vi
   const isCrypto = lower.includes('crypto');
 
   return (
-    <section className={`mb-6 ${extraClass}`}>
-      <div className="text-center mb-4">
+    <section className={`space-y-6 ${extraClass}`}>
+      <div className="text-center space-y-1">
         <h2 className="w-full text-sm font-bold text-center text-cyan-300 px-3 py-1.5 rounded-lg font-orbitron shadow-[0_0_15px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
           {title}
         </h2>
-        {subtitle && <p className="text-xs text-cyan-200 mt-0.5 italic">{subtitle}</p>}
+        {subtitle && <p className="text-xs text-cyan-200 italic">{subtitle}</p>}
       </div>
 
       {/* mobile: real carousel */}
@@ -452,15 +474,15 @@ function Section({ title, subtitle, items = [], viewMoreHref, viewMoreText = 'Vi
       </div>
 
       {/* desktop: grid */}
-      <div className="hidden lg:grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div className="hidden lg:grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
         {items.map((item, i) => renderCard(item, i, { isFree, isPi, isCrypto }))}
       </div>
 
       {viewMoreHref && (
-        <div className="text-center mt-2">
+        <div className="text-center">
           <Link
             href={viewMoreHref}
-            className="inline-block text-sm font-bold px-2.5 py-1 rounded-md text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow hover:opacity-90 transition"
+            className="inline-block text-sm font-bold px-3 py-1.5 rounded-md text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow hover:opacity-90 transition"
           >
             {t('view_more', viewMoreText)}
           </Link>
@@ -470,7 +492,7 @@ function Section({ title, subtitle, items = [], viewMoreHref, viewMoreText = 'Vi
   );
 }
 
-function renderCard(item, i, { isFree, isPi, isCrypto }) {
+function renderCard(item: any, i: number, { isFree, isPi, isCrypto }: any) {
   const key = item?.comp?.slug || `item-${i}`;
   if (!item?.comp) return null;
 
@@ -509,7 +531,7 @@ function renderCard(item, i, { isFree, isPi, isCrypto }) {
       comp={{ ...item.comp, comingSoon: item.comp.comingSoon ?? false }}
       title={item.title}
       prize={item.prize}
-      fee={`${feeNum.toFixed(2)} π`}
+      fee={feeLabel}
       imageUrl={item.imageUrl}
       endsAt={item.comp.endsAt}
       disableGift
@@ -517,15 +539,15 @@ function renderCard(item, i, { isFree, isPi, isCrypto }) {
   );
 }
 
-function ComingSoonColumn({ title, items = [], t }) {
+function ComingSoonColumn({ title, items = [], t }: any) {
   return (
-    <div>
+    <div className="space-y-3">
       <h4 className="w-full text-sm font-bold text-center text-cyan-300 px-3 py-1.5 rounded-lg font-orbitron shadow-[0_0_15px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
         {title} <span className="text-white/50 text-xs">({t('coming_soon', 'Coming Soon')})</span>
       </h4>
-      <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {(items || []).map((item, idx) => (
-          <div key={item?.comp?.slug || idx} className="rounded-lg border border-white/10 bg-white/5 p-2">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {(items || []).map((item: any, idx: number) => (
+          <div key={item?.comp?.slug || idx} className="rounded-lg border border-white/10 bg-white/5 p-2 space-y-2">
             <div className="relative h-24 w-full overflow-hidden rounded-md">
               <Image
                 src={item.imageUrl || item.thumbnail || '/images/placeholder.jpg'}
@@ -534,7 +556,7 @@ function ComingSoonColumn({ title, items = [], t }) {
                 className="object-cover"
               />
             </div>
-            <div className="mt-2">
+            <div className="space-y-0.5">
               <div className="text-white text-sm font-medium truncate">
                 {item.title || item?.comp?.title || t('coming_soon', 'Coming soon')}
               </div>
@@ -549,8 +571,8 @@ function ComingSoonColumn({ title, items = [], t }) {
   );
 }
 
-function TopWinnersCarousel({ t }) {
-  const winners = []; // keep empty until you have real winners
+function TopWinnersCarousel({ t }: any) {
+  const winners: any[] = []; // keep empty until you have real winners
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -561,8 +583,8 @@ function TopWinnersCarousel({ t }) {
 
   if (winners.length === 0) {
     return (
-      <div className="max-w-md mx-auto mt-12 bg-[#0a1024]/90 border border-cyan-500 backdrop-blur-lg rounded-xl shadow-[0_0_40px_#00fff055] p-6 text-white text-center font-orbitron">
-        <h2 className="text-2xl font-bold text-cyan-300 mb-4">{t('top_winners', 'Top Winners')}</h2>
+      <div className="max-w-md mx-auto bg-[#0a1024]/90 border border-cyan-500 backdrop-blur-lg rounded-xl shadow-[0_0_40px_#00fff055] p-6 text-white text-center font-orbitron space-y-3">
+        <h2 className="text-2xl font-bold text-cyan-300">{t('top_winners', 'Top Winners')}</h2>
         <p className="text-white/80 italic">
           {t('be_first_to_make_history', 'Be the first to make history no winners yet, but your name could be the one they remember')}
         </p>
@@ -572,9 +594,9 @@ function TopWinnersCarousel({ t }) {
 
   const current = winners[index];
   return (
-    <div className="max-w-md mx-auto mt-12 bg-[#0a1024]/90 border border-cyan-500 backdrop-blur-lg rounded-xl shadow-[0_0_40px_#00fff055] p-6 text-white text-center font-orbitron">
-      <h2 className="text-2xl font-bold text-cyan-300 mb-4">{t('top_winners', 'Top Winners')}</h2>
-      <div className="flex justify-center items-center mb-4">
+    <div className="max-w-md mx-auto bg-[#0a1024]/90 border border-cyan-500 backdrop-blur-lg rounded-xl shadow-[0_0_40px_#00fff055] p-6 text-white text-center font-orbitron space-y-4">
+      <h2 className="text-2xl font-bold text-cyan-300">{t('top_winners', 'Top Winners')}</h2>
+      <div className="flex justify-center">
         <Image
           src={current.image || '/images/default-avatar.png'}
           alt={current.name || t('winner', 'Winner')}
@@ -590,5 +612,15 @@ function TopWinnersCarousel({ t }) {
   );
 }
 
-/* Disable SSR for this page to avoid hydration issues on pages router */
-export default dynamic(() => Promise.resolve(HomePage), { ssr: false });
+/* -------- Disable SSR for this page to avoid hydration issues -------- */
+const HomePageNoSSR = dynamic(() => Promise.resolve(HomePage), { ssr: false });
+
+/* ---- Make this page use full-width layout (no side gutters in Layout) ---- */
+(HomePageNoSSR as any).getLayout = (page: React.ReactNode) => (
+  // If you implemented the Layout prop: <Layout fullWidth>{page}</Layout>
+  // Otherwise remove this and keep your default.
+  // @ts-ignore
+  <Layout fullWidth>{page}</Layout>
+);
+
+export default HomePageNoSSR;

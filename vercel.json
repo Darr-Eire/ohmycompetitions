@@ -1,6 +1,0 @@
-{
-  "framework": "nextjs",
-  "buildCommand": "cd OMC && npm ci && npm run build",
-  "installCommand": "cd OMC && npm ci",
-  "outputDirectory": "OMC/.next"
-}
