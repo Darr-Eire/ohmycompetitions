@@ -1,10 +1,9 @@
-// next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // ❌ remove any distDir here
-  // distDir: 'build',
-  experimental: { appDir: false }, // fine to leave
+  // Do NOT set distDir
+  // Do NOT set output: 'export'
+  // Remove experimental.appDir (App Router is on by default)
 };
 
 module.exports = nextConfig;
