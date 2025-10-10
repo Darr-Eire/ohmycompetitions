@@ -14,6 +14,7 @@ import CompetitionCard from '@components/CompetitionCard';
 import MiniPrizeCarousel from '@components/MiniPrizeCarousel';
 import LaunchCompetitionCard from '@components/LaunchCompetitionCard';
 import FunnelStagesRow from '../components/FunnelStagesRow';
+import Layout from '../components/Layout';
 
 import {
   dailyItems,
@@ -25,7 +26,7 @@ import {
 } from '@data/competitions';
 
 /* ------------------------- helpers ------------------------- */
-const toNumber = (v: unknown, fallback = 0) => {
+const toNumber = (v, fallback = 0) => {
   if (v == null || v === '') return fallback;
   const n = typeof v === 'string' ? parseFloat(v) : Number(v);
   return Number.isFinite(n) ? n : fallback;
@@ -44,11 +45,11 @@ function HomePage() {
   const { t } = useSafeTranslation();
 
   const [showWelcome, setShowWelcome] = useState(false);
-  const loginBtnRef = useRef<HTMLAnchorElement | null>(null);
+  const loginBtnRef = useRef(null);
 
-  const [liveCompetitions, setLiveCompetitions] = useState<any[]>([]);
+  const [liveCompetitions, setLiveCompetitions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
 
   /* ---------------- static data (memoized) ------------------ */
   const staticItems = useMemo(
@@ -70,12 +71,13 @@ function HomePage() {
 
   useEffect(() => {
     if (!showWelcome) return;
-    loginBtnRef.current?.focus();
+
+    if (loginBtnRef.current) loginBtnRef.current.focus();
 
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setShowWelcome(false);
+    const onKey = (e) => e.key === 'Escape' && setShowWelcome(false);
     window.addEventListener('keydown', onKey);
 
     return () => {
@@ -85,8 +87,8 @@ function HomePage() {
   }, [showWelcome]);
 
   /* -------------------- merge live + static ----------------- */
-  const mergeCompetitionData = (liveData: any[]) => {
-    const liveMap: Record<string, any> = {};
+  const mergeCompetitionData = (liveData) => {
+    const liveMap = {};
     for (const x of liveData) {
       const s = x?.comp?.slug;
       if (s) liveMap[s] = x;
@@ -130,6 +132,7 @@ function HomePage() {
       const aE = a?.comp?.endsAt ? new Date(a.comp.endsAt).getTime() : 0;
       const bS = b?.comp?.startsAt ? new Date(b.comp.startsAt).getTime() : 0;
       const bE = b?.comp?.endsAt ? new Date(b.comp.endsAt).getTime() : 0;
+
       const aLive = aS <= nowMs && nowMs < aE;
       const bLive = bS <= nowMs && nowMs < bE;
       if (aLive !== bLive) return aLive ? -1 : 1;
@@ -157,7 +160,7 @@ function HomePage() {
         const liveData = json?.data || [];
         const merged = mergeCompetitionData(liveData);
         if (mounted) setLiveCompetitions(merged);
-      } catch (e: any) {
+      } catch (e) {
         console.error('❌ Failed to fetch live competition data:', e);
         if (mounted) setError(String(e?.message || e));
         const fallback = staticItems.filter((i) => {
@@ -176,11 +179,11 @@ function HomePage() {
     };
   }, [staticItems, staticSlugs]);
 
-  const getCompetitionsByCategory = (category: string) =>
+  const getCompetitionsByCategory = (category) =>
     liveCompetitions.filter((item) => (item.theme || 'tech') === category);
 
   /* ------------------ page background wrapper ---------------- */
-  const PageWrapper: React.FC<React.PropsWithChildren> = ({ children }) => (
+  const PageWrapper = ({ children }) => (
     <div className="min-h-screen w-full bg-gradient-to-b from-[#0b1227] via-[#0f1b33] to-[#0a1024] text-white">
       {children}
     </div>
@@ -201,6 +204,7 @@ function HomePage() {
       </PageWrapper>
     );
   }
+
   if (error) console.warn('⚠️ Using static data due to API error:', error);
 
   /* ============================= RENDER ============================= */
@@ -225,9 +229,11 @@ function HomePage() {
             <h2 id="welcome-title" className="text-2xl font-bold text-cyan-300 font-orbitron">
               ☘️ {t('welcome_title', 'Céad Míle Fáilte')} ☘️
             </h2>
+
             <p id="welcome-desc-1" className="text-white/90 text-sm">
               {t('welcome_to_omc', 'Welcome To OMC')}
             </p>
+
             <p id="welcome-desc-2" className="text-white/90 text-sm">
               {t('let_competitions_begin', 'Let The Competitions Begin')}
             </p>
@@ -239,7 +245,9 @@ function HomePage() {
                 className="flex justify-center items-center gap-2 bg-transparent border border-cyan-400 text-cyan-300 font-semibold py-2 px-6 rounded-lg hover:bg-cyan-400/10 transition focus:outline-none focus:ring-2 focus:ring-cyan-400"
               >
                 <span>{t('login', 'Login')}</span>
-                <span className="text-xs font-normal text-cyan-200">({t('previous_users', 'Previous Users')})</span>
+                <span className="text-xs font-normal text-cyan-200">
+                  ({t('previous_users', 'Previous Users')})
+                </span>
               </Link>
 
               <Link
@@ -247,7 +255,9 @@ function HomePage() {
                 className="flex justify-center items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-300 text-black font-semibold py-2 px-6 rounded-lg shadow-md hover:opacity-90 transition focus:outline-none focus:ring-2 focus:ring-cyan-400"
               >
                 <span>{t('sign_up', 'Sign Up')}</span>
-                <span className="text-xs font-normal text-black/70">({t('new_users', 'New Users')})</span>
+                <span className="text-xs font-normal text-black/70">
+                  ({t('new_users', 'New Users')})
+                </span>
               </Link>
 
               <button
@@ -293,9 +303,11 @@ function HomePage() {
             <h1 className="text-3xl font-bold relative inline-block text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-500 to-cyan-300 animate-text-shimmer font-orbitron">
               {t('pi_cash_code', 'Pi Cash Code')}
             </h1>
+
             <p className="mt-2 text-cyan-400 text-sm italic group-hover:text-cyan-200 transition-all duration-300">
               {t('if_you_can_dream', 'If you can dream you can win')}
             </p>
+
             <p className="mt-2 text-cyan-400 text-sm font-semibold underline group-hover:text-cyan-200 transition-all duration-300">
               {t('enter_here', 'Enter Here')}
             </p>
@@ -336,9 +348,15 @@ function HomePage() {
               </h2>
 
               <p className="text-sm text-cyan-300 italic flex items-center justify-center gap-6 flex-wrap">
-                <span>{t('qualify', 'Qualify')} <span className="text-white font-semibold">({t('stage_1', 'Stage 1')})</span></span>
-                <span>{t('advance', 'Advance')} <span className="text-white font-semibold">({t('stages_2_4', 'Stages 2–4')})</span></span>
-                <span>{t('win', 'Win')} <span className="text-white font-semibold">({t('stage_5', 'Stage 5')})</span></span>
+                <span>
+                  {t('qualify', 'Qualify')} <span className="text-white font-semibold">({t('stage_1', 'Stage 1')})</span>
+                </span>
+                <span>
+                  {t('advance', 'Advance')} <span className="text-white font-semibold">({t('stages_2_4', 'Stages 2–4')})</span>
+                </span>
+                <span>
+                  {t('win', 'Win')} <span className="text-white font-semibold">({t('stage_5', 'Stage 5')})</span>
+                </span>
                 <span className="text-cyan-300 font-semibold">
                   {t('stage_5_prize_pool', 'Stage 5 Prize Pool')}: <span className="text-white">2,250π</span>
                 </span>
@@ -423,7 +441,9 @@ function HomePage() {
                 )}
               </p>
               <ul className="text-cyan-200 space-y-1 font-medium">
-                <li>🌍 {t('over_winners', 'Over')} <strong>10,000+ {t('winners', 'winners')}</strong> {t('across_globe', 'across the globe')}</li>
+                <li>
+                  🌍 {t('over_winners', 'Over')} <strong>10,000+ {t('winners', 'winners')}</strong> {t('across_globe', 'across the globe')}
+                </li>
                 <li>💰 <strong>500,000 π</strong> {t('in_distributed_pi_prizes', 'in distributed Pi prizes')}</li>
                 <li>🎗 <strong>20,000 π</strong> {t('donated_to_pi_causes', 'donated to Pi causes & communities')}</li>
                 <li>⭐ {t('maintained_5_star', 'Maintained')} <strong>5★</strong> {t('user_rated_experience', 'user-rated experience')}</li>
@@ -444,13 +464,6 @@ function Section({
   viewMoreHref,
   viewMoreText = 'View More',
   extraClass = '',
-}: {
-  title: React.ReactNode;
-  subtitle?: React.ReactNode;
-  items?: any[];
-  viewMoreHref?: string;
-  viewMoreText?: string;
-  extraClass?: string;
 }) {
   const { t } = useSafeTranslation();
   const lower = typeof title === 'string' ? title.toLowerCase() : '';
@@ -492,7 +505,7 @@ function Section({
   );
 }
 
-function renderCard(item: any, i: number, { isFree, isPi, isCrypto }: any) {
+function renderCard(item, i, { isFree, isPi, isCrypto }) {
   const key = item?.comp?.slug || `item-${i}`;
   if (!item?.comp) return null;
 
@@ -539,14 +552,15 @@ function renderCard(item: any, i: number, { isFree, isPi, isCrypto }: any) {
   );
 }
 
-function ComingSoonColumn({ title, items = [], t }: any) {
+function ComingSoonColumn({ title, items = [], t }) {
   return (
     <div className="space-y-3">
       <h4 className="w-full text-sm font-bold text-center text-cyan-300 px-3 py-1.5 rounded-lg font-orbitron shadow-[0_0_15px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
         {title} <span className="text-white/50 text-xs">({t('coming_soon', 'Coming Soon')})</span>
       </h4>
+
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {(items || []).map((item: any, idx: number) => (
+        {(items || []).map((item, idx) => (
           <div key={item?.comp?.slug || idx} className="rounded-lg border border-white/10 bg-white/5 p-2 space-y-2">
             <div className="relative h-24 w-full overflow-hidden rounded-md">
               <Image
@@ -556,6 +570,7 @@ function ComingSoonColumn({ title, items = [], t }: any) {
                 className="object-cover"
               />
             </div>
+
             <div className="space-y-0.5">
               <div className="text-white text-sm font-medium truncate">
                 {item.title || item?.comp?.title || t('coming_soon', 'Coming soon')}
@@ -571,8 +586,8 @@ function ComingSoonColumn({ title, items = [], t }: any) {
   );
 }
 
-function TopWinnersCarousel({ t }: any) {
-  const winners: any[] = []; // keep empty until you have real winners
+function TopWinnersCarousel({ t }) {
+  const winners = []; // populate when you have real winners
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -593,9 +608,11 @@ function TopWinnersCarousel({ t }: any) {
   }
 
   const current = winners[index];
+
   return (
     <div className="max-w-md mx-auto bg-[#0a1024]/90 border border-cyan-500 backdrop-blur-lg rounded-xl shadow-[0_0_40px_#00fff055] p-6 text-white text-center font-orbitron space-y-4">
       <h2 className="text-2xl font-bold text-cyan-300">{t('top_winners', 'Top Winners')}</h2>
+
       <div className="flex justify-center">
         <Image
           src={current.image || '/images/default-avatar.png'}
@@ -605,6 +622,7 @@ function TopWinnersCarousel({ t }: any) {
           className="rounded-full border-4 border-cyan-400 shadow-lg"
         />
       </div>
+
       <h3 className="text-xl font-semibold">{current.name || t('anonymous', 'Anonymous')}</h3>
       <p className="text-cyan-200">{current.prize || t('surprise_prize', 'Surprise Prize')}</p>
       <p className="text-sm text-white/70">{current.date || t('tba', 'TBA')}</p>
@@ -616,10 +634,7 @@ function TopWinnersCarousel({ t }: any) {
 const HomePageNoSSR = dynamic(() => Promise.resolve(HomePage), { ssr: false });
 
 /* ---- Make this page use full-width layout (no side gutters in Layout) ---- */
-(HomePageNoSSR as any).getLayout = (page: React.ReactNode) => (
-  // If you implemented the Layout prop: <Layout fullWidth>{page}</Layout>
-  // Otherwise remove this and keep your default.
-  // @ts-ignore
+HomePageNoSSR.getLayout = (page) => (
   <Layout fullWidth>{page}</Layout>
 );
 
