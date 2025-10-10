@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "checkJs": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "types": ["node", "react"],
+    "baseUrl": "src",
+    "paths": {
+      "@components/*": ["components/*"],
+      "@context/*": ["context/*"],
+      "@data/*": ["data/*"],
+      "@lib/*": ["lib/*"],
+      "@models/*": ["models/*"],
+      "@styles/*": ["styles/*"],
+      "@utils/*": ["utils/*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.js",
+    "**/*.jsx",
+    "scripts/**/*.js"
+, "scripts/seedAdmin..mjs", "scripts/seedPiCashCode.cjs"  ],
+  "exclude": ["node_modules"]
+}

@@ -1,0 +1,16 @@
+{
+  "redirects": [
+    {
+      "source": "/:path*",
+      "destination": "https://testnet.ohmycompetitions.com/:path*",
+      "has": [{ "type": "host", "value": "www.ohmycompetitions.com" }],
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "destination": "https://testnet.ohmycompetitions.com/:path*",
+      "has": [{ "type": "host", "value": "ohmycompetitions.com" }],
+      "permanent": true
+    }
+  ]
+}

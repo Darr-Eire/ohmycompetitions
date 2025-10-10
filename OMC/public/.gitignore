@@ -1,0 +1,12 @@
+cat >> .gitignore <<EOF
+# local env files
+.env.local
+.env.local.example
+# dependencies
+node_modules/
+# build output
+.next/
+EOF
+"validation-key.txt" 
+"validation-key.txt" 
+"src/validation-key.txt" 

@@ -1,0 +1,15 @@
+// src/lib/pi/client.js
+import axios from 'axios';
+import { piCfg } from './config';
+
+export function piAxios() {
+  const { baseUrl, apiKey } = piCfg();
+  return axios.create({
+    baseURL: baseUrl,
+    headers: {
+      'Authorization': `Key ${apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    timeout: 10000
+  });
+}

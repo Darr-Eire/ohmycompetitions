@@ -1,0 +1,31 @@
+# Node modules
+node_modules/
+
+# Build output
+.next/
+
+# Environment variables
+.env.local
+.env
+
+.env.testnet.local
+.env.production
+.env.testnet
+
+
+# Logs
+*.log
+
+# IDE files
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+scripts/seedAdmin.js
+scripts/seedPiCashCode.js
+
+OMC/
+.vercel
