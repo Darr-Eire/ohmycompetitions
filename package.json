@@ -1,0 +1,10 @@
+{
+  "name": "ohmycompetitions-root",
+  "private": true,
+  "scripts": {
+    "dev": "cd OMC && npm run dev",
+    "build": "cd OMC && npm run build",
+    "start": "cd OMC && npm run start",
+    "vercel-build": "cd OMC && npm ci && npm run build"
+  }
+}
