@@ -54,10 +54,7 @@ function HomePage() {
     () => [...techItems, ...premiumItems, ...piItems, ...dailyItems, ...freeItems, ...cryptoGiveawaysItems],
     []
   );
-  const staticSlugs = useMemo(
-    () => new Set(staticItems.map((i) => i?.comp?.slug).filter(Boolean)),
-    [staticItems]
-  );
+  const staticSlugs = useMemo(() => new Set(staticItems.map((i) => i?.comp?.slug).filter(Boolean)), [staticItems]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -163,29 +160,37 @@ function HomePage() {
     return () => {
       mounted = false;
     };
-  }, [staticItems, staticSlugs]); // deps OK: both are memoized
+  }, [staticItems, staticSlugs]);
 
-// show items purely by theme; don't exclude static seeds
-const getCompetitionsByCategory = (category) => {
-  return liveCompetitions.filter((item) => (item.theme || 'tech') === category);
-};
+  const getCompetitionsByCategory = (category) =>
+    liveCompetitions.filter((item) => (item.theme || 'tech') === category);
 
+  /* ---------- page background wrapper ---------- */
+  const PageWrapper = ({ children }) => (
+    <div className="min-h-screen w-full bg-gradient-to-b from-[#0b1227] via-[#0f1b33] to-[#0a1024] text-white">
+      {children}
+    </div>
+  );
 
   /* ---------- loading ---------- */
   if (loading) {
     return (
-      <div className="w-full py-8 flex flex-col items-center justify-start bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-24 w-32 border-t-2 border-b-2 border-cyan-300 mx-auto mb-4"></div>
-          <p className="text-white text-lg">{t('loading_live_competitions', 'Loading live competition data...')}</p>
+      <PageWrapper>
+        <div className="w-full py-12 flex flex-col items-center justify-start">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-24 w-24 border-t-2 border-b-2 border-cyan-300 mx-auto mb-4"></div>
+            <p className="text-white text-lg">
+              {t('loading_live_competitions', 'Loading live competition data...')}
+            </p>
+          </div>
         </div>
-      </div>
+      </PageWrapper>
     );
   }
   if (error) console.warn('⚠️ Using static data due to API error:', error);
 
   return (
-    <>
+    <PageWrapper>
       {/* Welcome Popup */}
       {showWelcome && (
         <div
@@ -199,7 +204,7 @@ const getCompetitionsByCategory = (category) => {
           }}
         >
           <div
-            className="relative bg-[#0f1b33] border border-cyan-400 rounded-2xl p-8 max-w-md w-full shadow-[0_0_30px_#00f0ff88] text-center animate-[fadeIn_.18s_ease-out]"
+            className="relative bg-[#0f1b33] border border-cyan-400 rounded-2xl p-8 max-w-md w-full shadow-[0_0_30px_#00f0ff88] text-center animate-omc-fade-in"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 id="welcome-title" className="text-2xl font-bold text-cyan-300 font-orbitron mb-2">
@@ -245,25 +250,21 @@ const getCompetitionsByCategory = (category) => {
             >
               ✕
             </button>
-
-            <style jsx>{`
-              @keyframes fadeIn {
-                from { transform: translateY(4px) scale(.98); opacity: 0; }
-                to   { transform: translateY(0)    scale(1);   opacity: 1; }
-              }
-            `}</style>
           </div>
         </div>
       )}
 
       {/* Marquee */}
       <div className="overflow-hidden bg-transparent mt-4">
-        <div className="marquee-content text-cyan-300 text-md sm:text-base font-medium font-orbitron">
-          {t('marquee_text', 'Oh My Competitions is all about building with Pi Network for the Pi community. Our OMC launch competitions are zero profit designed to create trust, celebrate early winners and give back to Pioneers. All prizes go directly to you. Add us on all Socials and our Pi Profile darreire2020. More competitions are coming soon across a wide range of exciting categories. Join, win and help shape the future of Pi together.')}
+        <div className="marquee-content text-cyan-300 text-md sm:text-base font-medium font-orbitron whitespace-nowrap animate-[marquee_35s_linear_infinite]">
+          {t(
+            'marquee_text',
+            'Oh My Competitions is all about building with Pi Network for the Pi community. Our OMC launch competitions are zero profit designed to create trust, celebrate early winners and give back to Pioneers. All prizes go directly to you. Add us on all Socials and our Pi Profile darreire2020. More competitions are coming soon across a wide range of exciting categories. Join, win and help shape the future of Pi together.'
+          )}
         </div>
       </div>
 
-      {/* Mini carousel */}
+      {/* Mini carousel (keep) */}
       <MiniPrizeCarousel />
 
       {/* Pi Cash Code CTA */}
@@ -285,20 +286,18 @@ const getCompetitionsByCategory = (category) => {
       </div>
 
       {/* ===== Main sections ===== */}
-      <main className="space-y-10">
+      <main className="space-y-10 px-4">
         <Section
           title={t('omc_launch_week', 'OMC Launch Week')}
           items={getCompetitionsByCategory('launch')}
           viewMoreHref="/competitions/launch-week"
         />
 
-        {/* FIXED: comment moved outside props */}
         <Section
           title={t('tech_gadgets', 'Tech/Gadgets')}
           items={getCompetitionsByCategory('tech')}
           viewMoreHref="/competitions/tech-gadgets"
         />
-        {/* /FIXED */}
 
         <Section
           title={t('daily_weekly', 'Daily/Weekly')}
@@ -411,7 +410,10 @@ const getCompetitionsByCategory = (category) => {
               {t('our_vision_2026', 'Our Vision for 2026: Impact Through Innovation')}
             </h2>
             <p className="text-white/80 mb-3 leading-relaxed">
-              {t('vision_description', 'By the end of 2026, OhMyCompetitions aims to reach these community-first milestones, powered by the Pi Network and supported by Pioneers like you.')}
+              {t(
+                'vision_description',
+                'By the end of 2026, OhMyCompetitions aims to reach these community-first milestones, powered by the Pi Network and supported by Pioneers like you.'
+              )}
             </p>
             <ul className="text-cyan-200 space-y-1 font-medium">
               <li>🌍 {t('over_winners', 'Over')} <strong>10,000+ {t('winners', 'winners')}</strong> {t('across_globe', 'across the globe')}</li>
@@ -422,7 +424,7 @@ const getCompetitionsByCategory = (category) => {
           </div>
         </div>
       </main>
-    </>
+    </PageWrapper>
   );
 }
 
@@ -444,10 +446,12 @@ function Section({ title, subtitle, items = [], viewMoreHref, viewMoreText = 'Vi
         {subtitle && <p className="text-xs text-cyan-200 mt-0.5 italic">{subtitle}</p>}
       </div>
 
+      {/* mobile: real carousel */}
       <div className="centered-carousel lg:hidden">
         {items.map((item, i) => renderCard(item, i, { isFree, isPi, isCrypto }))}
       </div>
 
+      {/* desktop: grid */}
       <div className="hidden lg:grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         {items.map((item, i) => renderCard(item, i, { isFree, isPi, isCrypto }))}
       </div>
@@ -505,7 +509,7 @@ function renderCard(item, i, { isFree, isPi, isCrypto }) {
       comp={{ ...item.comp, comingSoon: item.comp.comingSoon ?? false }}
       title={item.title}
       prize={item.prize}
-      fee={feeLabel}
+      fee={`${feeNum.toFixed(2)} π`}
       imageUrl={item.imageUrl}
       endsAt={item.comp.endsAt}
       disableGift
