@@ -1,4 +1,5 @@
 // File: src/pages/dev/pi-quick-test.jsx
+// Change: add "Load SDK" button + show UA + re-check hasPi after load.
 
 import { useMemo, useState } from 'react';
 import Head from 'next/head';
@@ -12,6 +13,7 @@ export default function PiQuickTestPage() {
   const [busy, setBusy] = useState(false);
   const [authed, setAuthed] = useState(null);
   const [log, setLog] = useState([]);
+  const [hasPiNow, setHasPiNow] = useState(false);
 
   const envRaw = useMemo(
     () => (process.env.NEXT_PUBLIC_PI_ENV || process.env.PI_ENV || '').toLowerCase().trim(),
@@ -19,9 +21,34 @@ export default function PiQuickTestPage() {
   );
   const envLabel = envRaw || '(not set)';
   const sandboxFlag = envRaw === 'sandbox' || envRaw === 'testnet';
+  const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : '(server)';
 
   function pushLog(line) {
     setLog((prev) => [`${new Date().toLocaleTimeString()}  ${line}`, ...prev].slice(0, 200));
+  }
+
+  async function handleLoadSdk() {
+    try {
+      pushLog('Injecting Pi SDK script…');
+      await new Promise((resolve, reject) => {
+        const existing = document.querySelector('script[src*="sdk.minepi.com/pi-sdk.js"]');
+        if (existing) {
+          pushLog('SDK script already present.');
+          return resolve();
+        }
+        const s = document.createElement('script');
+        s.src = 'https://sdk.minepi.com/pi-sdk.js';
+        s.onload = resolve;
+        s.onerror = () => reject(new Error('SDK script failed to load'));
+        document.head.appendChild(s);
+      });
+      // allow a beat for window.Pi to attach
+      await new Promise((r) => setTimeout(r, 150));
+      setHasPiNow(!!window.Pi);
+      pushLog(`SDK loaded. window.Pi ${window.Pi ? 'available' : 'still missing'}.`);
+    } catch (e) {
+      pushLog(`SDK load error: ${e.message || e}`);
+    }
   }
 
   async function handleAuth() {
@@ -58,7 +85,8 @@ export default function PiQuickTestPage() {
     }
   }
 
-  const canPay = isReady && hasPi && isPiBrowser && !busy;
+  const sdkPresent = hasPi || hasPiNow;
+  const canPay = isReady && sdkPresent && isPiBrowser && !busy;
 
   return (
     <>
@@ -68,13 +96,20 @@ export default function PiQuickTestPage() {
           <h1 style={styles.h1}>Pi Test Payment</h1>
 
           <div style={styles.kv}><span>Pi Browser:</span><strong>{isPiBrowser ? 'YES' : 'NO'}</strong></div>
-          <div style={styles.kv}><span>SDK Present:</span><strong>{hasPi ? 'YES' : 'NO'}</strong></div>
+          <div style={styles.kv}><span>SDK Present:</span><strong>{sdkPresent ? 'YES' : 'NO'}</strong></div>
           <div style={styles.kv}><span>Client Env:</span><code>NEXT_PUBLIC_PI_ENV={envLabel}</code></div>
           <div style={styles.kv}><span>Sandbox/Testnet:</span><strong>{sandboxFlag ? 'YES (Testnet)' : 'NO (Mainnet?)'}</strong></div>
+          <div style={styles.kv}><span>UA:</span><code style={{fontSize:12, opacity:.8}}>{userAgent}</code></div>
 
           {!isPiBrowser && (
             <p style={styles.warn}>Open this page inside <strong>Pi Browser</strong> to run the SDK flow.</p>
           )}
+
+          <div style={{ display:'flex', gap:12, margin:'8px 0 16px' }}>
+            <button onClick={handleLoadSdk} disabled={sdkPresent || busy} style={styles.btn}>
+              {sdkPresent ? 'SDK Loaded' : 'Load SDK'}
+            </button>
+          </div>
 
           <div style={styles.row}>
             <label style={styles.label}>Amount (π)</label>
@@ -87,7 +122,7 @@ export default function PiQuickTestPage() {
           </div>
 
           <div style={styles.buttons}>
-            <button onClick={handleAuth} disabled={busy || !isPiBrowser || !hasPi} style={styles.btn}>
+            <button onClick={handleAuth} disabled={busy || !isPiBrowser || !sdkPresent} style={styles.btn}>
               {busy ? 'Working…' : 'Authenticate'}
             </button>
             <button onClick={handlePay} disabled={!canPay} style={styles.btnPrimary}>
@@ -126,6 +161,5 @@ const styles = {
   kv: { display: 'flex', gap: 8, alignItems: 'baseline', marginBottom: 6 },
   box: { background: '#0e1530', border: '1px solid #2a356f', borderRadius: 10, padding: 12, marginTop: 12 },
   warn: { background: '#3a1b1b', border: '1px solid #6b1a1a', padding: 10, borderRadius: 8, color: '#ffb4b4' },
-  // FIXED: correct border string and keep overflow string intact
   logBox: { background: '#0e1530', border: '1px solid #2a356f', borderRadius: 10, padding: 12, minHeight: 140, maxHeight: 260, overflow: 'auto' },
 };
