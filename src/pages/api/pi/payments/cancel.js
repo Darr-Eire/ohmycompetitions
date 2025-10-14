@@ -1,3 +1,7 @@
+// ============================================================================
+// PATH: src/pages/api/pi/payments/cancel.js  (SERVER)
+// Cancels a pending payment. Used by your "Clear pending" buttons.
+// ============================================================================
 import axios from 'axios';
 
 export default async function handler(req, res) {
@@ -12,18 +16,15 @@ export default async function handler(req, res) {
   try {
     const auth = { headers: { Authorization: `Key ${apiKey}` } };
     const id = encodeURIComponent(paymentId);
-
     const { data: pay } = await axios.get(`${base}/v2/payments/${id}`, auth);
+
     if (pay?.status?.developer_completed || pay?.status?.cancelled || pay?.status?.user_cancelled) {
       return res.json({ ok: true, alreadyDone: true, pay });
     }
-
     const { data } = await axios.post(`${base}/v2/payments/${id}/cancel`, {}, auth);
     return res.json({ ok: true, result: data });
   } catch (e) {
     const status = e?.response?.status || 500;
-    const details = e?.response?.data || e?.message;
-    console.error('[api/pi/payments/cancel]', status, details);
-    return res.status(status).json({ ok: false, error: 'Cancel failed', details });
+    return res.status(status).json({ ok: false, error: 'Cancel failed', details: e?.response?.data || e?.message });
   }
 }
