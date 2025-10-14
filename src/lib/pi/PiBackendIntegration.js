@@ -4,19 +4,37 @@
 /**
  * Minimal fetch helper
  */
+// File: src/lib/pi/PiBackendIntegration.js
+// Add cancel route call.
+
 async function _post(url, body) {
   const r = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body ?? {}),
   });
-  const text = await r.text();
-  if (!r.ok) {
-    // Why: surface server failure details for debugging
-    throw new Error(text || `HTTP ${r.status}`);
-  }
-  try { return JSON.parse(text); } catch { return text; }
+  const txt = await r.text();
+  if (!r.ok) throw new Error(txt || `HTTP ${r.status}`);
+  try { return JSON.parse(txt); } catch { return txt; }
 }
+
+export class PiNetworkService {
+  static async approvePiNetworkPayment(paymentId) {
+    if (!paymentId) throw new Error('approvePiNetworkPayment: paymentId required');
+    await _post('/api/pi/payments/approve', { paymentId });
+  }
+  static async completePiNetworkPayment(paymentId, txid, accessToken) {
+    if (!paymentId || !txid || !accessToken) throw new Error('completePiNetworkPayment: paymentId, txid, accessToken required');
+    await _post('/api/pi/payments/complete', { paymentId, txid, accessToken });
+  }
+  static async cancelPiNetworkPayment(paymentId) {
+    if (!paymentId) return;
+    await _post('/api/pi/payments/cancel', { paymentId }); // why: clear stuck/pending before new payment
+  }
+}
+
+export default PiNetworkService;
+
 
 export class PiNetworkService {
   /**
