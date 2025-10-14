@@ -1,91 +1,10 @@
-// ===== PATH: src/lib/pi/PiQuickClient.js =====
-// Exposes CreatePayment(..., onPaymentSucceed, { memo, metadata, onPaymentId })
-
-import { readyPi } from '../piClient';
-import PiNetworkService from './PiBackendIntegration';
-
-function isSandboxEnv() {
-  const raw = (process.env.NEXT_PUBLIC_PI_ENV || process.env.PI_ENV || '').toLowerCase().trim();
-  return raw === 'sandbox' || raw === 'testnet';
-}
-
-async function ensurePi() {
-  // Uses your resolvePiNetworkLabel() internally (Pi Testnet for sandbox/testnet)
-  return readyPi({ network: undefined });
-}
-
-export async function onIncompletePaymentFound(paymentDTO) {
-  try {
-    // Proactively clear stale
-    await PiNetworkService.cancelPiNetworkPayment(paymentDTO?.identifier);
-  } catch {}
-}
-
-export async function getUserAccessToken() {
-  const Pi = await ensurePi();
-  const ans = await Pi.authenticate(['username', 'payments', 'wallet_address'], onIncompletePaymentFound);
-  return ans.accessToken;
-}
-
-export async function getUserWalletAddress() {
-  const Pi = await ensurePi();
-  const ans = await Pi.authenticate(['username', 'payments', 'wallet_address'], onIncompletePaymentFound);
-  return ans.wallet_address;
-}
-
-export async function authWithPiNetwork() {
-  const Pi = await ensurePi();
-  const ans = await Pi.authenticate(['username', 'payments', 'wallet_address'], onIncompletePaymentFound);
-  return { username: ans.username, accessToken: ans.accessToken, wallet_address: ans.wallet_address };
-}
-
-/**
- * Create a payment.
- * @param {number} amount
- * @param {(paymentId:string, txid?:string)=>void} onPaymentSucceed
- * @param {{ memo?:string, metadata?:object, onPaymentId?:(paymentId:string)=>void }} [opts]
- */
-export async function CreatePayment(amount, onPaymentSucceed, opts = {}) {
-  if (!amount || Number(amount) <= 0) throw new Error('CreatePayment: positive amount required');
-  const memo = opts.memo ?? 'Donation';
-  const metadata = opts.metadata ?? { source: 'app' };
-  const onPaymentId = typeof opts.onPaymentId === 'function' ? opts.onPaymentId : null;
-
-  const Pi = await ensurePi();
-  const { accessToken } = await authWithPiNetwork();
-
-  return Pi.createPayment(
-    { amount, memo, metadata },
-    {
-      onReadyForServerApproval: async (paymentId) => {
-        // Expose paymentId early for UI
-        try { onPaymentId && onPaymentId(paymentId); } catch {}
-        await PiNetworkService.approvePiNetworkPayment(paymentId);
-      },
-      onReadyForServerCompletion: async (paymentId, txid) => {
-        await PiNetworkService.completePiNetworkPayment(paymentId, txid, accessToken);
-        try { typeof onPaymentSucceed === 'function' && onPaymentSucceed(paymentId, txid); } catch {}
-      },
-      onCancel: async () => {},
-      onError: async (error, paymentDTO) => {
-        try { await PiNetworkService.cancelPiNetworkPayment(paymentDTO?.identifier); } catch {}
-        throw error;
-      },
-    }
-  );
-}
-
-export default { CreatePayment, authWithPiNetwork, getUserAccessToken, getUserWalletAddress, onIncompletePaymentFound, isSandboxEnv };
-
-
-// ===== PATH: src/pages/dev/pi-quick-test.jsx =====
-// Adds display of paymentId/txid, “Use last id”, and “Check status”
+// PATH: src/pages/dev/pi-quick-test.jsx
 
 import { useMemo, useState } from 'react';
 import Head from 'next/head';
-import { usePiEnv } from '@/hooks/usePiEnv';
-import { CreatePayment, authWithPiNetwork } from '@/lib/pi/PiQuickClient';
-import PiNetworkService from '@/lib/pi/PiBackendIntegration';
+import { usePiEnv } from 'hooks/usePiEnv';
+import { CreatePayment, authWithPiNetwork } from 'lib/pi/PiQuickClient';
+import PiNetworkService from 'lib/pi/PiBackendIntegration';
 
 export default function PiQuickTestPage() {
   const { isPiBrowser, hasPi, isReady } = usePiEnv();
@@ -96,11 +15,10 @@ export default function PiQuickTestPage() {
   const [log, setLog] = useState([]);
   const [hasPiNow, setHasPiNow] = useState(false);
 
-  const [lastPaymentId, setLastPaymentId] = useState('');
-  const [lastTxid, setLastTxid] = useState('');
-
+  // Clear-pending UI state
   const [cancelId, setCancelId] = useState('');
   const [cancelBusy, setCancelBusy] = useState(false);
+  const [pendingList, setPendingList] = useState([]);
 
   const envRaw = useMemo(
     () => (process.env.NEXT_PUBLIC_PI_ENV || process.env.PI_ENV || '').toLowerCase().trim(),
@@ -111,7 +29,7 @@ export default function PiQuickTestPage() {
   const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : '(server)';
 
   function pushLog(line) {
-    setLog((prev) => [`${new Date().toLocaleTimeString()} ${line}`, ...prev].slice(0, 200));
+    setLog((prev) => [`${new Date().toLocaleTimeString()}  ${line}`, ...prev].slice(0, 200));
   }
 
   async function handleLoadSdk() {
@@ -151,27 +69,14 @@ export default function PiQuickTestPage() {
 
   async function handlePay() {
     setBusy(true);
-    setLastTxid('');
     try {
       const amt = Number(amount);
       if (!amt || amt <= 0) throw new Error('Enter a positive amount');
       pushLog(`Creating payment for ${amt} π…`);
       await CreatePayment(
         amt,
-        (paymentId, txid) => {
-          setLastPaymentId(paymentId);
-          setLastTxid(txid || '');
-          pushLog(`✅ Payment completed. paymentId=${paymentId} txid=${txid}`);
-        },
-        {
-          memo,
-          metadata: { source: 'pi-quick-test', ts: Date.now() },
-          onPaymentId: (paymentId) => {
-            setLastPaymentId(paymentId);
-            setCancelId(paymentId);
-            pushLog(`Got paymentId: ${paymentId}`);
-          },
-        }
+        (paymentId, txid) => pushLog(`✅ Payment completed. paymentId=${paymentId} txid=${txid}`),
+        { memo, metadata: { source: 'pi-quick-test', ts: Date.now() } }
       );
       pushLog('Payment flow finished.');
     } catch (e) {
@@ -181,13 +86,24 @@ export default function PiQuickTestPage() {
     }
   }
 
+  // --- Clear pending helpers ---
   async function httpGet(path) {
     const r = await fetch(path);
     const t = await r.text();
     if (!r.ok) throw new Error(t || `HTTP ${r.status}`);
-    // Guard against HTML error pages from Next
-    if ((r.headers.get('content-type') || '').includes('text/html')) throw new Error('Unexpected HTML response');
     try { return JSON.parse(t); } catch { return t; }
+  }
+
+  async function refreshPending() {
+    try {
+      // Shape may be { incomplete_server_payments: [...] } or just an array.
+      const data = await httpGet('/api/pi/incomplete');
+      const list = Array.isArray(data) ? data : (data?.incomplete_server_payments || []);
+      setPendingList(list || []);
+      pushLog(`Fetched ${list?.length || 0} pending server payment(s).`);
+    } catch (e) {
+      pushLog(`Fetch pending failed: ${e.message || e}`);
+    }
   }
 
   async function handleCancelById() {
@@ -198,6 +114,8 @@ export default function PiQuickTestPage() {
       pushLog(`Cancelling payment ${id}…`);
       await PiNetworkService.cancelPiNetworkPayment(id);
       pushLog(`✅ Cancelled ${id}.`);
+      setCancelId('');
+      await refreshPending();
     } catch (e) {
       pushLog(`❌ Cancel failed: ${e.message || e}`);
     } finally {
@@ -205,22 +123,32 @@ export default function PiQuickTestPage() {
     }
   }
 
-  async function handleUseLastId() {
-    if (!lastPaymentId) { pushLog('No last paymentId available.'); return; }
-    setCancelId(lastPaymentId);
-    pushLog(`Prefilled cancel id: ${lastPaymentId}`);
-  }
-
-  async function handleCheckStatus() {
-    const id = (cancelId || lastPaymentId).trim();
-    if (!id) { pushLog('Provide a paymentId to check.'); return; }
+  async function handleAutoClear() {
+    setCancelBusy(true);
     try {
-      pushLog(`Checking status for ${id}…`);
-      const enc = encodeURIComponent(id);
-      const data = await httpGet(`/api/pi/payments/${enc}/status`);
-      pushLog(`Status: ${JSON.stringify(data)}`);
+      pushLog('Checking for pending payments…');
+      const data = await httpGet('/api/pi/incomplete');
+      const list = Array.isArray(data) ? data : (data?.incomplete_server_payments || []);
+      if (!list || list.length === 0) {
+        pushLog('No pending payments found.');
+        setPendingList([]);
+        return;
+      }
+      setPendingList(list);
+      const oldest = list[0];
+      const id = oldest?.identifier || oldest?.id || oldest?.paymentId;
+      if (!id) {
+        pushLog('Pending list did not include identifiers.');
+        return;
+      }
+      pushLog(`Auto-cancelling oldest pending: ${id}…`);
+      await PiNetworkService.cancelPiNetworkPayment(id);
+      pushLog(`✅ Auto-cancelled ${id}.`);
+      await refreshPending();
     } catch (e) {
-      pushLog(`❌ Status check failed: ${e.message || e}`);
+      pushLog(`❌ Auto-clear failed: ${e.message || e}`);
+    } finally {
+      setCancelBusy(false);
     }
   }
 
@@ -246,33 +174,37 @@ export default function PiQuickTestPage() {
             </div>
           )}
 
-          {/* Last IDs */}
-          {(lastPaymentId || lastTxid) && (
-            <div style={styles.box}>
-              <div style={{fontSize:12}}>
-                <div><strong>Last paymentId:</strong> <code>{lastPaymentId || '(none)'}</code></div>
-                <div><strong>Last txid:</strong> <code>{lastTxid || '(none)'}</code></div>
-              </div>
-              <div style={{ display:'flex', gap:8, marginTop:8 }}>
-                <button onClick={handleUseLastId} style={styles.btn}>Use last id</button>
-                <button onClick={handleCheckStatus} style={styles.btn}>Check status</button>
-              </div>
-            </div>
-          )}
-
           {/* Clear pending controls */}
           <div style={styles.box}>
-            <div style={{ display:'flex', gap:12, alignItems:'center', marginBottom:10, flexWrap:'wrap' }}>
+            <div style={{ display:'flex', gap:12, alignItems:'center', marginBottom:10 }}>
               <input
                 placeholder="Payment ID to cancel"
                 value={cancelId}
                 onChange={(e)=>setCancelId(e.target.value)}
-                style={{ ...styles.input, maxWidth: '100%' }}
+                style={styles.input}
               />
               <button onClick={handleCancelById} disabled={cancelBusy || !cancelId.trim()} style={styles.btn}>
                 {cancelBusy ? 'Working…' : 'Clear pending by ID'}
               </button>
+              <button onClick={handleAutoClear} disabled={cancelBusy} style={styles.btn}>
+                {cancelBusy ? 'Working…' : 'Auto-clear oldest pending'}
+              </button>
+              <button onClick={refreshPending} disabled={cancelBusy} style={styles.btn}>
+                Refresh list
+              </button>
             </div>
+            {pendingList?.length > 0 && (
+              <div style={{ fontSize:12, opacity:.9 }}>
+                <strong>Pending on server:</strong>
+                <ul>
+                  {pendingList.slice(0,5).map((p,i)=>(
+                    <li key={i} style={{wordBreak:'break-all'}}>
+                      {p?.identifier || p?.id || p?.paymentId} — {p?.amount ?? ''}π
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
           <div style={styles.row}>
@@ -294,6 +226,13 @@ export default function PiQuickTestPage() {
             </button>
           </div>
 
+          {authed && (
+            <div style={styles.box}>
+              <div><strong>Authenticated:</strong> @{authed.username}</div>
+              <div><strong>Wallet:</strong> {authed.wallet_address}</div>
+            </div>
+          )}
+
           <h3 style={styles.h3}>Logs</h3>
           <div style={styles.logBox} aria-live="polite">
             {log.length === 0 ? <em>No logs yet.</em> : log.map((l, i) => <div key={i}>{l}</div>)}
@@ -306,12 +245,12 @@ export default function PiQuickTestPage() {
 
 const styles = {
   main: { minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#0b1020', padding: 24 },
-  card: { width: '100%', maxWidth: 860, background: '#121835', color: '#fff', borderRadius: 16, padding: 24, boxShadow: '0 10px 30px rgba(0,0,0,0.35)' },
+  card: { width: '100%', maxWidth: 820, background: '#121835', color: '#fff', borderRadius: 16, padding: 24, boxShadow: '0 10px 30px rgba(0,0,0,0.35)' },
   h1: { margin: '8px 0 16px' },
   h3: { marginTop: 24 },
   row: { display: 'grid', gridTemplateColumns: '140px 1fr', gap: 12, alignItems: 'center', margin: '10px 0' },
   label: { opacity: 0.85 },
-  input: { padding: '10px 12px', borderRadius: 10, border: '1px solid #2a356f', background: '#0e1530', color: '#fff' },
+  input: { padding: '10px 12px', borderRadius: 10, border: '1px solid #2a356f', background: '#0e1530', color: '#fff', width: '100%' },
   buttons: { display: 'flex', gap: 12, marginTop: 14, flexWrap: 'wrap' },
   btn: { padding: '10px 14px', borderRadius: 10, background: '#233077', color: '#fff', border: '1px solid #2a356f', cursor: 'pointer' },
   btnPrimary: { padding: '10px 14px', borderRadius: 10, background: '#3b82f6', color: '#fff', border: 'none', cursor: 'pointer' },
