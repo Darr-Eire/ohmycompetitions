@@ -2,7 +2,7 @@
 // PATH: src/lib/pi/PiQuickClient.js
 // Exposes named exports used by your page.
 // ============================================================================
-import { readyPi } from 'lib/piClient';            // uses your baseUrl alias
+import { readyPi } from 'lib/piClient';
 import PiNetworkService from 'lib/pi/PiBackendIntegration';
 
 export function isSandboxEnv() {
@@ -11,13 +11,45 @@ export function isSandboxEnv() {
 }
 
 async function ensurePi() {
-  // readyPi figures out "Pi Testnet" when sandbox env is on
+  // relies on your readyPi() to pick Testnet when sandbox
   return readyPi({ network: undefined });
 }
 
+/**
+ * Called by Pi.authenticate when a previous payment is pending.
+ * Logs and attempts to cancel so the user can retry cleanly.
+ */
 export async function onIncompletePaymentFound(paymentDTO) {
-  // clear stale pending so user can retry
-  try { await PiNetworkService.cancelPiNetworkPayment(paymentDTO?.identifier); } catch {}
+  const id =
+    paymentDTO?.identifier ||
+    paymentDTO?.id ||
+    paymentDTO?.paymentId ||
+    null;
+
+  console.info('[Pi] Incomplete payment detected', {
+    id,
+    hasId: Boolean(id),
+    at: new Date().toISOString(),
+  });
+
+  if (!id) {
+    console.warn('[Pi] Incomplete payment callback had no identifier.', { paymentDTO });
+    return;
+  }
+
+  try {
+    console.info('[Pi] Cancelling incomplete payment…', { id });
+    await PiNetworkService.cancelPiNetworkPayment(id);
+    console.info('[Pi] Incomplete payment cancelled.', {
+      id,
+      at: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error('[Pi] Cancel incomplete failed', {
+      id,
+      error: err?.message || err,
+    });
+  }
 }
 
 export async function getUserAccessToken() {
@@ -58,16 +90,22 @@ export async function CreatePayment(amount, onPaymentSucceed, opts = {}) {
     { amount, memo, metadata },
     {
       onReadyForServerApproval: async (paymentId) => {
-        // expose ID early to UI
-        try { onPaymentId && onPaymentId(paymentId); } catch {}
+        try {
+          onPaymentId && onPaymentId(paymentId); // early surface
+          console.info('[Pi] onReadyForServerApproval', { paymentId });
+        } catch {}
         await PiNetworkService.approvePiNetworkPayment(paymentId);
       },
       onReadyForServerCompletion: async (paymentId, txid) => {
+        console.info('[Pi] onReadyForServerCompletion', { paymentId, txid });
         await PiNetworkService.completePiNetworkPayment(paymentId, txid, accessToken);
         try { typeof onPaymentSucceed === 'function' && onPaymentSucceed(paymentId, txid); } catch {}
       },
-      onCancel: async () => {},
+      onCancel: async (paymentId) => {
+        console.warn('[Pi] Payment cancelled by user', { paymentId });
+      },
       onError: async (error, paymentDTO) => {
+        console.error('[Pi] Payment error', { error: error?.message || error, paymentDTO });
         try { await PiNetworkService.cancelPiNetworkPayment(paymentDTO?.identifier); } catch {}
         throw error;
       },
