@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from 'react';
 import Head from 'next/head';
-import { usePiEnv } from '@/hooks/usePiEnv';
-import { CreatePayment, authWithPiNetwork, isSandboxEnv } from '@/lib/pi/PiQuickClient';
+import { usePiEnv } from 'hooks/usePiEnv';
+import { CreatePayment, authWithPiNetwork, isSandboxEnv } from 'lib/pi/PiQuickClient';
 
 export default function PiQuickTestPage() {
   const { isPiBrowser, hasPi, isReady } = usePiEnv();
