@@ -1,10 +1,10 @@
-// File: src/pages/dev/pi-quick-test.jsx
-// Change: add "Load SDK" button + show UA + re-check hasPi after load.
+// PATH: src/pages/dev/pi-quick-test.jsx
 
 import { useMemo, useState } from 'react';
 import Head from 'next/head';
 import { usePiEnv } from 'hooks/usePiEnv';
 import { CreatePayment, authWithPiNetwork } from 'lib/pi/PiQuickClient';
+import PiNetworkService from 'lib/pi/PiBackendIntegration';
 
 export default function PiQuickTestPage() {
   const { isPiBrowser, hasPi, isReady } = usePiEnv();
@@ -14,6 +14,11 @@ export default function PiQuickTestPage() {
   const [authed, setAuthed] = useState(null);
   const [log, setLog] = useState([]);
   const [hasPiNow, setHasPiNow] = useState(false);
+
+  // Clear-pending UI state
+  const [cancelId, setCancelId] = useState('');
+  const [cancelBusy, setCancelBusy] = useState(false);
+  const [pendingList, setPendingList] = useState([]);
 
   const envRaw = useMemo(
     () => (process.env.NEXT_PUBLIC_PI_ENV || process.env.PI_ENV || '').toLowerCase().trim(),
@@ -32,17 +37,13 @@ export default function PiQuickTestPage() {
       pushLog('Injecting Pi SDK script…');
       await new Promise((resolve, reject) => {
         const existing = document.querySelector('script[src*="sdk.minepi.com/pi-sdk.js"]');
-        if (existing) {
-          pushLog('SDK script already present.');
-          return resolve();
-        }
+        if (existing) return resolve();
         const s = document.createElement('script');
         s.src = 'https://sdk.minepi.com/pi-sdk.js';
         s.onload = resolve;
         s.onerror = () => reject(new Error('SDK script failed to load'));
         document.head.appendChild(s);
       });
-      // allow a beat for window.Pi to attach
       await new Promise((r) => setTimeout(r, 150));
       setHasPiNow(!!window.Pi);
       pushLog(`SDK loaded. window.Pi ${window.Pi ? 'available' : 'still missing'}.`);
@@ -85,6 +86,72 @@ export default function PiQuickTestPage() {
     }
   }
 
+  // --- Clear pending helpers ---
+  async function httpGet(path) {
+    const r = await fetch(path);
+    const t = await r.text();
+    if (!r.ok) throw new Error(t || `HTTP ${r.status}`);
+    try { return JSON.parse(t); } catch { return t; }
+  }
+
+  async function refreshPending() {
+    try {
+      // Shape may be { incomplete_server_payments: [...] } or just an array.
+      const data = await httpGet('/api/pi/incomplete');
+      const list = Array.isArray(data) ? data : (data?.incomplete_server_payments || []);
+      setPendingList(list || []);
+      pushLog(`Fetched ${list?.length || 0} pending server payment(s).`);
+    } catch (e) {
+      pushLog(`Fetch pending failed: ${e.message || e}`);
+    }
+  }
+
+  async function handleCancelById() {
+    const id = cancelId.trim();
+    if (!id) { pushLog('Enter a paymentId to cancel.'); return; }
+    setCancelBusy(true);
+    try {
+      pushLog(`Cancelling payment ${id}…`);
+      await PiNetworkService.cancelPiNetworkPayment(id);
+      pushLog(`✅ Cancelled ${id}.`);
+      setCancelId('');
+      await refreshPending();
+    } catch (e) {
+      pushLog(`❌ Cancel failed: ${e.message || e}`);
+    } finally {
+      setCancelBusy(false);
+    }
+  }
+
+  async function handleAutoClear() {
+    setCancelBusy(true);
+    try {
+      pushLog('Checking for pending payments…');
+      const data = await httpGet('/api/pi/incomplete');
+      const list = Array.isArray(data) ? data : (data?.incomplete_server_payments || []);
+      if (!list || list.length === 0) {
+        pushLog('No pending payments found.');
+        setPendingList([]);
+        return;
+      }
+      setPendingList(list);
+      const oldest = list[0];
+      const id = oldest?.identifier || oldest?.id || oldest?.paymentId;
+      if (!id) {
+        pushLog('Pending list did not include identifiers.');
+        return;
+      }
+      pushLog(`Auto-cancelling oldest pending: ${id}…`);
+      await PiNetworkService.cancelPiNetworkPayment(id);
+      pushLog(`✅ Auto-cancelled ${id}.`);
+      await refreshPending();
+    } catch (e) {
+      pushLog(`❌ Auto-clear failed: ${e.message || e}`);
+    } finally {
+      setCancelBusy(false);
+    }
+  }
+
   const sdkPresent = hasPi || hasPiNow;
   const canPay = isReady && sdkPresent && isPiBrowser && !busy;
 
@@ -101,14 +168,43 @@ export default function PiQuickTestPage() {
           <div style={styles.kv}><span>Sandbox/Testnet:</span><strong>{sandboxFlag ? 'YES (Testnet)' : 'NO (Mainnet?)'}</strong></div>
           <div style={styles.kv}><span>UA:</span><code style={{fontSize:12, opacity:.8}}>{userAgent}</code></div>
 
-          {!isPiBrowser && (
-            <p style={styles.warn}>Open this page inside <strong>Pi Browser</strong> to run the SDK flow.</p>
+          {!sdkPresent && (
+            <div style={{ display:'flex', gap:12, margin:'8px 0 16px' }}>
+              <button onClick={handleLoadSdk} style={styles.btn}>Load SDK</button>
+            </div>
           )}
 
-          <div style={{ display:'flex', gap:12, margin:'8px 0 16px' }}>
-            <button onClick={handleLoadSdk} disabled={sdkPresent || busy} style={styles.btn}>
-              {sdkPresent ? 'SDK Loaded' : 'Load SDK'}
-            </button>
+          {/* Clear pending controls */}
+          <div style={styles.box}>
+            <div style={{ display:'flex', gap:12, alignItems:'center', marginBottom:10 }}>
+              <input
+                placeholder="Payment ID to cancel"
+                value={cancelId}
+                onChange={(e)=>setCancelId(e.target.value)}
+                style={styles.input}
+              />
+              <button onClick={handleCancelById} disabled={cancelBusy || !cancelId.trim()} style={styles.btn}>
+                {cancelBusy ? 'Working…' : 'Clear pending by ID'}
+              </button>
+              <button onClick={handleAutoClear} disabled={cancelBusy} style={styles.btn}>
+                {cancelBusy ? 'Working…' : 'Auto-clear oldest pending'}
+              </button>
+              <button onClick={refreshPending} disabled={cancelBusy} style={styles.btn}>
+                Refresh list
+              </button>
+            </div>
+            {pendingList?.length > 0 && (
+              <div style={{ fontSize:12, opacity:.9 }}>
+                <strong>Pending on server:</strong>
+                <ul>
+                  {pendingList.slice(0,5).map((p,i)=>(
+                    <li key={i} style={{wordBreak:'break-all'}}>
+                      {p?.identifier || p?.id || p?.paymentId} — {p?.amount ?? ''}π
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
           <div style={styles.row}>
@@ -149,13 +245,13 @@ export default function PiQuickTestPage() {
 
 const styles = {
   main: { minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#0b1020', padding: 24 },
-  card: { width: '100%', maxWidth: 720, background: '#121835', color: '#fff', borderRadius: 16, padding: 24, boxShadow: '0 10px 30px rgba(0,0,0,0.35)' },
+  card: { width: '100%', maxWidth: 820, background: '#121835', color: '#fff', borderRadius: 16, padding: 24, boxShadow: '0 10px 30px rgba(0,0,0,0.35)' },
   h1: { margin: '8px 0 16px' },
   h3: { marginTop: 24 },
   row: { display: 'grid', gridTemplateColumns: '140px 1fr', gap: 12, alignItems: 'center', margin: '10px 0' },
   label: { opacity: 0.85 },
-  input: { padding: '10px 12px', borderRadius: 10, border: '1px solid #2a356f', background: '#0e1530', color: '#fff' },
-  buttons: { display: 'flex', gap: 12, marginTop: 14 },
+  input: { padding: '10px 12px', borderRadius: 10, border: '1px solid #2a356f', background: '#0e1530', color: '#fff', width: '100%' },
+  buttons: { display: 'flex', gap: 12, marginTop: 14, flexWrap: 'wrap' },
   btn: { padding: '10px 14px', borderRadius: 10, background: '#233077', color: '#fff', border: '1px solid #2a356f', cursor: 'pointer' },
   btnPrimary: { padding: '10px 14px', borderRadius: 10, background: '#3b82f6', color: '#fff', border: 'none', cursor: 'pointer' },
   kv: { display: 'flex', gap: 8, alignItems: 'baseline', marginBottom: 6 },
