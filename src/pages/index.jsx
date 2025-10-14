@@ -1,3 +1,4 @@
+// PATH: src/pages/index.jsx (or wherever this IndexPage lives)
 'use client';
 
 import React from 'react';
@@ -13,6 +14,11 @@ export default function IndexPage() {
     { icon: '🎮', text: 'Mini Games', href: '/try-your-luck' },
     { icon: '❓', text: 'Mystery Features', href: '' },
   ];
+
+  const isSandbox =
+    (process.env.NEXT_PUBLIC_PI_ENV || process.env.PI_ENV || '')
+      .toLowerCase()
+      .trim() === 'sandbox';
 
   return (
     <div className="min-h-[100dvh] bg-[#0a1024] text-white px-2 py-0 overflow-y-auto">
@@ -69,14 +75,23 @@ export default function IndexPage() {
           </div>
 
           {/* CTA Button */}
-          <div className="flex flex-col items-center gap-1">
-     <Link
-  href="/homepage?welcome=1"
-  className="pulse-button block w-full bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold py-3 rounded-lg shadow-md text-center text-base"
->
-  Let’s Go
-</Link>
+          <div className="flex flex-col items-center gap-2">
+            <Link
+              href="/homepage?welcome=1"
+              className="pulse-button block w-full bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold py-3 rounded-lg shadow-md text-center text-base"
+            >
+              Let’s Go
+            </Link>
 
+            {/* Dev quick link (why: fast access to payment test page; shown only in sandbox) */}
+            {isSandbox && (
+              <Link
+                href="/dev/pi-quick-test"
+                className="block w-full text-center text-xs text-cyan-300 underline hover:text-cyan-100"
+              >
+                Pi Dev: Quick Test
+              </Link>
+            )}
           </div>
         </div>
 
