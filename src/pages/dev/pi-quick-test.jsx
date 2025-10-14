@@ -15,6 +15,10 @@ export default function PiQuickTestPage() {
   const [log, setLog] = useState([]);
   const [hasPiNow, setHasPiNow] = useState(false);
 
+  // IDs surfaced to the UI
+  const [lastPaymentId, setLastPaymentId] = useState('');
+  const [lastTxid, setLastTxid] = useState('');
+
   // Clear-pending UI state
   const [cancelId, setCancelId] = useState('');
   const [cancelBusy, setCancelBusy] = useState(false);
@@ -29,7 +33,7 @@ export default function PiQuickTestPage() {
   const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : '(server)';
 
   function pushLog(line) {
-    setLog((prev) => [`${new Date().toLocaleTimeString()}  ${line}`, ...prev].slice(0, 200));
+    setLog((prev) => [`${new Date().toLocaleTimeString()} ${line}`, ...prev].slice(0, 200));
   }
 
   async function handleLoadSdk() {
@@ -69,14 +73,28 @@ export default function PiQuickTestPage() {
 
   async function handlePay() {
     setBusy(true);
+    setLastTxid('');
     try {
       const amt = Number(amount);
       if (!amt || amt <= 0) throw new Error('Enter a positive amount');
       pushLog(`Creating payment for ${amt} π…`);
       await CreatePayment(
         amt,
-        (paymentId, txid) => pushLog(`✅ Payment completed. paymentId=${paymentId} txid=${txid}`),
-        { memo, metadata: { source: 'pi-quick-test', ts: Date.now() } }
+        (paymentId, txid) => {
+          setLastPaymentId(paymentId);
+          setLastTxid(txid || '');
+          pushLog(`✅ Payment completed. paymentId=${paymentId} txid=${txid}`);
+        },
+        {
+          memo,
+          metadata: { source: 'pi-quick-test', ts: Date.now() },
+          // Why: capture ID as soon as Pi gives it, even before completion
+          onPaymentId: (paymentId) => {
+            setLastPaymentId(paymentId);
+            setCancelId(paymentId);
+            pushLog(`Got paymentId: ${paymentId}`);
+          },
+        }
       );
       pushLog('Payment flow finished.');
     } catch (e) {
@@ -91,12 +109,14 @@ export default function PiQuickTestPage() {
     const r = await fetch(path);
     const t = await r.text();
     if (!r.ok) throw new Error(t || `HTTP ${r.status}`);
+    // Guard: if API route missing, Next returns HTML
+    const ct = (r.headers.get('content-type') || '').toLowerCase();
+    if (ct.includes('text/html')) throw new Error('Unexpected HTML response (API route missing?)');
     try { return JSON.parse(t); } catch { return t; }
   }
 
   async function refreshPending() {
     try {
-      // Shape may be { incomplete_server_payments: [...] } or just an array.
       const data = await httpGet('/api/pi/incomplete');
       const list = Array.isArray(data) ? data : (data?.incomplete_server_payments || []);
       setPendingList(list || []);
@@ -152,6 +172,12 @@ export default function PiQuickTestPage() {
     }
   }
 
+  async function handleUseLastId() {
+    if (!lastPaymentId) { pushLog('No last paymentId available.'); return; }
+    setCancelId(lastPaymentId);
+    pushLog(`Prefilled cancel id: ${lastPaymentId}`);
+  }
+
   const sdkPresent = hasPi || hasPiNow;
   const canPay = isReady && sdkPresent && isPiBrowser && !busy;
 
@@ -174,14 +200,26 @@ export default function PiQuickTestPage() {
             </div>
           )}
 
+          {(lastPaymentId || lastTxid) && (
+            <div style={styles.box}>
+              <div style={{fontSize:12}}>
+                <div><strong>Last paymentId:</strong> <code>{lastPaymentId || '(none)'}</code></div>
+                <div><strong>Last txid:</strong> <code>{lastTxid || '(none)'}</code></div>
+              </div>
+              <div style={{ display:'flex', gap:8, marginTop:8, flexWrap:'wrap' }}>
+                <button onClick={handleUseLastId} style={styles.btn}>Use last id</button>
+              </div>
+            </div>
+          )}
+
           {/* Clear pending controls */}
           <div style={styles.box}>
-            <div style={{ display:'flex', gap:12, alignItems:'center', marginBottom:10 }}>
+            <div style={{ display:'flex', gap:12, alignItems:'center', marginBottom:10, flexWrap:'wrap' }}>
               <input
                 placeholder="Payment ID to cancel"
                 value={cancelId}
                 onChange={(e)=>setCancelId(e.target.value)}
-                style={styles.input}
+                style={{ ...styles.input, maxWidth: '100%' }}
               />
               <button onClick={handleCancelById} disabled={cancelBusy || !cancelId.trim()} style={styles.btn}>
                 {cancelBusy ? 'Working…' : 'Clear pending by ID'}

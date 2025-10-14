@@ -1,6 +1,7 @@
-// ===== PATH: src/lib/pi/PiQuickClient.js =====
-// Exposes CreatePayment(..., onPaymentSucceed, { memo, metadata, onPaymentId })
-
+// ============================================================================
+// PATH: src/lib/pi/PiQuickClient.js
+// Clean client – DO NOT paste this into a page file.
+// ============================================================================
 import { readyPi } from '../piClient';
 import PiNetworkService from './PiBackendIntegration';
 
@@ -10,15 +11,13 @@ function isSandboxEnv() {
 }
 
 async function ensurePi() {
-  // Uses your resolvePiNetworkLabel() internally (Pi Testnet for sandbox/testnet)
+  // Why: your readyPi() resolves "Pi Testnet" for sandbox/testnet automatically
   return readyPi({ network: undefined });
 }
 
 export async function onIncompletePaymentFound(paymentDTO) {
-  try {
-    // Proactively clear stale
-    await PiNetworkService.cancelPiNetworkPayment(paymentDTO?.identifier);
-  } catch {}
+  // Why: clear stale pendings so user can try again
+  try { await PiNetworkService.cancelPiNetworkPayment(paymentDTO?.identifier); } catch {}
 }
 
 export async function getUserAccessToken() {
@@ -58,7 +57,6 @@ export async function CreatePayment(amount, onPaymentSucceed, opts = {}) {
     { amount, memo, metadata },
     {
       onReadyForServerApproval: async (paymentId) => {
-        // Expose paymentId early for UI
         try { onPaymentId && onPaymentId(paymentId); } catch {}
         await PiNetworkService.approvePiNetworkPayment(paymentId);
       },
@@ -75,12 +73,20 @@ export async function CreatePayment(amount, onPaymentSucceed, opts = {}) {
   );
 }
 
-export default { CreatePayment, authWithPiNetwork, getUserAccessToken, getUserWalletAddress, onIncompletePaymentFound, isSandboxEnv };
+export default {
+  CreatePayment,
+  authWithPiNetwork,
+  getUserAccessToken,
+  getUserWalletAddress,
+  onIncompletePaymentFound,
+  isSandboxEnv,
+};
 
 
-// ===== PATH: src/pages/dev/pi-quick-test.jsx =====
-// Adds display of paymentId/txid, “Use last id”, and “Check status”
-
+// ============================================================================
+// PATH: src/pages/dev/pi-quick-test.jsx
+// Clean page – imports ONLY. No duplicate exports.
+// ============================================================================
 import { useMemo, useState } from 'react';
 import Head from 'next/head';
 import { usePiEnv } from '@/hooks/usePiEnv';
@@ -95,17 +101,12 @@ export default function PiQuickTestPage() {
   const [authed, setAuthed] = useState(null);
   const [log, setLog] = useState([]);
   const [hasPiNow, setHasPiNow] = useState(false);
-
   const [lastPaymentId, setLastPaymentId] = useState('');
   const [lastTxid, setLastTxid] = useState('');
-
   const [cancelId, setCancelId] = useState('');
   const [cancelBusy, setCancelBusy] = useState(false);
 
-  const envRaw = useMemo(
-    () => (process.env.NEXT_PUBLIC_PI_ENV || process.env.PI_ENV || '').toLowerCase().trim(),
-    []
-  );
+  const envRaw = useMemo(() => (process.env.NEXT_PUBLIC_PI_ENV || process.env.PI_ENV || '').toLowerCase().trim(), []);
   const envLabel = envRaw || '(not set)';
   const sandboxFlag = envRaw === 'sandbox' || envRaw === 'testnet';
   const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : '(server)';
@@ -181,11 +182,11 @@ export default function PiQuickTestPage() {
     }
   }
 
+  // Utilities
   async function httpGet(path) {
     const r = await fetch(path);
     const t = await r.text();
     if (!r.ok) throw new Error(t || `HTTP ${r.status}`);
-    // Guard against HTML error pages from Next
     if ((r.headers.get('content-type') || '').includes('text/html')) throw new Error('Unexpected HTML response');
     try { return JSON.parse(t); } catch { return t; }
   }
@@ -246,7 +247,6 @@ export default function PiQuickTestPage() {
             </div>
           )}
 
-          {/* Last IDs */}
           {(lastPaymentId || lastTxid) && (
             <div style={styles.box}>
               <div style={{fontSize:12}}>
@@ -260,7 +260,6 @@ export default function PiQuickTestPage() {
             </div>
           )}
 
-          {/* Clear pending controls */}
           <div style={styles.box}>
             <div style={{ display:'flex', gap:12, alignItems:'center', marginBottom:10, flexWrap:'wrap' }}>
               <input
@@ -320,3 +319,65 @@ const styles = {
   warn: { background: '#3a1b1b', border: '1px solid #6b1a1a', padding: 10, borderRadius: 8, color: '#ffb4b4' },
   logBox: { background: '#0e1530', border: '1px solid #2a356f', borderRadius: 10, padding: 12, minHeight: 140, maxHeight: 260, overflow: 'auto' },
 };
+
+
+// ============================================================================
+// PATH: src/pages/api/pi/payments/cancel.js
+// Cancel a pending payment (server-side). Needed for clearing stale.
+// ============================================================================
+import axios from 'axios';
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') return res.status(405).end();
+  const { paymentId } = req.body || {};
+  if (!paymentId) return res.status(400).json({ ok: false, error: 'Missing paymentId' });
+
+  const base = (process.env.PI_BASE_URL || 'https://api.minepi.com').replace(/\/+$/, '');
+  const apiKey = process.env.PI_API_KEY_TESTNET;
+  if (!apiKey) return res.status(500).json({ ok: false, error: 'Missing PI_API_KEY_TESTNET' });
+
+  try {
+    const auth = { headers: { Authorization: `Key ${apiKey}` } };
+    const id = encodeURIComponent(paymentId);
+    const { data: pay } = await axios.get(`${base}/v2/payments/${id}`, auth);
+
+    if (pay?.status?.developer_completed || pay?.status?.cancelled || pay?.status?.user_cancelled) {
+      return res.json({ ok: true, alreadyDone: true, pay });
+    }
+    const { data } = await axios.post(`${base}/v2/payments/${id}/cancel`, {}, auth);
+    return res.json({ ok: true, result: data });
+  } catch (e) {
+    const status = e?.response?.status || 500;
+    const details = e?.response?.data || e?.message;
+    console.error('[api/pi/payments/cancel]', status, details);
+    return res.status(status).json({ ok: false, error: 'Cancel failed', details });
+  }
+}
+
+
+// ============================================================================
+// PATH: src/pages/api/pi/incomplete.js
+// List server-side incomplete payments. Fixes your "auto-clear failed: HTML" issue.
+// ============================================================================
+import axios from 'axios';
+
+export default async function handler(req, res) {
+  if (req.method !== 'GET') return res.status(405).end();
+
+  const base = (process.env.PI_BASE_URL || 'https://api.minepi.com').replace(/\/+$/, '');
+  const apiKey = process.env.PI_API_KEY_TESTNET;
+  if (!apiKey) return res.status(500).json({ ok: false, error: 'Missing PI_API_KEY_TESTNET' });
+
+  try {
+    const auth = { headers: { Authorization: `Key ${apiKey}` } };
+    const { data } = await axios.get(`${base}/v2/payments/incomplete_server_payments`, auth);
+    // Normalize shape to always return array under .incomplete_server_payments
+    const list = Array.isArray(data) ? data : (data?.incomplete_server_payments || []);
+    return res.json({ incomplete_server_payments: list });
+  } catch (e) {
+    const status = e?.response?.status || 500;
+    const details = e?.response?.data || e?.message;
+    console.error('[api/pi/incomplete]', status, details);
+    return res.status(status).json({ ok: false, error: 'Fetch incomplete failed', details });
+  }
+}
