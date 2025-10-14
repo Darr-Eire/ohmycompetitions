@@ -1,9 +1,10 @@
 // File: src/pages/dev/pi-quick-test.jsx
+// NOTE: No import of isSandboxEnv. We compute locally to avoid build-time mismatch.
 
 import { useMemo, useState } from 'react';
 import Head from 'next/head';
 import { usePiEnv } from 'hooks/usePiEnv';
-import { CreatePayment, authWithPiNetwork, isSandboxEnv } from 'lib/pi/PiQuickClient';
+import { CreatePayment, authWithPiNetwork } from 'lib/pi/PiQuickClient';
 
 export default function PiQuickTestPage() {
   const { isPiBrowser, hasPi, isReady } = usePiEnv();
@@ -13,10 +14,14 @@ export default function PiQuickTestPage() {
   const [authed, setAuthed] = useState(null);
   const [log, setLog] = useState([]);
 
-  const envLabel = useMemo(() => {
-    const raw = (process.env.NEXT_PUBLIC_PI_ENV || process.env.PI_ENV || '').toLowerCase().trim();
-    return raw || '(not set)';
-  }, []);
+  const envRaw = useMemo(
+    () => (process.env.NEXT_PUBLIC_PI_ENV || process.env.PI_ENV || '').toLowerCase().trim(),
+    []
+  );
+  const envLabel = envRaw || '(not set)';
+
+  // testnet/sandbox both map to "Pi Testnet" in SDK init in your repo
+  const sandboxFlag = envRaw === 'sandbox' || envRaw === 'testnet';
 
   function pushLog(line) {
     setLog((prev) => [`${new Date().toLocaleTimeString()}  ${line}`, ...prev].slice(0, 200));
@@ -28,7 +33,8 @@ export default function PiQuickTestPage() {
       pushLog('Authenticating…');
       const ans = await authWithPiNetwork();
       setAuthed(ans);
-      pushLog(`Authenticated as @${ans.username}, wallet ${ans.wallet_address.slice(0, 6)}…`);
+      const short = ans.wallet_address ? `${ans.wallet_address.slice(0, 6)}…` : 'n/a';
+      pushLog(`Authenticated as @${ans.username}, wallet ${short}`);
     } catch (e) {
       pushLog(`Auth failed: ${e.message || e}`);
     } finally {
@@ -42,13 +48,11 @@ export default function PiQuickTestPage() {
       const amt = Number(amount);
       if (!amt || amt <= 0) throw new Error('Enter a positive amount');
       pushLog(`Creating payment for ${amt} π…`);
-      await CreatePayment(amt, (paymentId, txid) => {
-        // Why: Make success visible during manual test
-        pushLog(`✅ Payment completed. paymentId=${paymentId} txid=${txid}`);
-      }, {
-        memo,
-        metadata: { source: 'pi-quick-test', ts: Date.now() },
-      });
+      await CreatePayment(
+        amt,
+        (paymentId, txid) => pushLog(`✅ Payment completed. paymentId=${paymentId} txid=${txid}`),
+        { memo, metadata: { source: 'pi-quick-test', ts: Date.now() } }
+      );
       pushLog('Payment flow finished.');
     } catch (e) {
       pushLog(`❌ Payment error: ${e.message || e}`);
@@ -61,56 +65,28 @@ export default function PiQuickTestPage() {
 
   return (
     <>
-      <Head>
-        <title>Pi Quick Test</title>
-      </Head>
+      <Head><title>Pi Quick Test</title></Head>
       <main style={styles.main}>
         <div style={styles.card}>
           <h1 style={styles.h1}>Pi Test Payment</h1>
 
-          <div style={styles.kv}>
-            <span>Pi Browser:</span>
-            <strong>{isPiBrowser ? 'YES' : 'NO'}</strong>
-          </div>
-          <div style={styles.kv}>
-            <span>SDK Present:</span>
-            <strong>{hasPi ? 'YES' : 'NO'}</strong>
-          </div>
-          <div style={styles.kv}>
-            <span>Client Env:</span>
-            <code>NEXT_PUBLIC_PI_ENV={envLabel}</code>
-          </div>
-          <div style={styles.kv}>
-            <span>Sandbox/Testnet:</span>
-            <strong>{isSandboxEnv() ? 'YES (Testnet)' : 'NO (Mainnet?)'}</strong>
-          </div>
+          <div style={styles.kv}><span>Pi Browser:</span><strong>{isPiBrowser ? 'YES' : 'NO'}</strong></div>
+          <div style={styles.kv}><span>SDK Present:</span><strong>{hasPi ? 'YES' : 'NO'}</strong></div>
+          <div style={styles.kv}><span>Client Env:</span><code>NEXT_PUBLIC_PI_ENV={envLabel}</code></div>
+          <div style={styles.kv}><span>Sandbox/Testnet:</span><strong>{sandboxFlag ? 'YES (Testnet)' : 'NO (Mainnet?)'}</strong></div>
 
           {!isPiBrowser && (
-            <p style={styles.warn}>
-              Open this page inside <strong>Pi Browser</strong> to run the SDK flow.
-            </p>
+            <p style={styles.warn}>Open this page inside <strong>Pi Browser</strong> to run the SDK flow.</p>
           )}
 
           <div style={styles.row}>
             <label style={styles.label}>Amount (π)</label>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              style={styles.input}
-            />
+            <input type="number" step="0.01" min="0" value={amount} onChange={(e) => setAmount(e.target.value)} style={styles.input} />
           </div>
 
           <div style={styles.row}>
             <label style={styles.label}>Memo</label>
-            <input
-              type="text"
-              value={memo}
-              onChange={(e) => setMemo(e.target.value)}
-              style={styles.input}
-            />
+            <input type="text" value={memo} onChange={(e) => setMemo(e.target.value)} style={styles.input} />
           </div>
 
           <div style={styles.buttons}>
@@ -153,5 +129,5 @@ const styles = {
   kv: { display: 'flex', gap: 8, alignItems: 'baseline', marginBottom: 6 },
   box: { background: '#0e1530', border: '1px solid #2a356f', borderRadius: 10, padding: 12, marginTop: 12 },
   warn: { background: '#3a1b1b', border: '1px solid #6b1a1a', padding: 10, borderRadius: 8, color: '#ffb4b4' },
-  logBox: { background: '#0e1530', border: '1px solid #2a356f', borderRadius: 10, padding: 12, minHeight: 140, maxHeight: 260, overflow: 'auto' },
+  logBox: { background: '#0e1530', border: '1px solid '#2a356f', borderRadius: 10, padding: 12, minHeight: 140, maxHeight: 260, overflow: 'auto' },
 };
