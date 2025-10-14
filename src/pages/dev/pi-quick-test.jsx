@@ -1,5 +1,4 @@
 // File: src/pages/dev/pi-quick-test.jsx
-// NOTE: No import of isSandboxEnv. We compute locally to avoid build-time mismatch.
 
 import { useMemo, useState } from 'react';
 import Head from 'next/head';
@@ -19,8 +18,6 @@ export default function PiQuickTestPage() {
     []
   );
   const envLabel = envRaw || '(not set)';
-
-  // testnet/sandbox both map to "Pi Testnet" in SDK init in your repo
   const sandboxFlag = envRaw === 'sandbox' || envRaw === 'testnet';
 
   function pushLog(line) {
@@ -129,5 +126,6 @@ const styles = {
   kv: { display: 'flex', gap: 8, alignItems: 'baseline', marginBottom: 6 },
   box: { background: '#0e1530', border: '1px solid #2a356f', borderRadius: 10, padding: 12, marginTop: 12 },
   warn: { background: '#3a1b1b', border: '1px solid #6b1a1a', padding: 10, borderRadius: 8, color: '#ffb4b4' },
-  logBox: { background: '#0e1530', border: '1px solid '#2a356f', borderRadius: 10, padding: 12, minHeight: 140, maxHeight: 260, overflow: 'auto' },
+  // FIXED: correct border string and keep overflow string intact
+  logBox: { background: '#0e1530', border: '1px solid #2a356f', borderRadius: 10, padding: 12, minHeight: 140, maxHeight: 260, overflow: 'auto' },
 };
