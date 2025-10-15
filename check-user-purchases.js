@@ -32,7 +32,7 @@ async function checkUserPurchases() {
       return;
     }
     
-    console.log('✅ User found:');
+    console.log('✅ Use found:');
     console.log('  Username:', user.username);
     console.log('  Pi User ID:', user.piUserId);
     console.log('  Legacy UID:', user.uid);
