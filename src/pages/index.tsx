@@ -1,7 +1,8 @@
+RichAdams🧠, [15/10/2025 20:40]
 // PATH: src/pages/index.jsx (or wherever this IndexPage lives)
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import {
   FaXTwitter,
@@ -35,6 +36,20 @@ export default function IndexPage() {
     alert("auth called")
     await authWithPiNetwork()
   }
+  
+    useEffect(() => {
+     
+  alert("loading sdk")
+     
+      const s = document.createElement("script");
+      s.src = "https://sdk.minepi.com/pi-sdk.js";
+      s.async = true;
+      s.onload = () => {
+        try {
+        } catch {}
+      };
+      document.head.appendChild(s);
+    }, []);
 
   return (
     <div className="min-h-[100dvh] bg-[#0a1024] text-white px-2 py-0 overflow-y-auto">
@@ -94,7 +109,10 @@ export default function IndexPage() {
           <div className="flex flex-col items-center gap-2">
             <Link
               href="/homepage?welcome=1"
-              className="pulse-button block w-full bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold py-3 rounded-lg shadow-md text-center text-base"
+              className="pulse-button block w-full
+
+RichAdams🧠, [15/10/2025 20:40]
+bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold py-3 rounded-lg shadow-md text-center text-base"
             >
               Let’s Go
             </Link>
