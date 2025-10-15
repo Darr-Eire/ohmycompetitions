@@ -6,12 +6,6 @@ node_modules/
 
 # Environment variables
 .env.local
-.env
-
-.env.testnet.local
-.env.production
-.env.testnet
-
 
 # Logs
 *.log
@@ -23,9 +17,6 @@ node_modules/
 # OS generated files
 .DS_Store
 Thumbs.db
-
-scripts/seedAdmin.js
-scripts/seedPiCashCode.js
 
 OMC/
 .vercel

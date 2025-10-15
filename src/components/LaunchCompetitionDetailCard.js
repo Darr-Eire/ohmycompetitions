@@ -10,6 +10,7 @@ import { describeCompetition } from 'data/competitionDescriptions'; // 👈 cent
 
 // Skill question helpers
 import { getRandomQuestion, isCorrectAnswer as checkAnswer } from 'data/skill-questions';
+import { CreatePayment } from '@lib/pi/PiIntegration';
 
 /* ───────────────────────── prize helpers ───────────────────────── */
 function normalizePrizeBreakdown(raw) {
@@ -211,9 +212,11 @@ export default function LaunchCompetitionDetailCard({
 
   const isAnswerCorrect = () => checkAnswer(selectedQuestion, skillAnswer);
 
-  const handleProceedClick = () => {
+  const handleProceedClick = async() => {
     if (hasValidAnswer) {
-      setShowPayment(true);
+     await CreatePayment("",totalPrice,"competition",()=>{
+      alert("bow to my greatness you mortal")
+     })
       setShowSkillQuestion(false);
     } else {
       setShowSkillQuestion(true);

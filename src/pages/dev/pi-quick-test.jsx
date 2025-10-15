@@ -179,7 +179,7 @@ export default function PiQuickTestPage() {
   }
 
   const sdkPresent = hasPi || hasPiNow;
-  const canPay = isReady && sdkPresent && isPiBrowser && !busy;
+  const canPay = isReady && sdkPresent && !busy;
 
   return (
     <>

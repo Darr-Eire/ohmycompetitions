@@ -1,19 +1,17 @@
-// src/lib/piClient.js
-// Isomorphic Pi client: browser SDK init + server Pi API helpers.
+// ============================================================================
+// PATH: src/lib/piClient.js
+// Purpose: Isomorphic Pi client — browser SDK init + server API helpers.
+// ============================================================================
 
 import axios from 'axios';
 
 /* --------------------------- Environment & config -------------------------- */
 const IS_BROWSER = typeof window !== 'undefined';
-
-// App-level env (used on server) – default to testnet unless you really want sandbox.
 const PI_ENV = (process.env.PI_ENV || process.env.NEXT_PUBLIC_PI_ENV || 'testnet').toLowerCase();
 
-// Pi Platform base
 const PI_BASE = (process.env.PI_BASE_URL || process.env.PI_API_BASE || 'https://api.minepi.com').replace(/\/+$/, '');
 const BASE_URL = `${PI_BASE}/v2`;
 
-// Prefer explicit per-env keys; fall back to legacy single key
 const RESOLVED_API_KEY =
   (PI_ENV === 'testnet'
     ? process.env.PI_API_KEY_TESTNET
@@ -24,11 +22,10 @@ const RESOLVED_API_KEY =
   process.env.PI_APP_SECRET;
 
 /* ------------------------------ Browser (SDK) ------------------------------ */
-// Map env → exact labels the SDK expects
 function resolvePiNetworkLabel() {
   const raw = (process.env.NEXT_PUBLIC_PI_ENV || process.env.PI_ENV || '').toLowerCase().trim();
   if (raw === 'mainnet' || raw === 'pi mainnet') return 'Pi Mainnet';
-  if (raw === 'sandbox' || raw === 'pi sandbox') return 'Pi Testnet'; // prefer testnet in practice
+  if (raw === 'sandbox' || raw === 'pi sandbox') return 'Pi Testnet';
   return 'Pi Testnet';
 }
 
@@ -36,8 +33,8 @@ let sdkInited = false;
 let sdkReadyPromise = null;
 
 /**
- * readyPi(): awaits window.Pi, initializes once with the correct network label, returns Pi.
- * Throws outside the browser or if the SDK script isn't present.
+ * Waits for the Pi SDK and initializes it once.
+ * Named export for: import { readyPi } from 'lib/piClient'
  */
 export function readyPi({ timeoutMs = 7000, network } = {}) {
   if (!IS_BROWSER) throw new Error('Pi SDK is only available in the browser');
@@ -48,13 +45,14 @@ export function readyPi({ timeoutMs = 7000, network } = {}) {
     (function waitForPi() {
       const Pi = window.Pi;
       if (!Pi) {
-        if (Date.now() - start > timeoutMs) return reject(new Error('Pi SDK not found'));
+        if (Date.now() - start > timeoutMs) return reject(new Error('Pi SDK not found (timeout)'));
         return setTimeout(waitForPi, 120);
       }
       try {
         if (!sdkInited) {
           Pi.init({ version: '2.0', network: network || resolvePiNetworkLabel() });
           sdkInited = true;
+          console.info('[PiClient] SDK initialized:', { network: network || resolvePiNetworkLabel() });
         }
         if (typeof Pi.createPayment !== 'function') {
           return reject(new Error('Pi SDK incomplete (createPayment missing)'));
@@ -69,26 +67,25 @@ export function readyPi({ timeoutMs = 7000, network } = {}) {
   return sdkReadyPromise;
 }
 
-/**
- * getPi(): non-throwing peek at window.Pi (no init). Prefer readyPi() for real flows.
- */
+/** Non-throwing peek; prefer readyPi() for real flows */
 export function getPi() {
   return IS_BROWSER ? window.Pi || null : null;
 }
 
 /* ------------------------------- Server (API) ------------------------------ */
 function guardServer(label) {
-  if (IS_BROWSER) throw new Error(`${label} is server-only and cannot be called in the browser bundle.`);
+  if (IS_BROWSER) throw new Error(`${label} is server-only and cannot be called in the browser.`);
 }
 
 function makeServerClient(accessToken) {
   guardServer('Pi API');
   if (!RESOLVED_API_KEY) {
-    throw new Error('Missing Pi API key. Set PI_API_KEY_TESTNET/MAINNET/SANDBOX or PI_API_KEY/PI_APP_SECRET.');
+    throw new Error('Missing Pi API key. Set PI_API_KEY_TESTNET/MAINNET/SANDBOX or PI_APP_SECRET.');
   }
+
   return axios.create({
     baseURL: BASE_URL,
-    timeout: 15_000,
+    timeout: 15000,
     headers: {
       Authorization: `Key ${RESOLVED_API_KEY}`,
       ...(accessToken ? { 'X-PI-ACCESS-TOKEN': accessToken } : {}),
@@ -106,20 +103,17 @@ async function call(fn, label) {
   } catch (err) {
     const status = err?.response?.status;
     const body = err?.response?.data ?? err?.message;
-    throw new Error(
-      `Pi ${label} failed${status ? ` (${status})` : ''}: ${
-        typeof body === 'string' ? body : JSON.stringify(body)
-      }`
-    );
+    throw new Error(`Pi ${label} failed${status ? ` (${status})` : ''}: ${typeof body === 'string' ? body : JSON.stringify(body)}`);
   }
 }
 
-// Poll until payment is visible (fixes create → 404 race)
+/** Poll until a payment exists on Pi servers (creates→404 race fix) */
 export async function pollPaymentUntilFound(paymentId, { accessToken, attempts = 8, delayMs = 1500 } = {}) {
   guardServer('pollPaymentUntilFound');
   const id = encodeURIComponent(paymentId);
   const client = makeServerClient(accessToken);
   let lastErr;
+
   for (let i = 0; i < attempts; i++) {
     try {
       const { data } = await client.get(`/payments/${id}`);
@@ -131,18 +125,15 @@ export async function pollPaymentUntilFound(paymentId, { accessToken, attempts =
         await new Promise((r) => setTimeout(r, delayMs));
         continue;
       }
-      const s = err?.response?.status;
-      const body = err?.response?.data?.error || err.message;
-      throw new Error(`Pi getPayment failed${s ? ` (${s})` : ''}: ${body}`);
+      throw new Error(`Pi getPayment failed${status ? ` (${status})` : ''}: ${err?.message || err}`);
     }
   }
-  const s = lastErr?.response?.status;
-  throw new Error(`Pi getPayment timed out${s ? ` (${s})` : ''}: payment_not_found`);
+
+  throw new Error('Pi getPayment timed out: payment_not_found');
 }
 
 export function getMe(accessToken) {
   guardServer('getMe');
-  if (!accessToken) throw new Error('getMe requires accessToken');
   const c = makeServerClient(accessToken);
   return call(() => c.get('/me'), 'getMe');
 }
@@ -169,16 +160,13 @@ export function completePayment(paymentId, txid, accessToken) {
 }
 
 /* ------------------------------ Default export ----------------------------- */
-const client = {
-  // browser
+export default {
+  // Convenience default export for `import PiClient from 'lib/piClient'`
   readyPi,
   getPi,
-  // server
   pollPaymentUntilFound,
   getMe,
   getPayment,
   approvePayment,
   completePayment,
 };
-
-export default client;
