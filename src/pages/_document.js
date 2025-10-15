@@ -8,7 +8,7 @@ export default function Document() {
       window.Pi.init({ version: '2.0', sandbox: false });
       alert("init done")
       window.__piInitDone = true;
-    } catch (e:any) {
+    } catch (e) {
       // eslint-disable-next-line no-console
       console.error(`[Pi] init error @ ${where}:`, e?.message || e);
     }
