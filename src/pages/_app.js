@@ -15,7 +15,7 @@ export default function App({ Component, pageProps }) {
 
   function initPiOnce(where = 'unknown') {
     if (typeof window === 'undefined' || !window.Pi || initDoneRef.current) return;
-    alert("no undef")
+    alert("no undef 2")
     try {
       window.Pi.init({ version: '2.0', sandbox: false, appId: APP_ID });
       initDoneRef.current = true;
