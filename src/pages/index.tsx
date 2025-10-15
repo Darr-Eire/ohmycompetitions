@@ -1,4 +1,4 @@
-RichAdams🧠, [15/10/2025 20:40]
+
 // PATH: src/pages/index.jsx (or wherever this IndexPage lives)
 "use client";
 
