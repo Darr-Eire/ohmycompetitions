@@ -15,9 +15,10 @@ export default function App({ Component, pageProps }) {
 
   function initPiOnce(where = 'unknown') {
     if (typeof window === 'undefined' || !window.Pi || initDoneRef.current) return;
-    alert("no undef 2")
+    alert("no undef 3")
     try {
-      window.Pi.init({ version: '2.0', sandbox: false, appId: APP_ID });
+      window.Pi.init({ version: '2.0', sandbox: false });
+      alert("init done")
       initDoneRef.current = true;
       window.__piInitDone = true;
       // eslint-disable-next-line no-console
