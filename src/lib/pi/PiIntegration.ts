@@ -31,7 +31,7 @@ export async function onIncompletePaymentFound(paymentDTO: PaymentDTO) {
 
 // Function to get user access token
 export async function getUserAccessToken(): Promise<string> {
-  await (window as any).Pi.init({ version: "2.0", sandbox: true });
+  await (window as any).Pi.init({ version: "2.0", sandbox: false });
   try {
     const answer: AuthenticateAnswer = await (window as any).Pi.authenticate(
       ["username", "payments", "wallet_address"],
@@ -63,7 +63,7 @@ export async function authWithPiNetwork(): Promise<{
   accessToken: string;
 }> {
   try {
-    await (window as any).Pi.init({ version: "2.0", sandbox: true });
+    await (window as any).Pi.init({ version: "2.0", sandbox: false });
     const answer: AuthenticateAnswer = await (window as any).Pi.authenticate(
       ["username", "payments", "wallet_address"],
       onIncompletePaymentFound

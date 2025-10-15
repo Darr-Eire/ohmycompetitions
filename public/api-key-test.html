@@ -303,7 +303,7 @@
       }
 
       try {
-        window.Pi.init({ version: "2.0", sandbox: true });
+        window.Pi.init({ version: "2.0", sandbox: false });
         log('✅ Pi SDK initialized in sandbox mode');
         piSdkReady = true;
         updateStatus('sdk-status', '✅ Pi SDK ready (sandbox mode)', 'success');

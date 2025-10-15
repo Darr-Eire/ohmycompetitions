@@ -200,7 +200,7 @@
                         
                         try {
                             log('Initializing Pi SDK with sandbox mode');
-                            window.Pi.init({ version: "2.0", sandbox: true });
+                            window.Pi.init({ version: "2.0", sandbox: false });
                             
                             setTimeout(() => {
                                 if (typeof window.Pi.authenticate === 'function') {
