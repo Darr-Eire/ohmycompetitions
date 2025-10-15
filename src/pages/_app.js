@@ -8,6 +8,7 @@ import Layout from '../components/Layout';
 import { PiAuthProvider } from '../context/PiAuthContext';
 
 const APP_ID = process.env.NEXT_PUBLIC_PI_APP_ID || '';
+
 function isSandbox() {
   const raw = (process.env.NEXT_PUBLIC_PI_ENV || process.env.PI_ENV || '').toLowerCase().trim();
   const flag = String(process.env.NEXT_PUBLIC_PI_SANDBOX || '').toLowerCase().trim();
@@ -16,26 +17,50 @@ function isSandbox() {
 
 export default function App({ Component, pageProps }) {
   const getLayout = Component.getLayout || ((page) => <Layout>{page}</Layout>);
-  const initDoneRef = useRef(false);
+  const initedRef = useRef(false);
 
-  function initPiOnce(where = 'unknown') {
-    if (typeof window === 'undefined' || !window.Pi || initDoneRef.current) return;
-    alert("no undef")
+  const tryInit = (where) => {
+    if (typeof window === 'undefined') return;
+    const Pi = window.Pi;
+    if (!Pi || initedRef.current) return;
     try {
-      window.Pi.init({ version: '2.0', sandbox: isSandbox(), appId: APP_ID });
-      initDoneRef.current = true;
+      Pi.init({ version: '2.0', appId: APP_ID, sandbox: isSandbox() });
+      initedRef.current = true;
       window.__piInitDone = true;
-      // eslint-disable-next-line no-console
-      console.info(`[Pi] init OK @ ${where}`, { sandbox: isSandbox(), appIdPresent: !!APP_ID });
+      console.info(`[Pi] init OK @ ${where}`, { sandbox: isSandbox(), appId: !!APP_ID });
     } catch (e) {
-      // eslint-disable-next-line no-console
       console.error(`[Pi] init error @ ${where}:`, e?.message || e);
     }
-  }
+  };
 
   useEffect(() => {
-    // If Pi Browser already injected window.Pi, init immediately.
-    if (typeof window !== 'undefined' && window.Pi) initPiOnce('useEffect(preloaded)');
+    // 1) If Pi already injected by Pi Browser
+    tryInit('useEffect(preloaded)');
+
+    // 2) Safety net: if SDK didn’t load yet, inject raw <script> after 1s
+    const t = setTimeout(() => {
+      if (typeof window !== 'undefined' && !window.Pi) {
+        const existing = document.querySelector('script[src*="sdk.minepi.com/pi-sdk.js"]');
+        if (!existing) {
+          const s = document.createElement('script');
+          s.src = 'https://sdk.minepi.com/pi-sdk.js';
+          s.async = true;
+          s.onload = () => tryInit('manual script onload');
+          s.onerror = () => console.error('[Pi] SDK script failed to load');
+          document.head.appendChild(s);
+        }
+      }
+    }, 1000);
+
+    // 3) Retry init a few times in case of iframe timing
+    let tries = 0;
+    const tick = setInterval(() => {
+      if (initedRef.current) { clearInterval(tick); return; }
+      tryInit(`retry#${++tries}`);
+      if (tries >= 10) clearInterval(tick);
+    }, 500);
+
+    return () => { clearTimeout(t); clearInterval(tick); };
   }, []);
 
   return (
@@ -44,12 +69,12 @@ export default function App({ Component, pageProps }) {
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       </Head>
 
-      {/* Load SDK as early as possible in the client */}
+      {/* Primary load path */}
       <Script
         id="pi-sdk"
         src="https://sdk.minepi.com/pi-sdk.js"
         strategy="beforeInteractive"
-        onLoad={() => initPiOnce('Script.onLoad')}
+        onLoad={() => tryInit('Script.onLoad')}
       />
 
       {getLayout(<Component {...pageProps} />)}
