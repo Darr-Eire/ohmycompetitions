@@ -11,7 +11,7 @@ export function isSandboxEnv() {
 }
 
 async function ensurePi() {
-  // why: guarantees SDK present + initialized (fixes "Call init() first")
+  // guarantees SDK present + initialized (fixes "Call init() first")
   const Pi = await readyPi({ timeoutMs: 10000 });
   if (!Pi) throw new Error('Pi SDK not ready');
   return Pi;
@@ -73,62 +73,79 @@ export async function authWithPiNetwork() {
   return { username: ans.username, accessToken: ans.accessToken, wallet_address: ans.wallet_address };
 }
 
-export async function CreatePayment(
-  userUid: string,
-  amount: number,
-  action: string,
-  onPaymentSucceed: Function
-): Promise<any> {
+/**
+ * @param {string} userUid
+ * @param {number} amount
+ * @param {string} action
+ * @param {(payment?: any) => Promise<void>|void} onPaymentSucceed
+ */
+export async function CreatePayment(userUid, amount, action, onPaymentSucceed) {
+  // ensure auth context is fresh (and triggers onIncompletePaymentFound if needed)
   await authWithPiNetwork();
-  const paymentResult = await (window as any).Pi.createPayment(
+
+  const Pi = await ensurePi();
+
+  const paymentResult = await Pi.createPayment(
     {
-      amount: amount,
-      memo: "Pro payment Orbit",
-      metadata: { paymentSource: "Orbit" },
+      amount,
+      memo: action || 'OMC payment',
+      metadata: { paymentSource: 'OMC', userUid, action },
     },
     {
-      onReadyForServerApproval: async (paymentId: string) => {
-        await piNetworkService.approvePiNetworkPayment(paymentId);
-      },
-      onReadyForServerCompletion: async (paymentId: string, txid: string) => {
+      onReadyForServerApproval: async (paymentId) => {
         try {
-          await piNetworkService.completePiNetworkPayment(paymentId, txid);
-
-          await onPaymentSucceed(); // Call original success callback
-        } catch (error) {
-          console.error(
-            "Error during server completion or Firestore update:",
-            error
-          );
-          // It's important to decide how to handle errors here.
-          // If completePiNetworkPayment fails, onPaymentSucceed should likely not be called.
-          // If Firestore update fails, the Pi payment was successful, but our DB is out of sync.
-          // For now, we'll let the original onError handle Pi errors,
-          // and log Firestore errors. The onPaymentSucceed might still be called if Pi part was ok.
-
-          // Re-throwing the error if it's critical, or calling a specific error handler
-          // This depends on how errors from onPaymentSucceed are handled by the caller
-          if (
-            !(error instanceof Error && error.message.includes("Firestore"))
-          ) {
-            throw error; // Re-throw if not a Firestore error, let Pi SDK handle it.
-          }
-          // If it is a Firestore error, the Pi payment succeeded. We still call onPaymentSucceed.
-          onPaymentSucceed();
+          await PiNetworkService.approvePiNetworkPayment(paymentId);
+        } catch (e) {
+          console.error('[Pi] approvePiNetworkPayment failed', e);
+          throw e;
         }
       },
-      onCancel: async (paymentId: string) => {
-        //The payment has been cancelled
+      onReadyForServerCompletion: async (paymentId, txid) => {
+        try {
+          await PiNetworkService.completePiNetworkPayment(paymentId, txid);
+          if (typeof onPaymentSucceed === 'function') {
+            await onPaymentSucceed();
+          }
+        } catch (error) {
+          console.error('[Pi] completePiNetworkPayment failed', error);
+          // If server completion failed, cancel to unlock user flow
+          try {
+            await PiNetworkService.cancelPiNetworkPayment(paymentId);
+          } catch (e2) {
+            console.error('[Pi] cancel after completion failure also failed', e2);
+          }
+          throw error;
+        }
       },
-      onError: async (error: any, paymentDTO: PaymentDTO) => {
-        console.error("Payment error:", error);
-        await piNetworkService.cancelPiNetworkPayment(paymentDTO.identifier);
+      onCancel: async (paymentId) => {
+        console.warn('[Pi] Payment cancelled by user', { paymentId });
+        // optional: notify backend
+        try {
+          if (paymentId) await PiNetworkService.cancelPiNetworkPayment(paymentId);
+        } catch (e) {
+          console.error('[Pi] cancelPiNetworkPayment (onCancel) failed', e);
+        }
+      },
+      onError: async (error, paymentDTO) => {
+        const id =
+          paymentDTO?.identifier ||
+          paymentDTO?.id ||
+          paymentDTO?.paymentId ||
+          null;
+        console.error('[Pi] Payment error', { error, id, paymentDTO });
+        if (id) {
+          try {
+            await PiNetworkService.cancelPiNetworkPayment(id);
+          } catch (e) {
+            console.error('[Pi] cancelPiNetworkPayment (onError) failed', e);
+          }
+        }
       },
     }
   );
+
   return paymentResult;
 }
-
 
 // keep a default export too, in case any code imports default
 export default {
