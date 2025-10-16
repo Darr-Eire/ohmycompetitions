@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import Head from 'next/head';
 import { usePiEnv } from 'hooks/usePiEnv';
 import { CreatePayment, authWithPiNetwork } from '@lib/pi/PiClient';
-import PiNetworkService from 'lib/pi/PiBackendIntegration';
++ import { PiNetworkService } from '../../lib/pi/PiBackendIntegration';
 
 export default function PiQuickTestPage() {
   const { isPiBrowser, hasPi, isReady } = usePiEnv();
