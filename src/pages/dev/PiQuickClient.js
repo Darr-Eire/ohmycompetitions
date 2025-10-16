@@ -3,7 +3,7 @@
 // Exposes named exports used by your page.
 // ============================================================================
 import { readyPi } from 'lib/piClient';
-import { PiNetworkService } from './PiBackendIntegration';
+import { PiNetworkService } from '../../lib/pi/PiBackendIntegration';
 
 
 
