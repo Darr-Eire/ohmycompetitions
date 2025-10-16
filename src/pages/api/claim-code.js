@@ -1,5 +1,7 @@
+﻿export const runtime = 'nodejs';
+
 // src/pages/api/claim-code.js
-import { connectToDatabase } from 'lib/mongodb';
+import { getDb } from 'lib/db.js';
 import mongoose from 'mongoose';
 
 export default async function handler(req, res) {
@@ -14,7 +16,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    await connectToDatabase();
+    await getDb();
     const db = mongoose.connection.db;
 
     const active = await db.collection('pi_cash_codes').findOne({
@@ -33,14 +35,14 @@ export default async function handler(req, res) {
     if (now > new Date(active.claimExpiresAt)) {
       return res.status(400).json({
         success: false,
-        message: 'Claim window expired ⌛',
+        message: 'Claim window expired âŒ›',
       });
     }
 
     if (input.trim().toUpperCase() !== active.code) {
       return res.status(400).json({
         success: false,
-        message: 'Wrong code ❌',
+        message: 'Wrong code âŒ',
       });
     }
 
@@ -49,9 +51,10 @@ export default async function handler(req, res) {
       { $set: { claimed: true, claimedAt: new Date() } }
     );
 
-    return res.status(200).json({ success: true, message: 'Claim successful 🎉' });
+    return res.status(200).json({ success: true, message: 'Claim successful ðŸŽ‰' });
   } catch (err) {
     console.error('[ERROR] /api/claim-code:', err);
     return res.status(500).json({ error: 'Server error' });
   }
 }
+

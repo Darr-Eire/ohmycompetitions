@@ -1,9 +1,11 @@
+﻿export const runtime = 'nodejs';
 
 
-import { connectToDatabase } from 'lib/mongodb';
+
+import { getDb } from 'lib/db.js';
 
 export default async function handler(req, res) {
-  const { db } = await connectToDatabase();
+  const db = await getDb();
 
   if (req.method === 'GET') {
     const activeCode = await db.collection('pi_cash_codes').findOne(
@@ -14,7 +16,7 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'POST') {
-    // 🔐 Authenticate & authorize admin
+    // ðŸ” Authenticate & authorize admin
     const session = await getServerSession(req, res, authOptions);
     if (!session || session.user.role !== 'admin') {
       return res.status(401).json({ error: 'Unauthorized' });
@@ -43,3 +45,4 @@ export default async function handler(req, res) {
 
   return res.status(405).end();
 }
+

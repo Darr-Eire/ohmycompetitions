@@ -1,4 +1,6 @@
-import { connectToDatabase } from 'lib/mongodb';
+﻿export const runtime = 'nodejs';
+
+import { getDb } from 'lib/db.js';
 import PiCashCode from 'models/PiCashCode';
 
 
@@ -11,7 +13,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    await connectToDatabase();
+    await getDb();
 
     const now = new Date();
     const weekStart = new Date(now);
@@ -37,3 +39,4 @@ export default async function handler(req, res) {
     res.status(500).json({ error: 'Failed to insert test code' });
   }
 }
+

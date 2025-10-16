@@ -1,7 +1,9 @@
+﻿export const runtime = 'nodejs';
+
 // file: src/pagesapi/admin/login.js
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import { connectToDatabase } from '../../../lib/mongodb';
+import { getDb } from 'lib/db.js';
 import User from '../../../models/User';
 
 const COOKIE_NAME = 'omc_admin';
@@ -81,7 +83,7 @@ export default async function handler(req, res) {
     }
 
     // DB admin path
-    await connectToDatabase();
+    await getDb();
     const isEmail = loginId.includes('@');
     const query = isEmail
       ? { email: loginId.toLowerCase(), role: 'admin' }
@@ -117,3 +119,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
+

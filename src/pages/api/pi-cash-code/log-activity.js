@@ -1,4 +1,6 @@
-import { connectToDatabase } from '../../../lib/mongodb';
+﻿export const runtime = 'nodejs';
+
+import { getDb } from 'lib/db.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
@@ -10,7 +12,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { db } = await connectToDatabase();
+    const db = await getDb();
 
     await db.collection('piCashPurchases').insertOne({
       username,
@@ -20,7 +22,8 @@ export default async function handler(req, res) {
 
     res.status(200).json({ success: true });
   } catch (error) {
-    console.error('[❌] Error logging activity:', error);
+    console.error('[âŒ] Error logging activity:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 }
+

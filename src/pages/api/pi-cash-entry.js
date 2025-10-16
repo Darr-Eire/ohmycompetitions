@@ -1,6 +1,8 @@
+﻿export const runtime = 'nodejs';
+
 // src/pages/api/pi-cash-entry.js
 
-import { connectToDatabase } from 'lib/mongodb';
+import { getDb } from 'lib/db.js';
 import mongoose from 'mongoose';
 
 export default async function handler(req, res) {
@@ -15,7 +17,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    await connectToDatabase();
+    await getDb();
     const db = mongoose.connection.db;
 
     const weekStartDate = new Date(`${week}T00:00:00Z`);
@@ -46,3 +48,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
+

@@ -1,7 +1,7 @@
 // /src/pages/api/vouchers/redeem.js
 export const config = { api: { bodyParser: true } };
 
-import { dbConnect } from 'lib/db';
+import { getDb } from 'lib/db.js';
 import Voucher from 'models/Voucher';
 import TicketCredit from 'models/TicketCredit';
 import Competition from 'models/Competition';

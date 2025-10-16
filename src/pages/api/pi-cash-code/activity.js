@@ -1,25 +1,28 @@
-import { connectToDatabase } from '../../../lib/mongodb';
+export const runtime = 'nodejs';
+
+import { getDb } from 'lib/db.js';
 
 export default async function handler(req, res) {
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET');
+    return res.status(405).json({ error: 'Method Not Allowed' });
+  }
+
   try {
-    const { db } = await connectToDatabase();
+    const db = await getDb();
 
-    const purchases = await db
-      .collection('piCashPurchases')
-      .find({})
-      .sort({ timestamp: -1 })
-      .limit(10)
-      .toArray();
+    const codeId = String(req.query.codeId || '');
+    const query = codeId ? { codeId } : {};
+    const doc = await db
+      .collection('piCashActivity')
+      .find(query)
+      .sort({ updatedAt: -1 })
+      .limit(1)
+      .next();
 
-    const activity = purchases.map((doc) => ({
-      username: doc.username || 'Anonymous',
-      quantity: doc.quantity || 1,
-      timestamp: doc.timestamp?.toISOString() || new Date().toISOString(),
-    }));
-
-    res.status(200).json(activity);
-  } catch (error) {
-    console.error('[❌] Error fetching activity feed:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(200).json({ ok: true, doc: doc || null });
+  } catch (err) {
+    console.error('❌ [/api/pi-cash-code/activity] error:', err?.message || err);
+    return res.status(500).json({ ok: false, error: 'DB_CONNECT_FAILED' });
   }
 }
