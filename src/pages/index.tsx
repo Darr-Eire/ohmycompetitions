@@ -1,6 +1,6 @@
 // PATH: src/pages/index.jsx
 "use client";
-
+import type { ReactElement } from 'react';
 import React from "react";
 import Link from "next/link";
 import {
@@ -105,6 +105,8 @@ export default function IndexPage() {
   );
 }
 
-IndexPage.getLayout = function PageLayout(page) {
+IndexPage.getLayout = function PageLayout(page: ReactElement) {
   return <>{page}</>;
 };
+
+export default IndexPage;
