@@ -1,4 +1,4 @@
-// PATH: src/lib/pi/PiIntegration.ts (or .js if that's what you use)
+// PATH: src/lib/pi/PiIntegration.ts
 import axios, { AxiosResponse } from "axios";
 import { PiNetworkService } from "./PiBackendIntegration";
 
@@ -6,13 +6,11 @@ interface PaymentDTO {
   identifier: string;
   transaction?: { txid?: string };
 }
-
 interface AuthenticateAnswer {
   accessToken: string;
   username: string;
   wallet_address: string;
 }
-
 interface APIAnswerData {
   username: string;
   userUid: string;
@@ -20,22 +18,16 @@ interface APIAnswerData {
 
 const piNetworkService = PiNetworkService.connect();
 
-/**
- * Local helper: await the singleton Pi SDK readiness promise exposed by _app.js.
- * This is the ONLY change your other files needed to avoid first-load failures.
- */
+/** Await the singleton Pi SDK readiness promise exposed by _app.js */
 async function readyPi(timeoutMs = 15000): Promise<any> {
-  // Cast window to any to avoid TS complaining about __readyPi
   const w = (typeof window !== "undefined" ? (window as any) : undefined);
   if (!w || typeof w.__readyPi !== "function") {
     throw new Error("Pi SDK not injected yet");
   }
-
   let timer: ReturnType<typeof setTimeout> | undefined;
   const killer = new Promise((_, rej) => {
     timer = setTimeout(() => rej(new Error("Pi ready timeout")), timeoutMs);
   });
-
   try {
     const Pi = await Promise.race([w.__readyPi(), killer]);
     return Pi;
@@ -44,56 +36,69 @@ async function readyPi(timeoutMs = 15000): Promise<any> {
   }
 }
 
+/** Small helper so backend calls inside SDK callbacks never hard-block UI */
+async function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
+  let t: ReturnType<typeof setTimeout> | undefined;
+  const killer = new Promise<never>((_, rej) => {
+    t = setTimeout(() => rej(new Error(`${label} timeout after ${ms}ms`)), ms);
+  });
+  try {
+    const res = await Promise.race([p, killer]);
+    return res as T;
+  } finally {
+    if (t) clearTimeout(t);
+  }
+}
 
-// Function to handle incomplete payment found
+// ---------------------------------------------------------------------------
+// Incomplete payment handler
+// ---------------------------------------------------------------------------
 export async function onIncompletePaymentFound(paymentDTO: PaymentDTO) {
   try {
-    alert("incomplete payment found " + JSON.stringify(paymentDTO));
+    console.info("[Pi] Incomplete payment found:", paymentDTO);
     const paymentId = paymentDTO?.identifier;
     const txid = paymentDTO?.transaction?.txid;
 
     if (paymentId && txid) {
-      await piNetworkService.completePiNetworkPayment(paymentId, txid);
+      // Don’t let this block auth indefinitely.
+      await withTimeout(
+        piNetworkService.completePiNetworkPayment(paymentId, txid),
+        8000,
+        "completePiNetworkPayment"
+      );
       alert("incomplete payment completed.");
     } else if (paymentId) {
-      // no tx yet; nothing to complete—optionally cancel on server to clean state
-      // await piNetworkService.cancelPiNetworkPayment(paymentId);
-      console.info("[Pi] Incomplete payment without txid; left pending.", { paymentId });
+      // Optionally cancel to clean state (commented to preserve your flow)
+      // await withTimeout(piNetworkService.cancelPiNetworkPayment(paymentId), 8000, "cancelPiNetworkPayment");
+      console.info("[Pi] Incomplete payment had no txid; left pending", { paymentId });
     }
   } catch (e) {
-    console.error("[Pi] Error handling incomplete payment", e);
+    console.error("[Pi] Error in onIncompletePaymentFound", e);
+    // Intentionally swallow so authenticate can still finish
   }
 }
 
-// Function to get user access token
+// ---------------------------------------------------------------------------
+// Public helpers (API kept identical)
+// ---------------------------------------------------------------------------
 export async function getUserAccessToken(): Promise<string> {
   const Pi = await readyPi();
-  try {
-    const answer: AuthenticateAnswer = await Pi.authenticate(
-      ["username", "payments", "wallet_address"],
-      onIncompletePaymentFound
-    );
-    return answer.accessToken;
-  } catch (error) {
-    throw error;
-  }
+  const answer: AuthenticateAnswer = await Pi.authenticate(
+    ["username", "payments", "wallet_address"],
+    onIncompletePaymentFound
+  );
+  return answer.accessToken;
 }
 
-// Function to get user wallet address
 export async function getUserWalletAddress(): Promise<string> {
   const Pi = await readyPi();
-  try {
-    const answer: AuthenticateAnswer = await Pi.authenticate(
-      ["username", "payments", "wallet_address"],
-      onIncompletePaymentFound
-    );
-    return answer.wallet_address;
-  } catch (error) {
-    throw error;
-  }
+  const answer: AuthenticateAnswer = await Pi.authenticate(
+    ["username", "payments", "wallet_address"],
+    onIncompletePaymentFound
+  );
+  return answer.wallet_address;
 }
 
-// Function to authenticate with Pi Network
 export async function authWithPiNetwork(): Promise<{
   username: string;
   data: APIAnswerData;
@@ -102,68 +107,88 @@ export async function authWithPiNetwork(): Promise<{
   const Pi = await readyPi();
   try {
     alert("auth called new version 2.");
-    const answer: AuthenticateAnswer = await Pi.authenticate(
-      ["username", "payments", "wallet_address"],
-      onIncompletePaymentFound
+    console.time("[PiAuth] authenticate");
+    // Add an auth watchdog so the UI never hangs forever
+    const authWatchdog = new Promise<never>((_, rej) =>
+      setTimeout(() => rej(new Error("authenticate timeout after 25s")), 25000)
     );
+
+    const answer: AuthenticateAnswer = await Promise.race([
+      Pi.authenticate(["username", "payments", "wallet_address"], onIncompletePaymentFound),
+      authWatchdog,
+    ]) as AuthenticateAnswer;
+
+    console.timeEnd("[PiAuth] authenticate");
     alert(JSON.stringify(answer));
 
-    const APIAnswer: AxiosResponse<{ data: APIAnswerData }> = await axios.get(
-      "https://api.minepi.com/v2/me",
-      {
-        headers: {
-          Authorization: "Bearer " + answer.accessToken,
-        },
-      }
+    console.time("[PiAuth] /v2/me");
+    const APIAnswer: AxiosResponse<{ data: APIAnswerData }> = await withTimeout(
+      axios.get("https://api.minepi.com/v2/me", {
+        headers: { Authorization: "Bearer " + answer.accessToken, Accept: "application/json" },
+        timeout: 12000,
+      }),
+      15000,
+      "GET /v2/me"
     );
+    console.timeEnd("[PiAuth] /v2/me");
 
     // Keep exact return shape you already consume
     return { ...(APIAnswer.data as any), accessToken: answer.accessToken };
-  } catch (error) {
-    console.log(error);
-    alert("error during auth");
+  } catch (error: any) {
+    console.error("[PiAuth] Error", error);
+    alert(error?.message === "authenticate timeout after 25s" ? "Auth timed out" : "error during auth");
     throw new Error("Error while authenticating");
   }
 }
 
-// Function to create a payment
 export async function CreatePayment(
   userUid: string,
   amount: number,
   action: string,
   onPaymentSucceed: Function
 ): Promise<any> {
-  // Ensure user is authenticated first (kept your flow)
+  // Keep your flow: force login before payment
   await authWithPiNetwork();
 
   const Pi = await readyPi();
 
   const paymentResult = await Pi.createPayment(
     {
-      amount: amount,
+      amount,
       memo: "Donation to Arcadia", // left as-is per your request
       metadata: { paymentSource: "Arcadia" },
     },
     {
       onReadyForServerApproval: async (paymentId: string) => {
-        await piNetworkService.approvePiNetworkPayment(paymentId);
+        await withTimeout(
+          piNetworkService.approvePiNetworkPayment(paymentId),
+          10000,
+          "approvePiNetworkPayment"
+        );
       },
       onReadyForServerCompletion: async (paymentId: string, txid: string) => {
-        await piNetworkService.completePiNetworkPayment(paymentId, txid);
-        try {
-          onPaymentSucceed();
-        } catch (_) {}
+        await withTimeout(
+          piNetworkService.completePiNetworkPayment(paymentId, txid),
+          10000,
+          "completePiNetworkPayment"
+        );
+        try { onPaymentSucceed(); } catch {}
       },
       onCancel: async (_paymentId: string) => {
-        // user cancelled; nothing to do (left as-is)
+        // user cancelled; no-op
       },
       onError: async (error: any, paymentDTO: PaymentDTO) => {
         console.error("Payment error:", error);
         if (paymentDTO?.identifier) {
-          await piNetworkService.cancelPiNetworkPayment(paymentDTO.identifier);
+          await withTimeout(
+            piNetworkService.cancelPiNetworkPayment(paymentDTO.identifier),
+            8000,
+            "cancelPiNetworkPayment"
+          ).catch(() => {});
         }
       },
     }
   );
+
   return paymentResult;
 }
