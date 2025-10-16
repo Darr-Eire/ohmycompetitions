@@ -39,12 +39,11 @@ async function readyPi(timeoutMs = 15000): Promise<any> {
 /** Called by Pi.authenticate when an incomplete payment exists */
 async function onIncompletePaymentFound(paymentDTO: PaymentDTO) {
   try {
-    alert("incomplete payment found " + JSON.stringify(paymentDTO));
     const id = paymentDTO?.identifier;
     const tx = paymentDTO?.transaction?.txid;
     if (id && tx) {
       await piNetworkService.completePiNetworkPayment(id, tx);
-      alert("incomplete payment completed.");
+      console.info("[Pi] Completed previously incomplete payment", { id, tx });
     } else if (id) {
       // Optionally cancel to clean state:
       // await piNetworkService.cancelPiNetworkPayment(id);
@@ -83,12 +82,10 @@ async function authWithPiNetwork(): Promise<{
 }> {
   const Pi = await readyPi();
   try {
-    alert("auth called new version 2.");
     const answer: AuthenticateAnswer = await Pi.authenticate(
       ["username", "payments", "wallet_address"],
       onIncompletePaymentFound
     );
-    alert(JSON.stringify(answer));
 
     const APIAnswer: AxiosResponse<{ data: APIAnswerData }> = await axios.get(
       "https://api.minepi.com/v2/me",
@@ -100,7 +97,6 @@ async function authWithPiNetwork(): Promise<{
     const msg =
       error?.message ||
       (typeof error === "string" ? error : JSON.stringify(error));
-    alert("Auth error: " + msg);
     console.error("[Pi] authenticate failed:", error);
     throw new Error(msg);
   }

@@ -139,7 +139,7 @@ const competitionCategories = [
 <div className="flex flex-col items-center text-center leading-tight">
   <Link href="/homepage" className="block">
     <span className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent drop-shadow">
-      Oh My Competitions
+      OMC
     </span>
   </Link>
 
