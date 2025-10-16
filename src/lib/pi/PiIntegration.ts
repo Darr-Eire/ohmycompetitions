@@ -25,20 +25,25 @@ const piNetworkService = PiNetworkService.connect();
  * This is the ONLY change your other files needed to avoid first-load failures.
  */
 async function readyPi(timeoutMs = 15000): Promise<any> {
-  if (typeof window === "undefined" || typeof window.__readyPi !== "function") {
+  // Cast window to any to avoid TS complaining about __readyPi
+  const w = (typeof window !== "undefined" ? (window as any) : undefined);
+  if (!w || typeof w.__readyPi !== "function") {
     throw new Error("Pi SDK not injected yet");
   }
-  let timer: any;
+
+  let timer: ReturnType<typeof setTimeout> | undefined;
   const killer = new Promise((_, rej) => {
     timer = setTimeout(() => rej(new Error("Pi ready timeout")), timeoutMs);
   });
+
   try {
-    const Pi = await Promise.race([window.__readyPi(), killer]);
+    const Pi = await Promise.race([w.__readyPi(), killer]);
     return Pi;
   } finally {
-    clearTimeout(timer);
+    if (timer) clearTimeout(timer);
   }
 }
+
 
 // Function to handle incomplete payment found
 export async function onIncompletePaymentFound(paymentDTO: PaymentDTO) {
