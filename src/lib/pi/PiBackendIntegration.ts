@@ -140,7 +140,7 @@ export class PiNetworkService {
         error
       );
 
-RichAdams🧠, [16/10/2025 13:57]
+
 throw error;
     }
   }
