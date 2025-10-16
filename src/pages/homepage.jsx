@@ -210,7 +210,74 @@ function HomePage() {
   /* ============================= RENDER ============================= */
   return (
     <PageWrapper>
-     
+      {/* ----------------------- Welcome Popup ----------------------- */}
+      {showWelcome && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="welcome-title"
+          aria-describedby="welcome-desc-1"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowWelcome(false);
+          }}
+        >
+          <div
+            className="relative bg-[#0f1b33] border border-cyan-400 rounded-2xl p-8 max-w-md w-full shadow-[0_0_30px_#00f0ff88] text-center animate-omc-fade-in space-y-3"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 id="welcome-title" className="text-2xl font-bold text-cyan-300 font-orbitron">
+              ☘️ {t('welcome_title', 'Céad Míle Fáilte')} ☘️
+            </h2>
+
+            <p id="welcome-desc-1" className="text-white/90 text-sm">
+              {t('welcome_to_omc', 'Welcome To OMC')}
+            </p>
+
+            <p id="welcome-desc-2" className="text-white/90 text-sm">
+              {t('let_competitions_begin', 'Let The Competitions Begin')}
+            </p>
+
+            <div className="flex flex-col gap-3 pt-2">
+              <Link
+                href="/login"
+                ref={loginBtnRef}
+                className="flex justify-center items-center gap-2 bg-transparent border border-cyan-400 text-cyan-300 font-semibold py-2 px-6 rounded-lg hover:bg-cyan-400/10 transition focus:outline-none focus:ring-2 focus:ring-cyan-400"
+              >
+                <span>{t('login', 'Login')}</span>
+                <span className="text-xs font-normal text-cyan-200">
+                  ({t('previous_users', 'Previous Users')})
+                </span>
+              </Link>
+
+              <Link
+                href="/signup"
+                className="flex justify-center items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-300 text-black font-semibold py-2 px-6 rounded-lg shadow-md hover:opacity-90 transition focus:outline-none focus:ring-2 focus:ring-cyan-400"
+              >
+                <span>{t('sign_up', 'Sign Up')}</span>
+                <span className="text-xs font-normal text-black/70">
+                  ({t('new_users', 'New Users')})
+                </span>
+              </Link>
+
+              <button
+                onClick={() => setShowWelcome(false)}
+                className="bg-transparent border border-cyan-400 text-cyan-300 font-semibold py-2 rounded-lg hover:bg-cyan-400/10 transition focus:outline-none focus:ring-2 focus:ring-cyan-400"
+              >
+                {t('explore_app', 'Explore App')}
+              </button>
+            </div>
+
+            <button
+              onClick={() => setShowWelcome(false)}
+              aria-label={t('close', 'Close')}
+              className="absolute top-3 right-3 text-cyan-300/80 hover:text-cyan-100 focus:outline-none focus:ring-2 focus:ring-cyan-400 rounded-md px-2 py-1"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ========================= CONTENT ========================= */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-16">
