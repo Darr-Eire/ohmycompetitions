@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
@@ -44,9 +44,6 @@ const FAKE_STAGES = [
 function HomePage() {
   const { t } = useSafeTranslation();
 
-  const [showWelcome, setShowWelcome] = useState(false);
-  const loginBtnRef = useRef(null);
-
   const [liveCompetitions, setLiveCompetitions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -57,34 +54,6 @@ function HomePage() {
     []
   );
   const staticSlugs = useMemo(() => new Set(staticItems.map((i) => i?.comp?.slug).filter(Boolean)), [staticItems]);
-
-  /* --------------------- welcome modal ---------------------- */
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('welcome') === '1') {
-      setShowWelcome(true);
-      const url = new URL(window.location.href);
-      url.searchParams.delete('welcome');
-      window.history.replaceState({}, '', url);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!showWelcome) return;
-
-    if (loginBtnRef.current) loginBtnRef.current.focus();
-
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    const onKey = (e) => e.key === 'Escape' && setShowWelcome(false);
-    window.addEventListener('keydown', onKey);
-
-    return () => {
-      document.body.style.overflow = prev;
-      window.removeEventListener('keydown', onKey);
-    };
-  }, [showWelcome]);
 
   /* -------------------- merge live + static ----------------- */
   const mergeCompetitionData = (liveData) => {
@@ -210,75 +179,6 @@ function HomePage() {
   /* ============================= RENDER ============================= */
   return (
     <PageWrapper>
-      {/* ----------------------- Welcome Popup ----------------------- */}
-      {showWelcome && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="welcome-title"
-          aria-describedby="welcome-desc-1"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setShowWelcome(false);
-          }}
-        >
-          <div
-            className="relative bg-[#0f1b33] border border-cyan-400 rounded-2xl p-8 max-w-md w-full shadow-[0_0_30px_#00f0ff88] text-center animate-omc-fade-in space-y-3"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 id="welcome-title" className="text-2xl font-bold text-cyan-300 font-orbitron">
-              ☘️ {t('welcome_title', 'Céad Míle Fáilte')} ☘️
-            </h2>
-
-            <p id="welcome-desc-1" className="text-white/90 text-sm">
-              {t('welcome_to_omc', 'Welcome To OMC')}
-            </p>
-
-            <p id="welcome-desc-2" className="text-white/90 text-sm">
-              {t('let_competitions_begin', 'Let The Competitions Begin')}
-            </p>
-
-            <div className="flex flex-col gap-3 pt-2">
-              <Link
-                href="/login"
-                ref={loginBtnRef}
-                className="flex justify-center items-center gap-2 bg-transparent border border-cyan-400 text-cyan-300 font-semibold py-2 px-6 rounded-lg hover:bg-cyan-400/10 transition focus:outline-none focus:ring-2 focus:ring-cyan-400"
-              >
-                <span>{t('login', 'Login')}</span>
-                <span className="text-xs font-normal text-cyan-200">
-                  ({t('previous_users', 'Previous Users')})
-                </span>
-              </Link>
-
-              <Link
-                href="/signup"
-                className="flex justify-center items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-300 text-black font-semibold py-2 px-6 rounded-lg shadow-md hover:opacity-90 transition focus:outline-none focus:ring-2 focus:ring-cyan-400"
-              >
-                <span>{t('sign_up', 'Sign Up')}</span>
-                <span className="text-xs font-normal text-black/70">
-                  ({t('new_users', 'New Users')})
-                </span>
-              </Link>
-
-              <button
-                onClick={() => setShowWelcome(false)}
-                className="bg-transparent border border-cyan-400 text-cyan-300 font-semibold py-2 rounded-lg hover:bg-cyan-400/10 transition focus:outline-none focus:ring-2 focus:ring-cyan-400"
-              >
-                {t('explore_app', 'Explore App')}
-              </button>
-            </div>
-
-            <button
-              onClick={() => setShowWelcome(false)}
-              aria-label={t('close', 'Close')}
-              className="absolute top-3 right-3 text-cyan-300/80 hover:text-cyan-100 focus:outline-none focus:ring-2 focus:ring-cyan-400 rounded-md px-2 py-1"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* ========================= CONTENT ========================= */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-16">
         {/* Marquee */}
@@ -469,18 +369,16 @@ function Section({
   viewMoreHref,
   viewMoreText = 'View More',
   extraClass = '',
-  category,          // <- optional: if your data has a category field, pass it in
+  category,          // optional
 }) {
   const { t } = useSafeTranslation();
   const lowerTitle = typeof title === 'string' ? title.toLowerCase() : '';
   const lowerCat = typeof category === 'string' ? category.toLowerCase() : '';
 
-  // Prefer explicit category when available
   const isFree   = lowerCat === 'free'   || wordIncludes(lowerTitle, ['free', 'gratis']);
   const isPi     = lowerCat === 'pi'     || wordIncludes(lowerTitle, ['pi', 'π']);
   const isCrypto = lowerCat === 'crypto' || wordIncludes(lowerTitle, ['crypto', 'web3', 'blockchain']);
 
-  // New: Tech/Gadgets/Electronics bucket
   const TECH_KEYWORDS = [
     'tech','technology','gadget','gadgets','electronics','electronic',
     'device','devices','hardware','computer','pc','laptop','notebook',
@@ -488,10 +386,6 @@ function Section({
     'earbuds','drone','camera','wearable','smartwatch','router','gpu','cpu'
   ];
   const isTech = lowerCat === 'tech' || wordIncludes(lowerTitle, TECH_KEYWORDS);
-
-  // ...use isTech wherever you branch UI/logic
-  // e.g., special badge:
-  // const badge = isTech ? 'Tech' : isPi ? 'Pi' : isCrypto ? 'Crypto' : isFree ?
 
   return (
     <section className={`space-y-6 ${extraClass}`}>
@@ -655,8 +549,6 @@ function TopWinnersCarousel({ t }) {
 const HomePageNoSSR = dynamic(() => Promise.resolve(HomePage), { ssr: false });
 
 /* ---- Make this page use full-width layout (no side gutters in Layout) ---- */
-HomePageNoSSR.getLayout = (page) => (
-  <Layout fullWidth>{page}</Layout>
-);
+HomePageNoSSR.getLayout = (page) => <Layout fullWidth>{page}</Layout>;
 
 export default HomePageNoSSR;
