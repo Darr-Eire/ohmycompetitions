@@ -1,51 +1,24 @@
-// src/components/PiLoginButton.js
 'use client';
-import { useEffect, useState } from 'react';
-import { usePiAuth } from '../context/PiAuthContext';
-import { usePiEnv } from '../hooks/usePiEnv';
+import { useEffect, useMemo, useState } from 'react';
 
-export default function PiLoginButton({ onSuccess }) {
-  const { sdkReady, loginWithPi, loading, error } = usePiAuth();
-  const { isPiBrowser } = usePiEnv(); // don't rely on hasPi anymore
-  const [ready, setReady] = useState(sdkReady);
+export function usePiEnv() {
+  const [isReady, setIsReady] = useState(false);
+
+  const isPiBrowser = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    const ua = navigator.userAgent || '';
+    const ref = typeof document !== 'undefined' ? document.referrer || '' : '';
+    return /PiBrowser/i.test(ua) || ref.includes('minepi.com') || window.name === 'pi_browser';
+  }, []);
 
   useEffect(() => {
-    let alive = true;
-    setReady(sdkReady);
-    if (!sdkReady && typeof window !== 'undefined' && window.__readyPi) {
-      window.__readyPi().then(() => alive && setReady(true)).catch(() => {});
-    }
-    return () => { alive = false; };
-  }, [sdkReady]);
+    setIsReady(true); // client hydrated
+  }, []);
 
-  const handleLogin = async () => {
-    if (!isPiBrowser) {
-      alert('Open this site inside the Pi Browser to login with Pi.');
-      return;
-    }
-    if (typeof window !== 'undefined' && window.__readyPi) {
-      try { await window.__readyPi(); } catch {}
-    }
-    await loginWithPi(onSuccess);
-  };
+  const hasPi = typeof window !== 'undefined' && !!window.Pi;
 
-  return (
-    <>
-      <button
-        onClick={handleLogin}
-        disabled={!ready || loading}
-        className={`btn btn-primary ${(!ready || loading) ? 'opacity-60 cursor-not-allowed' : ''}`}
-        aria-busy={loading}
-        title={!ready ? 'Loading Pi SDK…' : 'Login with Pi'}
-      >
-        { !ready ? 'Loading Pi SDK…' : (loading ? 'Authorizing…' : 'Login with Pi') }
-      </button>
-
-      { !!error && (
-        <p className="mt-1 text-xs text-rose-300 text-center">
-          {String(error)}
-        </p>
-      )}
-    </>
-  );
+  return { isPiBrowser, hasPi, isReady };
 }
+
+// support BOTH: `import { usePiEnv } ...` and `import usePiEnv ...`
+export default usePiEnv;
