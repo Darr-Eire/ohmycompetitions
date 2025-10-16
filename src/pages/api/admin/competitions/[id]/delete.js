@@ -1,17 +1,18 @@
+// src/pages/api/admin/delete-competition.js
+export const runtime = 'nodejs';
+
 import { ObjectId } from 'mongodb';
-import { connectToDatabase } from '../../../../../lib/mongodb';
+import { getDb } from '@/lib/db.js'; // ✅ use unified connector path
 
 // Simple admin authentication helper
 function verifyAdminSession(req) {
   try {
     const adminSessionCookie = req.headers.cookie
       ?.split('; ')
-      .find(row => row.startsWith('admin-session='))
+      .find((row) => row.startsWith('admin-session='))
       ?.split('=')[1];
 
-    if (!adminSessionCookie) {
-      return false;
-    }
+    if (!adminSessionCookie) return false;
 
     const session = JSON.parse(decodeURIComponent(adminSessionCookie));
     return session && session.role === 'admin' && session.isAdmin;
@@ -22,11 +23,12 @@ function verifyAdminSession(req) {
 }
 
 export default async function handler(req, res) {
-  // Check admin authentication
+  // Require valid admin session
   if (!verifyAdminSession(req)) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
+  // Allow DELETE only
   if (req.method !== 'DELETE') {
     res.setHeader('Allow', ['DELETE']);
     return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
@@ -34,12 +36,13 @@ export default async function handler(req, res) {
 
   const { id } = req.query;
 
+  // Validate ObjectId
   if (!ObjectId.isValid(id)) {
     return res.status(400).json({ error: 'Invalid ID' });
   }
 
   try {
-    const { db } = await connectToDatabase();
+    const db = await getDb(); // ✅ unified connector
 
     const result = await db
       .collection('competitions')
@@ -50,13 +53,15 @@ export default async function handler(req, res) {
     }
 
     console.log('✅ Competition deleted:', { id });
-    return res.status(200).json({ message: 'Competition deleted successfully' });
+    return res
+      .status(200)
+      .json({ message: 'Competition deleted successfully', deletedId: id });
   } catch (err) {
     console.error('❌ Error deleting competition:', {
       error: err.message,
       stack: err.stack,
-      id
+      id,
     });
     return res.status(500).json({ error: 'Internal Server Error' });
   }
-} 
+}

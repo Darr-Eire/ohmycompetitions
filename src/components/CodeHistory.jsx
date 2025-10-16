@@ -1,38 +1,32 @@
-// src/components/CodeHistory.jsx
-import { useEffect, useState } from 'react';
+'use client';
+import React from 'react';
 
-const CodeHistory = () => {
-  const [history, setHistory] = useState([]);
-
-  useEffect(() => {
-    const fetchHistory = async () => {
-      try {
-        const res = await fetch('/api/pi-cash-code/history');
-        const data = await res.json();
-        setHistory(data);
-      } catch (err) {
-        console.error('Failed to fetch history:', err);
-      }
-    };
-
-    fetchHistory();
-  }, []);
+export default function CodeHistory({ history = [] }) {
+  // Ensure history is always an array
+  const safeHistory = Array.isArray(history) ? history : [];
 
   return (
-    <div className="border border-cyan-700 bg-black/30 rounded-xl p-4 space-y-3 mt-6">
-      <h3 className="text-cyan-300 font-semibold">📘 Past Code History</h3>
-      {history.length === 0 ? (
-        <p className="text-cyan-400 text-sm">No history yet.</p>
+    <div className="p-4 bg-[#0a1024]/60 rounded-xl border border-cyan-600 shadow-[0_0_20px_#00fff055]">
+      <h3 className="text-cyan-300 text-lg font-bold mb-3 font-orbitron">
+        Recent Pi Cash Code History
+      </h3>
+
+      {safeHistory.length === 0 ? (
+        <p className="text-white/70 text-sm italic">No history found yet.</p>
       ) : (
         <ul className="space-y-2 text-sm">
-          {history.map((entry, i) => (
+          {safeHistory.map((entry, i) => (
             <li key={i} className="border border-cyan-800 p-3 rounded-md">
               <div className="flex justify-between">
-                <span className="text-cyan-300">Week {entry.weekStart}</span>
-                <span className="text-white font-mono">{entry.code}</span>
+                <span className="text-cyan-300">
+                  Week {entry.weekStart || i + 1}
+                </span>
+                <span className="text-white">
+                  Code: {entry.code || '—'}
+                </span>
               </div>
-              <div className="text-xs text-cyan-500 mt-1">
-                Winner: <strong>{entry.winner}</strong>
+              <div className="text-cyan-200 text-xs mt-1">
+                Winner: {entry.winner || '—'}
               </div>
             </li>
           ))}
@@ -40,6 +34,4 @@ const CodeHistory = () => {
       )}
     </div>
   );
-};
-
-export default CodeHistory;
+}

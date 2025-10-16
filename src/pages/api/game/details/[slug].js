@@ -1,39 +1,34 @@
-import { connectToDatabase } from '../../../../lib/mongodb';
-import initCORS from '../../../../lib/cors';
+// src/pages/api/game/details/[slug].js  (adjust path to match yours)
+export const runtime = 'nodejs';
+
+import { getDb } from '@/lib/db.js';              // ✅ unified connector
+import initCORS from '../../../../lib/cors';      // keep your existing CORS helper
 
 export default async function handler(req, res) {
-  try {
-    // Handle CORS
-    const shouldEndRequest = await initCORS(req, res);
-    if (shouldEndRequest) {
-      return;
-    }
+  // CORS first
+  const shouldEndRequest = await initCORS(req, res);
+  if (shouldEndRequest) return;
 
-    if (req.method !== 'GET') {
-      return res.status(405).json({ error: 'Method not allowed' });
-    }
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', ['GET']);
+    return res.status(405).json({ success: false, error: 'Method Not Allowed', code: 'METHOD_NOT_ALLOWED' });
+  }
 
-    const { slug } = req.query;
+  // Read slug early so it's available in both try/catch
+  const slug = String(req.query?.slug || '');
 
-    if (!slug) {
-      return res.status(400).json({ 
-        success: false,
-        error: 'Missing slug parameter',
-        code: 'MISSING_SLUG'
-      });
-    }
-
-    // Connect to database
-    const { db } = await connectToDatabase().catch(error => {
-      console.error('❌ Database connection error:', error);
-      throw new Error('Database connection failed');
+  if (!slug) {
+    return res.status(400).json({
+      success: false,
+      error: 'Missing slug parameter',
+      code: 'MISSING_SLUG',
     });
+  }
 
-    if (!db) {
-      throw new Error('Database connection failed');
-    }
+  try {
+    const db = await getDb(); // ✅ use unified connector
 
-    // Get competition by slug using the correct nested structure
+    // Find by nested field comp.slug with a projection
     const competition = await db.collection('competitions').findOne(
       { 'comp.slug': slug },
       {
@@ -52,62 +47,59 @@ export default async function handler(req, res) {
           prize: 1,
           imageUrl: 1,
           location: 1,
-          theme: 1
-        }
+          theme: 1,
+        },
       }
     );
 
     if (!competition) {
       console.log('❌ Game not found:', { slug });
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
         error: 'Game not found',
-        code: 'GAME_NOT_FOUND'
+        code: 'GAME_NOT_FOUND',
       });
     }
 
-    // Format the response with default values, handling the nested structure
-    const response = {
-      success: true,
-      data: {
-        id: competition._id,
-        status: competition.comp?.status || 'active',
-        ticketsSold: competition.comp?.ticketsSold || 0,
-        totalTickets: competition.comp?.totalTickets || 100,
-        entryFee: competition.comp?.entryFee || 0,
-        startsAt: competition.comp?.startsAt,
-        endsAt: competition.comp?.endsAt,
-        slug: competition.comp?.slug,
-        paymentType: competition.comp?.paymentType || 'pi',
-        piAmount: competition.comp?.piAmount,
-        title: competition.title,
-        prize: competition.prize,
-        imageUrl: competition.imageUrl,
-        location: competition.location || 'Online',
-        theme: competition.theme
-      }
+    // Shape response safely (handle nested comp)
+    const data = {
+      id: competition._id,
+      status: competition.comp?.status ?? 'active',
+      ticketsSold: competition.comp?.ticketsSold ?? 0,
+      totalTickets: competition.comp?.totalTickets ?? 100,
+      entryFee: competition.comp?.entryFee ?? 0,
+      startsAt: competition.comp?.startsAt ?? null,
+      endsAt: competition.comp?.endsAt ?? null,
+      slug: competition.comp?.slug ?? slug,
+      paymentType: competition.comp?.paymentType ?? 'pi',
+      piAmount: competition.comp?.piAmount ?? null,
+      title: competition.title ?? null,
+      prize: competition.prize ?? null,
+      imageUrl: competition.imageUrl ?? null,
+      location: competition.location ?? 'Online',
+      theme: competition.theme ?? null,
     };
 
     console.log('✅ Game details found:', {
       slug,
-      title: competition.title,
-      entryFee: competition.comp?.entryFee,
-      ticketsSold: competition.comp?.ticketsSold,
-      totalTickets: competition.comp?.totalTickets,
-      paymentType: competition.comp?.paymentType
+      title: data.title,
+      entryFee: data.entryFee,
+      ticketsSold: data.ticketsSold,
+      totalTickets: data.totalTickets,
+      paymentType: data.paymentType,
     });
 
-    res.status(200).json(response);
+    return res.status(200).json({ success: true, data });
   } catch (error) {
     console.error('❌ Error fetching game details:', {
-      error: error.message,
-      stack: error.stack,
-      slug
+      error: error?.message || String(error),
+      stack: error?.stack,
+      slug,
     });
-    res.status(500).json({ 
+    return res.status(500).json({
       success: false,
       error: 'Internal server error',
-      code: 'INTERNAL_ERROR'
+      code: 'INTERNAL_ERROR',
     });
   }
-} 
+}

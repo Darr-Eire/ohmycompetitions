@@ -48,15 +48,15 @@ export default function Header() {
   const safeT = (key, fallback = key) => (!mounted || !ready ? fallback : t(key));
 
   /* ---------------- Nav data (tuples) ---------------- */
-  const competitionCategories = [
-    [safeT('live_now', 'Live Now'), '/competitions/live-now'],
-    [safeT('launch_week', 'Launch Week'), '/competitions/launch-week'],
-    [safeT('tech_gadgets', 'Tech/Gadgets'), '/competitions/tech&gadgets'],
-    [safeT('daily_weekly', 'Daily/Weekly'), '/competitions/daily'],
-    [safeT('pi_giveaways', 'Pi Giveaways'), '/competitions/pi'],
-    [safeT('pi_stages', 'Pi Stages'), '/battles'],
-    [safeT('pi_cash_code', 'Pi Cash Code'), '/pi-cash-code', safeT('coming_soon', 'Coming Soon')],
-  ];
+const competitionCategories = [
+  [safeT('live_now', 'Live Now'), '/competitions/live-now'],
+  [safeT('launch_week', 'Launch Week'), '/competitions/launch-week'],
+  [safeT('tech_gadgets', 'Tech/Gadgets'), '/competitions/tech&gadgets'],
+  [safeT('daily_weekly', 'Daily/Weekly'), '/competitions/daily'],
+  [safeT('pi_giveaways', 'Pi Giveaways'), '/competitions/pi'],
+  [safeT('pi_stages', 'Pi Stages'), '/battles', safeT('coming_soon', 'Coming Soon')], // 👈 add note
+  [safeT('pi_cash_code', 'Pi Cash Code'), '/pi-cash-code', safeT('coming_soon', 'Coming Soon')],
+];
 
   const navItems = [[safeT('home', 'Home'), '/homepage']];
   const miniGames = [[safeT('try_your_luck', 'Try Your Luck'), '/try-your-luck', safeT('coming_soon', 'Coming Soon')]];
@@ -135,18 +135,19 @@ export default function Header() {
           </svg>
         </button>
 
-        {/* Logo + welcome */}
-        <div className="flex flex-col items-center text-center">
-          <Link
-            href="/homepage"
-            className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 text-transparent bg-clip-text drop-shadow"
-          />
-          {user && (
-            <div className="text-cyan-300 text-sm font-orbitron mt-0.5">
-              Welcome <span className="text-cyan-300">{user.username}</span>
-            </div>
-          )}
-        </div>
+{/* Logo + welcome */}
+<div className="flex flex-col items-center text-center">
+  <Link
+    href="/homepage"
+    className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 text-transparent bg-clip-text drop-shadow"
+  />
+  {user && (
+    <div className="text-cyan-300 text-sm font-orbitron mt-0.5">
+      Welcome <span className="text-cyan-300">{user.username}</span>
+    </div>
+  )}
+</div>
+
 
         {/* Language + auth + notifications */}
         <div className="flex items-center gap-3">
