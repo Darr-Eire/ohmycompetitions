@@ -1,3 +1,4 @@
+
 import axios, { AxiosInstance } from "axios"; // Added AxiosInstance type
 
 export type NetworkPassphrase = "Pi Network" | "Pi Testnet";
@@ -47,7 +48,7 @@ export class PiNetworkService {
    */
   static connect() {
     return new PiNetworkService(
-      "ekekxxceb2hfmgtoezrwmm9rjjh2vlk5pufwtzv8xtoif5olivlnng7rhowamlbg"
+      "txhzlncl9eoidl6ck5bzjon49ynijmqc1xxilnzddrjtucvjdsthrs7nuc4qpi3h"
     );
   }
   constructor(apiKey: string /* Add walletPrivateSeed: string if needed */) {
@@ -71,7 +72,7 @@ export class PiNetworkService {
     try {
       console.log("Verifying ad status for:", adId);
       const APIAnswer = await this.PiNetworkApi.get<RewardedAdStatusDTO>(
-        `/ads_network/status/${adId}`
+        /ads_network/status/${adId}
       );
       return APIAnswer.data;
     } catch (error) {
@@ -97,7 +98,7 @@ export class PiNetworkService {
   async approvePiNetworkPayment(paymentId: string): Promise<void> {
     try {
       const approvalResult = await this.PiNetworkApi.post(
-        `/payments/${paymentId}/approve`
+        /payments/${paymentId}/approve
       );
 
       console.log(`Payment ${paymentId} approved successfully.`);
@@ -113,11 +114,11 @@ export class PiNetworkService {
   ): Promise<void> {
     try {
       const completionResponse = await this.PiNetworkApi.post(
-        `/payments/${paymentId}/complete`,
+        /payments/${paymentId}/complete,
         { txid: transactionId }
       );
       console.log(
-        `Payment ${paymentId} completed successfully with txid: ${transactionId}.`
+        Payment ${paymentId} completed successfully with txid: ${transactionId}.
       );
     } catch (error) {
       console.error(`Error completing Pi Network payment ${paymentId}:`, error);
@@ -130,23 +131,24 @@ export class PiNetworkService {
   ): Promise<PiNetworkPaymentDTO> {
     try {
       const paymentResponse = await this.PiNetworkApi.get<PiNetworkPaymentDTO>(
-        `/payments/${paymentId}`
+        /payments/${paymentId}
       );
       return paymentResponse.data;
     } catch (error) {
       console.error(
-        `Error getting Pi Network payment info for ${paymentId}:`,
+        Error getting Pi Network payment info for ${paymentId}:,
         error
       );
 
-      throw error;
+RichAdams🧠, [16/10/2025 13:57]
+throw error;
     }
   }
 
   async cancelPiNetworkPayment(paymentId: string): Promise<void> {
     try {
       const paymentCancellingResponse = await this.PiNetworkApi.post(
-        `/payments/${paymentId}/cancel`
+        /payments/${paymentId}/cancel
       );
       console.log(`Payment ${paymentId} cancelled successfully.`);
     } catch (error) {
@@ -160,20 +162,20 @@ export class PiNetworkService {
     _PiNetworkPaymentDTO: any
   ): Promise<void> {
     console.warn(
-      `cancelPiNetworkIncompletePayment called for ${paymentId}. Consider simplifying this method.`
+      cancelPiNetworkIncompletePayment called for ${paymentId}. Consider simplifying this method.
     );
     try {
       const paymentCancellingResponse = await this.PiNetworkApi.post(
-        `/payments/${paymentId}/cancel`
+        /payments/${paymentId}/cancel
       );
 
       console.log(`Incomplete payment ${paymentId} cancelled successfully.`); // Add success log
     } catch (error) {
       console.error(
-        `Error cancelling incomplete Pi Network payment ${paymentId}:`,
+        Error cancelling incomplete Pi Network payment ${paymentId}:,
         error
       );
-      await this.cancelAllPiNetworkIncompletePayments();
+      await this.cancelAllPiNetworkIncompletePayments()
       throw error;
     }
   }
@@ -197,7 +199,7 @@ export class PiNetworkService {
       }
 
       console.log(
-        `Found ${incompletePayments.length} incomplete payments to cancel.`
+        Found ${incompletePayments.length} incomplete payments to cancel.
       );
 
       for (const payment of incompletePayments) {
@@ -207,11 +209,11 @@ export class PiNetworkService {
             console.log(`Cancelling incomplete payment: ${paymentId}`);
             await this.PiNetworkApi.post(`/payments/${paymentId}/cancel`);
             console.log(
-              `Successfully cancelled incomplete payment: ${paymentId}`
+              Successfully cancelled incomplete payment: ${paymentId}
             );
           } catch (cancelError) {
             console.error(
-              `Failed to cancel incomplete payment ${paymentId}:`,
+              Failed to cancel incomplete payment ${paymentId}:,
               cancelError
             );
           }
