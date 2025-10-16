@@ -13,7 +13,7 @@ export default function FunnelCompetitionCard({
   entrants = 0,
   capacity = 25,
   advancing = 5,
-  price = null,                       // string or number
+  price = null,                // string or number
   status,
   comingSoon = false,
   endsAt,
@@ -22,11 +22,11 @@ export default function FunnelCompetitionCard({
   joinHref,
   onClickJoin,
   liveVideoUrl,
-  ctaLabel,                           // ✅ allow override from parent
+  ctaLabel,                    // optional override from parent
 }) {
   const { t } = useSafeTranslation();
 
-  // ✅ robust numeric coercion (handles strings)
+  // Robust numeric coercion (handles strings)
   const capNum = Number(capacity);
   const entNum = Number(entrants);
   const safeCapacity = Number.isFinite(capNum) && capNum > 0 ? capNum : 25;
@@ -52,14 +52,13 @@ export default function FunnelCompetitionCard({
     !comingSoon &&
     (stage === 1 || (stage > 1 && hasTicket));
 
-  // ✅ compute label but let caller override via prop
+  // Build CTA label manually (no i18n interpolation)
   const computedCta = (() => {
     if (comingSoon) return t('coming_soon', 'Coming Soon');
     if (derivedStatus === 'ended') return t('completed', 'Completed');
     if (derivedStatus === 'live') return t('in_progress', 'In Progress');
     if (stage > 1 && !hasTicket) return t('qualified_only', 'Qualified Only');
-    // Use i18next {{var}} OR parent can pass template string via ctaLabel
-    return t('enter_spots_left', 'Enter — {{spots}} left', { spots: spotsLeft });
+    return `${t('enter', 'Enter')} — ${spotsLeft} ${t('left', 'left')}`;
   })();
   const finalCta = ctaLabel || computedCta;
 
@@ -69,7 +68,7 @@ export default function FunnelCompetitionCard({
     return isNaN(d.getTime()) ? null : d.toLocaleString();
   }, [endsAt]);
 
-  // ✅ price: treat 0 as Free
+  // Price: treat 0 as Free
   const normalizedPrice = (() => {
     if (typeof price === 'number') return price > 0 ? `${price.toFixed(2)} π` : t('free', 'Free');
     if (typeof price === 'string' && price.trim().length) {
@@ -101,14 +100,12 @@ export default function FunnelCompetitionCard({
                 style={{ animation: 'omcGradient 10s ease infinite' }}
               />
             )}
-            {derivedStatus === 'live' && (
-              <div className="absolute top-3 right-3 z-20">
-                <span className="inline-flex items-center gap-1 rounded-full bg-red-600 px-2 py-[2px] text-[10px] font-bold text-white shadow-lg animate-pulse">
-                  <span className="h-[6px] w-[6px] rounded-full bg-white" />
-                  {t('live', 'LIVE')}
-                </span>
-              </div>
-            )}
+            <div className="absolute top-3 right-3 z-20">
+              <span className="inline-flex items-center gap-1 rounded-full bg-red-600 px-2 py-[2px] text-[10px] font-bold text-white shadow-lg animate-pulse">
+                <span className="h-[6px] w-[6px] rounded-full bg-white" />
+                {t('live', 'LIVE')}
+              </span>
+            </div>
 
             <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px]" />
             {stage === 5 && (
@@ -209,14 +206,29 @@ export default function FunnelCompetitionCard({
           )}
         </div>
 
-        {/* Stage note */}
+        {/* Stage note (manual composition; no interpolation) */}
         <div className="mt-3 text-xs text-white/70">
           {stage === 1 ? (
-            <span>{t('stage_1_open_entry', 'Stage 1 is open entry. Finish top {{adv}} to advance.', { adv: advancing })}</span>
+            <span>
+              {t('stage_1_open_entry_prefix', 'Stage 1 is open entry.')}{" "}
+              {t('finish_top', 'Finish top')}{" "}
+              {advancing}{" "}
+              {t('to_advance', 'to advance.')}
+            </span>
           ) : hasTicket ? (
-            <span>{t('hold_ticket_stage', 'You hold a ticket for Stage {{st}}. Finish top {{adv}} to advance.', { st: stage, adv: advancing })}</span>
+            <span>
+              {t('you_hold_ticket_for_stage', 'You hold a ticket for Stage')}{" "}
+              {stage}.{" "}
+              {t('finish_top', 'Finish top')}{" "}
+              {advancing}{" "}
+              {t('to_advance', 'to advance.')}
+            </span>
           ) : (
-            <span>{t('invite_only_stage', 'Invite-only: you need a Stage {{st}} ticket to enter.', { st: stage })}</span>
+            <span>
+              {t('invite_only_prefix', 'Invite-only: you need a Stage')}{" "}
+              {stage}{" "}
+              {t('ticket_to_enter', 'ticket to enter.')}
+            </span>
           )}
         </div>
       </div>
