@@ -5,7 +5,7 @@ import { usePiEnv } from '../hooks/usePiEnv';
 
 export default function PiLoginButton({ onSuccess }) {
   const { sdkReady, loginWithPi, loading, error } = usePiAuth();
-  const { isPiBrowser } = usePiEnv(); // don't use hasPi anymore
+  const { isPiBrowser } = usePiEnv(); // do not use hasPi anymore
   const [ready, setReady] = useState(sdkReady);
 
   useEffect(() => {
@@ -37,10 +37,13 @@ export default function PiLoginButton({ onSuccess }) {
         aria-busy={loading}
         title={!ready ? 'Loading Pi SDK…' : 'Login with Pi'}
       >
-        {!ready ? 'Loading Pi SDK…' : (loading ? 'Authorizing…' : 'Login with Pi')}
+        { !ready ? 'Loading Pi SDK…' : (loading ? 'Authorizing…' : 'Login with Pi') }
       </button>
-      {!!error && (
-        <p className="mt-1 text-xs text-rose-300 text-center">{String(error)}</p>
+
+      { !!error && (
+        <p className="mt-1 text-xs text-rose-300 text-center">
+          {String(error)}
+        </p>
       )}
     </>
   );
