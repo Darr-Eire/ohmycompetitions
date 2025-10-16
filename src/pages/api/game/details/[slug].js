@@ -1,7 +1,7 @@
 // src/pages/api/game/details/[slug].js  (adjust path to match yours)
 export const runtime = 'nodejs';
 
-import { getDb } from '@/lib/db.js';              // ✅ unified connector
+import { getDb } from 'lib/db.js';              // ✅ unified connector
 import initCORS from '../../../../lib/cors';      // keep your existing CORS helper
 
 export default async function handler(req, res) {

@@ -2,7 +2,7 @@
 export const runtime = 'nodejs';
 
 import { ObjectId } from 'mongodb';
-import { getDb } from '@/lib/db.js'; // ✅ use unified connector path
+import { getDb } from 'lib/db.js'; // ✅ use unified connector path
 
 // Simple admin authentication helper
 function verifyAdminSession(req) {

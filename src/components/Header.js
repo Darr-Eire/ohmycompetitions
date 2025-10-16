@@ -135,18 +135,28 @@ const competitionCategories = [
           </svg>
         </button>
 
-{/* Logo + welcome */}
-<div className="flex flex-col items-center text-center">
-  <Link
-    href="/homepage"
-    className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 text-transparent bg-clip-text drop-shadow"
-  />
-  {user && (
+{/* Logo + welcome (always show title) */}
+<div className="flex flex-col items-center text-center leading-tight">
+  <Link href="/homepage" className="block">
+    <span className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent drop-shadow">
+      Oh My Competitions
+    </span>
+  </Link>
+
+  {/* Show welcome only when logged in */}
+  {user ? (
     <div className="text-cyan-300 text-sm font-orbitron mt-0.5">
-      Welcome <span className="text-cyan-300">{user.username}</span>
+      {t?.('welcome', 'Welcome') || 'Welcome'}{' '}
+      <span className="text-cyan-300">{user.username}</span>
+    </div>
+  ) : (
+    // Keep the header height consistent when logged out
+    <div className="text-xs mt-0.5 opacity-0 select-none" aria-hidden="true">
+      placeholder
     </div>
   )}
 </div>
+
 
 
         {/* Language + auth + notifications */}
