@@ -11,27 +11,56 @@ const APP_ID = process.env.NEXT_PUBLIC_PI_APP_ID || '';
 
 export default function App({ Component, pageProps }) {
   const getLayout = Component.getLayout || ((page) => <Layout>{page}</Layout>);
-  const initDoneRef = useRef(false);
+  const installed = useRef(false);
 
-  function initPiOnce(where = 'unknown') {
-    if (typeof window === 'undefined' || !window.Pi || initDoneRef.current) return;
-    alert("no undef 3")
-    try {
-      window.Pi.init({ version: '2.0', sandbox: false });
-      alert("init done")
-      initDoneRef.current = true;
-      window.__piInitDone = true;
-      // eslint-disable-next-line no-console
-      console.info(`[Pi] init OK @ ${where}`, { sandbox: false, appIdPresent: !!APP_ID });
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error(`[Pi] init error @ ${where}:`, e?.message || e);
-    }
+  // Install a single readiness promise on window; any module can await it.
+  function installReadyPi() {
+    if (typeof window === 'undefined') return;
+    const w = window;
+
+    if (typeof (w).__readyPi === 'function') return; // already installed
+
+    w.__readyPi = () =>
+      new Promise((resolve, reject) => {
+        function initNow() {
+          try {
+            if (!w.Pi) return reject(new Error('SDK missing'));
+            if (w.__piInitDone) return resolve(w.Pi); // already init’d
+
+            w.Pi.init({
+              version: '2.0',
+              sandbox: false,            // MAINNET
+              appId: APP_ID || undefined // pass app id if set
+            });
+            w.__piInitDone = true;
+            console.info('[Pi] init OK', { appIdPresent: !!APP_ID, sandbox: false });
+            resolve(w.Pi);
+          } catch (e) {
+            reject(e);
+          }
+        }
+
+        // If SDK is present, init immediately; otherwise load it, then init.
+        if (w.Pi) return initNow();
+
+        const s = document.createElement('script');
+        s.src = 'https://sdk.minepi.com/pi-sdk.js';
+        s.async = true;
+        s.onload = initNow;
+        s.onerror = () => reject(new Error('Failed to load Pi SDK'));
+        document.head.appendChild(s);
+
+        // Hard timeout
+        setTimeout(() => {
+          if (!w.Pi) reject(new Error('Pi SDK load timeout'));
+        }, 15000);
+      });
   }
 
   useEffect(() => {
-    // If Pi Browser already injected window.Pi, init immediately.
-    if (typeof window !== 'undefined' && window.Pi) initPiOnce('useEffect(preloaded)');
+    if (installed.current) return;
+    installed.current = true;
+    installReadyPi();
   }, []);
 
   return (
@@ -40,24 +69,15 @@ export default function App({ Component, pageProps }) {
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       </Head>
 
-      {/* Load SDK as early as possible in the client */}
-    <Script
-  id="pi-sdk"
-  src="https://sdk.minepi.com/pi-sdk.js"
-  strategy="beforeInteractive"
-  onLoad={() => {
-    if (typeof window !== 'undefined' && window.Pi) {
-      window.Pi.init({
-        version: '2.0',
-        sandbox: false, // mainnet
-        appId: process.env.NEXT_PUBLIC_PI_APP_ID,
-      });
-      window.__piInitDone = true;
-      console.log('[Pi] SDK initialized');
-    }
-  }}
-/>
-
+      {/* Preferred preloader (Pi Browser often injects Pi anyway) */}
+      <Script
+        id="pi-sdk"
+        src="https://sdk.minepi.com/pi-sdk.js"
+        strategy="beforeInteractive"
+        onLoad={() => {
+          try { installReadyPi(); } catch {}
+        }}
+      />
 
       {getLayout(<Component {...pageProps} />)}
     </PiAuthProvider>
