@@ -1,6 +1,6 @@
 // PATH: src/pages/index.jsx
 "use client";
-
+import type { ReactElement } from "react";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { FaXTwitter, FaFacebookF, FaDiscord, FaInstagram } from "react-icons/fa6";
@@ -210,6 +210,6 @@ async function readyPi(timeoutMs = 15000) {
 }
 
 // Keep simple (no TS types here)
-IndexPage.getLayout = function PageLayout(page) {
+IndexPage.getLayout = function PageLayout(page: ReactElement) {
   return <>{page}</>;
 };
