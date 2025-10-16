@@ -67,16 +67,15 @@ export class PiNetworkService {
       },
     });
   }
-
-  async verifyRewardedAd(adId: string): Promise<RewardedAdStatusDTO> {
+  async getRewardedAdStatus(adId: string) {
     try {
       console.log("Verifying ad status for:", adId);
       const APIAnswer = await this.PiNetworkApi.get<RewardedAdStatusDTO>(
-        /ads_network/status/${adId}
+        `/ads_network/status/${encodeURIComponent(adId)}`
       );
       return APIAnswer.data;
     } catch (error) {
-      console.error("Error verifying ad status:", error);
+      console.error("Failed to verify ad status", error);
       throw error;
     }
   }
