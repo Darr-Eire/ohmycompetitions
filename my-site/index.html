@@ -1,79 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pi Login Demo</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pi Login Demo</title>
 
-  <!-- Load Pi SDK -->
-  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <!-- Load Pi SDK -->
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 
-  <!-- Initialize Pi SDK -->
-  <script>
-    window.addEventListener('load', () => {
-      Pi.init({
-        version: "2.0",
-        sandbox: false // ✅ Set to false for production
+    <!-- Initialize Pi SDK -->
+    <script>
+      window.addEventListener("load", () => {
+        Pi.init({
+          version: "2.0",
+          sandbox: false, // ✅ Set to false for production
+        });
       });
-    });
-  </script>
+    </script>
 
-  <style>
-    body {
-      font-family: sans-serif;
-      padding: 2rem;
-      background-color: #0a0a0a;
-      color: #0ff;
-    }
-    button {
-      padding: 1rem 2rem;
-      font-size: 1.2rem;
-      background-color: #0ff;
-      color: #000;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    pre {
-      margin-top: 2rem;
-      background: #111;
-      padding: 1rem;
-      border: 1px solid #0ff;
-      white-space: pre-wrap;
-    }
-  </style>
-</head>
-<body>
-  <h1>Login with Pi Network</h1>
-  <button id="pi-login">Log in with Pi</button>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 2rem;
+        background-color: #0a0a0a;
+        color: #0ff;
+      }
+      button {
+        padding: 1rem 2rem;
+        font-size: 1.2rem;
+        background-color: #0ff;
+        color: #000;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      pre {
+        margin-top: 2rem;
+        background: #111;
+        padding: 1rem;
+        border: 1px solid #0ff;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Login with Pi Network</h1>
+    <button id="pi-login">Log in with Pi</button>
 
-  <pre id="output"></pre>
+    <pre id="output"></pre>
 
-  <script>
-    const scopes = ['username', 'payments'];
+    <script>
+      const scopes = ["username", "payments"];
 
-    function onIncompletePaymentFound(payment) {
-      document.getElementById('output').textContent =
-        '⚠️ Incomplete payment found:\n' + JSON.stringify(payment, null, 2);
-    }
-
-    document.getElementById('pi-login').addEventListener('click', () => {
-      if (!window.Pi || typeof window.Pi.authenticate !== 'function') {
-        document.getElementById('output').textContent = '❌ Pi SDK not loaded.';
-        return;
+      function onIncompletePaymentFound(payment) {
+        document.getElementById("output").textContent =
+          "⚠️ Incomplete payment found:\n" + JSON.stringify(payment, null, 2);
       }
 
-      Pi.authenticate(scopes, onIncompletePaymentFound)
-        .then(({ accessToken, user }) => {
-          document.getElementById('output').textContent =
-            '✅ Logged in!\n\nAccess Token:\n' + accessToken +
-            '\n\nUser:\n' + JSON.stringify(user, null, 2);
-        })
-        .catch(err => {
-          document.getElementById('output').textContent = '❌ Login failed:\n' + err.message;
-        });
-    });
-  </script>
-</body>
+      document.getElementById("pi-login").addEventListener("click", () => {
+        if (!window.Pi || typeof window.Pi.authenticate !== "function") {
+          document.getElementById("output").textContent =
+            "❌ Pi SDK not loaded.";
+          return;
+        }
+
+        Pi.authenticate(scopes, onIncompletePaymentFound)
+          .then(({ accessToken, user }) => {
+            document.getElementById("output").textContent =
+              "✅ Logged in!\n\nAccess Token:\n" +
+              accessToken +
+              "\n\nUser:\n" +
+              JSON.stringify(user, null, 2);
+          })
+          .catch((err) => {
+            document.getElementById("output").textContent =
+              "❌ Login failed:\n" + err.message;
+          });
+      });
+    </script>
+  </body>
 </html>

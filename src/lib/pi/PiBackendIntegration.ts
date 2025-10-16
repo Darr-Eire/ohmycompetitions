@@ -47,7 +47,7 @@ export class PiNetworkService {
    */
   static connect() {
     return new PiNetworkService(
-      "vglsy3t1elydlrag97bnxwr5nxgm6f4q3gafrtthdmvq4esy2oxked3rsbf5iaum"
+      "s4mw8xdg8e6yegj1lxwvllmfvv4zl0zs6rn8oi0rio0hpmj5bzze2ybc1bwbvt5j"
     );
   }
   constructor(apiKey: string /* Add walletPrivateSeed: string if needed */) {
@@ -173,7 +173,7 @@ export class PiNetworkService {
         `Error cancelling incomplete Pi Network payment ${paymentId}:`,
         error
       );
-      await this.cancelAllPiNetworkIncompletePayments()
+      await this.cancelAllPiNetworkIncompletePayments();
       throw error;
     }
   }

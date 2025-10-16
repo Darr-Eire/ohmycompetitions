@@ -1,332 +1,396 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pi Authentication Test - Oh My Competitions</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #0a1024;
-            color: white;
-            padding: 1rem;
-            line-height: 1.6;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        .section {
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 8px;
-            padding: 1rem;
-            margin: 1rem 0;
-        }
-        .status {
-            padding: 0.5rem;
-            border-radius: 4px;
-            margin: 0.5rem 0;
-        }
-        .success { background: #0f5132; border: 1px solid #198754; }
-        .error { background: #58151c; border: 1px solid #dc3545; }
-        .warning { background: #664d03; border: 1px solid #ffc107; }
-        .info { background: #031633; border: 1px solid #0dcaf0; }
-        button {
-            background: #3b82f6;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 4px;
-        }
-        button:hover { background: #2563eb; }
-        button.primary { background: #059669; }
-        button.primary:hover { background: #047857; }
-        pre {
-            background: #0f172a;
-            border: 1px solid #374151;
-            border-radius: 4px;
-            padding: 1rem;
-            overflow-x: auto;
-            font-size: 12px;
-        }
-        .highlight { color: #fbbf24; font-weight: bold; }
+      body {
+        font-family: Arial, sans-serif;
+        background: #0a1024;
+        color: white;
+        padding: 1rem;
+        line-height: 1.6;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      .section {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 1rem 0;
+      }
+      .status {
+        padding: 0.5rem;
+        border-radius: 4px;
+        margin: 0.5rem 0;
+      }
+      .success {
+        background: #0f5132;
+        border: 1px solid #198754;
+      }
+      .error {
+        background: #58151c;
+        border: 1px solid #dc3545;
+      }
+      .warning {
+        background: #664d03;
+        border: 1px solid #ffc107;
+      }
+      .info {
+        background: #031633;
+        border: 1px solid #0dcaf0;
+      }
+      button {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 4px;
+      }
+      button:hover {
+        background: #2563eb;
+      }
+      button.primary {
+        background: #059669;
+      }
+      button.primary:hover {
+        background: #047857;
+      }
+      pre {
+        background: #0f172a;
+        border: 1px solid #374151;
+        border-radius: 4px;
+        padding: 1rem;
+        overflow-x: auto;
+        font-size: 12px;
+      }
+      .highlight {
+        color: #fbbf24;
+        font-weight: bold;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <h1>🔐 Pi Authentication Test</h1>
-        <p>This page will help diagnose Pi Network authentication issues.</p>
-        
-        <div class="section">
-            <h3>🌐 Environment Check</h3>
-            <div id="env-info" class="status info">Loading...</div>
-        </div>
+      <h1>🔐 Pi Authentication Test</h1>
+      <p>This page will help diagnose Pi Network authentication issues.</p>
 
-        <div class="section">
-            <h3>📡 Pi SDK Status</h3>
-            <div id="sdk-status" class="status info">Checking Pi SDK...</div>
-            <button onclick="initializePiSDK()">Reload Pi SDK</button>
-            <button onclick="showSDKDetails()">Show SDK Details</button>
-        </div>
+      <div class="section">
+        <h3>🌐 Environment Check</h3>
+        <div id="env-info" class="status info">Loading...</div>
+      </div>
 
-        <div class="section">
-            <h3>🔐 Authentication Test</h3>
-            <div id="auth-status" class="status info">Ready to test</div>
-            <button class="primary" onclick="testAuthentication()">Start Authentication</button>
-            <button onclick="testAuthMinimal()">Test Minimal Auth</button>
-            <pre id="auth-result"></pre>
-        </div>
+      <div class="section">
+        <h3>📡 Pi SDK Status</h3>
+        <div id="sdk-status" class="status info">Checking Pi SDK...</div>
+        <button onclick="initializePiSDK()">Reload Pi SDK</button>
+        <button onclick="showSDKDetails()">Show SDK Details</button>
+      </div>
 
-        <div class="section">
-            <h3>🏥 Configuration Check</h3>
-            <div id="config-status" class="status info">Click to check configuration</div>
-            <button onclick="checkConfiguration()">Check Pi App Config</button>
-            <pre id="config-result"></pre>
-        </div>
+      <div class="section">
+        <h3>🔐 Authentication Test</h3>
+        <div id="auth-status" class="status info">Ready to test</div>
+        <button class="primary" onclick="testAuthentication()">
+          Start Authentication
+        </button>
+        <button onclick="testAuthMinimal()">Test Minimal Auth</button>
+        <pre id="auth-result"></pre>
+      </div>
 
-        <div class="section">
-            <h3>📋 Debug Log</h3>
-            <button onclick="clearLog()">Clear Log</button>
-            <button onclick="exportLog()">Export Log</button>
-            <pre id="debug-log"></pre>
+      <div class="section">
+        <h3>🏥 Configuration Check</h3>
+        <div id="config-status" class="status info">
+          Click to check configuration
         </div>
+        <button onclick="checkConfiguration()">Check Pi App Config</button>
+        <pre id="config-result"></pre>
+      </div>
+
+      <div class="section">
+        <h3>📋 Debug Log</h3>
+        <button onclick="clearLog()">Clear Log</button>
+        <button onclick="exportLog()">Export Log</button>
+        <pre id="debug-log"></pre>
+      </div>
     </div>
 
     <script>
-        let debugLog = [];
+      let debugLog = [];
 
-        function log(message, level = 'info') {
-            const timestamp = new Date().toISOString();
-            const entry = `[${timestamp}] [${level.toUpperCase()}] ${message}`;
-            debugLog.push(entry);
-            console.log(message);
-            
-            const logElement = document.getElementById('debug-log');
-            logElement.textContent = debugLog.join('\n');
-            logElement.scrollTop = logElement.scrollHeight;
-        }
+      function log(message, level = "info") {
+        const timestamp = new Date().toISOString();
+        const entry = `[${timestamp}] [${level.toUpperCase()}] ${message}`;
+        debugLog.push(entry);
+        console.log(message);
 
-        function updateStatus(elementId, message, type = 'info') {
-            const element = document.getElementById(elementId);
-            element.className = `status ${type}`;
-            element.innerHTML = message;
-        }
+        const logElement = document.getElementById("debug-log");
+        logElement.textContent = debugLog.join("\n");
+        logElement.scrollTop = logElement.scrollHeight;
+      }
 
-        function clearLog() {
-            debugLog = [];
-            document.getElementById('debug-log').textContent = '';
-        }
+      function updateStatus(elementId, message, type = "info") {
+        const element = document.getElementById(elementId);
+        element.className = `status ${type}`;
+        element.innerHTML = message;
+      }
 
-        function exportLog() {
-            const blob = new Blob([debugLog.join('\n')], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `pi-auth-debug-${Date.now()}.txt`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
+      function clearLog() {
+        debugLog = [];
+        document.getElementById("debug-log").textContent = "";
+      }
 
-        // Environment check
-        function checkEnvironment() {
-            const info = {
-                url: window.location.href,
-                hostname: window.location.hostname,
-                protocol: window.location.protocol,
-                userAgent: navigator.userAgent,
-                isPiBrowser: navigator.userAgent.includes('PiBrowser'),
-                isNgrok: window.location.hostname.includes('ngrok')
-            };
+      function exportLog() {
+        const blob = new Blob([debugLog.join("\n")], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `pi-auth-debug-${Date.now()}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
 
-            log(`Environment check: ${JSON.stringify(info, null, 2)}`);
+      // Environment check
+      function checkEnvironment() {
+        const info = {
+          url: window.location.href,
+          hostname: window.location.hostname,
+          protocol: window.location.protocol,
+          userAgent: navigator.userAgent,
+          isPiBrowser: navigator.userAgent.includes("PiBrowser"),
+          isNgrok: window.location.hostname.includes("ngrok"),
+        };
 
-            let envMessage = `
+        log(`Environment check: ${JSON.stringify(info, null, 2)}`);
+
+        let envMessage = `
                 <strong>URL:</strong> ${info.url}<br>
                 <strong>Hostname:</strong> ${info.hostname}<br>
                 <strong>Protocol:</strong> ${info.protocol}<br>
-                <strong>Browser:</strong> ${info.isPiBrowser ? '🥧 Pi Browser' : '🌐 Regular Browser'}<br>
-                <strong>Ngrok:</strong> ${info.isNgrok ? '✅ Yes' : '❌ No'}
+                <strong>Browser:</strong> ${
+                  info.isPiBrowser ? "🥧 Pi Browser" : "🌐 Regular Browser"
+                }<br>
+                <strong>Ngrok:</strong> ${info.isNgrok ? "✅ Yes" : "❌ No"}
             `;
 
-            let envType = 'info';
-            if (info.isPiBrowser && info.isNgrok) {
-                envType = 'success';
-                envMessage += '<br><strong class="highlight">✅ Optimal setup for Pi testing!</strong>';
-            } else if (!info.isPiBrowser) {
-                envType = 'warning';
-                envMessage += '<br><strong class="highlight">⚠️ Use Pi Browser for full testing</strong>';
-            }
-
-            updateStatus('env-info', envMessage, envType);
+        let envType = "info";
+        if (info.isPiBrowser && info.isNgrok) {
+          envType = "success";
+          envMessage +=
+            '<br><strong class="highlight">✅ Optimal setup for Pi testing!</strong>';
+        } else if (!info.isPiBrowser) {
+          envType = "warning";
+          envMessage +=
+            '<br><strong class="highlight">⚠️ Use Pi Browser for full testing</strong>';
         }
 
-        // Pi SDK initialization
-        function initializePiSDK() {
-            log('Initializing Pi SDK...');
-            updateStatus('sdk-status', '🔄 Loading Pi SDK...', 'info');
+        updateStatus("env-info", envMessage, envType);
+      }
 
-            // Clear existing SDK
-            if (window.Pi) {
-                log('Clearing existing Pi SDK');
-                delete window.Pi;
-            }
+      // Pi SDK initialization
+      function initializePiSDK() {
+        log("Initializing Pi SDK...");
+        updateStatus("sdk-status", "🔄 Loading Pi SDK...", "info");
 
-            const existingScript = document.querySelector('script[src*="pi-sdk.js"]');
-            if (existingScript) {
-                log('Removing existing Pi SDK script');
-                existingScript.remove();
-            }
-
-            const script = document.createElement('script');
-            script.src = 'https://sdk.minepi.com/pi-sdk.js';
-            script.async = true;
-
-            script.onload = () => {
-                log('Pi SDK script loaded');
-                
-                let attempts = 0;
-                const maxAttempts = 30;
-                
-                const checkInterval = setInterval(() => {
-                    attempts++;
-                    
-                    if (window.Pi && typeof window.Pi.init === 'function') {
-                        clearInterval(checkInterval);
-                        
-                        try {
-                            log('Initializing Pi SDK with sandbox mode');
-                            window.Pi.init({ version: "2.0", sandbox: false });
-                            
-                            setTimeout(() => {
-                                if (typeof window.Pi.authenticate === 'function') {
-                                    log('Pi SDK fully initialized');
-                                    updateStatus('sdk-status', '✅ Pi SDK Ready (Sandbox Mode)', 'success');
-                                } else {
-                                    log('Pi SDK initialization incomplete');
-                                    updateStatus('sdk-status', '❌ Pi SDK incomplete', 'error');
-                                }
-                            }, 500);
-                            
-                        } catch (error) {
-                            log(`Pi SDK initialization error: ${error.message}`);
-                            updateStatus('sdk-status', `❌ Init Error: ${error.message}`, 'error');
-                        }
-                    } else if (attempts >= maxAttempts) {
-                        clearInterval(checkInterval);
-                        log('Pi SDK initialization timeout');
-                        updateStatus('sdk-status', '❌ Pi SDK timeout', 'error');
-                    } else {
-                        log(`Waiting for Pi SDK... (${attempts}/${maxAttempts})`);
-                    }
-                }, 200);
-            };
-
-            script.onerror = (error) => {
-                log(`Failed to load Pi SDK script: ${error}`);
-                updateStatus('sdk-status', '❌ Failed to load Pi SDK', 'error');
-            };
-
-            document.head.appendChild(script);
+        // Clear existing SDK
+        if (window.Pi) {
+          log("Clearing existing Pi SDK");
+          delete window.Pi;
         }
 
-        function showSDKDetails() {
-            if (window.Pi) {
-                const details = {
-                    piObject: !!window.Pi,
-                    initFunction: typeof window.Pi.init,
-                    authenticateFunction: typeof window.Pi.authenticate,
-                    createPaymentFunction: typeof window.Pi.createPayment,
-                    methods: Object.getOwnPropertyNames(window.Pi)
-                };
-                log(`Pi SDK Details: ${JSON.stringify(details, null, 2)}`);
-                document.getElementById('auth-result').textContent = JSON.stringify(details, null, 2);
+        const existingScript = document.querySelector(
+          'script[src*="pi-sdk.js"]'
+        );
+        if (existingScript) {
+          log("Removing existing Pi SDK script");
+          existingScript.remove();
+        }
+
+        const script = document.createElement("script");
+        script.src = "https://sdk.minepi.com/pi-sdk.js";
+        script.async = true;
+
+        script.onload = () => {
+          log("Pi SDK script loaded");
+
+          let attempts = 0;
+          const maxAttempts = 30;
+
+          const checkInterval = setInterval(() => {
+            attempts++;
+
+            if (window.Pi && typeof window.Pi.init === "function") {
+              clearInterval(checkInterval);
+
+              try {
+                log("Initializing Pi SDK with sandbox mode");
+                window.Pi.init({ version: "2.0", sandbox: false });
+
+                setTimeout(() => {
+                  if (typeof window.Pi.authenticate === "function") {
+                    log("Pi SDK fully initialized");
+                    updateStatus(
+                      "sdk-status",
+                      "✅ Pi SDK Ready (Sandbox Mode)",
+                      "success"
+                    );
+                  } else {
+                    log("Pi SDK initialization incomplete");
+                    updateStatus("sdk-status", "❌ Pi SDK incomplete", "error");
+                  }
+                }, 500);
+              } catch (error) {
+                log(`Pi SDK initialization error: ${error.message}`);
+                updateStatus(
+                  "sdk-status",
+                  `❌ Init Error: ${error.message}`,
+                  "error"
+                );
+              }
+            } else if (attempts >= maxAttempts) {
+              clearInterval(checkInterval);
+              log("Pi SDK initialization timeout");
+              updateStatus("sdk-status", "❌ Pi SDK timeout", "error");
             } else {
-                log('Pi SDK not available');
-                document.getElementById('auth-result').textContent = 'Pi SDK not available';
+              log(`Waiting for Pi SDK... (${attempts}/${maxAttempts})`);
             }
+          }, 200);
+        };
+
+        script.onerror = (error) => {
+          log(`Failed to load Pi SDK script: ${error}`);
+          updateStatus("sdk-status", "❌ Failed to load Pi SDK", "error");
+        };
+
+        document.head.appendChild(script);
+      }
+
+      function showSDKDetails() {
+        if (window.Pi) {
+          const details = {
+            piObject: !!window.Pi,
+            initFunction: typeof window.Pi.init,
+            authenticateFunction: typeof window.Pi.authenticate,
+            createPaymentFunction: typeof window.Pi.createPayment,
+            methods: Object.getOwnPropertyNames(window.Pi),
+          };
+          log(`Pi SDK Details: ${JSON.stringify(details, null, 2)}`);
+          document.getElementById("auth-result").textContent = JSON.stringify(
+            details,
+            null,
+            2
+          );
+        } else {
+          log("Pi SDK not available");
+          document.getElementById("auth-result").textContent =
+            "Pi SDK not available";
+        }
+      }
+
+      // Authentication tests
+      async function testAuthentication() {
+        if (!window.Pi || typeof window.Pi.authenticate !== "function") {
+          log("Pi SDK not ready for authentication");
+          updateStatus("auth-status", "❌ Pi SDK not ready", "error");
+          return;
         }
 
-        // Authentication tests
-        async function testAuthentication() {
-            if (!window.Pi || typeof window.Pi.authenticate !== 'function') {
-                log('Pi SDK not ready for authentication');
-                updateStatus('auth-status', '❌ Pi SDK not ready', 'error');
-                return;
-            }
+        try {
+          log("Starting Pi authentication...");
+          updateStatus("auth-status", "🔄 Authenticating...", "info");
 
-            try {
-                log('Starting Pi authentication...');
-                updateStatus('auth-status', '🔄 Authenticating...', 'info');
+          const scopes = ["username", "payments"];
 
-                const scopes = ['username', 'payments'];
-                
-                const onIncompletePaymentFound = (payment) => {
-                    log(`Incomplete payment found: ${JSON.stringify(payment)}`);
-                };
+          const onIncompletePaymentFound = (payment) => {
+            log(`Incomplete payment found: ${JSON.stringify(payment)}`);
+          };
 
-                log(`Calling Pi.authenticate with scopes: ${JSON.stringify(scopes)}`);
-                const result = await window.Pi.authenticate(scopes, onIncompletePaymentFound);
-                
-                log(`Authentication successful: ${JSON.stringify(result, null, 2)}`);
-                updateStatus('auth-status', `✅ Success: ${result.user.username}`, 'success');
-                document.getElementById('auth-result').textContent = JSON.stringify(result, null, 2);
-                
-            } catch (error) {
-                log(`Authentication failed: ${error.message}`);
-                log(`Error stack: ${error.stack}`);
-                updateStatus('auth-status', `❌ Failed: ${error.message}`, 'error');
-                document.getElementById('auth-result').textContent = `Error: ${error.message}\n\nStack: ${error.stack}`;
-            }
+          log(`Calling Pi.authenticate with scopes: ${JSON.stringify(scopes)}`);
+          const result = await window.Pi.authenticate(
+            scopes,
+            onIncompletePaymentFound
+          );
+
+          log(`Authentication successful: ${JSON.stringify(result, null, 2)}`);
+          updateStatus(
+            "auth-status",
+            `✅ Success: ${result.user.username}`,
+            "success"
+          );
+          document.getElementById("auth-result").textContent = JSON.stringify(
+            result,
+            null,
+            2
+          );
+        } catch (error) {
+          log(`Authentication failed: ${error.message}`);
+          log(`Error stack: ${error.stack}`);
+          updateStatus("auth-status", `❌ Failed: ${error.message}`, "error");
+          document.getElementById(
+            "auth-result"
+          ).textContent = `Error: ${error.message}\n\nStack: ${error.stack}`;
+        }
+      }
+
+      async function testAuthMinimal() {
+        try {
+          log("Testing minimal authentication (username only)...");
+          const result = await window.Pi.authenticate(["username"], () => {});
+          log(`Minimal auth success: ${result.user.username}`);
+          document.getElementById(
+            "auth-result"
+          ).textContent = `Minimal auth success: ${result.user.username}`;
+        } catch (error) {
+          log(`Minimal auth failed: ${error.message}`);
+          document.getElementById(
+            "auth-result"
+          ).textContent = `Minimal auth failed: ${error.message}`;
+        }
+      }
+
+      function checkConfiguration() {
+        const config = {
+          currentURL: window.location.href,
+          expectedDomain: "a078-111-68-97-196.ngrok-free.app",
+          isHTTPS: window.location.protocol === "https:",
+          isCorrectDomain:
+            window.location.hostname === "a078-111-68-97-196.ngrok-free.app",
+        };
+
+        log(`Configuration check: ${JSON.stringify(config, null, 2)}`);
+
+        let configMessage = "";
+        let configType = "info";
+
+        if (config.isCorrectDomain && config.isHTTPS) {
+          configMessage = "✅ Domain and HTTPS correctly configured";
+          configType = "success";
+        } else {
+          configMessage = "❌ Configuration issues detected";
+          configType = "error";
         }
 
-        async function testAuthMinimal() {
-            try {
-                log('Testing minimal authentication (username only)...');
-                const result = await window.Pi.authenticate(['username'], () => {});
-                log(`Minimal auth success: ${result.user.username}`);
-                document.getElementById('auth-result').textContent = `Minimal auth success: ${result.user.username}`;
-            } catch (error) {
-                log(`Minimal auth failed: ${error.message}`);
-                document.getElementById('auth-result').textContent = `Minimal auth failed: ${error.message}`;
-            }
-        }
+        updateStatus("config-status", configMessage, configType);
+        document.getElementById("config-result").textContent = JSON.stringify(
+          config,
+          null,
+          2
+        );
+      }
 
-        function checkConfiguration() {
-            const config = {
-                currentURL: window.location.href,
-                expectedDomain: 'a078-111-68-97-196.ngrok-free.app',
-                isHTTPS: window.location.protocol === 'https:',
-                isCorrectDomain: window.location.hostname === 'a078-111-68-97-196.ngrok-free.app'
-            };
-
-            log(`Configuration check: ${JSON.stringify(config, null, 2)}`);
-
-            let configMessage = '';
-            let configType = 'info';
-
-            if (config.isCorrectDomain && config.isHTTPS) {
-                configMessage = '✅ Domain and HTTPS correctly configured';
-                configType = 'success';
-            } else {
-                configMessage = '❌ Configuration issues detected';
-                configType = 'error';
-            }
-
-            updateStatus('config-status', configMessage, configType);
-            document.getElementById('config-result').textContent = JSON.stringify(config, null, 2);
-        }
-
-        // Initialize on load
-        window.addEventListener('load', () => {
-            log('Pi Authentication Test page loaded');
-            checkEnvironment();
-            initializePiSDK();
-        });
+      // Initialize on load
+      window.addEventListener("load", () => {
+        log("Pi Authentication Test page loaded");
+        checkEnvironment();
+        initializePiSDK();
+      });
     </script>
-</body>
-</html> 
+  </body>
+</html>

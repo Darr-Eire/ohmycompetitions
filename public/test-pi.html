@@ -1,187 +1,221 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pi SDK Sandbox Test</title>
-  <style>
-    body { 
-      font-family: system-ui; 
-      max-width: 600px; 
-      margin: 2rem auto; 
-      padding: 2rem; 
-      background: #0f172a; 
-      color: #fff; 
-    }
-    button { 
-      background: #3b82f6; 
-      color: white; 
-      border: none; 
-      padding: 12px 24px; 
-      border-radius: 8px; 
-      cursor: pointer; 
-      margin: 8px; 
-    }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
-    .status { padding: 1rem; margin: 1rem 0; border-radius: 8px; }
-    .success { background: #065f46; }
-    .error { background: #7f1d1d; }
-    .warning { background: #78350f; }
-    pre { background: #1e293b; padding: 1rem; border-radius: 8px; overflow-x: auto; }
-  </style>
-</head>
-<body>
-  <h1>🧪 Pi SDK Sandbox Test</h1>
-  
-  <div id="status" class="status">Initializing...</div>
-  
-  <button id="testLogin" onclick="testLogin()" disabled>Test Pi Login</button>
-  <button id="testPayment" onclick="testPayment()" disabled>Test Payment</button>
-  <button onclick="location.reload()">Reload Test</button>
-  
-  <h3>Debug Output:</h3>
-  <pre id="output"></pre>
-
-  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-  <script>
-    let piReady = false;
-    let currentUser = null;
-
-    function log(message) {
-      console.log(message);
-      const output = document.getElementById('output');
-      output.textContent += new Date().toISOString() + ': ' + message + '\n';
-      output.scrollTop = output.scrollHeight;
-    }
-
-    function updateStatus(message, type = 'warning') {
-      const status = document.getElementById('status');
-      status.textContent = message;
-      status.className = `status ${type}`;
-    }
-
-    // Check browser environment
-    function checkEnvironment() {
-      const userAgent = navigator.userAgent;
-      const isPiBrowser = userAgent.includes('PiBrowser');
-      const isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-      
-      log(`Browser: ${userAgent}`);
-      log(`Pi Browser: ${isPiBrowser}`);
-      log(`Localhost: ${isLocalhost}`);
-      
-      if (isPiBrowser) {
-        updateStatus('✅ Running in Pi Browser - Full functionality available', 'success');
-      } else if (isLocalhost) {
-        updateStatus('⚠️ Regular browser on localhost - Limited testing', 'warning');
-      } else {
-        updateStatus('❌ Regular browser on remote - Pi SDK may not work', 'error');
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pi SDK Sandbox Test</title>
+    <style>
+      body {
+        font-family: system-ui;
+        max-width: 600px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: #0f172a;
+        color: #fff;
       }
-    }
+      button {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        margin: 8px;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .status {
+        padding: 1rem;
+        margin: 1rem 0;
+        border-radius: 8px;
+      }
+      .success {
+        background: #065f46;
+      }
+      .error {
+        background: #7f1d1d;
+      }
+      .warning {
+        background: #78350f;
+      }
+      pre {
+        background: #1e293b;
+        padding: 1rem;
+        border-radius: 8px;
+        overflow-x: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🧪 Pi SDK Sandbox Test</h1>
 
-    // Initialize Pi SDK
-    function initPi() {
-      log('Initializing Pi SDK...');
-      
-      if (!window.Pi) {
-        log('❌ Pi SDK not loaded');
-        updateStatus('❌ Pi SDK script failed to load', 'error');
-        return;
+    <div id="status" class="status">Initializing...</div>
+
+    <button id="testLogin" onclick="testLogin()" disabled>Test Pi Login</button>
+    <button id="testPayment" onclick="testPayment()" disabled>
+      Test Payment
+    </button>
+    <button onclick="location.reload()">Reload Test</button>
+
+    <h3>Debug Output:</h3>
+    <pre id="output"></pre>
+
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script>
+      let piReady = false;
+      let currentUser = null;
+
+      function log(message) {
+        console.log(message);
+        const output = document.getElementById("output");
+        output.textContent += new Date().toISOString() + ": " + message + "\n";
+        output.scrollTop = output.scrollHeight;
       }
 
-      try {
-        window.Pi.init({ version: "2.0", sandbox: false });
-        log('✅ Pi SDK initialized in sandbox mode');
-        piReady = true;
-        updateStatus('✅ Pi SDK ready in sandbox mode', 'success');
-        document.getElementById('testLogin').disabled = false;
-      } catch (err) {
-        log(`❌ Pi SDK init error: ${err.message}`);
-        updateStatus(`❌ Init failed: ${err.message}`, 'error');
-      }
-    }
-
-    async function testLogin() {
-      if (!piReady) {
-        log('❌ Pi SDK not ready');
-        return;
+      function updateStatus(message, type = "warning") {
+        const status = document.getElementById("status");
+        status.textContent = message;
+        status.className = `status ${type}`;
       }
 
-      log('🔄 Testing Pi authentication...');
-      updateStatus('🔄 Testing authentication...', 'warning');
+      // Check browser environment
+      function checkEnvironment() {
+        const userAgent = navigator.userAgent;
+        const isPiBrowser = userAgent.includes("PiBrowser");
+        const isLocalhost =
+          location.hostname === "localhost" ||
+          location.hostname === "127.0.0.1";
 
-      try {
-        const scopes = ['username', 'payments'];
-        
-        const result = await window.Pi.authenticate(scopes, (payment) => {
-          log(`⚠️ Incomplete payment: ${JSON.stringify(payment)}`);
-        });
+        log(`Browser: ${userAgent}`);
+        log(`Pi Browser: ${isPiBrowser}`);
+        log(`Localhost: ${isLocalhost}`);
 
-        currentUser = result.user;
-        log(`✅ Login successful: ${result.user.username} (${result.user.uid})`);
-        log(`Access token length: ${result.accessToken?.length || 0}`);
-        
-        updateStatus(`✅ Logged in as ${result.user.username}`, 'success');
-        document.getElementById('testPayment').disabled = false;
-
-      } catch (err) {
-        log(`❌ Login failed: ${err.message || err}`);
-        updateStatus(`❌ Login failed: ${err.message || err}`, 'error');
+        if (isPiBrowser) {
+          updateStatus(
+            "✅ Running in Pi Browser - Full functionality available",
+            "success"
+          );
+        } else if (isLocalhost) {
+          updateStatus(
+            "⚠️ Regular browser on localhost - Limited testing",
+            "warning"
+          );
+        } else {
+          updateStatus(
+            "❌ Regular browser on remote - Pi SDK may not work",
+            "error"
+          );
+        }
       }
-    }
 
-    async function testPayment() {
-      if (!currentUser) {
-        log('❌ Must login first');
-        return;
+      // Initialize Pi SDK
+      function initPi() {
+        log("Initializing Pi SDK...");
+
+        if (!window.Pi) {
+          log("❌ Pi SDK not loaded");
+          updateStatus("❌ Pi SDK script failed to load", "error");
+          return;
+        }
+
+        try {
+          window.Pi.init({ version: "2.0", sandbox: false });
+          log("✅ Pi SDK initialized in sandbox mode");
+          piReady = true;
+          updateStatus("✅ Pi SDK ready in sandbox mode", "success");
+          document.getElementById("testLogin").disabled = false;
+        } catch (err) {
+          log(`❌ Pi SDK init error: ${err.message}`);
+          updateStatus(`❌ Init failed: ${err.message}`, "error");
+        }
       }
 
-      log('🔄 Testing Pi payment...');
-      updateStatus('🔄 Testing payment...', 'warning');
+      async function testLogin() {
+        if (!piReady) {
+          log("❌ Pi SDK not ready");
+          return;
+        }
 
-      try {
-        const paymentData = {
-          amount: 0.01,
-          memo: "Sandbox Test Payment",
-          metadata: { test: true, user: currentUser.username }
-        };
+        log("🔄 Testing Pi authentication...");
+        updateStatus("🔄 Testing authentication...", "warning");
 
-        log(`Creating payment: ${JSON.stringify(paymentData)}`);
+        try {
+          const scopes = ["username", "payments"];
 
-        window.Pi.createPayment(paymentData, {
-          onReadyForServerApproval: (paymentId) => {
-            log(`🔄 Payment ready for approval: ${paymentId}`);
-          },
-          onReadyForServerCompletion: (paymentId, txid) => {
-            log(`✅ Payment completed: ${paymentId}, txid: ${txid}`);
-            updateStatus('✅ Payment test successful', 'success');
-          },
-          onCancel: (paymentId) => {
-            log(`❌ Payment cancelled: ${paymentId}`);
-            updateStatus('❌ Payment cancelled', 'warning');
-          },
-          onError: (error) => {
-            log(`❌ Payment error: ${error.message || error}`);
-            updateStatus(`❌ Payment error: ${error.message || error}`, 'error');
-          }
-        });
+          const result = await window.Pi.authenticate(scopes, (payment) => {
+            log(`⚠️ Incomplete payment: ${JSON.stringify(payment)}`);
+          });
 
-      } catch (err) {
-        log(`❌ Payment creation failed: ${err.message || err}`);
-        updateStatus(`❌ Payment failed: ${err.message || err}`, 'error');
+          currentUser = result.user;
+          log(
+            `✅ Login successful: ${result.user.username} (${result.user.uid})`
+          );
+          log(`Access token length: ${result.accessToken?.length || 0}`);
+
+          updateStatus(`✅ Logged in as ${result.user.username}`, "success");
+          document.getElementById("testPayment").disabled = false;
+        } catch (err) {
+          log(`❌ Login failed: ${err.message || err}`);
+          updateStatus(`❌ Login failed: ${err.message || err}`, "error");
+        }
       }
-    }
 
-    // Start the test
-    window.addEventListener('load', () => {
-      log('🚀 Starting Pi SDK test...');
-      checkEnvironment();
-      
-      // Wait a bit for Pi SDK to load
-      setTimeout(() => {
-        initPi();
-      }, 1000);
-    });
-  </script>
-</body>
-</html> 
+      async function testPayment() {
+        if (!currentUser) {
+          log("❌ Must login first");
+          return;
+        }
+
+        log("🔄 Testing Pi payment...");
+        updateStatus("🔄 Testing payment...", "warning");
+
+        try {
+          const paymentData = {
+            amount: 0.01,
+            memo: "Sandbox Test Payment",
+            metadata: { test: true, user: currentUser.username },
+          };
+
+          log(`Creating payment: ${JSON.stringify(paymentData)}`);
+
+          window.Pi.createPayment(paymentData, {
+            onReadyForServerApproval: (paymentId) => {
+              log(`🔄 Payment ready for approval: ${paymentId}`);
+            },
+            onReadyForServerCompletion: (paymentId, txid) => {
+              log(`✅ Payment completed: ${paymentId}, txid: ${txid}`);
+              updateStatus("✅ Payment test successful", "success");
+            },
+            onCancel: (paymentId) => {
+              log(`❌ Payment cancelled: ${paymentId}`);
+              updateStatus("❌ Payment cancelled", "warning");
+            },
+            onError: (error) => {
+              log(`❌ Payment error: ${error.message || error}`);
+              updateStatus(
+                `❌ Payment error: ${error.message || error}`,
+                "error"
+              );
+            },
+          });
+        } catch (err) {
+          log(`❌ Payment creation failed: ${err.message || err}`);
+          updateStatus(`❌ Payment failed: ${err.message || err}`, "error");
+        }
+      }
+
+      // Start the test
+      window.addEventListener("load", () => {
+        log("🚀 Starting Pi SDK test...");
+        checkEnvironment();
+
+        // Wait a bit for Pi SDK to load
+        setTimeout(() => {
+          initPi();
+        }, 1000);
+      });
+    </script>
+  </body>
+</html>

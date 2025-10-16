@@ -3,7 +3,7 @@ import { PiNetworkService } from "./PiBackendIntegration";
 
 interface PaymentDTO {
   identifier: string;
-  transaction:{txid:string}
+  transaction: { txid: string };
 }
 
 interface AuthenticateAnswer {
@@ -20,13 +20,13 @@ const piNetworkService = PiNetworkService.connect();
 
 // Function to handle incomplete payment found
 export async function onIncompletePaymentFound(paymentDTO: PaymentDTO) {
-  alert("incomplete payment found "+JSON.stringify(paymentDTO))
+  alert("incomplete payment found " + JSON.stringify(paymentDTO));
   const paymentId = paymentDTO.identifier;
   await piNetworkService.completePiNetworkPayment(
     paymentId,
     paymentDTO.transaction.txid
   );
-  alert("incomplete payment completed.")
+  alert("incomplete payment completed.");
 }
 
 // Function to get user access token
@@ -63,13 +63,13 @@ export async function authWithPiNetwork(): Promise<{
   accessToken: string;
 }> {
   try {
-    alert("auth called new version.")
+    alert("auth called new version.");
     await (window as any).Pi.init({ version: "2.0", sandbox: false });
     const answer: AuthenticateAnswer = await (window as any).Pi.authenticate(
       ["username", "payments", "wallet_address"],
       onIncompletePaymentFound
     );
-   alert(JSON.stringify(answer));
+    alert(JSON.stringify(answer));
     const APIAnswer: AxiosResponse<{ data: APIAnswerData }> = await axios.get(
       "https://api.minepi.com/v2/me",
       {
@@ -82,7 +82,7 @@ export async function authWithPiNetwork(): Promise<{
     return { ...(APIAnswer.data as any), accessToken: answer.accessToken };
   } catch (error) {
     console.log(error);
-    alert("error during auth")
+    alert("error during auth");
     throw new Error("Error while authenticating");
   }
 }

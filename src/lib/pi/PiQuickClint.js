@@ -3,7 +3,8 @@
 // Exposes named exports used by your page.
 // ============================================================================
 import { readyPi } from 'lib/piClient';
-import PiNetworkService from 'lib/pi/PiBackendIntegration';
+import { PiNetworkService } from 'lib/pi/PiBackendIntegration';
+
 
 export function isSandboxEnv() {
   const raw = (process.env.NEXT_PUBLIC_PI_ENV || process.env.PI_ENV || '').toLowerCase().trim();
