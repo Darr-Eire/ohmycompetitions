@@ -1,6 +1,6 @@
 "use client";
 
-import { authWithPiNetwork } from "@lib/pi/PiIntegration";
+import { authWithPiNetwork } from "lib/pi/PiIntegration";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 
 export const PiAuthContext = createContext(null);
