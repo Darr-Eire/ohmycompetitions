@@ -1,51 +1,31 @@
-// src/components/PiLoginButton.js
-'use client';
-import { useEffect, useState } from 'react';
-import { usePiAuth } from '../context/PiAuthContext';
-import { usePiEnv } from '../hooks/usePiEnv';
+"use client";
+import { useState, useEffect } from "react";
+import { usePiAuth } from "../context/PiAuthContext";
 
 export default function PiLoginButton({ onSuccess }) {
   const { sdkReady, loginWithPi, loading, error } = usePiAuth();
-  const { isPiBrowser } = usePiEnv(); // don't rely on hasPi anymore
-  const [ready, setReady] = useState(sdkReady);
+  const [label, setLabel] = useState("Loading Pi SDK…");
 
   useEffect(() => {
-    let alive = true;
-    setReady(sdkReady);
-    if (!sdkReady && typeof window !== 'undefined' && window.__readyPi) {
-      window.__readyPi().then(() => alive && setReady(true)).catch(() => {});
-    }
-    return () => { alive = false; };
-  }, [sdkReady]);
+    setLabel(sdkReady ? (loading ? "Logging in…" : "Login with Pi") : "Loading Pi SDK…");
+  }, [sdkReady, loading]);
 
-  const handleLogin = async () => {
-    if (!isPiBrowser) {
-      alert('Open this site inside the Pi Browser to login with Pi.');
-      return;
-    }
-    if (typeof window !== 'undefined' && window.__readyPi) {
-      try { await window.__readyPi(); } catch {}
-    }
-    await loginWithPi(onSuccess);
+  const handleClick = async () => {
+    if (!sdkReady || loading) return;
+    const res = await loginWithPi();
+    if (res.ok && typeof onSuccess === "function") onSuccess(res.me);
   };
 
   return (
     <>
       <button
-        onClick={handleLogin}
-        disabled={!ready || loading}
-        className={`btn btn-primary ${(!ready || loading) ? 'opacity-60 cursor-not-allowed' : ''}`}
-        aria-busy={loading}
-        title={!ready ? 'Loading Pi SDK…' : 'Login with Pi'}
+        onClick={handleClick}
+        disabled={!sdkReady || loading}
+        className="neon-button px-3 py-2 text-sm w-full flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        { !ready ? 'Loading Pi SDK…' : (loading ? 'Authorizing…' : 'Login with Pi') }
+        {label}
       </button>
-
-      { !!error && (
-        <p className="mt-1 text-xs text-rose-300 text-center">
-          {String(error)}
-        </p>
-      )}
+      {error ? <p className="text-red-400 text-xs mt-1">{error}</p> : null}
     </>
   );
 }
