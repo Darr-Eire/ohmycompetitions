@@ -63,7 +63,7 @@ export async function authWithPiNetwork(): Promise<{
   accessToken: string;
 }> {
   try {
-    alert("auth called new version.");
+    alert("auth called new version 2.");
     await (window as any).Pi.init({ version: "2.0", sandbox: false });
     const answer: AuthenticateAnswer = await (window as any).Pi.authenticate(
       ["username", "payments", "wallet_address"],
