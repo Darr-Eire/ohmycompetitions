@@ -21,13 +21,15 @@ export default function IndexPage() {
   ];
 
   // Use the value that _app.js placed on window; fallback to envs if needed.
-  const isSandboxLike = (() => {
-    if (typeof window !== "undefined" && window.__PI_ENV__) {
-      return String(window.__PI_ENV__).toLowerCase() !== "mainnet";
-    }
-    const raw = (process.env.NEXT_PUBLIC_PI_ENV || process.env.PI_ENV || "testnet").toLowerCase().trim();
-    return raw !== "mainnet";
-  })();
+ const isSandboxLike = (() => {
+  if (typeof window !== "undefined" && (window && window["__PI_ENV__"] != null)) {
+    return String(window["__PI_ENV__"]).toLowerCase() !== "mainnet";
+  }
+  const raw = (process.env.NEXT_PUBLIC_PI_ENV || process.env.PI_ENV || "testnet")
+    .toLowerCase()
+    .trim();
+  return raw !== "mainnet";
+})();
 
   // Helper to await the singleton readiness promise that _app.js created
   async function readyPi(timeoutMs = 15000) {
