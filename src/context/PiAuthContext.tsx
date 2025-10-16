@@ -1,67 +1,59 @@
 "use client";
+
 import { authWithPiNetwork } from "@lib/pi/PiIntegration";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 
 export const PiAuthContext = createContext(null);
 
-async function waitForPiSDK(maxMs = 8000) {
-  const start = Date.now();
-  while (typeof window === "undefined" || !window.Pi) {
-    if (Date.now() - start > maxMs) throw new Error("Pi SDK not loaded");
-    await new Promise((r) => setTimeout(r, 120));
+// Await the global readiness promise created in _app.js
+async function readyPi(timeoutMs = 15000) {
+  const w = (typeof window !== "undefined" ? (window as any) : undefined);
+  if (!w || typeof w.__readyPi !== "function") {
+    throw new Error("Pi SDK not injected yet");
   }
-  return window.Pi;
-}
-async function ensurePiInit({ sandbox = false, network = "Pi Testnet" } = {}) {
-  const Pi = await waitForPiSDK();
-  if (!(window as any).__piInitDone) {
-    await Pi.init({ version: "2.0", sandbox: false });
-    (window as any).__piInitDone = true;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const killer = new Promise((_, rej) => {
+    timer = setTimeout(() => rej(new Error("Pi ready timeout")), timeoutMs);
+  });
+  try {
+    const Pi = await Promise.race([w.__readyPi(), killer]);
+    return Pi;
+  } finally {
+    if (timer) clearTimeout(timer);
   }
-  return Pi;
 }
 
 export function PiAuthProvider({ children }: { children: React.ReactNode }) {
   const [sdkReady, setSdkReady] = useState(false);
-  const [user, setUser] = useState(null);
-  const [jwt, setJwt] = useState(null);
+  const [user, setUser] = useState<any>(null);
+  const [jwt, setJwt] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const initOnce = useRef(false);
-  function initPiOnce(where = "unknown") {
-    if (typeof window === "undefined" || !window.Pi) return;
-    alert("no undef 3");
-    try {
-      window.Pi.init({ version: "2.0", sandbox: false });
-      alert("init done");
 
-      // eslint-disable-next-line no-console
-      console.info(`[Pi] init OK @ ${where}`, {
-        sandbox: false,
-      });
-    } catch (e) {
-      // eslint-disable-next-line no-console
-    }
-  }
+  // restore cached auth (non-blocking)
   useEffect(() => {
     try {
       const token = localStorage.getItem("omc_jwt");
-      if (token) setJwt(token as any);
+      if (token) setJwt(token);
       const cachedUser = localStorage.getItem("omc_user");
       if (cachedUser) setUser(JSON.parse(cachedUser));
     } catch {}
   }, []);
 
+  // Single source of truth: mark ready after __readyPi() resolves
   useEffect(() => {
     if (initOnce.current) return;
     initOnce.current = true;
+
     (async () => {
       try {
-        await ensurePiInit({ sandbox: false });
+        await readyPi(); // <-- no local Pi.init here
         setSdkReady(true);
       } catch (e: any) {
-        console.error("[Pi] init failed:", e);
-        setError(e.message || "Pi SDK init failed");
+        console.error("[Pi] SDK failed to become ready:", e);
+        setError(e?.message || "Pi SDK init failed");
+        setSdkReady(false);
       }
     })();
   }, []);
@@ -70,20 +62,25 @@ export function PiAuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      const result = await authWithPiNetwork();
+      // Ensure SDK really is ready (defensive)
+      await readyPi();
 
+      const result = await authWithPiNetwork();
       const me = result as any;
+
       if (me) {
         try {
           localStorage.setItem("omc_user", JSON.stringify(me));
+          // If you mint your own backend JWT later, set it here:
+          // localStorage.setItem("omc_jwt", token);
         } catch {}
         setUser(me);
       }
-      // optional JWT if you mint one later
+
       return { ok: true, me, token: null };
     } catch (e: any) {
       const raw = e?.message || "Login failed";
-      const friendly = /user canceled/i.test(raw)
+      const friendly = /user canceled|user cancelled/i.test(raw)
         ? "Login cancelled by user."
         : raw;
       setError(friendly);
@@ -104,7 +101,8 @@ export function PiAuthProvider({ children }: { children: React.ReactNode }) {
     setError(null);
   };
 
-  const loginWithPi = login; // alias for your Header
+  const loginWithPi = login;
+
   const value = {
     sdkReady,
     user,
@@ -115,10 +113,12 @@ export function PiAuthProvider({ children }: { children: React.ReactNode }) {
     loginWithPi,
     logout,
   };
+
   return (
     <PiAuthContext.Provider value={value as any}>
       {children}
     </PiAuthContext.Provider>
   );
 }
+
 export const usePiAuth = () => useContext(PiAuthContext);
