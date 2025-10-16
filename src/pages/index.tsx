@@ -1,23 +1,25 @@
-// PATH: src/pages/index.jsx
-"use client";
+// PATH: src/pages/index.tsx
+'use client';
 
-import React from "react";
-import Link from "next/link";
-import {
-  FaXTwitter,
-  FaFacebookF,
-  FaDiscord,
-  FaInstagram,
-} from "react-icons/fa6";
+import type { NextPage } from 'next';
+import type { ReactElement, ReactNode } from 'react';
+import React from 'react';
+import Link from 'next/link';
+import { FaXTwitter, FaFacebookF, FaDiscord, FaInstagram } from 'react-icons/fa6';
 
-export default function IndexPage() {
+/** Extend NextPage to support the getLayout pattern */
+type NextPageWithLayout<P = {}> = NextPage<P> & {
+  getLayout?: (page: ReactElement) => ReactNode;
+};
+
+const IndexPage: NextPageWithLayout = () => {
   const features = [
-    { icon: "🔄", text: "Daily Competitions", href: "/competitions/daily" },
-    { icon: "🚀", text: "Launch Week", href: "/competitions/launch-week" },
-    { icon: "🎁", text: "Pi Giveaways", href: "/competitions/pi" },
-    { icon: "🏆", text: "Pi Stages", href: "/battles" },
-    { icon: "🎮", text: "Mini Games", href: "/try-your-luck" },
-    { icon: "❓", text: "Mystery Features", href: "" },
+    { icon: '🔄', text: 'Daily Competitions', href: '/competitions/daily' },
+    { icon: '🚀', text: 'Launch Week', href: '/competitions/launch-week' },
+    { icon: '🎁', text: 'Pi Giveaways', href: '/competitions/pi' },
+    { icon: '🏆', text: 'Pi Stages', href: '/battles' },
+    { icon: '🎮', text: 'Mini Games', href: '/try-your-luck' },
+    { icon: '❓', text: 'Mystery Features', href: '' },
   ];
 
   return (
@@ -103,9 +105,11 @@ export default function IndexPage() {
       </div>
     </div>
   );
-}
+};
 
-// getLayout in JS (no TS types here)
-IndexPage.getLayout = function PageLayout(page) {
+/** Type the getLayout param so TS stops complaining */
+IndexPage.getLayout = function PageLayout(page: ReactElement) {
   return <>{page}</>;
 };
+
+export default IndexPage;
