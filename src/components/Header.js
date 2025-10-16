@@ -291,8 +291,23 @@ const competitionCategories = [
               {/* Login with Pi */}
               <div className="flex flex-col gap-1">
                 <button
-                  onClick={async () => {
-                    if (loading || !sdkReady) return;
+                   onClick={async () => {
+   if (loading) return;
+   if (!sdkReady) {
+     try {
+       // If the SDK finished initializing a moment later, this resolves it.
+       if (typeof window !== 'undefined' && typeof window.__readyPi === 'function') {
+         await window.__readyPi();
+       } else {
+         // still not ready — guide the user
+         alert('Loading Pi SDK… Please try again in a moment (open in Pi Browser).');
+         return;
+       }
+     } catch {
+       alert('Pi SDK not ready yet. Please try again in a moment.');
+       return;
+     }
+   }
                     setIsLoggingIn(true);
                     try {
                       await login();
@@ -305,7 +320,8 @@ const competitionCategories = [
                     }
                   }}
                   className="neon-button px-3 py-2 text-sm w-full flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
-                  disabled={loading || !sdkReady}
+           disabled={loading || !sdkReady}
+ title={loading ? 'Authorizing…' : (!sdkReady ? 'Loading Pi SDK… Open in Pi Browser' : 'Login with Pi')}
                 >
                   {loading ? (
                     <>
