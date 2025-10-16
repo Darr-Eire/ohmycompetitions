@@ -457,6 +457,11 @@ function HomePage() {
 }
 
 /* ----------------- helpers (Section / Cards) ----------------- */
+function wordIncludes(text = '', words = []) {
+  const s = String(text).toLowerCase();
+  return words.some(w => new RegExp(`\\b${w}\\b`, 'i').test(s));
+}
+
 function Section({
   title,
   subtitle,
@@ -464,13 +469,29 @@ function Section({
   viewMoreHref,
   viewMoreText = 'View More',
   extraClass = '',
+  category,          // <- optional: if your data has a category field, pass it in
 }) {
   const { t } = useSafeTranslation();
-  const lower = typeof title === 'string' ? title.toLowerCase() : '';
+  const lowerTitle = typeof title === 'string' ? title.toLowerCase() : '';
+  const lowerCat = typeof category === 'string' ? category.toLowerCase() : '';
 
-  const isFree = lower.includes('free');
-  const isPi = lower.includes('pi');
-  const isCrypto = lower.includes('crypto');
+  // Prefer explicit category when available
+  const isFree   = lowerCat === 'free'   || wordIncludes(lowerTitle, ['free', 'gratis']);
+  const isPi     = lowerCat === 'pi'     || wordIncludes(lowerTitle, ['pi', 'π']);
+  const isCrypto = lowerCat === 'crypto' || wordIncludes(lowerTitle, ['crypto', 'web3', 'blockchain']);
+
+  // New: Tech/Gadgets/Electronics bucket
+  const TECH_KEYWORDS = [
+    'tech','technology','gadget','gadgets','electronics','electronic',
+    'device','devices','hardware','computer','pc','laptop','notebook',
+    'desktop','phone','smartphone','tablet','console','gaming','headset',
+    'earbuds','drone','camera','wearable','smartwatch','router','gpu','cpu'
+  ];
+  const isTech = lowerCat === 'tech' || wordIncludes(lowerTitle, TECH_KEYWORDS);
+
+  // ...use isTech wherever you branch UI/logic
+  // e.g., special badge:
+  // const badge = isTech ? 'Tech' : isPi ? 'Pi' : isCrypto ? 'Crypto' : isFree ?
 
   return (
     <section className={`space-y-6 ${extraClass}`}>
