@@ -5,7 +5,7 @@ import { usePiEnv } from '../hooks/usePiEnv';
 
 export default function PiLoginButton({ onSuccess }) {
   const { sdkReady, loginWithPi, loading, error } = usePiAuth();
-  const { isPiBrowser } = usePiEnv(); // do not use hasPi anymore
+  const { isPiBrowser } = usePiEnv(); 
   const [ready, setReady] = useState(sdkReady);
 
   useEffect(() => {
