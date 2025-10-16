@@ -11,13 +11,12 @@ export default function Footer() {
   return (
     <footer className="text-cyan-300 text-xs py-6 px-4 bg-[#0f172a] border-t border-cyan-700">
       {/* Back to Home */}
-      <div className="flex justify-center mb-3">
-        <Link href="index">
-          <span className="btn-gradient px-3 py-1 rounded-md cursor-pointer text-sm">
-            {t('back_to_home', 'Back to Home')}
-          </span>
-        </Link>
-      </div>
+<div className="flex justify-center mb-3">
+  <Link href="/homepage" className="btn-gradient px-3 py-1 rounded-md cursor-pointer text-sm">
+    {t('back_to_home', 'Back to Home')}
+  </Link>
+</div>
+
 
       {/* Social Icons */}
       <div className="flex justify-center items-center gap-3 mb-3">
