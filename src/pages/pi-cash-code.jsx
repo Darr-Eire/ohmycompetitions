@@ -308,36 +308,8 @@ export default function PiCashCodePage() {
   }, [setFromFetch]);
 
   /* ------------------------------ Pi SDK ------------------------------- */
-  // local loader (won't clash with context)
-  const [localSdkReady, setLocalSdkReady] = useState(false);
-  const sdkSandbox =
-    process.env.NEXT_PUBLIC_PI_SANDBOX === "true" ||
-    (process.env.NEXT_PUBLIC_PI_ENV || "").toLowerCase() === "sandbox";
-
-  useEffect(() => {
-    // if context already ready, skip local init
-    if (ctxSdkReady) return;
-
-    const has =
-      typeof window !== "undefined" && window.Pi && window.Pi?.createPayment;
-    if (has) {
-      try {
-      } catch {}
-      setLocalSdkReady(true);
-      return;
-    }
-    const s = document.createElement("script");
-    s.src = "https://sdk.minepi.com/pi-sdk.js";
-    s.async = true;
-    s.onload = () => {
-      try {
-      } catch {}
-      setLocalSdkReady(true);
-    };
-    document.head.appendChild(s);
-  }, [ctxSdkReady, sdkSandbox]);
-
-  const ready = !!(ctxSdkReady || localSdkReady);
+  // rely on global init from _app.js + context
+  const ready = !!ctxSdkReady;
 
   /* --------------------------- Skill Question -------------------------- */
   const skill = useMemo(() => {
@@ -398,7 +370,7 @@ export default function PiCashCodePage() {
       setTimeout(() => setToast({ show: false }), 1600);
       return;
     }
-    if (!ready || !window?.Pi?.createPayment) {
+    if (!ready) {
       setToast({
         show: true,
         kind: "error",
@@ -413,7 +385,11 @@ export default function PiCashCodePage() {
       const amount = parseFloat(totalPrice);
       const memo = `Pi Cash Code Entry Week ${data?.weekStart || ""}`;
 
-      window.Pi.createPayment(
+      // Use the single global SDK instance initialized in _app.js
+      const Pi = await (window && (window).__readyPi?.());
+      if (!Pi?.createPayment) throw new Error("Pi SDK not available");
+
+      Pi.createPayment(
         {
           amount,
           memo,
