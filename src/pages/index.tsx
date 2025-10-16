@@ -1,16 +1,18 @@
-// PATH: src/pages/index.jsx
+// PATH: src/pages/index.jsx (or wherever this IndexPage lives)
 "use client";
-import type { ReactElement } from "react";
-import React, { useEffect, useState } from "react";
+
+import React, { useEffect } from "react";
 import Link from "next/link";
-import { FaXTwitter, FaFacebookF, FaDiscord, FaInstagram } from "react-icons/fa6";
+import {
+  FaXTwitter,
+  FaFacebookF,
+  FaDiscord,
+  FaInstagram,
+} from "react-icons/fa6";
 import { authWithPiNetwork, CreatePayment } from "@lib/pi/PiIntegration";
+import Script from "next/script";
 
 export default function IndexPage() {
-  const [sdkReady, setSdkReady] = useState(false);
-  const [busyAuth, setBusyAuth] = useState(false);
-  const [busyPay, setBusyPay] = useState(false);
-
   const features = [
     { icon: "🔄", text: "Daily Competitions", href: "/competitions/daily" },
     { icon: "🚀", text: "Launch Week", href: "/competitions/launch-week" },
@@ -20,78 +22,73 @@ export default function IndexPage() {
     { icon: "❓", text: "Mystery Features", href: "" },
   ];
 
-  // Use the value that _app.js placed on window; fallback to envs if needed.
-// Use the value that _app.js placed on window; fallback to envs if needed.
-const isSandboxLike = (() => {
-  if (typeof window !== "undefined" && (window as any)["__PI_ENV__"] != null) {
-    return String((window as any)["__PI_ENV__"]).toLowerCase() !== "mainnet";
-  }
-  const raw = (process.env.NEXT_PUBLIC_PI_ENV || process.env.PI_ENV || "testnet")
-    .toLowerCase()
-    .trim();
-  return raw !== "mainnet";
-})();
-
-
-  // Helper to await the singleton readiness promise that _app.js created
- // Helper to await the singleton readiness promise that _app.js created
-async function readyPi(timeoutMs = 15000) {
-  if (typeof window === "undefined" || typeof (window as any)["__readyPi"] !== "function") {
-    throw new Error("Pi SDK not injected yet");
-  }
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const killer = new Promise((_, rej) => {
-    timer = setTimeout(() => rej(new Error("Pi ready timeout")), timeoutMs);
-  });
-  try {
-    const Pi = await Promise.race([(window as any)["__readyPi"](), killer]);
-    return Pi;
-  } finally {
-    if (timer) clearTimeout(timer);
-  }
-}
-
-
-  useEffect(() => {
-    let alive = true;
-    readyPi().then(() => alive && setSdkReady(true)).catch(() => {});
-    return () => {
-      alive = false;
-    };
-  }, []);
-
+  const isSandbox =
+    (process.env.NEXT_PUBLIC_PI_ENV || process.env.PI_ENV || "")
+      .toLowerCase()
+      .trim() === "sandbox";
   const testPiPayment = async () => {
-    try {
-      setBusyPay(true);
-      await readyPi();
-      // Your helper handles the actual payment; we just ensure SDK is ready first.
-      await CreatePayment("", 10, "First test", () => {
-        // keep your UI feedback pattern
-        alert("Thanking you for your payment to OMC");
-      });
-    } catch (e) {
-      console.error("Payment error", e);
-      alert("Payment failed to start");
-    } finally {
-      setBusyPay(false);
-    }
+    alert("payment called");
+    await CreatePayment("", 10, "First test", () => {
+      alert("Thanking you for you payment to OMC");
+    });
   };
-
   const testAuth = async () => {
-    try {
-      setBusyAuth(true);
-      await readyPi();
-      await authWithPiNetwork(); // keeps your existing integration
-    } catch (e) {
-      console.error("Auth error", e);
-      alert("Auth failed");
-    } finally {
-      setBusyAuth(false);
-    }
+    alert("auth called");
+    await authWithPiNetwork();
   };
+  function initPiOnce(where = "unknown") {
+    if (!window.Pi) {
+      alert("Pi SDK not loaded yet");
+      const s = document.createElement("script");
+      s.src = "https://sdk.minepi.com/pi-sdk.js";
+      s.async = true;
+      s.onload = () => {
+        alert("no undef 44 in onload");
+        try {
+          (window as any).Pi.init({ version: "2.0", sandbox: false });
+          alert("init done in onload");
 
+          (window as any).__piInitDone = true;
+          // eslint-disable-next-line no-console
+          console.info(`[Pi] init OK @ ${where}`, {
+            sandbox: false,
+          });
+        } catch (e: any) {
+          // eslint-disable-next-line no-console
+          console.error(`[Pi] init error @ ${where}:`, e?.message || e);
+        }
+      };
+      document.head.appendChild(s);
+      return;
+    }
+    alert("no undef 4 in index");
+    try {
+      window.Pi.init({ version: "2.0", sandbox: false });
+      alert("init done in index");
+
+      (window as any).__piInitDone = true;
+      // eslint-disable-next-line no-console
+      console.info(`[Pi] init OK @ ${where}`, {
+        sandbox: false,
+      });
+    } catch (e: any) {
+      // eslint-disable-next-line no-console
+      console.error(`[Pi] init error @ ${where}:`, e?.message || e);
+    }
+  }
+  useEffect(() => {
+    // If Pi Browser already injected window.Pi, init immediately.
+    if (typeof window !== "undefined" && window.Pi)
+      initPiOnce("useEffect(preloaded)");
+  }, []);
   return (
     <div className="min-h-[100dvh] bg-[#0a1024] text-white px-2 py-0 overflow-y-auto">
+      {/* Load SDK as early as possible in the client */}
+      <Script
+        id="pi-sdk"
+        src="https://sdk.minepi.com/pi-sdk.js"
+        onLoad={() => initPiOnce("Script.onLoad")}
+      />
       <div className="w-full max-w-[420px] mx-auto flex flex-col gap-8">
         {/* Main Box */}
         <div className="bg-[#0f1b33] border border-cyan-400 rounded-3xl p-6 shadow-[0_0_30px_#00f0ff88] flex flex-col gap-5">
@@ -144,41 +141,32 @@ async function readyPi(timeoutMs = 15000) {
             ))}
           </div>
 
-          {/* CTA & Dev Buttons */}
+          {/* CTA Button */}
           <div className="flex flex-col items-center gap-2">
             <Link
               href="/homepage?welcome=1"
-              className="pulse-button block w-full bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold py-3 rounded-lg shadow-md text-center text-base"
+              className="pulse-button block w-full
+
+RichAdams🧠, [15/10/2025 20:40]
+bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold py-3 rounded-lg shadow-md text-center text-base"
             >
               Let’s Go
             </Link>
-
             <button
               onClick={testPiPayment}
-              disabled={!sdkReady || busyPay}
-              className={`pulse-button block w-full bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold py-3 rounded-lg shadow-md text-center text-base ${
-                (!sdkReady || busyPay) ? "opacity-60 cursor-not-allowed" : ""
-              }`}
-              aria-busy={busyPay}
-              title={sdkReady ? "Test Pi payment" : "Loading Pi SDK…"}
+              className="pulse-button block w-full bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold py-3 rounded-lg shadow-md text-center text-base"
             >
-              {sdkReady ? (busyPay ? "Starting payment…" : "Test Pi payment") : "Loading Pi SDK…"}
+              Test pi payment
             </button>
-
             <button
               onClick={testAuth}
-              disabled={!sdkReady || busyAuth}
-              className={`pulse-button block w-full bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold py-3 rounded-lg shadow-md text-center text-base ${
-                (!sdkReady || busyAuth) ? "opacity-60 cursor-not-allowed" : ""
-              }`}
-              aria-busy={busyAuth}
-              title={sdkReady ? "Test Pi auth" : "Loading Pi SDK…"}
+              className="pulse-button block w-full bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold py-3 rounded-lg shadow-md text-center text-base"
             >
-              {sdkReady ? (busyAuth ? "Authorizing…" : "Test Pi Auth") : "Loading Pi SDK…"}
+              Test pi Auth
             </button>
 
-            {/* Dev quick link (why: fast access to payment test page; shown only on non-mainnet) */}
-            {isSandboxLike && (
+            {/* Dev quick link (why: fast access to payment test page; shown only in sandbox) */}
+            {isSandbox && (
               <Link
                 href="/dev/pi-quick-test"
                 className="block w-full text-center text-xs text-cyan-300 underline hover:text-cyan-100"
@@ -209,7 +197,6 @@ async function readyPi(timeoutMs = 15000) {
   );
 }
 
-// Keep simple (no TS types here)
-IndexPage.getLayout = function PageLayout(page: ReactElement) {
+IndexPage.getLayout = function PageLayout(page: any) {
   return <>{page}</>;
 };
