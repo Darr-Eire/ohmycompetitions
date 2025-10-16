@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import Head from 'next/head';
 import { usePiEnv } from 'hooks/usePiEnv';
-import { CreatePayment, authWithPiNetwork } from 'pages/dev/PiQuickClient';
+import { CreatePayment, authWithPiNetwork } from 'lib/pi/PiQuickClient';
 import { PiNetworkService } from 'lib/pi/PiBackendIntegration';
 
 export default function PiQuickTestPage() {
