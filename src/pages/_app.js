@@ -41,12 +41,23 @@ export default function App({ Component, pageProps }) {
       </Head>
 
       {/* Load SDK as early as possible in the client */}
-      <Script
-        id="pi-sdk"
-        src="https://sdk.minepi.com/pi-sdk.js"
-        strategy="beforeInteractive"
-        onLoad={() => initPiOnce('Script.onLoad')}
-      />
+    <Script
+  id="pi-sdk"
+  src="https://sdk.minepi.com/pi-sdk.js"
+  strategy="beforeInteractive"
+  onLoad={() => {
+    if (typeof window !== 'undefined' && window.Pi) {
+      window.Pi.init({
+        version: '2.0',
+        sandbox: false, // mainnet
+        appId: process.env.NEXT_PUBLIC_PI_APP_ID,
+      });
+      window.__piInitDone = true;
+      console.log('[Pi] SDK initialized');
+    }
+  }}
+/>
+
 
       {getLayout(<Component {...pageProps} />)}
     </PiAuthProvider>
