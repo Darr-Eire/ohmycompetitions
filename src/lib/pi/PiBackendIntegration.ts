@@ -47,7 +47,7 @@ export class PiNetworkService {
    */
   static connect() {
     return new PiNetworkService(
-      "s4mw8xdg8e6yegj1lxwvllmfvv4zl0zs6rn8oi0rio0hpmj5bzze2ybc1bwbvt5j"
+      "ekekxxceb2hfmgtoezrwmm9rjjh2vlk5pufwtzv8xtoif5olivlnng7rhowamlbg"
     );
   }
   constructor(apiKey: string /* Add walletPrivateSeed: string if needed */) {
