@@ -1,33 +1,56 @@
 // src/lib/mongodb.ts
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI || process.env.MONGO_DB_URL as string;
+const MONGODB_URI =
+  process.env.MONGODB_URI ??
+  process.env.MONGO_DB_URL ??
+  '';
 
 if (!MONGODB_URI) {
   throw new Error('Missing MONGODB_URI / MONGO_DB_URL');
 }
 
-// ✅ Pick one:
-mongoose.set('strictQuery', false); // recommended: matches Mongoose 7 default
-// mongoose.set('strictQuery', true); // alternative: keep strict filters
+/**
+ * Mongoose 7 default will be strictQuery=false.
+ * Set explicitly to silence the deprecation warning.
+ * Flip to `true` if you want strict filtering behavior.
+ */
+mongoose.set('strictQuery', false);
 
-let cached = (global as any).mongoose as { conn: typeof mongoose | null; promise: Promise<typeof mongoose> | null } | undefined;
+/** Cache the connection across hot reloads / serverless invocations */
+type MongooseCache = {
+  conn: typeof mongoose | null;
+  promise: Promise<typeof mongoose> | null;
+};
 
-if (!cached) {
-  cached = (global as any).mongoose = { conn: null, promise: null };
+declare global {
+  // eslint-disable-next-line no-var
+  var mongoose: MongooseCache | undefined;
 }
 
-export async function connectToDatabase() {
-  if (cached!.conn) return cached!.conn;
+// Use the global cache if present
+const cached: MongooseCache = global.mongoose ?? { conn: null, promise: null };
+global.mongoose = cached;
 
-  if (!cached!.promise) {
-    cached!.promise = mongoose.connect(MONGODB_URI, {
-      // optional: tune timeouts for serverless
-      maxPoolSize: 5,
-      serverSelectionTimeoutMS: 10000,
-    }).then((m) => m);
+/** Connect (or reuse) and return the Mongoose instance */
+export async function connectToDatabase(): Promise<typeof mongoose> {
+  if (cached.conn) return cached.conn;
+
+  if (!cached.promise) {
+    // You can add more options here if needed
+    cached.promise = mongoose
+      .connect(MONGODB_URI, {
+        // helpful in serverless
+        bufferCommands: false,
+        // pool & timeout tuning
+        maxPoolSize: 5,
+        serverSelectionTimeoutMS: 10_000,
+      })
+      .then((m) => m);
   }
 
-  cached!.conn = await cached!.promise;
-  return cached!.conn;
+  cached.conn = await cached.promise;
+  return cached.conn;
 }
+
+export default connectToDatabase;

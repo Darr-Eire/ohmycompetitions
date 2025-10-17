@@ -1,7 +1,7 @@
 // file: src/components/FunnelStageCard.jsx
 'use client';
 
-import React from 'react';
+import React, { useRef } from 'react';
 import Link from 'next/link';
 
 export default function FunnelStageCard({
@@ -11,7 +11,7 @@ export default function FunnelStageCard({
   capacity = 25,
   advancing = 5,
   status = 'filling',
-  pricePi = 0.15,
+  pricePi = 0.15,          // callers should pass a NUMBER or omit
   hasTicket = false,
   compSlug = '',
   onEnter,
@@ -20,6 +20,51 @@ export default function FunnelStageCard({
   // optional manual override if you ever want RTL on other stages:
   rtl = undefined,
 }) {
+  const warnedRef = useRef(false);
+
+  /* ---------------- price coercion (robust) ---------------- */
+  function coercePrice(input) {
+    if (input == null) return { num: 0, label: 'Free' };
+
+    if (typeof input === 'number') {
+      const num = Math.max(0, input);
+      return { num, label: num > 0 ? `${num.toFixed(2)} π` : 'Free' };
+    }
+
+    if (typeof input === 'string') {
+      const raw = input.trim();
+
+      // Treat obvious "free" strings as 0
+      if (/^free(?:\s+ticket)?$/i.test(raw)) return { num: 0, label: 'Free' };
+
+      // Allow things like "0", "0.15", "0,15", and ignore currency symbols
+      const cleaned = raw.replace(/[^\d.,-]/g, '').replace(',', '.');
+      const num = Number(cleaned);
+
+      if (Number.isFinite(num)) {
+        const n = Math.max(0, num);
+        return { num: n, label: n > 0 ? `${n.toFixed(2)} π` : 'Free' };
+      }
+
+      // Warn once if we get a non-numeric string
+      if (!warnedRef.current) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          '[FunnelStageCard] Non-numeric price string received:',
+          input,
+          '— treating as Free. Pass a number (e.g. pricePi={0.15}) or omit the prop.'
+        );
+        warnedRef.current = true;
+      }
+      return { num: 0, label: 'Free' };
+    }
+
+    return { num: 0, label: 'Free' };
+  }
+
+  const { num: priceNum, label: priceLabel } = coercePrice(pricePi);
+
+  /* ---------------- derived numbers / flags ---------------- */
   const safeCapacity = Math.max(1, Number(capacity) || 1);
   const safeEntrants = Math.max(0, Number(entrants) || 0);
   const pct = Math.min(100, Math.floor((safeEntrants / safeCapacity) * 100));
@@ -36,16 +81,6 @@ export default function FunnelStageCard({
     if (stage > 1 && !hasTicket) return 'Qualified Only';
     return `Enter • ${spotsLeft} left`;
   })();
-
-  // Free ticket/price label
-  const isFree =
-    pricePi === 'Free' ||
-    pricePi === 'Free Ticket' ||
-    Number(pricePi) === 0 ||
-    pricePi === null ||
-    pricePi === undefined;
-
-  const priceLabel = isFree ? 'Ticket' : `${Number(pricePi).toFixed(2)} π`;
 
   // sizing presets
   const isMicro = !!micro;

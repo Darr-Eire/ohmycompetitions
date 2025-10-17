@@ -1,9 +1,8 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-
+import { useSafeTranslation } from 'hooks/useSafeTranslation';
 export default function InfoPopover({ align = 'left', size = 'md', className = '' }) {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
   const [open, setOpen] = useState(false);
   const btnRef = useRef(null);
   const popRef = useRef(null);

@@ -1,4 +1,3 @@
-// src/components/LaunchCompetitionCard.js
 'use client';
 
 import Link from 'next/link';
@@ -90,20 +89,22 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
     endsAt,
     comingSoon = false,
     prizeBreakdown = {},
+    // NEW: Add a 'type' property to the competition object
+    type = 'standard', // 'standard' or 'funnel'
   } = comp;
 
   const [status, setStatus] = useState('UPCOMING');
   const [timeLeft, setTimeLeft] = useState('');
   const [showCountdown, setShowCountdown] = useState(false);
 
-  const sold = ticketsSold || 0;
-  const total = totalTickets || 100;
+  const sold = Number.isFinite(Number(ticketsSold)) ? Number(ticketsSold) : 0;
+  const total = Number.isFinite(Number(totalTickets)) ? Math.max(0, Number(totalTickets)) : 100;
   const remaining = Math.max(0, total - sold);
-  const progress = total > 0 ? Math.round((sold / total) * 100) : 0;
+  const progress = total > 0 ? Math.min(100, Math.max(0, Math.round((sold / total) * 100))) : 0;
 
-  const isSoldOut = sold >= total;
-  const isLowStock = remaining <= total * 0.1 && remaining > 0;
-  const isNearlyFull = remaining <= total * 0.25 && remaining > 0;
+  const isSoldOut = total > 0 && sold >= total;
+  const isLowStock = total > 0 && remaining <= total * 0.1 && remaining > 0;
+  const isNearlyFull = total > 0 && remaining <= total * 0.25 && remaining > 0;
 
   const tiers = useMemo(
     () => getPrizeTiers({ comp, prizeBreakdownProp: prizeBreakdown, prizeProp: prize }),
@@ -111,6 +112,12 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
   );
   const winnersCount = useMemo(() => getWinnersCount(comp, tiers), [comp, tiers]);
   const ordinals = useMemo(() => ['1st', '2nd', '3rd'].slice(0, winnersCount), [winnersCount]);
+
+  // safe entry fee label
+  const entryFeeLabel = useMemo(() => {
+    const n = Number(entryFee);
+    return !comingSoon && Number.isFinite(n) ? `${n.toFixed(2)} π` : 'TBA';
+  }, [entryFee, comingSoon]);
 
   useEffect(() => {
     if (!endsAt || comingSoon) {
@@ -163,6 +170,18 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
     : 'Single Winner';
 
   const hasValidSlug = typeof slug === 'string' && slug.length > 0;
+
+  // Determine the correct href based on competition type
+  const competitionHref = useMemo(() => {
+    if (!hasValidSlug) return '#'; // Fallback for invalid slug
+    // If the competition is explicitly marked as 'funnel', send it to '/funnel/[slug]'
+    if (type === 'funnel') {
+      return `/funnel/${slug}`;
+    }
+    // Otherwise, send it to the standard '/competitions/[slug]' path
+    return `/competitions/${slug}`;
+  }, [slug, type, hasValidSlug]);
+
 
   return (
     <div
@@ -217,10 +236,8 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
 
       {/* Body */}
       <div className="p-4 text-sm space-y-3">
-
-        {/* Prize Pool (professional cyan highlight with subtle pulse glow) */}
+        {/* Prize Pool */}
         <div className="relative rounded-xl border border-cyan-300 bg-cyan-300/10 p-4 shadow-[0_0_12px_rgba(34,211,238,0.25)]">
-          {/* soft animated glow layer (doesn't affect children opacity) */}
           <div className="pointer-events-none absolute -inset-0.5 rounded-xl bg-cyan-300/10 blur-md animate-pulse" aria-hidden="true" />
           <h4 className="relative text-center text-cyan-300 font-bold text-sm mb-3 tracking-wide">
             Prize Pool
@@ -238,7 +255,6 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
                 <span className="text-[12px] uppercase tracking-wide text-cyan-300 font-semibold">
                   {label} Prize
                 </span>
-                {/* Amount pulses gently */}
                 <span className="font-extrabold text-cyan-300 text-lg tabular-nums tracking-wide animate-pulse">
                   {formatPi(tiers[label])}
                 </span>
@@ -250,9 +266,7 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
         {/* Key facts */}
         <div className="flex justify-between items-center">
           <span className="text-cyan-300 font-medium">Entry Fee</span>
-          <span className="text-white font-semibold">
-            {comingSoon ? 'TBA' : `${entryFee.toFixed(2)} π`}
-          </span>
+          <span className="text-white font-semibold">{entryFeeLabel}</span>
         </div>
 
         <p className="flex justify-between">
@@ -326,7 +340,7 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
                     ? 'bg-yellow-500'
                     : 'bg-blue-500'
                 }`}
-                style={{ width: `${Math.min(progress, 100)}%` }}
+                style={{ width: `${progress}%` }}
               />
             )}
           </div>
@@ -334,7 +348,8 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
 
         {/* CTA */}
         {hasValidSlug ? (
-          <Link href={`/competitions/${slug}`} className="block mt-4 focus:outline-none focus-visible:outline-none">
+          // Use the dynamic competitionHref here
+          <Link href={competitionHref} className="block mt-4 focus:outline-none focus-visible:outline-none">
             <button
               type="button"
               disabled={comingSoon}

@@ -3,8 +3,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePiAuth } from 'context/PiAuthContext';
-import { useTranslation } from 'react-i18next';
-
+import { useSafeTranslation } from 'hooks/useSafeTranslation';
 function normalizeCode(input) {
   const raw = String(input || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
   const hasPrefix = raw.startsWith('OMC');
@@ -16,7 +15,7 @@ function normalizeCode(input) {
 const CODE_OK = /^OMC-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
 
 export default function RedeemVoucherPanel({ onRedeemed }) {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
   const { user, loginWithPi } = usePiAuth?.() || {};
   const [code, setCode] = useState('');
   const [reserve, setReserve] = useState(true);

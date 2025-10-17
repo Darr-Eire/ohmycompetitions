@@ -2,10 +2,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-
+import { useSafeTranslation } from 'hooks/useSafeTranslation';
 export default function TicketSkillQuestion({ ticketId, showAnswer = false }) {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
   const [questionData, setQuestionData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

@@ -1,10 +1,9 @@
 /* --- PiTransactionsSection.jsx --- */
 'use client';
 import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-
+import { useSafeTranslation } from 'hooks/useSafeTranslation';
 export default function PiTransactionsSection({ userId }) {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
   const [items, setItems] = useState([]);
   const [type, setType] = useState('all'); // all | entry | reward
   const [loading, setLoading] = useState(true);

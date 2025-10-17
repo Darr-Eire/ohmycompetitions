@@ -2,10 +2,10 @@
 import { useState } from 'react';
 import { nanoid } from 'nanoid';
 import { FiCopy } from 'react-icons/fi';
-import { useTranslation } from 'react-i18next';
+import { useSafeTranslation } from 'hooks/useSafeTranslation';
 
 export default function ChallengePioneerForm() {
-  const { t } = useTranslation();
+  const { t } = useSafeTranslation();
   const [pioneerUsername, setPioneerUsername] = useState('');
   const [challengeCode, setChallengeCode] = useState(null);
   const [username, setUsername] = useState('');

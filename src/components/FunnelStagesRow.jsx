@@ -31,6 +31,8 @@ export default function FunnelStagesRow({
 
     const status = obj?.status || obj?.comp?.status || 'filling';
     const slug = obj?.slug || obj?.comp?.slug || '';
+
+    // ensure this is a NUMBER
     const pricePi =
       typeof obj?.pricePi === 'number' ? obj.pricePi :
       typeof obj?.comp?.entryFee === 'number' ? obj.comp.entryFee :
@@ -49,18 +51,17 @@ export default function FunnelStagesRow({
 
   const fmt = (n) => Number(n || 0).toLocaleString();
 
-// Inline LIVE badge helper
-const stageTitle = (label, status) => (
-  <>
-    {label}
-    {status === 'live' && (
-      <span className="ml-1 rounded-full bg-green-600 px-1.5 py-[1px] text-[9px] font-bold text-white align-middle animate-pulse">
-        LIVE
-      </span>
-    )}
-  </>
-);
-
+  // Inline LIVE badge helper
+  const stageTitle = (label, status) => (
+    <>
+      {label}
+      {status === 'live' && (
+        <span className="ml-1 rounded-full bg-green-600 px-1.5 py-[1px] text-[9px] font-bold text-white align-middle animate-pulse">
+          LIVE
+        </span>
+      )}
+    </>
+  );
 
   return (
     <section
@@ -69,44 +70,31 @@ const stageTitle = (label, status) => (
         className,
       ].join(' ')}
     >
-
-
-
-
       {/* Live Stages Window */}
       <div className="rounded-lg border border-cyan-500/20 bg-black/30 p-2">
         <div className="grid grid-cols-2 gap-1.5 mb-1.5">
-          <FunnelStageCard micro stage={1} title={stageTitle('Stage 1 Qualifier', S1.status)} {...S1} />
-          <FunnelStageCard micro stage={2} title={stageTitle('Stage 2', S2.status)} {...S2} pricePi="Free" />
-        </div>
-        <div className="grid grid-cols-2 gap-1.5 mb-1.5">
-          <FunnelStageCard micro stage={3} title={stageTitle('Stage 3', S3.status)} {...S3} pricePi="Free" />
-          <FunnelStageCard micro stage={4} title={stageTitle('Stage 4', S4.status)} {...S4} pricePi="Free" />
-        </div>
-        <div>
-          <FunnelStageCard micro stage={5} title={stageTitle('Stage 5', S5.status)} {...S5} pricePi="Free" />
+          {/* Stage 1: keep numeric price or default from S1 */}
+         <FunnelStageCard micro stage={2} {...S2} pricePi={0} />
+<FunnelStageCard micro stage={3} {...S3} pricePi={0} />
+<FunnelStageCard micro stage={4} {...S4} pricePi={0} />
+<FunnelStageCard micro stage={5} {...S5} pricePi={0} />
         </div>
       </div>
-            {/* Entry Button */}
-<div className="mb-4 text-center">
-  <div className="inline-block bg-gradient-to-r from-cyan-500/20 via-green-500/20 to-cyan-500/20 border border-cyan-400/50 rounded-xl px-6 py-4 shadow-[0_0_20px_rgba(0,255,255,0.15)] backdrop-blur-md">
-    
-    {/* Button linking to Pi Stages */}
-    <Link
-      href="/battles" // <-- Pi Stages page
-      className="block w-full px-6 py-2 rounded-lg font-bold font-orbitron bg-gradient-to-r from-cyan-300 to-cyan-500 text-black text-center hover:from-cyan-300 hover:to-green-300 transition-all shadow-[0_0_15px_rgba(0,255,180,0.6)] hover:shadow-[0_0_20px_rgba(0,255,180,0.9)] animate-pulse"
-    >
-      View Pi Stages Now
-    </Link>
 
-    {/* Supporting message */}
-    <p className="mt-2 text-xs text-cyan-200 italic">
-      Stage 1 is always open join now and start your journey to Stage&nbsp;5
-    </p>
-  </div>
-</div>
-
-    
+      {/* Entry Button */}
+      <div className="mb-4 text-center">
+        <div className="inline-block bg-gradient-to-r from-cyan-500/20 via-green-500/20 to-cyan-500/20 border border-cyan-400/50 rounded-xl px-6 py-4 shadow-[0_0_20px_rgba(0,255,255,0.15)] backdrop-blur-md">
+          <Link
+            href="/battles"
+            className="block w-full px-6 py-2 rounded-lg font-bold font-orbitron bg-gradient-to-r from-cyan-300 to-cyan-500 text-black text-center hover:from-cyan-300 hover:to-green-300 transition-all shadow-[0_0_15px_rgba(0,255,180,0.6)] hover:shadow-[0_0_20px_rgba(0,255,180,0.9)] animate-pulse"
+          >
+            View Pi Stages Now
+          </Link>
+          <p className="mt-2 text-xs text-cyan-200 italic">
+            Stage 1 is always open — join now and start your journey to Stage&nbsp;5
+          </p>
+        </div>
+      </div>
     </section>
   );
 }

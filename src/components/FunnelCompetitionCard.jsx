@@ -13,7 +13,7 @@ export default function FunnelCompetitionCard({
   entrants = 0,
   capacity = 25,
   advancing = 5,
-  price = null,                // string or number
+  price = null,                       // string or number
   status,
   comingSoon = false,
   endsAt,
@@ -22,16 +22,10 @@ export default function FunnelCompetitionCard({
   joinHref,
   onClickJoin,
   liveVideoUrl,
-  ctaLabel,                    // optional override from parent
 }) {
   const { t } = useSafeTranslation();
-
-  // Robust numeric coercion (handles strings)
-  const capNum = Number(capacity);
-  const entNum = Number(entrants);
-  const safeCapacity = Number.isFinite(capNum) && capNum > 0 ? capNum : 25;
-  const safeEntrants = Math.max(0, Number.isFinite(entNum) ? entNum : 0);
-
+  const safeCapacity = Number.isFinite(capacity) && capacity > 0 ? capacity : 1;
+  const safeEntrants = Math.max(0, Number.isFinite(entrants) ? entrants : 0);
   const pct = Math.max(0, Math.min(100, Math.floor((safeEntrants / safeCapacity) * 100)));
   const spotsLeft = Math.max(0, safeCapacity - safeEntrants);
 
@@ -52,15 +46,13 @@ export default function FunnelCompetitionCard({
     !comingSoon &&
     (stage === 1 || (stage > 1 && hasTicket));
 
-  // Build CTA label manually (no i18n interpolation)
-  const computedCta = (() => {
+  const ctaLabel = (() => {
     if (comingSoon) return t('coming_soon', 'Coming Soon');
     if (derivedStatus === 'ended') return t('completed', 'Completed');
     if (derivedStatus === 'live') return t('in_progress', 'In Progress');
     if (stage > 1 && !hasTicket) return t('qualified_only', 'Qualified Only');
-    return `${t('enter', 'Enter')} — ${spotsLeft} ${t('left', 'left')}`;
+    return t('enter_spots_left', 'Enter — {spotsLeft} left', { spotsLeft });
   })();
-  const finalCta = ctaLabel || computedCta;
 
   const endsAtLabel = useMemo(() => {
     if (!endsAt) return null;
@@ -68,16 +60,12 @@ export default function FunnelCompetitionCard({
     return isNaN(d.getTime()) ? null : d.toLocaleString();
   }, [endsAt]);
 
-  // Price: treat 0 as Free
-  const normalizedPrice = (() => {
-    if (typeof price === 'number') return price > 0 ? `${price.toFixed(2)} π` : t('free', 'Free');
-    if (typeof price === 'string' && price.trim().length) {
-      const n = Number(price);
-      if (Number.isFinite(n)) return n > 0 ? `${n.toFixed(2)} π` : t('free', 'Free');
-      return price.trim();
-    }
-    return t('free', 'Free');
-  })();
+  const normalizedPrice =
+    typeof price === 'number'
+      ? `${price.toFixed(2)} π`
+      : typeof price === 'string' && price.trim().length
+      ? price.trim()
+      : t('free', 'Free');
 
   return (
     <div className="group relative overflow-hidden rounded-2xl bg-[#0b1220] border border-white/10 shadow-xl hover:shadow-2xl transition-all">
@@ -100,12 +88,14 @@ export default function FunnelCompetitionCard({
                 style={{ animation: 'omcGradient 10s ease infinite' }}
               />
             )}
-            <div className="absolute top-3 right-3 z-20">
-              <span className="inline-flex items-center gap-1 rounded-full bg-red-600 px-2 py-[2px] text-[10px] font-bold text-white shadow-lg animate-pulse">
-                <span className="h-[6px] w-[6px] rounded-full bg-white" />
-                {t('live', 'LIVE')}
-              </span>
-            </div>
+            {derivedStatus === 'live' && (
+  <div className="absolute top-3 right-3 z-20">
+    <span className="inline-flex items-center gap-1 rounded-full bg-red-600 px-2 py-[2px] text-[10px] font-bold text-white shadow-lg animate-pulse">
+      <span className="h-[6px] w-[6px] rounded-full bg-white" />
+      {t('live', 'LIVE')}
+    </span>
+  </div>
+)}
 
             <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px]" />
             {stage === 5 && (
@@ -129,8 +119,8 @@ export default function FunnelCompetitionCard({
         </div>
         {tags?.length > 0 && (
           <div className="absolute top-3 right-3 hidden sm:flex gap-2">
-            {tags.slice(0, 3).map((tItem, i) => (
-              <Badge key={i} tone="muted">{tItem}</Badge>
+            {tags.slice(0, 3).map((t, i) => (
+              <Badge key={i} tone="muted">{t}</Badge>
             ))}
           </div>
         )}
@@ -186,7 +176,7 @@ export default function FunnelCompetitionCard({
                 onClick={onClickJoin}
                 className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold bg-cyan-400 text-black hover:brightness-110 active:translate-y-[1px] transition-all"
               >
-                {finalCta}
+                {ctaLabel}
                 {normalizedPrice && <span className="text-xs font-normal text-black/80">{normalizedPrice}</span>}
               </button>
             ) : (
@@ -194,41 +184,26 @@ export default function FunnelCompetitionCard({
                 href={safeHref}
                 className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold bg-cyan-400 text-black hover:brightness-110 active:translate-y-[1px] transition-all"
               >
-                {finalCta}
+                {ctaLabel}
                 {normalizedPrice && <span className="text-xs font-normal text-black/80">{normalizedPrice}</span>}
               </Link>
             )
           ) : (
             <span className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold bg-white/10 text-white/70">
-              {finalCta}
+              {ctaLabel}
               {normalizedPrice && <span className="text-xs font-normal text-white/60">{normalizedPrice}</span>}
             </span>
           )}
         </div>
 
-        {/* Stage note (manual composition; no interpolation) */}
+        {/* Stage note */}
         <div className="mt-3 text-xs text-white/70">
           {stage === 1 ? (
-            <span>
-              {t('stage_1_open_entry_prefix', 'Stage 1 is open entry.')}{" "}
-              {t('finish_top', 'Finish top')}{" "}
-              {advancing}{" "}
-              {t('to_advance', 'to advance.')}
-            </span>
+            <span>{t('stage_1_open_entry', 'Stage 1 is open entry. Finish top {advancing} to advance.', { advancing })}</span>
           ) : hasTicket ? (
-            <span>
-              {t('you_hold_ticket_for_stage', 'You hold a ticket for Stage')}{" "}
-              {stage}.{" "}
-              {t('finish_top', 'Finish top')}{" "}
-              {advancing}{" "}
-              {t('to_advance', 'to advance.')}
-            </span>
+            <span>{t('hold_ticket_stage', 'You hold a ticket for Stage {stage}. Finish top {advancing} to advance.', { stage, advancing })}</span>
           ) : (
-            <span>
-              {t('invite_only_prefix', 'Invite-only: you need a Stage')}{" "}
-              {stage}{" "}
-              {t('ticket_to_enter', 'ticket to enter.')}
-            </span>
+            <span>{t('invite_only_stage', 'Invite-only: you need a Stage {stage} ticket to enter.', { stage })}</span>
           )}
         </div>
       </div>

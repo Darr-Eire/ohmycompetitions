@@ -1,38 +1,53 @@
 // src/hooks/useSafeTranslation.js
 'use client';
-
 import { useCallback } from 'react';
 
-// Try to load react-i18next once (compile-time constant),
-// but do NOT vary hook calls per render.
+// --- decide once if i18n should be used (env-gated) ---
 let rti;
-try {
-  // Optional dependency – if missing or not initialized, we'll fall back.
-  rti = require('react-i18next');
-} catch (_) {
-  rti = null;
+try { rti = require('react-i18next'); } catch { rti = null; }
+const I18N_ENABLED =
+  process.env.NEXT_PUBLIC_I18N_ENABLED === 'true' &&
+  !!rti && typeof rti.useTranslation === 'function';
+
+// --- simple {{var}} interpolator for fallback ---
+function interpolate(str, vars) {
+  if (!vars || typeof str !== 'string') return str;
+  return str.replace(/\{\{\s*([a-zA-Z0-9_.$-]+)\s*\}\}/g, (_m, name) =>
+    (vars[name] === undefined || vars[name] === null) ? `{{${name}}}` : String(vars[name])
+  );
 }
 
-export function useSafeTranslation() {
-  // Use react-i18next if it's available AND doesn't throw.
-  if (rti && typeof rti.useTranslation === 'function') {
-    try {
-      // Important: this hook call happens on **every** render, not conditionally.
-      const { t } = rti.useTranslation();
-      if (typeof t === 'function') return { t };
-    } catch {
-      // fall through to the fallback below
-    }
+// --- single implementation (named + default will both point here) ---
+function useSafeTranslationImpl() {
+  if (I18N_ENABLED) {
+    const { t: rtiT } = rti.useTranslation();
+    const t = useCallback((key, fallbackOrOpts, vars) => {
+      if (typeof fallbackOrOpts === 'string') return rtiT(key, { defaultValue: fallbackOrOpts, ...(vars || {}) });
+      if (fallbackOrOpts && typeof fallbackOrOpts === 'object') return rtiT(key, fallbackOrOpts);
+      return rtiT(key);
+    }, [rtiT]);
+    return { t };
   }
 
-  // Stable fallback translator: t('key', 'Default text') → returns default text.
-  const t = useCallback((key, defaultTextOrOpts) => {
-    if (typeof defaultTextOrOpts === 'string') return defaultTextOrOpts;
-    if (defaultTextOrOpts && typeof defaultTextOrOpts.defaultValue === 'string') {
-      return defaultTextOrOpts.defaultValue;
+  const t = useCallback((key, fallbackOrOpts, maybeVars) => {
+    let base, vars = maybeVars;
+    if (typeof fallbackOrOpts === 'string') {
+      base = fallbackOrOpts;
+    } else if (fallbackOrOpts && typeof fallbackOrOpts === 'object') {
+      base = typeof fallbackOrOpts.defaultValue === 'string'
+        ? fallbackOrOpts.defaultValue
+        : (typeof key === 'string' ? key : '');
+      vars = { ...fallbackOrOpts, ...(maybeVars || {}) };
+      if ('defaultValue' in vars) delete vars.defaultValue;
+    } else {
+      base = typeof key === 'string' ? key : '';
     }
-    return typeof key === 'string' ? key : '';
+    return interpolate(base, vars);
   }, []);
 
   return { t };
 }
+
+// ✅ export BOTH ways so any import style works
+export function useSafeTranslation() { return useSafeTranslationImpl(); }
+export default useSafeTranslationImpl;

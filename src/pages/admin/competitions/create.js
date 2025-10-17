@@ -71,7 +71,8 @@ const handleSubmit = async (e) => {
       ...formData,
       slug: formData.slug || generateSlug(formData.title),
       piAmount: formData.piAmount || formData.entryFee,
-      prize: formData.prizes[0] || '' // ✅ This is the key improvement
+      prize: formData.prizes[0] || '',
+      prizeBreakdown: formData.prizes.filter(p => p.trim() !== '') // Add this line
     };
 
     const res = await fetch('/api/admin/competitions', {
@@ -80,18 +81,7 @@ const handleSubmit = async (e) => {
       body: JSON.stringify(submitData),
     });
 
-    if (!res.ok) {
-      const errorData = await res.json();
-      throw new Error(errorData.message || 'Failed to create competition');
-    }
-
-    alert('✅ Competition created successfully!');
-    router.push('/admin/competitions');
-  } catch (err) {
-    console.error('Error creating competition:', err);
-    alert('❌ Failed to create competition: ' + err.message);
-  } finally {
-    setLoading(false);
+    // ...
   }
 };
 
@@ -252,20 +242,33 @@ const ImageOption = ({ label, path }) => (
                   />
                 </div>
 
-                {/* Max Tickets */}
-                <div>
-                  <label className="block text-cyan-300 text-sm font-bold mb-2">Max Tickets per User *</label>
-                  <input
-                    type="number"
-                    name="maxTickets"
-                    value={formData.maxTickets}
-                    onChange={handleChange}
-                    required
-                    min="1"
-                    className="w-full px-4 py-2 bg-black border border-cyan-400 rounded-lg text-white placeholder-gray-400 focus:border-cyan-300 focus:outline-none"
-                  />
-                </div>
+              {/* Max Tickets per User */}
+<div>
+  <label className="block text-cyan-300 text-sm font-bold mb-2">Max Tickets per User *</label>
+  <input
+    type="number"
+    name="maxPerUser" // CHANGE THIS FROM "maxTickets"
+    value={formData.maxPerUser}
+    onChange={handleChange}
+    required
+    min="1"
+    className="w-full px-4 py-2 bg-black border border-cyan-400 rounded-lg text-white placeholder-gray-400 focus:border-cyan-300 focus:outline-none"
+  />
+</div>
 
+{/* Number of Winners */}
+<div>
+  <label className="block text-cyan-300 text-sm font-bold mb-2">Number of Winners *</label>
+  <input
+    type="number"
+    name="winnersCount" // CHANGE THIS FROM "numberOfWinners"
+    value={formData.winnersCount}
+    onChange={handleChange}
+    required
+    min="1"
+    className="w-full px-4 py-2 bg-black border border-cyan-400 rounded-lg text-white placeholder-gray-400 focus:border-cyan-300 focus:outline-none"
+  />
+</div>
                 {/* Number of Winners */}
                 <div>
                   <label className="block text-cyan-300 text-sm font-bold mb-2">Number of Winners *</label>
@@ -354,14 +357,20 @@ const ImageOption = ({ label, path }) => (
                 </div>
               </div>
 
-              {/* Description Dropdown */}
-            <div>
+ {/* Description Dropdown */}
+<div>
   <label className="block text-cyan-300 text-sm font-bold mb-2">
     Description (optional)
   </label>
 
+  {/* If you want the preset descriptions to also populate the textarea,
+      you'd need to add onChange to this select and update formData.description.
+      For now, keeping it 'view only' as per your comment, but note it's not interactive. */}
   <select
     className="w-full px-4 py-2 mb-2 bg-black border border-cyan-400 rounded-lg text-white focus:border-cyan-300 focus:outline-none"
+    // If you want this to *apply* a description to the textarea:
+    // onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+    // value="" // You might not want a value here if it's just a selector
   >
     <option value="">Select a preset description (view only)</option>
     {descriptions.map((desc, idx) => (
@@ -370,6 +379,9 @@ const ImageOption = ({ label, path }) => (
   </select>
 
   <textarea
+    name="description" // ADD THIS
+    value={formData.description} // ADD THIS
+    onChange={handleChange} // ADD THIS
     placeholder="Write your own description here..."
     className="w-full px-4 py-2 bg-black border border-cyan-400 rounded-lg text-white focus:border-cyan-300 focus:outline-none"
     rows={4}

@@ -2,7 +2,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+// IMPORTANT: use the safe wrapper, not useTranslation directly
+import { useSafeTranslation } from 'hooks/useSafeTranslation'; // or '../hooks/useSafeTranslation' if you don't have a path alias
 
 const languages = [
   { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -19,30 +20,35 @@ const languages = [
 ];
 
 export default function LanguageSwitcher({ className = '' }) {
-  const { i18n, t } = useTranslation();
+  const { t, i18n, ready } = useSafeTranslation(); // safe: won’t throw before init
   const [isOpen, setIsOpen] = useState(false);
-  const [currentLang, setCurrentLang] = useState(null);
+  const [currentLang, setCurrentLang] = useState(languages[0]);
 
+  // keep currentLang in sync once i18n is actually ready
   useEffect(() => {
-    const current = languages.find(lang => lang.code === i18n.language) || languages[0];
-    setCurrentLang(current);
-  }, [i18n.language]);
+    if (!i18n || (!ready && !i18n.language)) return;
+    const code = i18n.resolvedLanguage || i18n.language || 'en';
+    const cur = languages.find(l => l.code === code) || languages[0];
+    setCurrentLang(cur);
+  }, [i18n, ready, i18n?.language, i18n?.resolvedLanguage]);
 
   const handleLanguageChange = (langCode) => {
-    i18n.changeLanguage(langCode);
+    if (i18n?.changeLanguage) i18n.changeLanguage(langCode);
     setIsOpen(false);
   };
 
-  if (!currentLang) return null;
+  // While i18n is booting, render a harmless button (prevents header from disappearing)
+  const label = (t && typeof t === 'function') ? t('language', 'Language') : 'Language';
 
   return (
     <div className={`relative ${className}`}>
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => setIsOpen(o => !o)}
         className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-white hover:text-cyan-300 transition-colors rounded-lg hover:bg-cyan-500/10"
-        aria-label={t('language')}
+        aria-label={label}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
+        type="button"
       >
         <span className="text-lg">{currentLang.flag}</span>
         <span className="hidden sm:inline">{currentLang.name}</span>
@@ -64,12 +70,11 @@ export default function LanguageSwitcher({ className = '' }) {
             onClick={() => setIsOpen(false)}
             aria-hidden="true"
           />
-          
           {/* Dropdown */}
           <div className="absolute right-0 mt-2 w-64 bg-[#0f172a] border border-cyan-700 rounded-lg shadow-xl z-50 max-h-80 overflow-y-auto">
             <div className="p-2">
               <div className="text-xs text-cyan-300 font-semibold mb-2 px-2">
-                {t('language')}
+                {label}
               </div>
               {languages.map((lang) => (
                 <button
@@ -82,12 +87,17 @@ export default function LanguageSwitcher({ className = '' }) {
                   }`}
                   role="option"
                   aria-selected={currentLang.code === lang.code}
+                  type="button"
                 >
                   <span className="text-lg">{lang.flag}</span>
                   <span className="flex-1 text-left">{lang.name}</span>
                   {currentLang.code === lang.code && (
                     <svg className="w-4 h-4 text-cyan-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   )}
                 </button>

@@ -216,10 +216,12 @@ function HomePage() {
 
         {/* ====================== Sections ====================== */}
         <main className="space-y-16">
-          <Section
-            title={t('omc_launch_week', 'OMC Launch Week')}
-            items={getCompetitionsByCategory('launch')}
-            viewMoreHref="/competitions/launch-week"
+
+          
+           <Section
+            title={t('daily_weekly', 'Daily/Weekly')}
+            items={getCompetitionsByCategory('daily')}
+            viewMoreHref="/competitions/daily"
           />
 
           <Section
@@ -228,10 +230,10 @@ function HomePage() {
             viewMoreHref="/competitions/tech-gadgets"
           />
 
-          <Section
-            title={t('daily_weekly', 'Daily/Weekly')}
-            items={getCompetitionsByCategory('daily')}
-            viewMoreHref="/competitions/daily"
+         <Section
+            title={t('omc_launch_week', 'OMC Launch Week')}
+            items={getCompetitionsByCategory('launch')}
+            viewMoreHref="/competitions/launch-week"
           />
 
           <Section
