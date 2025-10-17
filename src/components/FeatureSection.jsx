@@ -32,28 +32,25 @@ const features = [
   {
     icon: '🎮',
     title: 'Mini Games',
-    description: 'Compete in fast-paced arcade and puzzle games to win instant Pi rewards every day.',
-    link: '/try-your-luck',
+    description: 'Compete in skill-based games. Score high, top the leaderboard, and earn Pi prizes!',
+    link: '/mini-games',
     cta: 'Play Now →',
   },
 ];
 
 export default function FeatureSection() {
   return (
-    <section className="mt-10 px-4">
-      <h2 className="text-3xl font-bold text-center text-white mb-6">Explore Our Core Features</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {features.map((feature, index) => (
-          <div key={index} className="bg-[#0f172a] border border-cyan-500 rounded-xl p-6 shadow-xl hover:scale-105 transition">
-            <div className="text-4xl mb-2">{feature.icon}</div>
-            <h3 className="text-xl font-bold text-white mb-1">{feature.title}</h3>
-            <p className="text-gray-300 mb-4">{feature.description}</p>
-            <Link href={feature.link} className="text-cyan-400 hover:underline">
-              {feature.cta}
-            </Link>
-          </div>
-        ))}
-      </div>
+    <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+      {features.map((feature, index) => (
+        <div key={index} className="glass glow p-6 rounded-xl hover:scale-[1.02] transition-all text-[var(--text-light)]">
+          <div className="text-3xl mb-2">{feature.icon}</div>
+          <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
+          <p className="mb-4">{feature.description}</p>
+          <Link href={feature.link} className="text-[var(--primary-solid)] hover:underline">
+            {feature.cta}
+          </Link>
+        </div>
+      ))}
     </section>
   );
 }

@@ -79,7 +79,7 @@ const IndexPage: NextPageWithLayout = () => {
           {/* CTA Button */}
           <div className="flex flex-col items-center gap-2">
             <Link
-              href="/homepage?welcome=1"
+              href="/homepage"
               className="pulse-button block w-full bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black font-bold py-3 rounded-lg shadow-md text-center text-base"
             >
               Let’s Go
