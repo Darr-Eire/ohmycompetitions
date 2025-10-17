@@ -4,6 +4,18 @@ import { useRouter } from 'next/router';
 import AdminSidebar from '../../../components/AdminSidebar';
 import AdminGuard from '../../../components/AdminGuard';
 
+// Move ImageOption component definition OUTSIDE of the main component function
+const ImageOption = ({ label, path, onChange }) => (
+  <button
+    type="button"
+    onClick={() => onChange({ target: { name: 'imageUrl', value: path } })} // Use the passed onChange
+    className="p-2 bg-gray-800 hover:bg-gray-700 rounded text-left transition"
+  >
+    {label}
+  </button>
+);
+
+
 export default function CreateCompetitionPage({ descriptions = [] }) {
   const router = useRouter();
   const now = new Date();
@@ -14,25 +26,24 @@ export default function CreateCompetitionPage({ descriptions = [] }) {
   const defaultEnd = sevenDaysLater.toISOString().slice(0, 16);
 
   const [loading, setLoading] = useState(false);
-const [formData, setFormData] = useState({
-  slug: '',
-  title: '',
-  prize: '',
-  description: '',
-  totalTickets: 100,
-  entryFee: 1,
-  piAmount: 1,
-  theme: 'tech',
-  startsAt: defaultStart,
-  endsAt: defaultEnd,
-  status: 'active',
-  imageUrl: '',
-  thumbnail: '',
-  maxPerUser: 1,       // ✅ renamed from maxTickets
-  winnersCount: 1,     // ✅ renamed from numberOfWinners
-  prizes: ['']
-});
-
+  const [formData, setFormData] = useState({
+    slug: '',
+    title: '',
+    prize: '', // This will be formData.prizes[0]
+    description: '',
+    totalTickets: 100,
+    entryFee: 1,
+    piAmount: 1,
+    theme: 'tech',
+    startsAt: defaultStart,
+    endsAt: defaultEnd,
+    status: 'active',
+    imageUrl: '',
+    thumbnail: '',
+    maxPerUser: 1,       // Corrected name
+    winnersCount: 1,     // Corrected name
+    prizes: ['']         // Array for prizeBreakdown
+  });
 
 
   const generateSlug = (title) => {
@@ -43,62 +54,63 @@ const [formData, setFormData] = useState({
       .replace(/-+/g, '-')
       .trim('-');
   };
-const handlePrizeChange = (index, value) => {
-  const updatedPrizes = [...formData.prizes];
-  updatedPrizes[index] = value;
-  setFormData({ ...formData, prizes: updatedPrizes });
-};
 
-const addPrize = () => {
-  if (formData.prizes.length < 10) {
-    setFormData({ ...formData, prizes: [...formData.prizes, ''] });
-  }
-};
+  const handlePrizeChange = (index, value) => {
+    const updatedPrizes = [...formData.prizes];
+    updatedPrizes[index] = value;
+    setFormData({ ...formData, prizes: updatedPrizes });
+  };
 
-const removePrize = (index) => {
-  const updatedPrizes = formData.prizes.filter((_, i) => i !== index);
-  setFormData({ ...formData, prizes: updatedPrizes });
-};
+  const addPrize = () => {
+    if (formData.prizes.length < 10) {
+      setFormData({ ...formData, prizes: [...formData.prizes, ''] });
+    }
+  };
+
+  const removePrize = (index) => {
+    const updatedPrizes = formData.prizes.filter((_, i) => i !== index);
+    setFormData({ ...formData, prizes: updatedPrizes });
+  };
 
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
+    try {
+      const submitData = {
+        ...formData,
+        slug: formData.slug || generateSlug(formData.title),
+        piAmount: formData.piAmount || formData.entryFee,
+        prize: formData.prizes[0] || '', // Main prize from the first item
+        prizeBreakdown: formData.prizes.filter(p => p.trim() !== '') // Send all non-empty prizes
+      };
 
-  try {
-    const submitData = {
-      ...formData,
-      slug: formData.slug || generateSlug(formData.title),
-      piAmount: formData.piAmount || formData.entryFee,
-      prize: formData.prizes[0] || '',
-      prizeBreakdown: formData.prizes.filter(p => p.trim() !== '') // Add this line
-    };
+      const res = await fetch('/api/admin/competitions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(submitData),
+      });
 
-    const res = await fetch('/api/admin/competitions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(submitData),
-    });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to create competition');
+      }
 
-    // ...
-  }
-};
+      alert('✅ Competition created successfully!');
+      router.push('/admin/competitions');
+    } catch (err) {
+      console.error('Error creating competition:', err);
+      alert('❌ Failed to create competition: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => {
-      const ImageOption = ({ label, path }) => (
-  <button
-    type="button"
-    onClick={() => handleChange({ target: { name: 'imageUrl', value: path } })}
-    className="p-2 bg-gray-800 hover:bg-gray-700 rounded text-left transition"
-  >
-    {label}
-  </button>
-);
-
       const newData = {
         ...prev,
         [name]: value
@@ -106,23 +118,15 @@ const handleSubmit = async (e) => {
       if (name === 'title' && !prev.slug) {
         newData.slug = generateSlug(value);
       }
-      if (name === 'entryFee') {
+      // Ensure piAmount updates with entryFee if not manually set
+      if (name === 'entryFee' && !prev.piAmount) { // Added !prev.piAmount to avoid overwriting if user manually set it
         newData.piAmount = value;
       }
       return newData;
     });
   };
-const ImageOption = ({ label, path }) => (
-  <button
-    type="button"
-    onClick={() =>
-      handleChange({ target: { name: 'imageUrl', value: path } })
-    }
-    className="p-2 bg-gray-800 hover:bg-gray-700 rounded text-left transition"
-  >
-    {label}
-  </button>
-);
+
+  // The ImageOption component definition from earlier was here, removed.
 
   return (
     <AdminGuard>
@@ -242,40 +246,27 @@ const ImageOption = ({ label, path }) => (
                   />
                 </div>
 
-              {/* Max Tickets per User */}
-<div>
-  <label className="block text-cyan-300 text-sm font-bold mb-2">Max Tickets per User *</label>
-  <input
-    type="number"
-    name="maxPerUser" // CHANGE THIS FROM "maxTickets"
-    value={formData.maxPerUser}
-    onChange={handleChange}
-    required
-    min="1"
-    className="w-full px-4 py-2 bg-black border border-cyan-400 rounded-lg text-white placeholder-gray-400 focus:border-cyan-300 focus:outline-none"
-  />
-</div>
+                {/* Max Tickets per User */}
+                <div>
+                  <label className="block text-cyan-300 text-sm font-bold mb-2">Max Tickets per User *</label>
+                  <input
+                    type="number"
+                    name="maxPerUser" // Corrected name
+                    value={formData.maxPerUser}
+                    onChange={handleChange}
+                    required
+                    min="1"
+                    className="w-full px-4 py-2 bg-black border border-cyan-400 rounded-lg text-white placeholder-gray-400 focus:border-cyan-300 focus:outline-none"
+                  />
+                </div>
 
-{/* Number of Winners */}
-<div>
-  <label className="block text-cyan-300 text-sm font-bold mb-2">Number of Winners *</label>
-  <input
-    type="number"
-    name="winnersCount" // CHANGE THIS FROM "numberOfWinners"
-    value={formData.winnersCount}
-    onChange={handleChange}
-    required
-    min="1"
-    className="w-full px-4 py-2 bg-black border border-cyan-400 rounded-lg text-white placeholder-gray-400 focus:border-cyan-300 focus:outline-none"
-  />
-</div>
                 {/* Number of Winners */}
                 <div>
                   <label className="block text-cyan-300 text-sm font-bold mb-2">Number of Winners *</label>
                   <input
                     type="number"
-                    name="numberOfWinners"
-                    value={formData.numberOfWinners}
+                    name="winnersCount" // Corrected name
+                    value={formData.winnersCount}
                     onChange={handleChange}
                     required
                     min="1"
@@ -357,124 +348,118 @@ const ImageOption = ({ label, path }) => (
                 </div>
               </div>
 
- {/* Description Dropdown */}
-<div>
-  <label className="block text-cyan-300 text-sm font-bold mb-2">
-    Description (optional)
-  </label>
+              {/* Description Dropdown & Textarea */}
+              <div>
+                <label className="block text-cyan-300 text-sm font-bold mb-2">
+                  Description (optional)
+                </label>
 
-  {/* If you want the preset descriptions to also populate the textarea,
-      you'd need to add onChange to this select and update formData.description.
-      For now, keeping it 'view only' as per your comment, but note it's not interactive. */}
-  <select
-    className="w-full px-4 py-2 mb-2 bg-black border border-cyan-400 rounded-lg text-white focus:border-cyan-300 focus:outline-none"
-    // If you want this to *apply* a description to the textarea:
-    // onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-    // value="" // You might not want a value here if it's just a selector
-  >
-    <option value="">Select a preset description (view only)</option>
-    {descriptions.map((desc, idx) => (
-      <option key={idx} value={desc}>{desc.slice(0, 50)}...</option>
-    ))}
-  </select>
+                <select
+                  className="w-full px-4 py-2 mb-2 bg-black border border-cyan-400 rounded-lg text-white focus:border-cyan-300 focus:outline-none"
+                  // Optionally, if you want selecting a preset to populate the textarea:
+                  // onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  // value={formData.description} // If you uncomment the line above, uncomment this too
+                >
+                  <option value="">Select a preset description (view only)</option>
+                  {descriptions.map((desc, idx) => (
+                    <option key={idx} value={desc}>{desc.slice(0, 50)}...</option>
+                  ))}
+                </select>
 
-  <textarea
-    name="description" // ADD THIS
-    value={formData.description} // ADD THIS
-    onChange={handleChange} // ADD THIS
-    placeholder="Write your own description here..."
-    className="w-full px-4 py-2 bg-black border border-cyan-400 rounded-lg text-white focus:border-cyan-300 focus:outline-none"
-    rows={4}
-  />
-</div>
+                <textarea
+                  name="description" // Added name
+                  value={formData.description} // Added value binding
+                  onChange={handleChange} // Added onChange handler
+                  placeholder="Write your own description here..."
+                  className="w-full px-4 py-2 bg-black border border-cyan-400 rounded-lg text-white focus:border-cyan-300 focus:outline-none"
+                  rows={4}
+                />
+              </div>
 
 
-                    {/* Image URL and buttons */}
-       {/* Image URL */}
-            <div>
-              <label className="block text-cyan-300 text-sm font-bold mb-2">
-                Competition Image
-              </label>
-              <input
-                type="text"
-                name="imageUrl"
-                value={formData.imageUrl}
-                onChange={handleChange}
-                className="w-full px-4 py-2 bg-black border border-cyan-400 rounded-lg text-white placeholder-gray-400 focus:border-cyan-300 focus:outline-none"
-                placeholder="e.g., /images/playstation.jpeg or https://example.com/image.jpg"
-              />
-              <p className="text-xs text-gray-400 mt-1">
-                Use existing images from /public/images/ folder or provide external URL. Leave empty for default image.
-              </p>
-              
-             {/* Available Images Preview */}
-<div className="mt-3">
-  <p className="text-sm text-cyan-400 mb-2">Quick select from available images:</p>
+              {/* Image URL and buttons */}
+              <div>
+                <label className="block text-cyan-300 text-sm font-bold mb-2">
+                  Competition Image
+                </label>
+                <input
+                  type="text"
+                  name="imageUrl"
+                  value={formData.imageUrl}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 bg-black border border-cyan-400 rounded-lg text-white placeholder-gray-400 focus:border-cyan-300 focus:outline-none"
+                  placeholder="e.g., /images/playstation.jpeg or https://example.com/image.jpg"
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  Use existing images from /public/images/ folder or provide external URL. Leave empty for default image.
+                </p>
 
-  {/* Tech */}
-  <p className="text-cyan-300 text-xs font-semibold mt-4 mb-1">🎮 Tech/Featured</p>
-  <div className="grid grid-cols-3 gap-2 text-xs">
-    <ImageOption label="PlayStation" path="/images/playstation.jpeg" />
-    <ImageOption label="Xbox" path="/images/xbox.jpeg" />
-    <ImageOption label="Nintendo" path="/images/nintendo.png" />
-    <ImageOption label="MacBook" path="/images/macbook.jpeg" />
-    <ImageOption label="iPhone" path="/images/iphone.jpeg" />
-    <ImageOption label="AirPods" path="/images/airpods.png" />
-    <ImageOption label="GoPro" path="/images/gopro.png" />
-    <ImageOption label="Viture" path="/images/viture.png" />
-   <ImageOption label="Smart TV" path="/images/tv.jpg" />
-    <ImageOption label="Gaming Chair" path="/images/chair.png" />
-     <ImageOption label="Scooter" path="/images/scooter.png" />
-  </div>
-
-
-
-  {/* Travel */}
-  <p className="text-cyan-300 text-xs font-semibold mt-4 mb-1">🌴 Travel</p>
-  <div className="grid grid-cols-3 gap-2 text-xs">
-    <ImageOption label="Weekend" path="/images/weekend.jpeg" />
-    <ImageOption label="Dubai Holiday" path="/images/dubai-luxury-holiday.png" />
-    <ImageOption label="Spa" path="/images/spa.jpeg" />
-    <ImageOption label="Hotel Stay" path="/images/hotel.jpeg" />
-  </div>
-
-{/* Crypto */}
-<p className="text-cyan-300 text-xs font-semibold mt-4 mb-1">💰 Crypto</p>
-<div className="grid grid-cols-3 gap-2 text-xs">
-  <ImageOption label="Bitcoin" path="/images/bitcoin.png" />
-  <ImageOption label="Pi" path="/images/pi.png" />
-  <ImageOption label="XRP" path="/images/xrp.png" />
-</div>
-
-{/* Daily */}
-<p className="text-cyan-300 text-xs font-semibold mt-4 mb-1">📆 Daily</p>
-<div className="grid grid-cols-3 gap-2 text-xs">
-    <ImageOption label="Pi 4" path="/images/pi4.png" />
-  <ImageOption label="Pi 3" path="/images/pi3.png" />
-  <ImageOption label="Pi 2" path="/images/pi2.png" />
-  <ImageOption label="Pi 1" path="/images/pi1.png" />
-</div>
-</div>
-
-
-
-              {/* Image Preview */}
-              {formData.imageUrl && (
+                {/* Available Images Preview */}
                 <div className="mt-3">
-                  <p className="text-xs text-cyan-400 mb-2">🖼️ Preview:</p>
-                  <div className="w-32 h-24 bg-gray-800 rounded border border-gray-600 overflow-hidden">
-                    <img 
-                      src={formData.imageUrl} 
-                      alt="Competition preview" 
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                      }}
-                    />
+                  <p className="text-sm text-cyan-400 mb-2">Quick select from available images:</p>
+
+                  {/* Tech */}
+                  <p className="text-cyan-300 text-xs font-semibold mt-4 mb-1">🎮 Tech/Featured</p>
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    <ImageOption label="PlayStation" path="/images/playstation.jpeg" onChange={handleChange} />
+                    <ImageOption label="Xbox" path="/images/xbox.jpeg" onChange={handleChange} />
+                    <ImageOption label="Nintendo" path="/images/nintendo.png" onChange={handleChange} />
+                    <ImageOption label="MacBook" path="/images/macbook.jpeg" onChange={handleChange} />
+                    <ImageOption label="iPhone" path="/images/iphone.jpeg" onChange={handleChange} />
+                    <ImageOption label="AirPods" path="/images/airpods.png" onChange={handleChange} />
+                    <ImageOption label="GoPro" path="/images/gopro.png" onChange={handleChange} />
+                    <ImageOption label="Viture" path="/images/viture.png" onChange={handleChange} />
+                    <ImageOption label="Smart TV" path="/images/tv.jpg" onChange={handleChange} />
+                    <ImageOption label="Gaming Chair" path="/images/chair.png" onChange={handleChange} />
+                    <ImageOption label="Scooter" path="/images/scooter.png" onChange={handleChange} />
+                  </div>
+
+
+                  {/* Travel */}
+                  <p className="text-cyan-300 text-xs font-semibold mt-4 mb-1">🌴 Travel</p>
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    <ImageOption label="Weekend" path="/images/weekend.jpeg" onChange={handleChange} />
+                    <ImageOption label="Dubai Holiday" path="/images/dubai-luxury-holiday.png" onChange={handleChange} />
+                    <ImageOption label="Spa" path="/images/spa.jpeg" onChange={handleChange} />
+                    <ImageOption label="Hotel Stay" path="/images/hotel.jpeg" onChange={handleChange} />
+                  </div>
+
+                  {/* Crypto */}
+                  <p className="text-cyan-300 text-xs font-semibold mt-4 mb-1">💰 Crypto</p>
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    <ImageOption label="Bitcoin" path="/images/bitcoin.png" onChange={handleChange} />
+                    <ImageOption label="Pi" path="/images/pi.png" onChange={handleChange} />
+                    <ImageOption label="XRP" path="/images/xrp.png" onChange={handleChange} />
+                  </div>
+
+                  {/* Daily */}
+                  <p className="text-cyan-300 text-xs font-semibold mt-4 mb-1">📆 Daily</p>
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    <ImageOption label="Pi 4" path="/images/pi4.png" onChange={handleChange} />
+                    <ImageOption label="Pi 3" path="/images/pi3.png" onChange={handleChange} />
+                    <ImageOption label="Pi 2" path="/images/pi2.png" onChange={handleChange} />
+                    <ImageOption label="Pi 1" path="/images/pi1.png" onChange={handleChange} />
                   </div>
                 </div>
-              )}
-            </div>
+
+
+                {/* Image Preview */}
+                {formData.imageUrl && (
+                  <div className="mt-3">
+                    <p className="text-xs text-cyan-400 mb-2">🖼️ Preview:</p>
+                    <div className="w-32 h-24 bg-gray-800 rounded border border-gray-600 overflow-hidden">
+                      <img
+                        src={formData.imageUrl}
+                        alt="Competition preview"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
 
 
               {/* Action Buttons */}
