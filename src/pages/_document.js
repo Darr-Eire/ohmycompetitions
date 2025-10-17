@@ -5,15 +5,15 @@ export default function Document() {
   const loader = `
 (function () {
   if (typeof window === "undefined") return;
-  var w = window as any;
-
+  var w = window;
   // If we’ve already set up the singleton, do nothing.
   if (typeof w.__readyPi === "function") return;
 
   // Create a single readiness promise that everyone can await.
   w.__readyPi = (function () {
     let done = false;
-    let cachedPi: any = null;
+    let cachedPi = null;
+
 
     return function __readyPiInternal() {
       if (done && cachedPi) return Promise.resolve(cachedPi);

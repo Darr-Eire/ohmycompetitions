@@ -22,10 +22,9 @@ export default function CompetitionCard({
   const { t } = useSafeTranslation();
   const { user } = usePiAuth();
 
-  // ─── Normalize any Windows-style paths into valid Next.js src ─────────
   const normalizedImageUrl = (imageUrl || '/pi.jpeg')
-    .replace(/\\/g, '/')                    // backslashes → forward slashes
-    .replace(/^(?!\/|https?:\/\/)/, '/');   // ensure leading slash if not already
+    .replace(/\\/g, '/')
+    .replace(/^(?!\/|https?:\/\/)/, '/');
 
   const [timeLeft, setTimeLeft] = useState('');
   const [status, setStatus] = useState('UPCOMING');
@@ -108,17 +107,17 @@ export default function CompetitionCard({
 
   return (
     <>
-      <div className="flex flex-col w-full max-w-xs mx-auto h-full bg-[#0f172a] border border-cyan-600 rounded-xl shadow-lg text-white font-orbitron overflow-hidden transition-all duration-300 hover:scale-[1.03]">
+      <div className="flex flex-col w-full min-w-[280px] max-w-sm mx-auto h-full min-h-[500px] bg-[#0f172a] border border-cyan-600 rounded-xl shadow-lg text-white font-orbitron overflow-hidden transition-all duration-300 hover:scale-[1.03]">
 
         {/* Title */}
-        <div className="card-header-gradient px-4 py-2 flex justify-center items-center">
-          <span className="text-sm sm:text-base font-semibold text-black">
+        <div className="card-header-gradient px-3 py-2 flex justify-center items-center h-12 flex-shrink-0">
+          <span className="text-sm font-semibold text-black text-center truncate">
             {title}
           </span>
         </div>
 
         {/* Image */}
-        <div className="relative w-full aspect-[16/9] bg-black overflow-hidden">
+        <div className="relative w-full aspect-[16/9] bg-black overflow-hidden flex-shrink-0">
           {isExternalUrl(normalizedImageUrl) ? (
             <img
               src={normalizedImageUrl}
@@ -132,21 +131,20 @@ export default function CompetitionCard({
               fill
               className="object-cover"
               loading="lazy"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" // Optimize image loading
             />
           )}
         </div>
 
         {/* Status Banner + Sub-Banner */}
-        <div className="px-4 pt-2">
+        <div className="px-3 pt-2 flex-shrink-0">
           {/* Main Status Pill */}
           <div
-            className={`w-full text-center px-3 py-1 rounded-full text-xs sm:text-sm font-bold shadow 
+            className={`w-full text-center px-2 py-1 rounded-full text-xs font-bold shadow
               ${
                 status === 'LIVE NOW'
                   ? 'bg-gradient-to-r from-[#00ff99] to-[#00cc66] text-black animate-pulse'
-                  : status === 'COMING SOON'
-                  ? 'bg-gradient-to-r from-orange-400 to-orange-500 text-black'
-                  : status === 'UPCOMING'
+                  : status === 'COMING SOON' || status === 'UPCOMING'
                   ? 'bg-gradient-to-r from-orange-400 to-orange-500 text-black'
                   : 'bg-red-500 text-white'
               }`}
@@ -160,7 +158,7 @@ export default function CompetitionCard({
 
           {/* Pre-Tickets Sub-Banner */}
           {status === 'UPCOMING' && (
-            <div className="w-full text-center mt-1 px-2 py-1 rounded-full bg-blue-600 text-white text-[0.65rem] sm:text-xs font-medium">
+            <div className="w-full text-center mt-1 px-1 py-0.5 rounded-full bg-blue-600 text-white text-[0.6rem] font-medium">
               {t('pre_tickets_available', 'Pre Tickets Available')}
             </div>
           )}
@@ -168,8 +166,8 @@ export default function CompetitionCard({
 
         {/* Live Timer */}
         {status === 'LIVE NOW' && (
-          <div className="flex justify-center items-center gap-3 px-4 pt-3">
-            <div className="bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-3 py-1 rounded-lg">
+          <div className="flex justify-center items-center gap-2 px-3 pt-2 flex-shrink-0">
+            <div className="bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-2 py-0.5 rounded-lg">
               <p className="text-sm text-black font-mono font-bold">
                 {timeLeft}
               </p>
@@ -177,28 +175,17 @@ export default function CompetitionCard({
           </div>
         )}
 
-        {/* Info Section */}
-        <div className="p-4 text-xs sm:text-sm text-center space-y-3">
+        {/* Info Section - Flexible to take remaining space */}
+        <div className="p-3 text-xs text-center space-y-2 flex-grow overflow-hidden">
           <div className="flex justify-between">
             <span className="text-cyan-300 font-semibold">{t('prize', 'Prize')}:</span>
-            <span>{prize}</span>
+            <span className="font-medium">{prize}</span>
           </div>
 
-
-<div className="flex justify-between">
-  <span className="text-cyan-300 font-semibold">{t('winners', 'Winners')}:</span>
-  <span>
-    {comp?.winnersCount ??
-     comp?.comp?.winnersCount ??
-     t('tba', 'TBA')}
-  </span>
-</div>
-
-
-
+          {/* Draw Date - Visible by default, hidden on very small screens for brevity if needed (e.g., md:flex) */}
           <div className="flex justify-between mt-1">
             <span className="text-cyan-300 font-semibold">{t('draw_date', 'Draw Date')}:</span>
-            <span>
+            <span className="font-medium">
               {(comp?.comp?.endsAt || comp?.endsAt)
                 ? new Date(comp.comp?.endsAt || comp.endsAt).toLocaleString(
                     undefined,
@@ -212,37 +199,46 @@ export default function CompetitionCard({
                 : t('tba', 'TBA')}
             </span>
           </div>
+
           <div className="flex justify-between">
             <span className="text-cyan-300 font-semibold">{t('entry_fee', 'Entry Fee')}:</span>
-            <span>{status === 'COMING SOON' ? t('tba', 'TBA') : fee}</span>
+            <span className="font-medium">{status === 'COMING SOON' ? t('tba', 'TBA') : fee}</span>
+          </div>
+
+          {/* These details can be hidden on smaller screens if space is really tight */}
+          {/* For example: <div className="hidden sm:flex justify-between"> */}
+          <div className="flex justify-between">
+            <span className="text-cyan-300 font-semibold">{t('winners', 'Winners')}:</span>
+            <span className="font-medium">
+              {comp?.winnersCount ?? comp?.comp?.winnersCount ?? t('tba', 'TBA')}
+            </span>
           </div>
           <div className="flex justify-between">
             <span className="text-cyan-300 font-semibold">{t('total_tickets', 'Total Tickets')}:</span>
-            <span>
+            <span className="font-medium">
               {status === 'COMING SOON' ? t('tba', 'TBA') : total.toLocaleString()}
             </span>
           </div>
-<div className="flex justify-between">
-  <span className="text-cyan-300 font-semibold">{t('max_per_user', 'Max Per User')}:</span>
-  <span>
-    {comp?.maxPerUser ??
-     comp?.comp?.maxPerUser ??
-     t('tba', 'TBA')}
-  </span>
-</div>
+          <div className="flex justify-between">
+            <span className="text-cyan-300 font-semibold">{t('max_per_user', 'Max Per User')}:</span>
+            <span className="font-medium">
+              {comp?.maxPerUser ?? comp?.comp?.maxPerUser ?? t('tba', 'TBA')}
+            </span>
+          </div>
+
 
           {/* Tickets Sold & Progress */}
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-cyan-300">{t('tickets_sold', 'Tickets Sold')}</span>
+          <div className="space-y-1 mt-2 flex-shrink-0">
+            <div className="flex justify-between items-center text-[0.68rem]"> {/* Smaller text for progress */}
+              <span className="text-cyan-300">{t('tickets_sold', 'Tickets Sold')}</span>
               <div className="text-right">
                 {status === 'COMING SOON' ? (
-                  <span className="text-sm font-semibold text-gray-300">
+                  <span className="font-semibold text-gray-300">
                     {t('tba', 'TBA')}
                   </span>
                 ) : (
                   <span
-                    className={`text-sm font-semibold ${
+                    className={`font-semibold ${
                       isSoldOut
                         ? 'text-red-400'
                         : isLowStock
@@ -256,26 +252,26 @@ export default function CompetitionCard({
                   </span>
                 )}
                 {isSoldOut && (
-                  <div className="text-xs text-red-400 font-bold">{t('sold_out', 'SOLD OUT')}</div>
+                  <div className="text-red-400 font-bold">{t('sold_out', 'SOLD OUT')}</div>
                 )}
                 {isLowStock && !isSoldOut && (
-                  <div className="text-xs text-orange-400 font-bold">
+                  <div className="text-orange-400 font-bold">
                     {t('only_left', 'Only {remaining} left!', { remaining })}
                   </div>
                 )}
                 {isNearlyFull && !isLowStock && !isSoldOut && (
-                  <div className="text-xs text-yellow-400">
+                  <div className="text-yellow-400">
                     {t('remaining', '{remaining} remaining', { remaining })}
                   </div>
                 )}
               </div>
             </div>
-            <div className="w-full bg-gray-700 rounded-full h-2">
+            <div className="w-full bg-gray-700 rounded-full h-1.5"> {/* Slightly thinner progress bar */}
               {status === 'COMING SOON' ? (
-                <div className="h-2 w-[20%] bg-gray-400 rounded-full animate-pulse" />
+                <div className="h-1.5 w-[20%] bg-gray-400 rounded-full animate-pulse" />
               ) : (
                 <div
-                  className={`h-2 rounded-full transition-all duration-300 ${
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
                     isSoldOut
                       ? 'bg-red-500'
                       : isLowStock
@@ -296,22 +292,22 @@ export default function CompetitionCard({
           children
         ) : (
           !hideButton && (
-            <div className="p-4 pt-0 mt-auto space-y-2">
+            <div className="p-3 pt-0 mt-auto space-y-2 flex-shrink-0">
               {comp?.comp?.slug || comp?.slug ? (
                 <Link href={`/ticket-purchase/${comp.comp?.slug || comp.slug}`}>
-                  <button className="w-full py-2 rounded-md font-bold text-black shadow bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:from-[#00e6c7] hover:to-[#0066e6]">
+                  <button className="w-full py-2 rounded-md font-bold text-black shadow bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:from-[#00e6c7] hover:to-[#0066e6] text-sm"> {/* Smaller text for button */}
                     {t('enter_now', 'Enter Now')}
                   </button>
                 </Link>
               ) : (
-                <button className="w-full py-2 rounded-md font-bold text-white bg-gray-500">
+                <button className="w-full py-2 rounded-md font-bold text-white bg-gray-500 text-sm"> {/* Smaller text for button */}
                   {t('not_available', 'Not Available')}
                 </button>
               )}
               {isGiftable && !disableGift && user?.username && (
                 <button
                   onClick={handleGiftClick}
-                  className="w-full py-2 rounded-md font-bold text-cyan-400 border border-cyan-400 hover:bg-cyan-400 hover:text-black transition-colors duration-200"
+                  className="w-full py-2 rounded-md font-bold text-cyan-400 border border-cyan-400 hover:bg-cyan-400 hover:text-black transition-colors duration-200 text-sm" // Smaller text for button
                 >
                   {t('gift_ticket', 'Gift Ticket')}
                 </button>
