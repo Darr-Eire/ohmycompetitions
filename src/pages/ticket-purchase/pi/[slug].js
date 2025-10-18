@@ -12,7 +12,7 @@ export default function PiTicketPage() {
   const { slug } = router.query;
 
   const [loading, setLoading] = useState(true);
-  const [comp, setComp] = useState(null); // normalized competition object
+  const [comp, setComp] = useState(null);
   const [desc, setDesc] = useState('');
 
   useEffect(() => {
