@@ -1,5 +1,14 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+/**
+ * OMC Home
+ * - Mobile-first layout with generous spacing and strong center alignment
+ * - All competition sections render as a horizontal carousel (no external libs)
+ * - Each slide uses a responsive min-width: min(420px, 100vw - 2rem) so it sits
+ *   perfectly centered on mobile (respecting page padding) and looks great on tablet/desktop.
+ * - Carousels use scroll-snap for buttery manual swipes + optional arrow controls on larger screens
+ */
+
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
@@ -29,21 +38,29 @@ const PageWrapper = ({ children }) => (
   </div>
 );
 
-/* ------------------ Reusable horizontal carousel ------------------ */
+/* -------------------------------------------------------------------
+   Reusable Horizontal Carousel
+   - Centers slides visually on mobile by making each slide ~full-viewport width
+     (minus the page padding), so the card sits *centered* within the content column.
+   - Adds scroll padding so snap-center aligns to the same left/right page padding.
+   - Arrow buttons show on >= sm screens (not on narrow mobile).
+------------------------------------------------------------------- */
 function HorizontalCarousel({
   items = [],
   renderItem,
-  itemMinWidth = 320, // px
   ariaLabel = 'carousel',
   className = '',
+  // CSS string for min width (kept as CSS so it adapts without JS):
+  itemMinWidthCSS = 'min(420px, calc(100vw - 2rem))', // 2rem = page px-4
+  gapPx = 16, // keep in sync with Tailwind "gap-4"
 }) {
-  const listRef = React.useRef(null);
+  const listRef = useRef(null);
 
   const scrollBy = (dir = 1) => {
     const el = listRef.current;
     if (!el) return;
     const card = el.querySelector('[data-card]');
-    const step = card ? card.clientWidth + 16 /* gap */ : 320;
+    const step = card ? card.clientWidth + gapPx : 320;
     el.scrollBy({ left: dir * step, behavior: 'smooth' });
   };
 
@@ -53,30 +70,36 @@ function HorizontalCarousel({
         ref={listRef}
         role="region"
         aria-label={ariaLabel}
+        /* 
+          scrollPadding{Left,Right} makes the first and last snap-center positions
+          line up with the page padding (px-4).
+        */
+        style={{ scrollPaddingLeft: '1rem', scrollPaddingRight: '1rem' }}
         className="
-          group/rail flex gap-4 overflow-x-auto pb-2
+          flex gap-4 overflow-x-auto pb-2
           snap-x snap-mandatory
           scrollbar-thin scrollbar-thumb-cyan-500/40
           [scrollbar-width:thin]
+          -mx-4 px-4            /* let cards visually hug the page edges on mobile */
         "
       >
-        {/* gradient fades */}
-        <div className="pointer-events-none absolute left-0 top-0 h-full w-10 bg-gradient-to-r from-[#0b1227] to-transparent" />
-        <div className="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-[#0b1227] to-transparent" />
+        {/* gradient edge fades for a premium feel */}
+        <div className="pointer-events-none absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-[#0b1227] to-transparent" />
+        <div className="pointer-events-none absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-[#0b1227] to-transparent" />
 
         {items.map((item, idx) => (
           <div
             key={item?.comp?.slug || idx}
             data-card
             className="snap-center shrink-0"
-            style={{ minWidth: itemMinWidth }}
+            style={{ minWidth: itemMinWidthCSS }}
           >
             {renderItem(item, idx)}
           </div>
         ))}
       </div>
 
-      {/* arrows (desktop/tablet only) */}
+      {/* arrows (show on tablet/desktop only; mobile swipes naturally) */}
       {items.length > 1 && (
         <>
           <button
@@ -87,8 +110,7 @@ function HorizontalCarousel({
               hidden sm:flex absolute -left-2 top-1/2 -translate-y-1/2 z-10
               h-10 w-10 items-center justify-center rounded-full
               bg-white/10 hover:bg-white/20 border border-white/15
-              shadow-[0_0_20px_rgba(34,211,238,0.25)]
-              backdrop-blur
+              shadow-[0_0_20px_rgba(34,211,238,0.25)] backdrop-blur
             "
           >
             ‹
@@ -101,14 +123,81 @@ function HorizontalCarousel({
               hidden sm:flex absolute -right-2 top-1/2 -translate-y-1/2 z-10
               h-10 w-10 items-center justify-center rounded-full
               bg-white/10 hover:bg-white/20 border border-white/15
-              shadow-[0_0_20px_rgba(34,211,238,0.25)]
-              backdrop-blur
+              shadow-[0_0_20px_rgba(34,211,238,0.25)] backdrop-blur
             "
           >
             ›
           </button>
         </>
       )}
+    </div>
+  );
+}
+function Marquee({ text, speed = 60, className = '' }) {
+  // speed: pixels per second (try 55–70 on mobile, 80–100 on desktop)
+  const trackRef = React.useRef(null);
+  const contentRef = React.useRef(null);
+  const [duration, setDuration] = React.useState(30);
+
+  React.useEffect(() => {
+    const update = () => {
+      if (!contentRef.current) return;
+      const contentWidth = contentRef.current.offsetWidth; // width of one copy
+      // We animate -50% of the track, which equals one content width
+      const pxPerSec = Math.max(10, Number(speed) || 60);
+      const dur = contentWidth / pxPerSec;
+      setDuration(dur);
+    };
+
+    update();
+    // Recalculate when fonts load or viewport changes
+    const ro = new ResizeObserver(update);
+    if (contentRef.current) ro.observe(contentRef.current);
+    window.addEventListener('resize', update);
+    document.fonts?.ready?.then(update).catch(() => {});
+    return () => {
+      window.removeEventListener('resize', update);
+      ro.disconnect();
+    };
+  }, [speed, text]);
+
+  return (
+    <div className={`relative overflow-hidden ${className}`}>
+      <div
+        ref={trackRef}
+        className="flex whitespace-nowrap will-change-transform select-none
+                   [animation-name:marquee]"
+        style={{
+          animationDuration: `${duration}s`,
+          animationTimingFunction: 'linear',
+          animationIterationCount: 'infinite',
+        }}
+      >
+        {/* Two copies => seamless loop */}
+        <span ref={contentRef} className="pr-12 text-cyan-300 font-medium font-orbitron">
+          {text}
+        </span>
+        <span aria-hidden="true" className="pr-12 text-cyan-300 font-medium font-orbitron">
+          {text}
+        </span>
+      </div>
+
+      {/* Optional: gradient edge fades */}
+      <div className="pointer-events-none absolute left-0 top-0 h-full w-10
+                      bg-gradient-to-r from-[#0b1227] to-transparent" />
+      <div className="pointer-events-none absolute right-0 top-0 h-full w-10
+                      bg-gradient-to-l from-[#0b1227] to-transparent" />
+
+      <style jsx global>{`
+        @keyframes marquee {
+          from { transform: translateX(0); }
+          to   { transform: translateX(-50%); } /* move by one content width */
+        }
+        /* Respect reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+          [animation-name="marquee"] { animation-play-state: paused !important; }
+        }
+      `}</style>
     </div>
   );
 }
@@ -122,11 +211,8 @@ function HomePage() {
   const handleEnterStage1 = () => {
     const s1 = Array.isArray(stages) ? stages.find(s => Number(s?.stage) === 1) : null;
     const slug = s1?.slug || s1?.comp?.slug;
-    if (slug) {
-      window.location.href = `/ticket-purchase/${slug}`;
-    } else {
-      alert(t('stage_unavailable', 'Stage 1 is not available yet.'));
-    }
+    if (slug) window.location.href = `/ticket-purchase/${slug}`;
+    else alert(t('stage_unavailable', 'Stage 1 is not available yet.'));
   };
 
   /* ================ Competitions (live) ================ */
@@ -136,7 +222,6 @@ function HomePage() {
 
   const normalizeAndFilter = (liveData) => {
     const now = Date.now();
-
     const cleaned = (Array.isArray(liveData) ? liveData : [])
       .map((item) => {
         const comp = item?.comp ?? {};
@@ -160,12 +245,12 @@ function HomePage() {
         return new Date(comp.endsAt).getTime() > now;
       });
 
+    // Live first, then by soonest end date.
     const sorted = cleaned.sort((a, b) => {
       const aS = a?.comp?.startsAt ? new Date(a.comp.startsAt).getTime() : 0;
       const aE = a?.comp?.endsAt ? new Date(a.comp.endsAt).getTime() : Number.POSITIVE_INFINITY;
       const bS = b?.comp?.startsAt ? new Date(b.comp.startsAt).getTime() : 0;
       const bE = b?.comp?.endsAt ? new Date(b.comp.endsAt).getTime() : Number.POSITIVE_INFINITY;
-
       const aLive = aS <= now && now < aE;
       const bLive = bS <= now && now < bE;
       if (aLive !== bLive) return aLive ? -1 : 1;
@@ -184,8 +269,7 @@ function HomePage() {
         const res = await fetch('/api/competitions/all');
         if (!res.ok) throw new Error(`Failed to fetch competitions: ${res.status}`);
         const json = await res.json();
-        const liveData = json?.data || [];
-        const prepared = normalizeAndFilter(liveData);
+        const prepared = normalizeAndFilter(json?.data || []);
         if (mounted) setLiveCompetitions(prepared);
       } catch (e) {
         console.error('❌ Failed to fetch live competition data:', e);
@@ -195,9 +279,7 @@ function HomePage() {
         if (mounted) setLoading(false);
       }
     })();
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, []);
 
   const getCompetitionsByCategory = (category) =>
@@ -213,6 +295,7 @@ function HomePage() {
           aria-live="polite"
           aria-label="Loading OhMyCompetitions live competitions"
         >
+          {/* Brand spinner */}
           <div className="relative mb-6">
             <div className="absolute -inset-6 blur-xl rounded-full bg-cyan-500/15" />
             <div className="relative grid place-items-center h-24 w-24 rounded-full">
@@ -221,9 +304,7 @@ function HomePage() {
                 <div className="h-full w-full rounded-full bg-[#0f172a]" />
               </div>
               <div className="absolute inset-0 rounded-full border-2 border-cyan-300/30 border-t-cyan-300 motion-safe:animate-spin" />
-              <div className="relative font-orbitron text-cyan-200 text-xl tracking-wide select-none">
-                OMC
-              </div>
+              <div className="relative font-orbitron text-cyan-200 text-xl tracking-wide select-none">OMC</div>
             </div>
           </div>
 
@@ -256,7 +337,6 @@ function HomePage() {
 
   /* ------------------------ Error UI ------------------------ */
   if (error) {
-    console.warn('[OMC] Live competitions failed to load:', error);
     return (
       <PageWrapper>
         <section
@@ -269,10 +349,7 @@ function HomePage() {
             <div className="flex items-start gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-500/15 border border-cyan-400/30">
                 <svg viewBox="0 0 24 24" className="h-5 w-5 text-cyan-300" aria-hidden="true">
-                  <path
-                    fill="currentColor"
-                    d="M11 7h2v7h-2V7zm1 12a1.5 1.5 0 1 1 .001-3.001A1.5 1.5 0 0 1 12 19zM1 21h22L12 2 1 21z"
-                  />
+                  <path fill="currentColor" d="M11 7h2v7h-2V7zm1 12a1.5 1.5 0 1 1 .001-3.001A1.5 1.5 0 0 1 12 19zM1 21h22L12 2 1 21z" />
                 </svg>
               </div>
 
@@ -334,19 +411,20 @@ function HomePage() {
         "
       >
         {/* Marquee */}
-        <div className="overflow-hidden">
-          <div className="marquee-content text-cyan-300 text-base font-medium font-orbitron whitespace-nowrap animate-[marquee_35s_linear_infinite]">
-            {t(
-              'marquee_text',
-              'Oh My Competitions is all about building with Pi Network for the Pi community. Our OMC launch competitions are zero profit designed to create trust, celebrate early winners and give back to Pioneers. All prizes go directly to you. Add us on all Socials and our Pi Profile darreire2020. More competitions are coming soon across a wide range of exciting categories. Join, win and help shape the future of Pi together.'
-            )}
-          </div>
-        </div>
+      <Marquee
+  text={t(
+    'marquee_text',
+    'Oh My Competitions is all about building with Pi Network for the Pi community. Our OMC launch competitions are zero profit designed to create trust, celebrate early winners and give back to Pioneers. All prizes go directly to you. Add us on all Socials and our Pi Profile darreire2020. More competitions are coming soon across a wide range of exciting categories. Join, win and help shape the future of Pi together.'
+  )}
+  speed={300}
+  className="py-1"
+/>
+
 
         {/* Mini carousel */}
         <MiniPrizeCarousel />
 
-        {/* Pi Cash Code — simple neon card */}
+        {/* Pi Cash Code — centered highlight card */}
         <div className="w-full max-w-lg mx-auto">
           <div className="p-[1px] rounded-2xl bg-gradient-to-r from-cyan-500/50 via-blue-500/40 to-cyan-500/50">
             <Link
@@ -361,11 +439,9 @@ function HomePage() {
               <h1 className="text-3xl font-bold font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-500 to-cyan-300">
                 {t('pi_cash_code', 'Pi Cash Code')}
               </h1>
-
               <p className="mt-2 text-cyan-300/90 text-sm italic">
                 {t('if_you_can_dream', 'If you can dream you can win')}
               </p>
-
               <p className="mt-2 text-cyan-100 text-sm font-semibold underline underline-offset-4">
                 {t('enter_here', 'Enter Here')}
               </p>
@@ -435,19 +511,24 @@ function HomePage() {
             </div>
 
             <div className="max-w-6xl mx-auto px-2 sm:px-0">
-              {/* Mobile: horizontal scroll + snap */}
-              <div className="sm:hidden -mx-2 px-2">
-                <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-thin scrollbar-thumb-cyan-500/40 pb-2">
-                  <FunnelStagesRow
-                    stages={stages}
-                    prizePoolPi={prizePoolPi}
-                    onEnterStage1={handleEnterStage1}
-                    className="min-w-[85%] snap-center shadow-[0_0_25px_rgba(0,255,255,0.15)]"
-                    layout="stacked"
-                    comingSoon
-                    ctaLabel={t('coming_soon', 'Coming Soon')}
-                  />
-                </div>
+              {/* Mobile: horizontal scroll + snap (card width = centered) */}
+              <div className="sm:hidden">
+                <HorizontalCarousel
+                  items={[{ stages, prizePoolPi }]}
+                  ariaLabel="OMC stages"
+                  // Make the stages row behave like a wide card
+                  renderItem={() => (
+                    <FunnelStagesRow
+                      stages={stages}
+                      prizePoolPi={prizePoolPi}
+                      onEnterStage1={handleEnterStage1}
+                      className="shadow-[0_0_25px_rgba(0,255,255,0.15)]"
+                      layout="stacked"
+                      comingSoon
+                      ctaLabel={t('coming_soon', 'Coming Soon')}
+                    />
+                  )}
+                />
               </div>
 
               {/* Tablet+ grid */}
@@ -467,71 +548,6 @@ function HomePage() {
 
           {/* -------------------- Free Competitions ------------------- */}
           <FreeSection t={t} items={getCompetitionsByCategory('free')} />
-
-          {/* -------------------- Coming Soon Columns ----------------- */}
-          <section className="space-y-5 sm:space-y-6">
-            <div className="text-center space-y-3 px-3">
-              <h2 className="w-full text-lg sm:text-xl font-extrabold text-cyan-300 px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl font-orbitron shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
-                {t('omc_pi_stages_competitions', 'OMC Pi Stages Competitions')}
-              </h2>
-
-              <div className="text-[0.85rem] sm:text-sm text-cyan-300/90 italic flex items-start justify-center gap-x-6 gap-y-2 flex-wrap leading-relaxed">
-                <span className="text-center">
-                  {t('qualify', 'Qualify')}{' '}
-                  <span className="text-white font-semibold">({t('stage_1', 'Stage 1')})</span>
-                  <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
-                    {t('s1_desc', '25 enter — 5 advance with an Advance Ticket. Will you be one?')}
-                  </span>
-                </span>
-
-                <span className="text-center">
-                  {t('advance', 'Advance')}{' '}
-                  <span className="text-white font-semibold">({t('stages_2_4', 'Stages 2–4')})</span>
-                  <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
-                    {t('s2_4_desc', 'Each room: 25 enter — top 5 move on using their Advance Ticket.')}
-                  </span>
-                </span>
-
-                <span className="text-center">
-                  {t('win', 'Win')}{' '}
-                  <span className="text-white font-semibold">({t('stage_5', 'Stage 5')})</span>
-                  <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
-                    {t('s5_desc', 'All 25 Pioneers win in Stage 5.')}
-                  </span>
-                </span>
-
-                <span className="text-cyan-300 font-semibold text-center">
-                  {t('stage_5_prize_pool', 'Stage 5 Prize Pool')}: <span className="text-white">0π</span>
-                </span>
-              </div>
-            </div>
-
-            <div className="max-w-6xl mx-auto px-2 sm:px-0">
-              {/* Mobile: horizontal scroll + snap */}
-              <div className="sm:hidden -mx-2 px-2">
-                <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-thin scrollbar-thumb-cyan-500/40 pb-2">
-                  <FunnelStagesRow
-                    stages={stages}
-                    prizePoolPi={prizePoolPi}
-                    onEnterStage1={handleEnterStage1}
-                    className="min-w-[85%] snap-center shadow-[0_0_25px_rgba(0,255,255,0.15)]"
-                    layout="stacked"
-                  />
-                </div>
-              </div>
-
-              {/* Tablet+ grid */}
-              <div className="hidden sm:block">
-                <FunnelStagesRow
-                  stages={stages}
-                  prizePoolPi={prizePoolPi}
-                  onEnterStage1={handleEnterStage1}
-                  className="shadow-[0_0_25px_rgba(0,255,255,0.15)]"
-                  layout="grid"
-                />
-              </div>
-            </div>
-          </section>
 
           {/* ---------------------- Winners (placeholder) ------------- */}
           <TopWinnersCarousel t={t} />
@@ -573,7 +589,7 @@ function Section({
   const isPi = lowerCat === 'pi' || wordIncludes(lowerTitle, ['pi', 'π']);
   const isCrypto = lowerCat === 'crypto' || wordIncludes(lowerTitle, ['crypto', 'web3', 'blockchain']);
   const isTech = lowerCat === 'tech' || wordIncludes(lowerTitle, TECH_KEYWORDS);
-  void isCrypto; void isTech; // (category flags available for future tweaks)
+  void isCrypto; void isTech; // category flags available if needed later
 
   return (
     <section className={`space-y-5 ${extraClass}`}>
@@ -587,7 +603,7 @@ function Section({
       <HorizontalCarousel
         items={items}
         ariaLabel={`${title} carousel`}
-        itemMinWidth={320}
+        itemMinWidthCSS="min(420px, calc(100vw - 2rem))"
         renderItem={(item, i) => renderCard(item, i, { isFree, isPi })}
       />
 
@@ -595,7 +611,7 @@ function Section({
         <div className="text-center">
           <Link
             href={viewMoreHref}
-            className="inline-block text-sm font-bold px-3 py-1.5 rounded-md text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow hover:opacity-90 transition"
+            className="inline-block mx-auto text-sm font-bold px-3 py-1.5 rounded-md text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow hover:opacity-90 transition"
           >
             {t('view_more', viewMoreText)}
           </Link>
@@ -770,6 +786,22 @@ function TopWinnersCarousel({ t }) {
 }
 
 function FreeSection({ t, items = [], viewMoreHref = '/competitions/free' }) {
+  const fallback = [
+    {
+      comp: {
+        slug: 'pi-to-the-moon',
+        startsAt: '',
+        endsAt: '',
+        ticketsSold: 0,
+        totalTickets: 5000,
+        comingSoon: true,
+        status: 'active',
+      },
+      title: 'Pi To The Moon',
+      prize: '7,500 π',
+    },
+  ];
+
   return (
     <section className="space-y-6">
       <div className="text-center">
@@ -780,37 +812,19 @@ function FreeSection({ t, items = [], viewMoreHref = '/competitions/free' }) {
 
       <div className="w-full bg-white/5 backdrop-blur-lg px-4 sm:px-6 py-8 border border-cyan-300 rounded-3xl shadow-[0_0_60px_#00ffd577] neon-outline">
         <div className="max-w-7xl mx-auto">
-          {/* Mobile: horizontal scroll */}
-          <div className="-mx-2 px-2">
-            <HorizontalCarousel
-              items={items.length ? items : [
-                {
-                  comp: {
-                    slug: 'pi-to-the-moon',
-                    startsAt: '',
-                    endsAt: '',
-                    ticketsSold: 0,
-                    totalTickets: 5000,
-                    comingSoon: true,
-                    status: 'active',
-                  },
-                  title: 'Pi To The Moon',
-                  prize: '7,500 π',
-                },
-              ]}
-              ariaLabel="Free competitions carousel"
-              itemMinWidth={320}
-              renderItem={(item, i) => (
-                <FreeCompetitionCard key={item?.comp?.slug || `free-${i}`} {...item} />
-              )}
-            />
-          </div>
+          <HorizontalCarousel
+            items={items.length ? items : fallback}
+            ariaLabel="Free competitions carousel"
+            itemMinWidthCSS="min(420px, calc(100vw - 2rem))"
+            renderItem={(item, i) => (
+              <FreeCompetitionCard key={item?.comp?.slug || `free-${i}`} {...item} />
+            )}
+          />
 
-          {/* View more */}
           <div className="mt-6 text-center">
             <Link
               href={viewMoreHref}
-              className="inline-block text-sm font-bold px-3 py-1.5 rounded-md text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow hover:opacity-90 transition"
+              className="inline-block mx-auto text-sm font-bold px-3 py-1.5 rounded-md text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow hover:opacity-90 transition"
             >
               {t('view_more', 'View More')}
             </Link>
