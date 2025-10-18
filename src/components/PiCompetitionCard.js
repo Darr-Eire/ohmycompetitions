@@ -272,7 +272,7 @@ export default function PiCompetitionCard({
                   status === 'ENDED' ||
                   isSoldOut ||
                   (status === 'UPCOMING' && !preCfg?.enabled) ||
-                  (status === 'COMING SOON' && !preCfg?.enabled)
+                  (status === 'COMING SOUN' && !preCfg?.enabled)
                     ? 'bg-gradient-to-r from-[#00ffd5] to-[#0077ff] opacity-60 cursor-not-allowed'
                     : 'bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:brightness-110'
                 }`}
