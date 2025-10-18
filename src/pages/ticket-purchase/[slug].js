@@ -116,7 +116,7 @@ export default function TicketPurchasePage() {
     const key = `${slug}-claimed`;
     const current = parseInt(localStorage.getItem(key) || '0', 10);
     localStorage.setItem(key, String(current + 1));
-    alert('✅ Free ticket claimed!');
+  
   };
 
   const handleShare = () => {

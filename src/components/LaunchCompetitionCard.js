@@ -360,7 +360,7 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
               }`}
               style={{ WebkitTapHighlightColor: 'transparent' }}
             >
-              {comingSoon ? 'Coming Soon' : 'Enter Now'}
+              {comingSoon ? 'Coming Soon' : 'More Details'}
             </button>
           </Link>
         ) : (

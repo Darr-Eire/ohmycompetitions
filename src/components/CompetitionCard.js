@@ -112,8 +112,15 @@ export default function CompetitionCard({
 
   return (
     <>
-      <div className="flex flex-col w-full min-w-[280px] max-w-sm mx-auto h-full min-h-[500px] bg-[#0f172a] border border-cyan-600 rounded-xl shadow-lg text-white font-orbitron overflow-hidden transition-all duration-300 hover:scale-[1.03]">
-
+      <div
+        className="
+          flex flex-col w-full min-w-[280px] max-w-sm mx-auto
+          h-auto min-h-[420px] sm:min-h-[500px]  /* smaller on mobile */
+          bg-[#0f172a] border border-cyan-600 rounded-xl shadow-lg
+          text-white font-orbitron overflow-hidden transition-all duration-300
+          hover:scale-[1.03]
+        "
+      >
         {/* Title */}
         <div className="card-header-gradient px-4 py-2 flex justify-center items-center">
           <span className="text-sm sm:text-base font-semibold text-black">
@@ -177,7 +184,7 @@ export default function CompetitionCard({
         )}
 
         {/* Info Section */}
-        <div className="p-3 text-sm text-center space-y-2 flex-grow overflow-hidden">
+        <div className="p-3 text-sm text-center space-y-2 overflow-hidden md:flex-grow">
           <div className="flex justify-between">
             <span className="text-cyan-300 font-semibold">{t('prize', 'Prize')}:</span>
             <span className="font-medium">{prize}</span>
@@ -268,15 +275,15 @@ export default function CompetitionCard({
           children
         ) : (
           !hideButton && (
-            <div className="p-3 pt-0 mt-auto space-y-2 flex-shrink-0">
+            <div className="p-3 pt-0 mt-2 md:mt-auto space-y-2 flex-shrink-0">
               {comp?.comp?.slug || comp?.slug ? (
                 <Link href={`/ticket-purchase/${comp.comp?.slug || comp.slug}`}>
                   <button className="w-full py-2 rounded-md font-bold text-black shadow bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:from-[#00e6c7] hover:to-[#0066e6] text-sm">
-                    {t('enter_now', 'Enter Now')}
+                    {t('more_details', 'More Details')}
                   </button>
                 </Link>
               ) : (
-                <button className="w-full py-2 rounded-md font-bold text-white bg-gray-500 text-sm">
+                <button className="w-full py-2 rounded-md font-bold text-white bg-gray-500 text-sm" disabled>
                   {t('not_available', 'Not Available')}
                 </button>
               )}

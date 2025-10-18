@@ -385,7 +385,7 @@ export default function DailyCompetitionCard({ comp = {}, title, prize, fee }) {
                   ? 'Coming Soon'
                   : statusLabel === 'ENDED'
                   ? 'Closed'
-                  : 'Enter Now'}
+                  : 'More Details'}
               </button>
             </Link>
           ) : (

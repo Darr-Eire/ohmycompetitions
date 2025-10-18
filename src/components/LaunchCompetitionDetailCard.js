@@ -425,10 +425,6 @@ export default function LaunchCompetitionDetailCard({
             <div className="mt-6">
               {isFree ? (
                 <>
-                  <p className="text-cyan-300 font-semibold text-sm sm:text-base text-center mb-2">
-                    Free Ticket Claimed: {quantity}/2
-                  </p>
-
                   <button
                     onClick={claimFreeTicket}
                     disabled={quantity >= (sharedBonus ? 2 : 1)}

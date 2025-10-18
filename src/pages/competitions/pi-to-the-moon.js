@@ -3,12 +3,11 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Head from 'next/head';
-import Link from 'next/link';
 import LaunchCompetitionDetailCard from 'components/LaunchCompetitionDetailCard';
 
 export default function PiToTheMoonPage() {
-  // --- Competition data (normalized like your slug pages expect) ---
-  const startsAt = '2025-09-30T00:00:00Z';        // future -> shows "Coming Soon"
+  // Dates can remain; we force "upcoming" via comingSoon flag.
+  const startsAt = '2025-09-30T00:00:00Z';
   const endsAt   = '2025-10-01T18:00:00Z';
   const total    = 5000;
   const sold     = 0;
@@ -16,14 +15,13 @@ export default function PiToTheMoonPage() {
   const comp = {
     slug: 'pi-to-the-moon',
     title: 'Pi To The Moon',
-    entryFee: 0,                       // Free
-    firstPrize: 3000,                  // 1st place (from your breakdown)
-  prizeBreakdown: {
-  '1st Place': '3,000 ',
-  '2nd–5th Places': '1,000',
-  '6th–10th Places': '100',
-},
-
+    entryFee: 0, // Free
+    firstPrize: 3000,
+    prizeBreakdown: {
+      '1st Place': '3,000 ',
+      '2nd–5th Places': '1,000',
+      '6th–10th Places': '100',
+    },
     winners: 'Multiple',
     totalTickets: total,
     ticketsSold: sold,
@@ -31,21 +29,20 @@ export default function PiToTheMoonPage() {
     startsAt,
     endsAt,
     theme: 'pi',
-    // imageUrl: '/images/pi-to-the-moon.jpg', // optional (card only shows images for tech/premium)
-    description: '',                   // we’ll pass a full description below
+    comingSoon: true, // <— force “Coming Soon”
+    description: '',
   };
 
-  // Status logic mirrors your slug page: upcoming if startsAt is in the future
   const status = useMemo(() => {
+    if (comp.comingSoon) return 'upcoming';
     const now = Date.now();
     const sTs = comp.startsAt ? new Date(comp.startsAt).getTime() : null;
-    const eTs = comp.endsAt   ? new Date(comp.endsAt).getTime()   : null;
+    const eTs = comp.endsAt ? new Date(comp.endsAt).getTime() : null;
     if (sTs && now < sTs) return 'upcoming';
     if (eTs && now > eTs) return 'ended';
     return 'active';
-  }, [comp.startsAt, comp.endsAt]);
+  }, [comp.comingSoon, comp.startsAt, comp.endsAt]);
 
-  // Free ticket / share bonus UX hooks (reuses the same pattern as your slug page)
   const [sharedBonus, setSharedBonus] = useState(false);
   const slugKey = comp.slug;
 
@@ -54,33 +51,26 @@ export default function PiToTheMoonPage() {
   }, [slugKey]);
 
   const claimFreeTicket = () => {
+    // Disabled by wrapper; keep for API parity.
     const key = `${slugKey}-claimed`;
     const current = parseInt(localStorage.getItem(key) || '0', 10);
     const max = sharedBonus ? 2 : 1;
-    if (current >= max) {
-      alert('You have claimed the maximum free tickets.');
-      return;
-    }
+    if (current >= max) return;
     localStorage.setItem(key, String(current + 1));
-    alert('✅ Free ticket claimed!');
   };
 
   const handleShare = () => {
-    if (sharedBonus) {
-      alert('You already received your bonus ticket.');
-      return;
-    }
+    // Disabled by wrapper; keep for API parity.
+    if (sharedBonus) return;
     localStorage.setItem(`${slugKey}-shared`, 'true');
     setSharedBonus(true);
-    alert('✅ Thanks for sharing! Bonus ticket unlocked.');
   };
 
   const handlePaymentSuccess = async () => {
-    // Free comp: nothing special here, card expects handler; keep consistent API.
-    alert('🎉 Entry confirmed!');
+    // Disabled by wrapper; keep for API parity.
+    return;
   };
 
-  // Rich description + rules (what shows under “View Competition Details” in the card)
   const description = `
 Pi To The Moon — Community Grand Giveaway
 
@@ -107,41 +97,65 @@ Rules:
 5) No purchase necessary. Free entry only.
 6) The prize pool is awarded as advertised.
 7) By entering, you agree to our Terms & Conditions.
-
-Good luck, Pioneer!
   `.trim();
 
   return (
     <>
       <Head>
         <title>Pi To The Moon | Oh My Competitions</title>
-        <meta name="description" content="Pi To The Moon — a free global giveaway for Pioneers with a 7,500 π prize pool." />
+        <meta
+          name="description"
+          content="Pi To The Moon — a free global giveaway for Pioneers with a 7,500 π prize pool."
+        />
       </Head>
 
       <main className="min-h-screen px-4 py-6 text-white bg-[#070d19] font-orbitron">
         <div className="max-w-xl mx-auto">
-          <LaunchCompetitionDetailCard
-            comp={comp}
-            title={comp.title}
-            prize={comp.firstPrize}
-            fee={comp.entryFee}
-            imageUrl={comp.imageUrl}           // optional, not shown unless theme is tech/premium
-            endsAt={comp.endsAt}
-            startsAt={comp.startsAt}
-            ticketsSold={comp.ticketsSold}
-            totalTickets={comp.totalTickets}
-            status={status}
+          {/* Coming Soon banner */}
+          <div className="mb-4 text-center">
+            <span
+              className="inline-block rounded-full px-3 py-1 text-xs font-bold text-black
+                         bg-gradient-to-r from-[#00ffd5] to-[#0077ff]"
+              aria-live="polite"
+            >
+              Coming Soon
+            </span>
+          </div>
 
-            description={description}
-            handlePaymentSuccess={handlePaymentSuccess}
+          {/* Disable all CTAs (links/buttons) inside this wrapper */}
+          <div className="disable-cta" aria-disabled="true">
+            <LaunchCompetitionDetailCard
+              comp={comp}
+              title={comp.title}
+              prize={comp.firstPrize}
+              fee={comp.entryFee}
+              imageUrl={comp.imageUrl}
+              endsAt={comp.endsAt}
+              startsAt={comp.startsAt}
+              ticketsSold={comp.ticketsSold}
+              totalTickets={comp.totalTickets}
+              status={status}
+              description={description}
+              handlePaymentSuccess={handlePaymentSuccess}
+              claimFreeTicket={claimFreeTicket}
+              handleShare={handleShare}
+              sharedBonus={sharedBonus}
+              /* Optional: if your card accepts these, it will show the disabled label */
+              ctaDisabled
+              ctaLabel="Coming Soon"
+            />
+          </div>
 
-            /* free-ticket UX */
-            claimFreeTicket={claimFreeTicket}
-            handleShare={handleShare}
-            sharedBonus={sharedBonus}
-          />
-
-  
+          {/* Hard-disable CTAs via CSS without touching the card implementation */}
+          <style jsx>{`
+            .disable-cta a,
+            .disable-cta button {
+              pointer-events: none !important;
+              cursor: not-allowed !important;
+              opacity: 0.6 !important;
+              filter: grayscale(15%);
+            }
+          `}</style>
         </div>
       </main>
     </>

@@ -312,27 +312,6 @@ function HomePage() {
     </div>
   </div>
 </section>
-
-          <section className="w-full bg-white/5 backdrop-blur-lg px-4 sm:px-6 py-8 border border-cyan-300 rounded-3xl shadow-[0_0_60px_#00ffd577] neon-outline">
-            <div className="max-w-7xl mx-auto">
-              <FreeCompetitionCard
-                comp={{
-                  slug: 'pi-to-the-moon',
-                  startsAt: '',
-                  endsAt: '',
-                  ticketsSold: 0,
-                  totalTickets: 5000,
-                  comingSoon: true,
-                  status: 'active',
-                }}
-                title="Pi To The Moon"
-                prize="7,500 π"
-                hideEntryButton
-                buttonLabel="View Detail"
-              />
-            </div>
-          </section>
-
           {/* Coming Soon */}
           <section className="space-y-8">
             <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
