@@ -1,5 +1,5 @@
 'use client';
-
+import { Analytics } from '@vercel/analytics/next'
 import '../styles/globals.css';
 import { useEffect, useRef } from 'react';
 import Head from 'next/head';
