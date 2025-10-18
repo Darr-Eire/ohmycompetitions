@@ -30,7 +30,7 @@ async function seed() {
     console.log('⚠ Clearing old winner data...')
     await ClaimedWinner.deleteMany({ claimed: true })
 
-    console.log('🚀 Seeding winners...')
+    console.log('🚀 Seeding some winners...')
     await ClaimedWinner.insertMany([
       {
         claimed: true,
