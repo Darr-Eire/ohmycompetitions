@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 
-/** ----------------------------- Utils ---------------------------------- */
+/** ----------------------------- Utils ------------------ */
 const FAR_FUTURE = new Date('2099-12-31T23:59:59Z');
 
 function toDateSafe(val) {
