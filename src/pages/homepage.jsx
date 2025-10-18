@@ -7,7 +7,6 @@ import { useSafeTranslation } from '../hooks/useSafeTranslation';
 import DailyCompetitionCard from '@components/DailyCompetitionCard';
 import FreeCompetitionCard from '@components/FreeCompetitionCard';
 import PiCompetitionCard from '@components/PiCompetitionCard';
-import CryptoGiveawayCard from '@components/CryptoGiveawayCard';
 import CompetitionCard from '@components/CompetitionCard';
 import MiniPrizeCarousel from '@components/MiniPrizeCarousel';
 import LaunchCompetitionCard from '@components/LaunchCompetitionCard';
@@ -592,7 +591,6 @@ function renderCard(item, i, { isFree, isPi, isCrypto }) {
 
   if (isFree) return <FreeCompetitionCard key={key} {...item} />;
   if (isPi) return <PiCompetitionCard key={key} {...item} />;
-  if (isCrypto) return <CryptoGiveawayCard key={key} {...item} />;
 
   return (
     <CompetitionCard
