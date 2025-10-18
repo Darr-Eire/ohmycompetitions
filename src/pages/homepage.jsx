@@ -1,11 +1,4 @@
 'use client';
-/**
- * OMC Home
- * - Mobile-first, centered carousels
- * - Slides clamp to a readable width and snap-center
- * - Left/Right arrows now show on **mobile too** and only when scrolling is possible
- */
-
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -36,19 +29,19 @@ const PageWrapper = ({ children }) => (
   </div>
 );
 
-/* -------------------------------------------------------------------
-   Reusable Horizontal Carousel
-   - Perfectly centers slides on mobile: each slide has minWidth ~ (100vw - page padding)
-   - Uses scroll-snap with scrollPadding to align to page gutters
-   - Shows mobile arrows (compact) and only when there is overflow to scroll
-------------------------------------------------------------------- */
+/**
+ * HorizontalCarousel
+ * - Controls actual card width via:
+ *   - itemMinWidthCSS: the scroller item width (e.g. "min(440px, 100vw - 2rem)")
+ *   - cardMaxWidth: the inner visual clamp (pixels) to keep cards tidy
+ */
 function HorizontalCarousel({
   items = [],
   renderItem,
   ariaLabel = 'carousel',
   className = '',
-  // Tweak per section (Daily/Tech slightly tighter)
-  itemMinWidthCSS = 'min(420px, calc(100vw - 2rem))',
+  itemMinWidthCSS = 'min(440px, calc(100vw - 2rem))',
+  cardMaxWidth = 460, // <— visual clamp in px
   gapPx = 16,
 }) {
   const listRef = useRef(null);
@@ -59,7 +52,6 @@ function HorizontalCarousel({
   const recalc = () => {
     const el = listRef.current;
     if (!el) return;
-    // allow a tiny epsilon so buttons react snappily
     const EPS = 2;
     setCanLeft(el.scrollLeft > EPS);
     setCanRight(el.scrollLeft + el.clientWidth < el.scrollWidth - EPS);
@@ -68,7 +60,7 @@ function HorizontalCarousel({
   const scrollByDir = (dir = 1) => {
     const el = listRef.current;
     if (!el) return;
-    const step = (cardRef.current?.clientWidth || 320) + gapPx;
+    const step = (cardRef.current?.clientWidth || 360) + gapPx;
     el.scrollBy({ left: dir * step, behavior: 'smooth' });
   };
 
@@ -117,17 +109,16 @@ function HorizontalCarousel({
             style={{ minWidth: itemMinWidthCSS }}
           >
             {/* CardFrame centers and clamps visual width */}
-            <div className="max-w-[420px] w-full mx-auto">
+            <div className="w-full mx-auto" style={{ maxWidth: cardMaxWidth }}>
               {renderItem(item, idx)}
             </div>
           </div>
         ))}
       </div>
 
-      {/* Left / Right arrows — show on **mobile too** when applicable */}
+      {/* Left / Right arrows — show on mobile too when applicable */}
       {items.length > 1 && (
         <>
-          {/* Left */}
           <button
             type="button"
             aria-label="Scroll left"
@@ -145,7 +136,6 @@ function HorizontalCarousel({
             ‹
           </button>
 
-          {/* Right */}
           <button
             type="button"
             aria-label="Scroll right"
@@ -478,24 +468,36 @@ function HomePage() {
             title={t('daily_weekly', 'Daily/Weekly')}
             items={getCompetitionsByCategory('daily')}
             viewMoreHref="/competitions/daily"
+            cardSize="md"
+            cardMaxWidth={440}
+            itemMinWidthCSS="min(400px, calc(100vw - 2rem))"
           />
 
           <Section
             title={t('tech_gadgets', 'Tech/Gadgets')}
             items={getCompetitionsByCategory('tech')}
             viewMoreHref="/competitions/tech&gadgets"
+            cardSize="md"
+            cardMaxWidth={460}
+            itemMinWidthCSS="min(420px, calc(100vw - 2rem))"
           />
 
           <Section
             title={t('omc_launch_week', 'OMC Launch Week')}
             items={getCompetitionsByCategory('launch')}
             viewMoreHref="/competitions/launch-week"
+            cardSize="lg"
+            cardMaxWidth={480}
+            itemMinWidthCSS="min(440px, calc(100vw - 2rem))"
           />
 
           <Section
             title={t('pi_giveaways', 'Pi Giveaways')}
             items={getCompetitionsByCategory('pi')}
             viewMoreHref="/competitions/pi"
+            cardSize="lg"
+            cardMaxWidth={480}
+            itemMinWidthCSS="min(440px, calc(100vw - 2rem))"
           />
 
           {/* ----------------------- OMC Stages ----------------------- */}
@@ -550,6 +552,8 @@ function HomePage() {
                       ctaLabel={t('coming_soon', 'Coming Soon')}
                     />
                   )}
+                  itemMinWidthCSS="min(520px, calc(100vw - 2rem))"
+                  cardMaxWidth={520}
                 />
               </div>
 
@@ -586,7 +590,11 @@ function wordIncludes(text = '', words = []) {
   return words.some((w) => new RegExp(`\\b${w}\\b`, 'i').test(s));
 }
 
-/* ---------------- Section: uses HorizontalCarousel ---------------- */
+/**
+ * Section
+ * - Chooses sensible defaults for width per category
+ * - Passes CompetitionCard size (md/lg) and carousel width clamps
+ */
 function Section({
   title,
   subtitle,
@@ -595,6 +603,9 @@ function Section({
   viewMoreText = 'View More',
   extraClass = '',
   category, // optional
+  cardSize, // override (md|lg|fluid); default derived from title/category
+  cardMaxWidth, // px clamp for visual frame
+  itemMinWidthCSS, // CSS function string for scroller item width
 }) {
   const { t } = useSafeTranslation();
   const lowerTitle = typeof title === 'string' ? title.toLowerCase() : '';
@@ -612,10 +623,13 @@ function Section({
   const isTech  = lowerCat === 'tech'  || wordIncludes(lowerTitle, TECH_KEYWORDS);
   const isDaily = lowerCat === 'daily' || wordIncludes(lowerTitle, ['daily','weekly']);
 
-  // Slightly tighter on Daily/Tech for small phones
-  const minWidthForSection = (isDaily || isTech)
-    ? 'min(400px, calc(100vw - 2rem))'
-    : 'min(420px, calc(100vw - 2rem))';
+  // Defaults if not provided
+  const resolvedCardSize = cardSize || ((isDaily || isTech) ? 'md' : 'lg');
+  const resolvedItemMinWidth = itemMinWidthCSS ||
+    ((isDaily || isTech)
+      ? 'min(400px, calc(100vw - 2rem))'
+      : 'min(440px, calc(100vw - 2rem))');
+  const resolvedCardMaxWidth = cardMaxWidth ?? ((isDaily || isTech) ? 460 : 480);
 
   return (
     <section className={`space-y-5 ${extraClass}`}>
@@ -629,8 +643,9 @@ function Section({
       <HorizontalCarousel
         items={items}
         ariaLabel={`${title} carousel`}
-        itemMinWidthCSS={minWidthForSection}
-        renderItem={(item, i) => renderCard(item, i, { isFree, isPi })}
+        itemMinWidthCSS={resolvedItemMinWidth}
+        cardMaxWidth={resolvedCardMaxWidth}
+        renderItem={(item, i) => renderCard(item, i, { isFree, isPi, cardSize: resolvedCardSize })}
       />
 
       {viewMoreHref && (
@@ -648,7 +663,7 @@ function Section({
 }
 
 /* ---------------- card resolver ---------------- */
-function renderCard(item, i, { isFree, isPi }) {
+function renderCard(item, i, { isFree, isPi, cardSize = 'md' }) {
   const key = item?.comp?.slug || `item-${i}`;
   if (!item?.comp) return null;
 
@@ -666,6 +681,7 @@ function renderCard(item, i, { isFree, isPi }) {
     return (
       <CompetitionCard
         key={key}
+        size={cardSize}
         comp={{ ...item.comp, comingSoon: item.comp.comingSoon ?? false }}
         title={item.title}
         prize={item.prize}
@@ -683,6 +699,7 @@ function renderCard(item, i, { isFree, isPi }) {
   return (
     <CompetitionCard
       key={key}
+      size={cardSize}
       comp={{ ...item.comp, comingSoon: item.comp.comingSoon ?? false }}
       title={item.title}
       prize={item.prize}
@@ -841,7 +858,8 @@ function FreeSection({ t, items = [], viewMoreHref = '/competitions/free' }) {
           <HorizontalCarousel
             items={items.length ? items : fallback}
             ariaLabel="Free competitions carousel"
-            itemMinWidthCSS="min(420px, calc(100vw - 2rem))"
+            itemMinWidthCSS="min(440px, calc(100vw - 2rem))"
+            cardMaxWidth={480}
             renderItem={(item, i) => (
               <FreeCompetitionCard key={item?.comp?.slug || `free-${i}`} {...item} />
             )}
