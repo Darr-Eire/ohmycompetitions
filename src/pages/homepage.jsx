@@ -420,7 +420,7 @@ function HomePage() {
             'marquee_text',
             'Oh My Competitions is all about building with Pi Network for the Pi community. Our OMC launch competitions are zero profit designed to create trust, celebrate early winners and give back to Pioneers. All prizes go directly to you. Add us on all Socials and our Pi Profile darreire2020. More competitions are coming soon across a wide range of exciting categories. Join, win and help shape the future of Pi together.'
           )}
-          speed={300}
+          speed={700}
           className="py-1"
         />
 
@@ -493,7 +493,7 @@ function HomePage() {
           />
 
           {/* ----------------------- OMC Stages ----------------------- */}
-          <section className="space-y-5 sm:space-y-6">
+       <section className="space-y-5 sm:space-y-6">
             <div className="text-center space-y-3 px-3">
               <h2 className="w-full text-lg sm:text-xl font-extrabold text-cyan-300 px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl font-orbitron shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
                 {t('omc_pi_stages_competitions', 'OMC Pi Stages Competitions')}
@@ -528,39 +528,16 @@ function HomePage() {
             </div>
 
             <div className="max-w-6xl mx-auto px-2 sm:px-0">
-              {/* Mobile: horizontal scroll + snap */}
-              <div className="sm:hidden">
-                <HorizontalCarousel
-                  items={[{ stages, prizePoolPi }]}
-                  ariaLabel="OMC stages"
-                  renderItem={() => (
-                    <FunnelStagesRow
-                      stages={stages}
-                      prizePoolPi={prizePoolPi}
-                      onEnterStage1={handleEnterStage1}
-                      className="shadow-[0_0_25px_rgba(0,255,255,0.15)]"
-                      layout="stacked"
-                      comingSoon
-                      ctaLabel={t('coming_soon', 'Coming Soon')}
-                    />
-                  )}
-                  itemMinWidthCSS="min(520px, calc(100vw - 2rem))"
-                  cardMaxWidth={520}
-                />
-              </div>
-
-              {/* Tablet+ grid */}
-              <div className="hidden sm:block">
-                <FunnelStagesRow
-                  stages={stages}
-                  prizePoolPi={prizePoolPi}
-                  onEnterStage1={handleEnterStage1}
-                  className="shadow-[0_0_25px_rgba(0,255,255,0.15)]"
-                  layout="grid"
-                  comingSoon
-                  ctaLabel={t('coming_soon', 'Coming Soon')}
-                />
-              </div>
+              {/* This is where we simply render FunnelStagesRow */}
+              {/* FunnelStagesRow itself now handles its internal mobile carousel logic */}
+              <FunnelStagesRow
+                stages={stages}
+                prizePoolPi={prizePoolPi}
+                onEnterStage1={handleEnterStage1}
+                className="shadow-[0_0_25px_rgba(0,255,255,0.15)]"
+                // layout prop is handled internally by FunnelStagesRow based on screen size
+                // comingSoon and ctaLabel props are not directly used by FunnelStagesRow's layout
+              />
             </div>
           </section>
 
