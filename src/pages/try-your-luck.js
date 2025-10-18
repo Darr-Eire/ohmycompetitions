@@ -48,7 +48,7 @@ export default function TryYourLuck() {
 function EmptyGames() {
   return (
     <div className="col-span-full rounded-xl border border-white/10 bg-white/[0.04] p-6 text-center">
-      <h3 className="font-orbitron text-cyan-200 text-lg">No mini games yet</h3>
+      <h3 className="font-orbitron text-cyan-200 text-lg">No mini games right now</h3>
       <p className="text-cyan-300/90 text-sm mt-1">Check back soon OMC is currently building mini-games for you to enjoy.</p>
     </div>
   );
