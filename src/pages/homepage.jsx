@@ -43,11 +43,12 @@ function HorizontalCarousel({
   itemMinWidthCSS = 'min(440px, calc(100vw - 2rem))',
   cardMaxWidth = 460,
   gapPx = 16,
+  centerFirstSlide = true, // NEW
 }) {
-  const listRef = useRef(null);
-  const cardRef = useRef(null);
-  const [canLeft, setCanLeft] = useState(false);
-  const [canRight, setCanRight] = useState(false);
+  const listRef = React.useRef(null);
+  const cardRef = React.useRef(null);
+  const [canLeft, setCanLeft] = React.useState(false);
+  const [canRight, setCanRight] = React.useState(false);
 
   const recalc = () => {
     const el = listRef.current;
@@ -64,21 +65,50 @@ function HorizontalCarousel({
     el.scrollBy({ left: dir * step, behavior: 'smooth' });
   };
 
-  useEffect(() => {
+  // NEW: center the first slide initially (and on resize) so it sits perfectly in view
+  const centerFirst = React.useCallback(() => {
+    if (!centerFirstSlide) return;
+    const el = listRef.current;
+    const card = cardRef.current;
+    if (!el || !card) return;
+
+    const cardW = card.clientWidth;
+    const viewW = el.clientWidth;
+
+    // amount needed so the first card’s center matches the viewport center
+    const target = Math.max(0, Math.round(cardW / 2 - viewW / 2));
+
+    // Only push if we’re still near the left (don’t override user scroll)
+    if (el.scrollLeft <= 4 && Math.abs(el.scrollLeft - target) > 2) {
+      el.scrollLeft = target;
+    }
+  }, [centerFirstSlide]);
+
+  React.useEffect(() => {
     const el = listRef.current;
     if (!el) return;
+
+    // initial layout
+    centerFirst();
     recalc();
+
     const onScroll = () => recalc();
-    const ro = new ResizeObserver(recalc);
+    const onResize = () => {
+      recalc();
+      centerFirst();
+    };
+
+    const ro = new ResizeObserver(onResize);
     el.addEventListener('scroll', onScroll, { passive: true });
     ro.observe(el);
-    window.addEventListener('resize', recalc);
+    window.addEventListener('resize', onResize);
+
     return () => {
       el.removeEventListener('scroll', onScroll);
       ro.disconnect();
-      window.removeEventListener('resize', recalc);
+      window.removeEventListener('resize', onResize);
     };
-  }, []);
+  }, [centerFirst, items.length]);
 
   return (
     <div className={`relative ${className}`}>
@@ -95,6 +125,7 @@ function HorizontalCarousel({
           -mx-4 px-4
         "
       >
+        {/* edge fades */}
         <div className="pointer-events-none absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-[#0b1227] to-transparent" />
         <div className="pointer-events-none absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-[#0b1227] to-transparent" />
 
@@ -115,6 +146,7 @@ function HorizontalCarousel({
     </div>
   );
 }
+
 
 /* ----------- Marquee with consistent speed (px/s) ----------- */
 function Marquee({ text, speed = 60, className = '' }) {
