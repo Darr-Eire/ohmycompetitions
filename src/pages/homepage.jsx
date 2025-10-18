@@ -363,7 +363,7 @@ function HomePage() {
         {t('qualify', 'Qualify')}{' '}
         <span className="text-white font-semibold">({t('stage_1', 'Stage 1')})</span>
         <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
-          {t('s1_desc', '25 enter, 5 come with an Advance Ticket. Will you be one?')}
+          {t('s1_desc', '25 enter, 5 come out with an Advance Ticket. Will you be one?')}
         </span>
       </span>
 
