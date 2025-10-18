@@ -171,10 +171,10 @@ function CountdownRing({
         height={size - stroke * 2}
       >
         <div className="flex h-full w-full flex-col items-center justify-center text-center leading-tight">
-          <div className="text-[10px] tracking-widest text-cyan-300/80">
+          <div className="text-[9px] tracking-widest text-cyan-300/80 sm:text-[10px]">
             {label}
           </div>
-          <div className="mt-1 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] font-bold text-white">
+          <div className="mt-1 grid grid-cols-2 gap-x-2 gap-y-1 text-[10px] font-bold text-white sm:text-[11px]">
             <div>
               <span className="tabular-nums">{d}</span>{" "}
               <span className="opacity-80">Days</span>
@@ -471,15 +471,15 @@ export default function PiCashCodePage() {
       </div>
 
       {/* Top badges */}
-      <div className="mx-auto w-full max-w-5xl px-4 pt-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="mx-auto w-full max-w-5xl px-4 pt-4 sm:pt-6">
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-between sm:gap-3">
           <div className="flex items-center gap-2">
             <NeonBadge icon={ShieldCheck}>
               Fair • Transparent • Pi SDK
             </NeonBadge>
             <NeonBadge icon={Rocket}>Open Network</NeonBadge>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 mt-2 sm:mt-0">
             <NeonBadge icon={Ticket}>{ticketPrice} π per ticket</NeonBadge>
             <NeonBadge icon={Timer}>
               {isPiBrowser ? "Pi Browser" : "Open in Pi Browser"}
@@ -489,38 +489,38 @@ export default function PiCashCodePage() {
       </div>
 
       {/* Hero */}
-      <section className="mx-auto mt-6 w-full max-w-5xl px-4">
-        <div className="relative overflow-hidden rounded-3xl border border-cyan-500/50 bg-white/5 p-6 shadow-[0_0_60px_#22d3ee33] sm:p-10">
+      <section className="mx-auto mt-4 w-full max-w-5xl px-4 sm:mt-6">
+        <div className="relative overflow-hidden rounded-3xl border border-cyan-500/50 bg-white/5 p-4 shadow-[0_0_60px_#22d3ee33] sm:p-10">
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={() => window.location.reload()}
-            className="absolute right-4 top-4 inline-flex items-center gap-2 rounded-full border border-cyan-400/60 bg-black/40 px-3 py-1 text-xs text-cyan-100 hover:bg-cyan-400/20 active:bg-cyan-400/30 transition"
+            className="absolute right-3 top-3 inline-flex items-center gap-2 rounded-full border border-cyan-400/60 bg-black/40 px-3 py-1 text-xs text-cyan-100 hover:bg-cyan-400/20 active:bg-cyan-400/30 transition sm:right-4 sm:top-4"
           >
             <Loader2 className="h-3.5 w-3.5 animate-spin" /> Refresh
           </motion.button>
 
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8">
             {/* Left */}
             <div className="flex flex-col items-center justify-center text-center">
               <motion.h1
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
-                className="text-balance text-3xl font-extrabold tracking-tight text-cyan-200 sm:text-5xl animate-pulse"
+                className="text-balance text-2xl font-extrabold tracking-tight text-cyan-200 sm:text-5xl animate-pulse"
               >
                 Pi Cash Code
               </motion.h1>
 
-              <p className="mt-3 max-w-md text-white/80">
+              <p className="mt-2 max-w-md text-white/80 text-sm sm:text-base">
                 Keep the code safe, watch the drop and be the Pioneer who’s
                 enough
               </p>
 
-              <div className="mt-6">
+              <div className="mt-4 sm:mt-6">
                 <div className="inline-block rounded-2xl border border-cyan-500/70 bg-gradient-to-r from-[#081425] via-[#0e1b33] to-[#081425] p-[2px] shadow-[0_0_40px_#22d3ee44]">
-                  <div className="flex justify-center mt-6">
-                    <div className="flex items-center gap-3 rounded-[14px] bg-black/40 px-6 py-5 font-mono text-2xl sm:text-4xl tracking-[0.25em] text-cyan-100 whitespace-nowrap shadow-[0_0_35px_#22d3eeaa] animate-[pulse_1.5s_ease-in-out_infinite]">
-                      <LockKeyhole className="text-cyan-300 shrink-0" />
+                  <div className="flex justify-center mt-4 sm:mt-6">
+                    <div className="flex items-center gap-2 sm:gap-3 rounded-[14px] bg-black/40 px-4 py-3 font-mono text-xl sm:text-4xl tracking-[0.2em] sm:tracking-[0.25em] text-cyan-100 whitespace-nowrap shadow-[0_0_35px_#22d3eeaa] animate-[pulse_1.5s_ease-in-out_infinite]">
+                      <LockKeyhole className="text-cyan-300 shrink-0 h-5 w-5 sm:h-auto sm:w-auto" />
                       <span className="select-all">
                         {showCode ? data?.code || "0000-0000" : "XXXX-XXXX"}
                       </span>
@@ -536,10 +536,10 @@ export default function PiCashCodePage() {
             </div>
 
             {/* Right */}
-            <div className="flex flex-col items-center justify-center gap-5">
+            <div className="flex flex-col items-center justify-center gap-4 sm:gap-5">
               <CountdownRing
-                size={160}
-                stroke={10}
+                size={140} // Slightly smaller for mobile
+                stroke={8} // Adjust stroke accordingly
                 pct={
                   data?.dropAt && data?.expiresAt
                     ? clamp((now - dropAt) / (expiresAt - dropAt), 0, 1)
@@ -575,11 +575,11 @@ export default function PiCashCodePage() {
           </div>
 
           {/* CTA */}
-          <div className="mt-8 flex flex-col items-stretch gap-3">
+          <div className="mt-6 flex flex-col items-stretch gap-3 sm:mt-8">
             {!authUser ? (
               <button
                 onClick={loginWithPi}
-                className="group inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-5 py-3 font-bold text-black shadow-[0_10px_30px_#22d3ee55] hover:brightness-110"
+                className="group inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-5 py-3 font-bold text-black shadow-[0_10px_30px_#22d3ee55] hover:brightness-110 text-base"
               >
                 <Ticket className="transition-transform group-hover:scale-110" />
                 Login with Pi to enter
@@ -592,13 +592,13 @@ export default function PiCashCodePage() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setQty((q) => Math.max(1, q - 1))}
-                      className="h-9 w-9 rounded-lg bg-cyan-300/90 text-black font-extrabold"
+                      className="h-8 w-8 rounded-lg bg-cyan-300/90 text-black font-extrabold text-lg sm:h-9 sm:w-9"
                     >
                       −
                     </button>
                     <input
                       type="number"
-                      className="h-9 w-16 rounded-lg bg-white/10 text-center font-bold outline-none [appearance:textfield]"
+                      className="h-8 w-14 rounded-lg bg-white/10 text-center font-bold outline-none [appearance:textfield] sm:h-9 sm:w-16"
                       value={qty}
                       min={1}
                       onChange={(e) =>
@@ -607,7 +607,7 @@ export default function PiCashCodePage() {
                     />
                     <button
                       onClick={() => setQty((q) => q + 1)}
-                      className="h-9 w-9 rounded-lg bg-cyan-300/90 text-black font-extrabold"
+                      className="h-8 w-8 rounded-lg bg-cyan-300/90 text-black font-extrabold text-lg sm:h-9 sm:w-9"
                     >
                       +
                     </button>
@@ -617,7 +617,7 @@ export default function PiCashCodePage() {
                 {/* Purchase button */}
                 <button
                   onClick={() => setShowSkill(true)}
-                  className="group inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-5 py-3 font-extrabold text-black shadow-[0_10px_30px_#22d3ee55] hover:brightness-110"
+                  className="group inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-5 py-3 font-extrabold text-black shadow-[0_10px_30px_#22d3ee55] hover:brightness-110 text-base"
                 >
                   <Sparkles className="transition-transform group-hover:scale-110" />
                   Purchase {qty} ticket{qty > 1 ? "s" : ""} · {totalPrice} π
@@ -629,10 +629,10 @@ export default function PiCashCodePage() {
       </section>
 
       {/* Info blocks */}
-      <section className="mx-auto w-full max-w-5xl px-4 py-8 sm:py-10">
+      <section className="mx-auto w-full max-w-5xl px-4 py-6 sm:py-10">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="rounded-2xl border border-cyan-500/40 bg-white/5 p-5">
-            <h3 className="flex items-center gap-2 text-lg font-bold text-cyan-200">
+          <div className="rounded-2xl border border-cyan-500/40 bg-white/5 p-4 sm:p-5">
+            <h3 className="flex items-center gap-2 text-base font-bold text-cyan-200 sm:text-lg">
               <ShieldCheck size={18} /> Proven Fairness
             </h3>
             <p className="mt-1 text-sm text-white/70">
@@ -640,8 +640,8 @@ export default function PiCashCodePage() {
               auditable history.
             </p>
           </div>
-          <div className="rounded-2xl border border-cyan-500/40 bg-white/5 p-5">
-            <h3 className="flex items-center gap-2 text-lg font-bold text-cyan-200">
+          <div className="rounded-2xl border border-cyan-500/40 bg-white/5 p-4 sm:p-5">
+            <h3 className="flex items-center gap-2 text-base font-bold text-cyan-200 sm:text-lg">
               <Timer size={18} /> Real-Time Thrill
             </h3>
             <p className="mt-1 text-sm text-white/70">
@@ -649,8 +649,8 @@ export default function PiCashCodePage() {
               drops, speed matters.
             </p>
           </div>
-          <div className="rounded-2xl border border-cyan-500/40 bg-white/5 p-5">
-            <h3 className="flex items-center gap-2 text-lg font-bold text-cyan-200">
+          <div className="rounded-2xl border border-cyan-500/40 bg-white/5 p-4 sm:p-5">
+            <h3 className="flex items-center gap-2 text-base font-bold text-cyan-200 sm:text-lg">
               <Trophy size={18} /> Big Prize Energy
             </h3>
             <p className="mt-1 text-sm text-white/70">
@@ -662,8 +662,8 @@ export default function PiCashCodePage() {
       </section>
 
       {/* Live widgets */}
-      <section className="mx-auto w-full max-w-5xl px-4 pb-16">
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+      <section className="mx-auto w-full max-w-5xl px-4 pb-12 sm:pb-16">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
           <div className="rounded-2xl border border-cyan-500/50 bg-white/5 p-4">
             <h4 className="mb-3 text-center text-sm font-bold tracking-widest text-cyan-300">
               LIVE ACTIVITY
@@ -677,7 +677,7 @@ export default function PiCashCodePage() {
             <CodeHistory />
           </div>
         </div>
-        <p className="mt-6 text-center text-xs text-cyan-300/70">
+        <p className="mt-4 text-center text-xs text-cyan-300/70 sm:mt-6">
           By entering you agree to our rules.{" "}
           <a
             className="underline"
