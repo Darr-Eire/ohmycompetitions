@@ -6,10 +6,8 @@ import { useEffect, useMemo, useState } from 'react';
 
 import LaunchCompetitionDetailCard from 'components/LaunchCompetitionDetailCard';
 import GiftTicketModal from '@components/GiftTicketModal';
-import { piItems } from '../../../data/competitions';
 // ⬇️ use the centralized description helper
 // If you have a baseUrl alias, you can also do: import { describeCompetition } from '@/data/competitionDescriptions';
-import { describeCompetition } from '../../../data/competitionDescriptions';
 
 export default function PiTicketPage() {
   const router = useRouter();
@@ -26,9 +24,10 @@ export default function PiTicketPage() {
       setLoading(true);
 
       // 1) Try local data (fast path)
-      const local = Array.isArray(piItems)
-        ? piItems.find((c) => c?.comp?.slug === slug)
-        : null;
+    // 1) Try local cache (fast path) — no static arrays!
+const local =
+  (typeof window !== 'undefined' && window.__OMC_CACHE__?.bySlug?.[slug]) ||
+  null;
 
       if (local) {
         const merged = normalizeFromPiItem(local);

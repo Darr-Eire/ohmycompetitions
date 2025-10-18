@@ -60,9 +60,11 @@ export default function CompetitionCard({
         return;
       }
 
-      const oneDay = 24 * 60 * 60 * 1000;
-      setShowCountdown(diff <= oneDay);
+      // show countdown only within the last 48 hours before draw date
+      const twoDays = 48 * 60 * 60 * 1000;
+      setShowCountdown(now >= start && diff <= twoDays);
 
+      const oneDay = 24 * 60 * 60 * 1000;
       const days = Math.floor(diff / oneDay);
       diff -= days * oneDay;
       const hrs = Math.floor(diff / (1000 * 60 * 60));
@@ -105,17 +107,25 @@ export default function CompetitionCard({
     setShowGiftModal(true);
   };
 
+  // ---- winners: only show if there's a real number; hide TBA ----
+  const rawWinners = comp?.winnersCount ?? comp?.comp?.winnersCount;
+  const winnersNum = Number(rawWinners);
+  const showWinners = Number.isFinite(winnersNum) && winnersNum > 0;
+
   return (
     <>
       <div className="flex flex-col w-full min-w-[280px] max-w-sm mx-auto h-full min-h-[500px] bg-[#0f172a] border border-cyan-600 rounded-xl shadow-lg text-white font-orbitron overflow-hidden transition-all duration-300 hover:scale-[1.03]">
 
-        {/* Title */}
-        <div className="card-header-gradient px-3 py-2 flex justify-center items-center h-12 flex-shrink-0">
-          <span className="text-sm font-semibold text-black text-center truncate">
-            {title}
-          </span>
+      
+     {/*Title*/}
+     <div className="text-center mb-2">
+          <p className="text-xs text-cyan-400 uppercase tracking-widest mb-1">
+            {t('exclusive_draw', 'Exclusive Draw')}
+          </p>
+          <h3 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-[#00ffd5] to-[#0077ff] drop-shadow-[0_0_6px_#00e5ff80]">
+            {title || comp?.title}
+          </h3>
         </div>
-
         {/* Image */}
         <div className="relative w-full aspect-[16/9] bg-black overflow-hidden flex-shrink-0">
           {isExternalUrl(normalizedImageUrl) ? (
@@ -131,7 +141,7 @@ export default function CompetitionCard({
               fill
               className="object-cover"
               loading="lazy"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" // Optimize image loading
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             />
           )}
         </div>
@@ -164,8 +174,8 @@ export default function CompetitionCard({
           )}
         </div>
 
-        {/* Live Timer */}
-        {status === 'LIVE NOW' && (
+        {/* Live Timer (only visible inside last 48h before draw) */}
+        {status === 'LIVE NOW' && showCountdown && (
           <div className="flex justify-center items-center gap-2 px-3 pt-2 flex-shrink-0">
             <div className="bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-2 py-0.5 rounded-lg">
               <p className="text-sm text-black font-mono font-bold">
@@ -175,26 +185,20 @@ export default function CompetitionCard({
           </div>
         )}
 
-        {/* Info Section - Flexible to take remaining space */}
-        <div className="p-3 text-xs text-center space-y-2 flex-grow overflow-hidden">
+        {/* Info Section (match PiCompetitionCard sizing) */}
+        <div className="p-3 text-sm text-center space-y-2 flex-grow overflow-hidden">
           <div className="flex justify-between">
             <span className="text-cyan-300 font-semibold">{t('prize', 'Prize')}:</span>
             <span className="font-medium">{prize}</span>
           </div>
 
-          {/* Draw Date - Visible by default, hidden on very small screens for brevity if needed (e.g., md:flex) */}
           <div className="flex justify-between mt-1">
             <span className="text-cyan-300 font-semibold">{t('draw_date', 'Draw Date')}:</span>
             <span className="font-medium">
               {(comp?.comp?.endsAt || comp?.endsAt)
                 ? new Date(comp.comp?.endsAt || comp.endsAt).toLocaleString(
                     undefined,
-                    {
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    }
+                    { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }
                   )
                 : t('tba', 'TBA')}
             </span>
@@ -205,31 +209,17 @@ export default function CompetitionCard({
             <span className="font-medium">{status === 'COMING SOON' ? t('tba', 'TBA') : fee}</span>
           </div>
 
-          {/* These details can be hidden on smaller screens if space is really tight */}
-          {/* For example: <div className="hidden sm:flex justify-between"> */}
-          <div className="flex justify-between">
-            <span className="text-cyan-300 font-semibold">{t('winners', 'Winners')}:</span>
-            <span className="font-medium">
-              {comp?.winnersCount ?? comp?.comp?.winnersCount ?? t('tba', 'TBA')}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-cyan-300 font-semibold">{t('total_tickets', 'Total Tickets')}:</span>
-            <span className="font-medium">
-              {status === 'COMING SOON' ? t('tba', 'TBA') : total.toLocaleString()}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-cyan-300 font-semibold">{t('max_per_user', 'Max Per User')}:</span>
-            <span className="font-medium">
-              {comp?.maxPerUser ?? comp?.comp?.maxPerUser ?? t('tba', 'TBA')}
-            </span>
-          </div>
-
+          {/* Winners: only render when we have a real number */}
+          {showWinners && (
+            <div className="flex justify-between">
+              <span className="text-cyan-300 font-semibold">{t('winners', 'Winners')}:</span>
+              <span className="font-medium">{winnersNum.toLocaleString()}</span>
+            </div>
+          )}
 
           {/* Tickets Sold & Progress */}
           <div className="space-y-1 mt-2 flex-shrink-0">
-            <div className="flex justify-between items-center text-[0.68rem]"> {/* Smaller text for progress */}
+            <div className="flex justify-between items-center text-sm">
               <span className="text-cyan-300">{t('tickets_sold', 'Tickets Sold')}</span>
               <div className="text-right">
                 {status === 'COMING SOON' ? (
@@ -266,7 +256,7 @@ export default function CompetitionCard({
                 )}
               </div>
             </div>
-            <div className="w-full bg-gray-700 rounded-full h-1.5"> {/* Slightly thinner progress bar */}
+            <div className="w-full bg-gray-700 rounded-full h-1.5">
               {status === 'COMING SOON' ? (
                 <div className="h-1.5 w-[20%] bg-gray-400 rounded-full animate-pulse" />
               ) : (
@@ -295,19 +285,19 @@ export default function CompetitionCard({
             <div className="p-3 pt-0 mt-auto space-y-2 flex-shrink-0">
               {comp?.comp?.slug || comp?.slug ? (
                 <Link href={`/ticket-purchase/${comp.comp?.slug || comp.slug}`}>
-                  <button className="w-full py-2 rounded-md font-bold text-black shadow bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:from-[#00e6c7] hover:to-[#0066e6] text-sm"> {/* Smaller text for button */}
+                  <button className="w-full py-2 rounded-md font-bold text-black shadow bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:from-[#00e6c7] hover:to-[#0066e6] text-sm">
                     {t('enter_now', 'Enter Now')}
                   </button>
                 </Link>
               ) : (
-                <button className="w-full py-2 rounded-md font-bold text-white bg-gray-500 text-sm"> {/* Smaller text for button */}
+                <button className="w-full py-2 rounded-md font-bold text-white bg-gray-500 text-sm">
                   {t('not_available', 'Not Available')}
                 </button>
               )}
               {isGiftable && !disableGift && user?.username && (
                 <button
                   onClick={handleGiftClick}
-                  className="w-full py-2 rounded-md font-bold text-cyan-400 border border-cyan-400 hover:bg-cyan-400 hover:text-black transition-colors duration-200 text-sm" // Smaller text for button
+                  className="w-full py-2 rounded-md font-bold text-cyan-400 border border-cyan-400 hover:bg-cyan-400 hover:text-black transition-colors duration-200 text-sm"
                 >
                   {t('gift_ticket', 'Gift Ticket')}
                 </button>

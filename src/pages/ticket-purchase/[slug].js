@@ -1,6 +1,4 @@
-// pages/ticket-purchase/[...slug].jsx
 'use client';
-
 import TradingViewWidget from '@components/TradingViewWidget';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
@@ -8,56 +6,24 @@ import Link from 'next/link';
 import Head from 'next/head';
 import { usePiAuth } from '../../context/PiAuthContext';
 import GiftTicketModal from '@components/GiftTicketModal';
-
-// Shared visual component we want to match
 import LaunchCompetitionDetailCard from 'components/LaunchCompetitionDetailCard';
-
-import {
-  techItems,
-  premiumItems,
-  piItems,
-  dailyItems,
-  freeItems,
-  cryptoGiveawaysItems,
-} from '../../data/competitions';
-
-// ⬇️ Centralized descriptions (slug > theme > default)
 import { describeCompetition } from '../../data/competitionDescriptions';
-
-/* -------------------------- Static flatten (fallback) -------------------------- */
-const flattenCompetitions = [
-  ...techItems,
-  ...premiumItems,
-  ...piItems,
-  ...dailyItems,
-  ...freeItems,
-  ...cryptoGiveawaysItems,
-];
-
-/* ------------------------------ Page Component ------------------------------ */
 export default function TicketPurchasePage() {
   const router = useRouter();
   const slugArr = router.query.slug || [];
   const slug = Array.isArray(slugArr) ? slugArr[slugArr.length - 1] : slugArr;
-
   const { user, login } = usePiAuth?.() || {};
-
   const [loading, setLoading] = useState(false);
-  const [comp, setComp] = useState(null);             // normalized competition object
-  const [desc, setDesc] = useState('');               // description text
+  const [comp, setComp] = useState(null);            
+  const [desc, setDesc] = useState('');             
   const [liveTicketsSold, setLiveTicketsSold] = useState(0);
   const [error, setError] = useState(null);
-
-  // Free ticket / share bonus flags (used when fee <= 0)
   const [sharedBonus, setSharedBonus] = useState(false);
-
-  /* -------------------------- Fetch competition (API → static) -------------------------- */
   const fetchCompetition = async (slugParam) => {
     if (!slugParam) return;
     try {
       setLoading(true);
       setError(null);
-
       // 1) Live API first
       try {
         const res = await fetch(`/api/competitions/${slugParam}`);
@@ -142,11 +108,7 @@ export default function TicketPurchasePage() {
   const claimFreeTicket = () => {
     const key = `${slug}-claimed`;
     const current = parseInt(localStorage.getItem(key) || '0', 10);
-    const max = sharedBonus ? 2 : 1;
-    if (current >= max) {
-      alert('You have claimed the maximum free tickets.');
-      return;
-    }
+   
     localStorage.setItem(key, String(current + 1));
     alert('✅ Free ticket claimed!');
   };
@@ -251,7 +213,6 @@ function normalizeFromPiItem(item) {
     endsAt: c.endsAt || null,
     totalTickets: Number.parseInt(c.totalTickets ?? 0, 10) || 0,
     ticketsSold: Number.parseInt(c.ticketsSold ?? 0, 10) || 0,
-    maxTicketsPerUser: c.maxPerUser ?? c.maxTicketsPerUser ?? null,
     entryFee: Number(c.entryFee ?? item.piAmount ?? 0) || 0,
     winners: c.winners ?? 'Multiple',
     firstPrize: c.prizeBreakdown?.first ?? c.firstPrize ?? item.prize,
