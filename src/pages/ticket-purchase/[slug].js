@@ -218,7 +218,7 @@ function normalizeFromPiItem(item) {
     firstPrize: c.prizeBreakdown?.first ?? c.firstPrize ?? item.prize,
     prizeBreakdown: c.prizeBreakdown ?? null,
 
-    // ⭐ Robust image fallbacks
+    // Robust image fallbacks
     imageUrl:
       item.imageUrl
       || c.imageUrl
