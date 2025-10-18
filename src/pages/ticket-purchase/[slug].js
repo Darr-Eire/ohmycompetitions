@@ -1,17 +1,3 @@
-
-Model
-Let's make the `TicketPurchasePage` more mobile-friendly. The main component (`LaunchCompetitionDetailCard`) is where most of the content lives, so ensuring it's responsive is key. I'll focus on the structural elements of this page and assume `LaunchCompetitionDetailCard`, `TradingViewWidget`, and `GiftTicketModal` also implement responsive design.
-
-Here's a strategy and the updated code:
-
-1.  **Reduce Horizontal Padding on Smaller Screens:** The current `px-4` is a good start, but ensure overall content isn't too wide or too narrow.
-2.  **Adjust `TradingViewWidget` Size:** On mobile, a fixed height of `380px` might be too tall. We'll make it more flexible or reduce its height for smaller screens.
-3.  **Font Sizes and Spacing:** Ensure headings and paragraphs are readable on mobile.
-4.  **Error/Loading States:** Keep them centered and simple, which they largely are already.
-
-Here's the refactored `TicketPurchasePage` code:
-
-```jsx
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
