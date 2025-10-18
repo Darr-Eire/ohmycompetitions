@@ -169,9 +169,7 @@ export default function PiCompetitionCard({
           <span className="px-3 py-1 rounded-full border border-cyan-400 bg-cyan-600/30 text-white font-semibold">
             🌍 {t('pioneers_global_draw', 'Pioneers Global Competition')}
           </span>
-        </div>
-        {/* Status */}
-        <div className="text-right text-sm mb-2 z-10 relative">
+          {/* Status */}
           <span
             className={`px-3 py-1 rounded-full font-bold text-xs shadow-md ${
               status === 'LIVE NOW'
@@ -376,3 +374,4 @@ export default function PiCompetitionCard({
     </>
   )
 }
+```
