@@ -1,9 +1,10 @@
 'use client';
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { useSafeTranslation } from '../hooks/useSafeTranslation';
+
 import DailyCompetitionCard from '@components/DailyCompetitionCard';
 import FreeCompetitionCard from '@components/FreeCompetitionCard';
 import PiCompetitionCard from '@components/PiCompetitionCard';
@@ -27,6 +28,91 @@ const PageWrapper = ({ children }) => (
     {children}
   </div>
 );
+
+/* ------------------ Reusable horizontal carousel ------------------ */
+function HorizontalCarousel({
+  items = [],
+  renderItem,
+  itemMinWidth = 320, // px
+  ariaLabel = 'carousel',
+  className = '',
+}) {
+  const listRef = React.useRef(null);
+
+  const scrollBy = (dir = 1) => {
+    const el = listRef.current;
+    if (!el) return;
+    const card = el.querySelector('[data-card]');
+    const step = card ? card.clientWidth + 16 /* gap */ : 320;
+    el.scrollBy({ left: dir * step, behavior: 'smooth' });
+  };
+
+  return (
+    <div className={`relative ${className}`}>
+      <div
+        ref={listRef}
+        role="region"
+        aria-label={ariaLabel}
+        className="
+          group/rail flex gap-4 overflow-x-auto pb-2
+          snap-x snap-mandatory
+          scrollbar-thin scrollbar-thumb-cyan-500/40
+          [scrollbar-width:thin]
+        "
+      >
+        {/* gradient fades */}
+        <div className="pointer-events-none absolute left-0 top-0 h-full w-10 bg-gradient-to-r from-[#0b1227] to-transparent" />
+        <div className="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-[#0b1227] to-transparent" />
+
+        {items.map((item, idx) => (
+          <div
+            key={item?.comp?.slug || idx}
+            data-card
+            className="snap-center shrink-0"
+            style={{ minWidth: itemMinWidth }}
+          >
+            {renderItem(item, idx)}
+          </div>
+        ))}
+      </div>
+
+      {/* arrows (desktop/tablet only) */}
+      {items.length > 1 && (
+        <>
+          <button
+            type="button"
+            aria-label="Scroll left"
+            onClick={() => scrollBy(-1)}
+            className="
+              hidden sm:flex absolute -left-2 top-1/2 -translate-y-1/2 z-10
+              h-10 w-10 items-center justify-center rounded-full
+              bg-white/10 hover:bg-white/20 border border-white/15
+              shadow-[0_0_20px_rgba(34,211,238,0.25)]
+              backdrop-blur
+            "
+          >
+            ‹
+          </button>
+          <button
+            type="button"
+            aria-label="Scroll right"
+            onClick={() => scrollBy(1)}
+            className="
+              hidden sm:flex absolute -right-2 top-1/2 -translate-y-1/2 z-10
+              h-10 w-10 items-center justify-center rounded-full
+              bg-white/10 hover:bg-white/20 border border-white/15
+              shadow-[0_0_20px_rgba(34,211,238,0.25)]
+              backdrop-blur
+            "
+          >
+            ›
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
 function HomePage() {
   const { t } = useSafeTranslation();
 
@@ -34,7 +120,6 @@ function HomePage() {
   const { stages, prizePoolPi } = useFunnelStages();
 
   const handleEnterStage1 = () => {
-    // Try to use stage 1 slug if available; otherwise show a friendly message.
     const s1 = Array.isArray(stages) ? stages.find(s => Number(s?.stage) === 1) : null;
     const slug = s1?.slug || s1?.comp?.slug;
     if (slug) {
@@ -49,7 +134,6 @@ function HomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Filter and sort a plain list of live competitions (no static merges)
   const normalizeAndFilter = (liveData) => {
     const now = Date.now();
 
@@ -59,6 +143,7 @@ function HomePage() {
         return {
           ...item,
           imageUrl: item?.thumbnail || item?.imageUrl || '/pi.jpeg',
+          theme: item?.theme || 'tech',
           comp: {
             ...comp,
             ticketsSold: toNumber(comp?.ticketsSold, 0),
@@ -72,10 +157,9 @@ function HomePage() {
         const comp = item.comp || {};
         if (comp.status && comp.status !== 'active') return false;
         if (!comp.endsAt) return true;
-        return new Date(comp.endsAt).getTime() > now; // not ended
+        return new Date(comp.endsAt).getTime() > now;
       });
 
-    // live first (within start/end), then by soonest end date
     const sorted = cleaned.sort((a, b) => {
       const aS = a?.comp?.startsAt ? new Date(a.comp.startsAt).getTime() : 0;
       const aE = a?.comp?.endsAt ? new Date(a.comp.endsAt).getTime() : Number.POSITIVE_INFINITY;
@@ -106,7 +190,7 @@ function HomePage() {
       } catch (e) {
         console.error('❌ Failed to fetch live competition data:', e);
         if (mounted) setError(String(e?.message || e));
-        if (mounted) setLiveCompetitions([]); // safe fallback
+        if (mounted) setLiveCompetitions([]);
       } finally {
         if (mounted) setLoading(false);
       }
@@ -119,170 +203,137 @@ function HomePage() {
   const getCompetitionsByCategory = (category) =>
     liveCompetitions.filter((item) => (item.theme || 'tech') === category);
 
-  /*loading*/
- if (loading) {
-  return (
-    <PageWrapper>
-      <section
-        className="w-full py-16 flex flex-col items-center px-4"
-        role="status"
-        aria-live="polite"
-        aria-label="Loading OhMyCompetitions live competitions"
-      >
-        {/* Brand mark with gradient ring */}
-        <div className="relative mb-6">
-          {/* soft halo */}
-          <div className="absolute -inset-6 blur-xl rounded-full bg-cyan-500/15" />
-          {/* ring */}
-          <div className="relative grid place-items-center h-24 w-24 rounded-full">
-            <div className="absolute inset-0 rounded-full border border-white/10" />
-            <div className="absolute inset-0 rounded-full p-[2px] bg-gradient-to-r from-cyan-400/60 via-blue-500/60 to-cyan-400/60">
-              <div className="h-full w-full rounded-full bg-[#0f172a]" />
-            </div>
-            {/* spinner (reduced motion friendly) */}
-            <div className="absolute inset-0 rounded-full border-2 border-cyan-300/30 border-t-cyan-300 motion-safe:animate-spin" />
-            {/* O M C letters as a simple logomark */}
-            <div className="relative font-orbitron text-cyan-200 text-xl tracking-wide select-none">
-              OMC
-            </div>
-          </div>
-        </div>
-
-        {/* Headline + sub */}
-        <div className="text-center">
-          <h2 className="omc-title">Preparing Live Competitions</h2>
-          <p className="omc-subtitle mt-1">
-            Verifying pools, prizes and tickets in real time…
-          </p>
-        </div>
-
-        {/* Skeleton cards (hint at the content that’s coming) */}
-        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-5xl">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div
-              key={i}
-              className="rounded-xl border border-white/10 bg-white/[0.04] p-4"
-            >
-              <div className="h-24 rounded-lg bg-gradient-to-r from-white/5 via-white/10 to-white/5 animate-pulse" />
-              <div className="mt-3 h-4 w-3/4 rounded bg-white/10 animate-pulse" />
-              <div className="mt-2 h-3 w-1/2 rounded bg-white/10 animate-pulse" />
-              <div className="mt-4 flex items-center gap-2">
-                <div className="h-8 w-20 rounded bg-cyan-400/30 animate-pulse" />
-                <div className="h-8 w-16 rounded bg-white/10 animate-pulse" />
+  /* ------------------------ Loading UI ------------------------ */
+  if (loading) {
+    return (
+      <PageWrapper>
+        <section
+          className="w-full py-16 flex flex-col items-center px-4"
+          role="status"
+          aria-live="polite"
+          aria-label="Loading OhMyCompetitions live competitions"
+        >
+          <div className="relative mb-6">
+            <div className="absolute -inset-6 blur-xl rounded-full bg-cyan-500/15" />
+            <div className="relative grid place-items-center h-24 w-24 rounded-full">
+              <div className="absolute inset-0 rounded-full border border-white/10" />
+              <div className="absolute inset-0 rounded-full p-[2px] bg-gradient-to-r from-cyan-400/60 via-blue-500/60 to-cyan-400/60">
+                <div className="h-full w-full rounded-full bg-[#0f172a]" />
+              </div>
+              <div className="absolute inset-0 rounded-full border-2 border-cyan-300/30 border-t-cyan-300 motion-safe:animate-spin" />
+              <div className="relative font-orbitron text-cyan-200 text-xl tracking-wide select-none">
+                OMC
               </div>
             </div>
-          ))}
-        </div>
+          </div>
 
-        {/* Status line (screen-reader friendly, visible too) */}
-        <p className="mt-6 text-sm text-cyan-200/90">
-          {t('loading_live_competitions', 'Loading live competition data...')}
-        </p>
-      </section>
-    </PageWrapper>
-  );
-}
- if (error) {
-  // Developer-friendly log (still useful in the console)
-  console.warn('[OMC] Live competitions failed to load:', error);
+          <div className="text-center">
+            <h2 className="omc-title">Preparing Live Competitions</h2>
+            <p className="omc-subtitle mt-1">Verifying pools, prizes and tickets in real time…</p>
+          </div>
 
-  return (
-    <PageWrapper>
-      <section
-        role="alert"
-        aria-live="assertive"
-        aria-label="OhMyCompetitions error loading live competitions"
-        className="w-full max-w-3xl mx-auto px-4 py-12"
-      >
-        {/* Card */}
-        <div className="rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur p-6 shadow-[0_0_22px_rgba(34,211,238,0.12)]">
-          {/* Header */}
-          <div className="flex items-start gap-3">
-            {/* Icon */}
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-500/15 border border-cyan-400/30">
-              {/* Alert icon */}
-              <svg
-                viewBox="0 0 24 24"
-                className="h-5 w-5 text-cyan-300"
-                aria-hidden="true"
+          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-5xl">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
+                <div className="h-24 rounded-lg bg-gradient-to-r from-white/5 via-white/10 to-white/5 animate-pulse" />
+                <div className="mt-3 h-4 w-3/4 rounded bg-white/10 animate-pulse" />
+                <div className="mt-2 h-3 w-1/2 rounded bg-white/10 animate-pulse" />
+                <div className="mt-4 flex items-center gap-2">
+                  <div className="h-8 w-20 rounded bg-cyan-400/30 animate-pulse" />
+                  <div className="h-8 w-16 rounded bg-white/10 animate-pulse" />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <p className="mt-6 text-sm text-cyan-200/90">
+            {t('loading_live_competitions', 'Loading live competition data...')}
+          </p>
+        </section>
+      </PageWrapper>
+    );
+  }
+
+  /* ------------------------ Error UI ------------------------ */
+  if (error) {
+    console.warn('[OMC] Live competitions failed to load:', error);
+    return (
+      <PageWrapper>
+        <section
+          role="alert"
+          aria-live="assertive"
+          aria-label="OhMyCompetitions error loading live competitions"
+          className="w-full max-w-3xl mx-auto px-4 py-12"
+        >
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur p-6 shadow-[0_0_22px_rgba(34,211,238,0.12)]">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-cyan-500/15 border border-cyan-400/30">
+                <svg viewBox="0 0 24 24" className="h-5 w-5 text-cyan-300" aria-hidden="true">
+                  <path
+                    fill="currentColor"
+                    d="M11 7h2v7h-2V7zm1 12a1.5 1.5 0 1 1 .001-3.001A1.5 1.5 0 0 1 12 19zM1 21h22L12 2 1 21z"
+                  />
+                </svg>
+              </div>
+
+              <div className="flex-1">
+                <h2 className="font-orbitron text-2xl font-extrabold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-blue-500 to-cyan-300">
+                  {t('omc_error_title', 'We couldn’t load live competitions')}
+                </h2>
+                <p className="mt-1 text-sm text-cyan-200/90">
+                  {t('omc_error_sub', 'This might be a network hiccup or our API catching its breath.')}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => typeof window !== 'undefined' && window.location.reload()}
+                className="inline-flex items-center justify-center rounded-xl px-5 py-2 text-sm font-semibold
+                           bg-cyan-400 text-[#0a1024] shadow transition-colors hover:bg-cyan-300"
               >
-                <path
-                  fill="currentColor"
-                  d="M11 7h2v7h-2V7zm1 12a1.5 1.5 0 1 1 .001-3.001A1.5 1.5 0 0 1 12 19zM1 21h22L12 2 1 21z"
-                />
-              </svg>
-            </div>
+                {t('retry', 'Retry')}
+              </button>
 
-            <div className="flex-1">
-              <h2 className="font-orbitron text-2xl font-extrabold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-blue-500 to-cyan-300">
-                {t('omc_error_title', 'We couldn’t load live competitions')}
-              </h2>
-              <p className="mt-1 text-sm text-cyan-200/90">
-                {t(
-                  'omc_error_sub',
-                  'This might be a network hiccup or our API catching its breath.'
-                )}
-              </p>
+              <a
+                href="/status"
+                className="inline-flex items-center justify-center rounded-xl px-5 py-2 text-sm font-semibold
+                           border border-cyan-400/50 text-cyan-100 hover:bg-white/5 transition-colors"
+              >
+                {t('omc_view_status', 'View status')}
+              </a>
+
+              <details className="ml-auto text-xs text-cyan-200/80">
+                <summary className="cursor-pointer select-none">{t('omc_error_details', 'Details')}</summary>
+                <pre className="mt-2 max-h-32 overflow-auto rounded bg-black/30 p-2 text-[11px] leading-snug">
+                  {String(error?.message || error)}
+                </pre>
+              </details>
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="mt-5 flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                // Simple client-side retry: reload the current route data
-                // Replace with your fetch hook or router refresh if you have one
-                if (typeof window !== 'undefined') window.location.reload();
-              }}
-              className="inline-flex items-center justify-center rounded-xl px-5 py-2 text-sm font-semibold
-                         bg-cyan-400 text-[#0a1024] shadow transition-colors hover:bg-cyan-300"
-            >
-              {t('retry', 'Retry')}
-            </button>
+          <p className="mt-4 text-center text-xs text-cyan-300/80">
+            {t('omc_error_footer', 'Tip: Check your connection or try again in a few seconds.')}
+          </p>
+        </section>
+      </PageWrapper>
+    );
+  }
 
-            {/* Optional: link to a status/discord/report page */}
-            <a
-              href="/status"
-              className="inline-flex items-center justify-center rounded-xl px-5 py-2 text-sm font-semibold
-                         border border-cyan-400/50 text-cyan-100 hover:bg-white/5 transition-colors"
-            >
-              {t('omc_view_status', 'View status')}
-            </a>
-
-            {/* Optional: details toggle for power users */}
-            <details className="ml-auto text-xs text-cyan-200/80">
-              <summary className="cursor-pointer select-none">
-                {t('omc_error_details', 'Details')}
-              </summary>
-              <pre className="mt-2 max-h-32 overflow-auto rounded bg-black/30 p-2 text-[11px] leading-snug">
-                {String(error?.message || error)}
-              </pre>
-            </details>
-          </div>
-        </div>
-
-        {/* Friendly footer hint */}
-        <p className="mt-4 text-center text-xs text-cyan-300/80">
-          {t(
-            'omc_error_footer',
-            'Tip: Check your connection or try again in a few seconds.'
-          )}
-        </p>
-      </section>
-    </PageWrapper>
-  );
-}
-  /*RENDER*/
+  /* ------------------------ Render ------------------------ */
   return (
     <PageWrapper>
-<div className="
-  px-4 py-6 space-y-8      /* mobile: full width + comfy padding */
-  sm:mx-auto sm:max-w-2xl  /* small screens: start capping */
-  md:max-w-3xl
-  lg:max-w-5xl
-  xl:max-w-7xl
-">        {/* Marquee */}
+      <div
+        className="
+          px-4 py-8 space-y-12
+          sm:mx-auto sm:max-w-2xl
+          md:max-w-3xl
+          lg:max-w-5xl
+          xl:max-w-7xl
+        "
+      >
+        {/* Marquee */}
         <div className="overflow-hidden">
           <div className="marquee-content text-cyan-300 text-base font-medium font-orbitron whitespace-nowrap animate-[marquee_35s_linear_infinite]">
             {t(
@@ -295,37 +346,35 @@ function HomePage() {
         {/* Mini carousel */}
         <MiniPrizeCarousel />
 
-{/* Pi Cash Code — simple neon card */}
-<div className="w-full max-w-lg mx-auto">
-  <div className="p-[1px] rounded-2xl bg-gradient-to-r from-cyan-500/50 via-blue-500/40 to-cyan-500/50">
-    <Link
-      href="/pi-cash-code"
-      className="block rounded-2xl px-8 py-6 text-center
-                 bg-[#0f172a]/90 backdrop-blur border border-white/5
-                 shadow-[0_0_18px_rgba(34,211,238,0.15)]
-                 hover:shadow-[0_0_26px_rgba(34,211,238,0.28)]
-                 transition-shadow"
-      aria-label="Pi Cash Code — Enter Here"
-    >
-      <h1 className="text-3xl font-bold font-orbitron text-transparent bg-clip-text
-                     bg-gradient-to-r from-cyan-300 via-blue-500 to-cyan-300">
-        {t('pi_cash_code', 'Pi Cash Code')}
-      </h1>
+        {/* Pi Cash Code — simple neon card */}
+        <div className="w-full max-w-lg mx-auto">
+          <div className="p-[1px] rounded-2xl bg-gradient-to-r from-cyan-500/50 via-blue-500/40 to-cyan-500/50">
+            <Link
+              href="/pi-cash-code"
+              className="block rounded-2xl px-8 py-6 text-center
+                         bg-[#0f172a]/90 backdrop-blur border border-white/5
+                         shadow-[0_0_18px_rgba(34,211,238,0.15)]
+                         hover:shadow-[0_0_26px_rgba(34,211,238,0.28)]
+                         transition-shadow"
+              aria-label="Pi Cash Code — Enter Here"
+            >
+              <h1 className="text-3xl font-bold font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-500 to-cyan-300">
+                {t('pi_cash_code', 'Pi Cash Code')}
+              </h1>
 
-      <p className="mt-2 text-cyan-300/90 text-sm italic">
-        {t('if_you_can_dream', 'If you can dream you can win')}
-      </p>
+              <p className="mt-2 text-cyan-300/90 text-sm italic">
+                {t('if_you_can_dream', 'If you can dream you can win')}
+              </p>
 
-      <p className="mt-2 text-cyan-100 text-sm font-semibold underline underline-offset-4">
-        {t('enter_here', 'Enter Here')}
-      </p>
-    </Link>
-  </div>
-</div>
-
+              <p className="mt-2 text-cyan-100 text-sm font-semibold underline underline-offset-4">
+                {t('enter_here', 'Enter Here')}
+              </p>
+            </Link>
+          </div>
+        </div>
 
         {/* ====================== Sections ====================== */}
-        <main className="space-y-16">
+        <main className="space-y-14 sm:space-y-16 lg:space-y-20">
           <Section
             title={t('daily_weekly', 'Daily/Weekly')}
             items={getCompetitionsByCategory('daily')}
@@ -351,158 +400,155 @@ function HomePage() {
           />
 
           {/* ----------------------- OMC Stages ----------------------- */}
-       <section className="space-y-5 sm:space-y-6">
-  <div className="text-center space-y-3 px-3">
-    <h2 className="w-full text-lg sm:text-xl font-extrabold text-cyan-300 px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl font-orbitron shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
-      {t('omc_pi_stages_competitions', 'OMC Pi Stages Competitions')}
-    </h2>
+          <section className="space-y-5 sm:space-y-6">
+            <div className="text-center space-y-3 px-3">
+              <h2 className="w-full text-lg sm:text-xl font-extrabold text-cyan-300 px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl font-orbitron shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
+                {t('omc_pi_stages_competitions', 'OMC Pi Stages Competitions')}
+              </h2>
 
-    {/* Headline row with mini descriptions */}
-    <div className="text-[0.85rem] sm:text-sm text-cyan-300/90 italic flex items-start justify-center gap-x-6 gap-y-2 flex-wrap leading-relaxed">
-      <span className="text-center">
-        {t('qualify', 'Qualify')}{' '}
-        <span className="text-white font-semibold">({t('stage_1', 'Stage 1')})</span>
-        <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
-          {t('s1_desc', '25 enter, 5 come out with an Advance Ticket. Will you be one?')}
-        </span>
-      </span>
+              <div className="text-[0.85rem] sm:text-sm text-cyan-300/90 italic flex items-start justify-center gap-x-6 gap-y-2 flex-wrap leading-relaxed mt-2 sm:mt-3">
+                <span className="text-center">
+                  {t('qualify', 'Qualify')}{' '}
+                  <span className="text-white font-semibold">({t('stage_1', 'Stage 1')})</span>
+                  <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
+                    {t('s1_desc', '25 enter, 5 come out with an Advance Ticket. Will you be one?')}
+                  </span>
+                </span>
 
-      <span className="text-center">
-        {t('advance', 'Advance')}{' '}
-        <span className="text-white font-semibold">({t('stages_2_4', 'Stages 2–4')})</span>
-        <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
-          {t('s2_4_desc', 'Each room: 25 enter, top 5 move on using their Advance Ticket.')}
-        </span>
-      </span>
+                <span className="text-center">
+                  {t('advance', 'Advance')}{' '}
+                  <span className="text-white font-semibold">({t('stages_2_4', 'Stages 2–4')})</span>
+                  <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
+                    {t('s2_4_desc', 'Each room: 25 enter, top 5 move on using their Advance Ticket.')}
+                  </span>
+                </span>
 
-      <span className="text-center">
-        {t('win', 'Win')}{' '}
-        <span className="text-white font-semibold">({t('stage_5', 'Stage 5')})</span>
-      </span>
+                <span className="text-center">
+                  {t('win', 'Win')}{' '}
+                  <span className="text-white font-semibold">({t('stage_5', 'Stage 5')})</span>
+                </span>
 
-      <span className="text-cyan-300 font-semibold text-center">
-        {t('stage_5_prize_pool', 'Stage 5 Prize Pool')}: <span className="text-white">2200π</span>
-      </span>
-    </div>
-  </div>
+                <span className="text-cyan-300 font-semibold text-center">
+                  {t('stage_5_prize_pool', 'Stage 5 Prize Pool')}: <span className="text-white">2200π</span>
+                </span>
+              </div>
+            </div>
 
-  <div className="max-w-6xl mx-auto px-2 sm:px-0">
-    {/* Mobile: horizontal scroll + snap */}
-    <div className="sm:hidden -mx-2 px-2">
-      <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-thin scrollbar-thumb-cyan-500/40 pb-2">
-        <FunnelStagesRow
-  stages={stages}
-  prizePoolPi={prizePoolPi}
-  onEnterStage1={handleEnterStage1}  // will be ignored when disabled
-  className="min-w-[85%] snap-center shadow-[0_0_25px_rgba(0,255,255,0.15)]"
-  layout="stacked"
-  comingSoon
-  ctaLabel={t('coming_soon', 'Coming Soon')}
-/>
-      </div>
-    </div>
+            <div className="max-w-6xl mx-auto px-2 sm:px-0">
+              {/* Mobile: horizontal scroll + snap */}
+              <div className="sm:hidden -mx-2 px-2">
+                <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-thin scrollbar-thumb-cyan-500/40 pb-2">
+                  <FunnelStagesRow
+                    stages={stages}
+                    prizePoolPi={prizePoolPi}
+                    onEnterStage1={handleEnterStage1}
+                    className="min-w-[85%] snap-center shadow-[0_0_25px_rgba(0,255,255,0.15)]"
+                    layout="stacked"
+                    comingSoon
+                    ctaLabel={t('coming_soon', 'Coming Soon')}
+                  />
+                </div>
+              </div>
 
-    {/* Tablet+ grid */}
-    <div className="hidden sm:block">
-     <FunnelStagesRow
-  stages={stages}
-  prizePoolPi={prizePoolPi}
-  onEnterStage1={handleEnterStage1}
-  className="shadow-[0_0_25px_rgba(0,255,255,0.15)]"
-  layout="grid"
-  comingSoon
-  ctaLabel={t('coming_soon', 'Coming Soon')}
-/>
-    </div>
-  </div>
-</section>
-
+              {/* Tablet+ grid */}
+              <div className="hidden sm:block">
+                <FunnelStagesRow
+                  stages={stages}
+                  prizePoolPi={prizePoolPi}
+                  onEnterStage1={handleEnterStage1}
+                  className="shadow-[0_0_25px_rgba(0,255,255,0.15)]"
+                  layout="grid"
+                  comingSoon
+                  ctaLabel={t('coming_soon', 'Coming Soon')}
+                />
+              </div>
+            </div>
+          </section>
 
           {/* -------------------- Free Competitions ------------------- */}
           <FreeSection t={t} items={getCompetitionsByCategory('free')} />
 
-
           {/* -------------------- Coming Soon Columns ----------------- */}
-  <section className="space-y-5 sm:space-y-6">
-  <div className="text-center space-y-3 px-3">
-    <h2 className="w-full text-lg sm:text-xl font-extrabold text-cyan-300 px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl font-orbitron shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
-      {t('omc_pi_stages_competitions', 'OMC Pi Stages Competitions')}
-    </h2>
+          <section className="space-y-5 sm:space-y-6">
+            <div className="text-center space-y-3 px-3">
+              <h2 className="w-full text-lg sm:text-xl font-extrabold text-cyan-300 px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl font-orbitron shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
+                {t('omc_pi_stages_competitions', 'OMC Pi Stages Competitions')}
+              </h2>
 
-    {/* Headline row with mini descriptions */}
-    <div className="text-[0.85rem] sm:text-sm text-cyan-300/90 italic flex items-start justify-center gap-x-6 gap-y-2 flex-wrap leading-relaxed">
-      <span className="text-center">
-        {t('qualify', 'Qualify')}{' '}
-        <span className="text-white font-semibold">({t('stage_1', 'Stage 1')})</span>
-        <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
-          {t('s1_desc', '25 enter — 5 advance with an Advance Ticket. Will you be one?')}
-        </span>
-      </span>
+              <div className="text-[0.85rem] sm:text-sm text-cyan-300/90 italic flex items-start justify-center gap-x-6 gap-y-2 flex-wrap leading-relaxed">
+                <span className="text-center">
+                  {t('qualify', 'Qualify')}{' '}
+                  <span className="text-white font-semibold">({t('stage_1', 'Stage 1')})</span>
+                  <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
+                    {t('s1_desc', '25 enter — 5 advance with an Advance Ticket. Will you be one?')}
+                  </span>
+                </span>
 
-      <span className="text-center">
-        {t('advance', 'Advance')}{' '}
-        <span className="text-white font-semibold">({t('stages_2_4', 'Stages 2–4')})</span>
-        <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
-          {t('s2_4_desc', 'Each room: 25 enter — top 5 move on using their Advance Ticket.')}
-        </span>
-      </span>
+                <span className="text-center">
+                  {t('advance', 'Advance')}{' '}
+                  <span className="text-white font-semibold">({t('stages_2_4', 'Stages 2–4')})</span>
+                  <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
+                    {t('s2_4_desc', 'Each room: 25 enter — top 5 move on using their Advance Ticket.')}
+                  </span>
+                </span>
 
-      <span className="text-center">
-        {t('win', 'Win')}{' '}
-        <span className="text-white font-semibold">({t('stage_5', 'Stage 5')})</span>
-        <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
-          {t('s5_desc', 'All 25 Pioneers win in Stage 5.')}
-        </span>
-      </span>
+                <span className="text-center">
+                  {t('win', 'Win')}{' '}
+                  <span className="text-white font-semibold">({t('stage_5', 'Stage 5')})</span>
+                  <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
+                    {t('s5_desc', 'All 25 Pioneers win in Stage 5.')}
+                  </span>
+                </span>
 
-      <span className="text-cyan-300 font-semibold text-center">
-        {t('stage_5_prize_pool', 'Stage 5 Prize Pool')}: <span className="text-white">0π</span>
-      </span>
-    </div>
-  </div>
+                <span className="text-cyan-300 font-semibold text-center">
+                  {t('stage_5_prize_pool', 'Stage 5 Prize Pool')}: <span className="text-white">0π</span>
+                </span>
+              </div>
+            </div>
 
-  <div className="max-w-6xl mx-auto px-2 sm:px-0">
-    {/* Mobile: horizontal scroll + snap */}
-    <div className="sm:hidden -mx-2 px-2">
-      <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-thin scrollbar-thumb-cyan-500/40 pb-2">
-        <FunnelStagesRow
-          stages={stages}
-          prizePoolPi={prizePoolPi}
-          onEnterStage1={handleEnterStage1}
-          className="min-w-[85%] snap-center shadow-[0_0_25px_rgba(0,255,255,0.15)]"
-          layout="stacked"
-        />
-      </div>
-    </div>
+            <div className="max-w-6xl mx-auto px-2 sm:px-0">
+              {/* Mobile: horizontal scroll + snap */}
+              <div className="sm:hidden -mx-2 px-2">
+                <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-thin scrollbar-thumb-cyan-500/40 pb-2">
+                  <FunnelStagesRow
+                    stages={stages}
+                    prizePoolPi={prizePoolPi}
+                    onEnterStage1={handleEnterStage1}
+                    className="min-w-[85%] snap-center shadow-[0_0_25px_rgba(0,255,255,0.15)]"
+                    layout="stacked"
+                  />
+                </div>
+              </div>
 
-    {/* Tablet+ grid */}
-    <div className="hidden sm:block">
-      <FunnelStagesRow
-        stages={stages}
-        prizePoolPi={prizePoolPi}
-        onEnterStage1={handleEnterStage1}
-        className="shadow-[0_0_25px_rgba(0,255,255,0.15)]"
-        layout="grid"
-      />
-    </div>
-  </div>
-</section>
-
-
+              {/* Tablet+ grid */}
+              <div className="hidden sm:block">
+                <FunnelStagesRow
+                  stages={stages}
+                  prizePoolPi={prizePoolPi}
+                  onEnterStage1={handleEnterStage1}
+                  className="shadow-[0_0_25px_rgba(0,255,255,0.15)]"
+                  layout="grid"
+                />
+              </div>
+            </div>
+          </section>
 
           {/* ---------------------- Winners (placeholder) ------------- */}
           <TopWinnersCarousel t={t} />
           <VisionBlock t={t} />
-
-           </main>
-        </div>
+        </main>
+      </div>
     </PageWrapper>
   );
 }
+
+/* ---------------- utilities used by Section ---------------- */
 function wordIncludes(text = '', words = []) {
   const s = String(text).toLowerCase();
   return words.some((w) => new RegExp(`\\b${w}\\b`, 'i').test(s));
 }
+
+/* ---------------- Section: uses HorizontalCarousel ---------------- */
 function Section({
   title,
   subtitle,
@@ -516,20 +562,21 @@ function Section({
   const lowerTitle = typeof title === 'string' ? title.toLowerCase() : '';
   const lowerCat = typeof category === 'string' ? category.toLowerCase() : '';
 
-  const isFree = lowerCat === 'free' || wordIncludes(lowerTitle, ['free', 'gratis']);
-  const isPi = lowerCat === 'pi' || wordIncludes(lowerTitle, ['pi', 'π']);
-  const isCrypto = lowerCat === 'crypto' || wordIncludes(lowerTitle, ['crypto', 'web3', 'blockchain']);
-
   const TECH_KEYWORDS = [
     'tech', 'technology', 'gadget', 'gadgets', 'electronics', 'electronic',
     'device', 'devices', 'hardware', 'computer', 'pc', 'laptop', 'notebook',
     'desktop', 'phone', 'smartphone', 'tablet', 'console', 'gaming', 'headset',
     'earbuds', 'drone', 'camera', 'wearable', 'smartwatch', 'router', 'gpu', 'cpu'
   ];
+
+  const isFree = lowerCat === 'free' || wordIncludes(lowerTitle, ['free', 'gratis']);
+  const isPi = lowerCat === 'pi' || wordIncludes(lowerTitle, ['pi', 'π']);
+  const isCrypto = lowerCat === 'crypto' || wordIncludes(lowerTitle, ['crypto', 'web3', 'blockchain']);
   const isTech = lowerCat === 'tech' || wordIncludes(lowerTitle, TECH_KEYWORDS);
+  void isCrypto; void isTech; // (category flags available for future tweaks)
 
   return (
-    <section className={`space-y-6 ${extraClass}`}>
+    <section className={`space-y-5 ${extraClass}`}>
       <div className="text-center space-y-1">
         <h2 className="w-full text-sm font-bold text-center text-cyan-300 px-3 py-1.5 rounded-lg font-orbitron shadow-[0_0_15px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
           {title}
@@ -537,15 +584,12 @@ function Section({
         {subtitle && <p className="text-xs text-cyan-200 italic">{subtitle}</p>}
       </div>
 
-      {/* mobile: real carousel */}
-      <div className="centered-carousel lg:hidden">
-        {items.map((item, i) => renderCard(item, i, { isFree, isPi, isCrypto }))}
-      </div>
-
-      {/* desktop: grid */}
-      <div className="hidden lg:grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-        {items.map((item, i) => renderCard(item, i, { isFree, isPi, isCrypto }))}
-      </div>
+      <HorizontalCarousel
+        items={items}
+        ariaLabel={`${title} carousel`}
+        itemMinWidth={320}
+        renderItem={(item, i) => renderCard(item, i, { isFree, isPi })}
+      />
 
       {viewMoreHref && (
         <div className="text-center">
@@ -560,7 +604,9 @@ function Section({
     </section>
   );
 }
-function renderCard(item, i, { isFree, isPi, isCrypto }) {
+
+/* ---------------- card resolver ---------------- */
+function renderCard(item, i, { isFree, isPi }) {
   const key = item?.comp?.slug || `item-${i}`;
   if (!item?.comp) return null;
 
@@ -605,6 +651,8 @@ function renderCard(item, i, { isFree, isPi, isCrypto }) {
     />
   );
 }
+
+/* ---------------- misc sections ---------------- */
 function VisionBlock({ t }) {
   return (
     <section className="space-y-6">
@@ -639,6 +687,7 @@ function VisionBlock({ t }) {
     </section>
   );
 }
+
 function ComingSoonColumn({ title, items = [], t }) {
   return (
     <div className="space-y-3">
@@ -672,6 +721,7 @@ function ComingSoonColumn({ title, items = [], t }) {
     </div>
   );
 }
+
 function TopWinnersCarousel({ t }) {
   const winners = []; // populate when you have real winners
   const [index, setIndex] = useState(0);
@@ -687,7 +737,10 @@ function TopWinnersCarousel({ t }) {
       <div className="max-w-md mx-auto bg-[#0a1024]/90 border border-cyan-500 backdrop-blur-lg rounded-xl shadow-[0_0_40px_#00fff055] p-6 text-white text-center font-orbitron space-y-3">
         <h2 className="text-2xl font-bold text-cyan-300">{t('top_winners', 'Top Winners')}</h2>
         <p className="text-white/80 italic">
-          {t('be_first_to_make_history', 'Be the first to make history no winners yet, but your name could be the one they remember')}
+          {t(
+            'be_first_to_make_history',
+            'Be the first to make history no winners yet, but your name could be the one they remember'
+          )}
         </p>
       </div>
     );
@@ -715,6 +768,7 @@ function TopWinnersCarousel({ t }) {
     </div>
   );
 }
+
 function FreeSection({ t, items = [], viewMoreHref = '/competitions/free' }) {
   return (
     <section className="space-y-6">
@@ -727,59 +781,29 @@ function FreeSection({ t, items = [], viewMoreHref = '/competitions/free' }) {
       <div className="w-full bg-white/5 backdrop-blur-lg px-4 sm:px-6 py-8 border border-cyan-300 rounded-3xl shadow-[0_0_60px_#00ffd577] neon-outline">
         <div className="max-w-7xl mx-auto">
           {/* Mobile: horizontal scroll */}
-          <div className="lg:hidden -mx-2 px-2">
-            <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-thin scrollbar-thumb-cyan-500/40 pb-2">
-              {items.length > 0 ? (
-                items.map((item, i) => (
-                  <div key={item?.comp?.slug || `free-${i}`} className="min-w-[85%] snap-center">
-                    <FreeCompetitionCard {...item} />
-                  </div>
-                ))
-              ) : (
-                <div className="min-w-[85%] snap-center">
-                  <FreeCompetitionCard
-                    comp={{
-                      slug: 'pi-to-the-moon',
-                      startsAt: '',
-                      endsAt: '',
-                      ticketsSold: 0,
-                      totalTickets: 5000,
-                      comingSoon: true,
-                      status: 'active',
-                    }}
-                    title="Pi To The Moon"
-                    prize="7,500 π"
-                    hideEntryButton
-                    buttonLabel={t('view_detail', 'View Detail')}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Desktop: grid */}
-          <div className="hidden lg:grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-            {items.length > 0 ? (
-              items.map((item, i) => (
+          <div className="-mx-2 px-2">
+            <HorizontalCarousel
+              items={items.length ? items : [
+                {
+                  comp: {
+                    slug: 'pi-to-the-moon',
+                    startsAt: '',
+                    endsAt: '',
+                    ticketsSold: 0,
+                    totalTickets: 5000,
+                    comingSoon: true,
+                    status: 'active',
+                  },
+                  title: 'Pi To The Moon',
+                  prize: '7,500 π',
+                },
+              ]}
+              ariaLabel="Free competitions carousel"
+              itemMinWidth={320}
+              renderItem={(item, i) => (
                 <FreeCompetitionCard key={item?.comp?.slug || `free-${i}`} {...item} />
-              ))
-            ) : (
-              <FreeCompetitionCard
-                comp={{
-                  slug: 'pi-to-the-moon',
-                  startsAt: '',
-                  endsAt: '',
-                  ticketsSold: 0,
-                  totalTickets: 5000,
-                  comingSoon: true,
-                  status: 'active',
-                }}
-                title="Pi To The Moon"
-                prize="7,500 π"
-                hideEntryButton
-                buttonLabel={t('view_detail', 'View Detail')}
-              />
-            )}
+              )}
+            />
           </div>
 
           {/* View more */}
@@ -796,6 +820,7 @@ function FreeSection({ t, items = [], viewMoreHref = '/competitions/free' }) {
     </section>
   );
 }
+
 /* -------- Disable SSR for this page to avoid hydration issues -------- */
 const HomePageNoSSR = dynamic(() => Promise.resolve(HomePage), { ssr: false });
 /* ---- Make this page use full-width layout (no side gutters in Layout) ---- */
