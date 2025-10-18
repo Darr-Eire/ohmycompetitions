@@ -52,7 +52,7 @@ export default function HowToPlay() {
                 <h2 className="text-lg font-bold gradient-text mb-3">Enter Competitions</h2>
                 <GlassList items={[
                   'Browse live, upcoming or themed competitions on the homepage.',
-                  'Click on enter now on the competition card to view details like prize, draw time, tickets and fee.',
+                  'Click on more details on the competition card to view details like prize, draw time, tickets and fee.',
                   'Click “Proceed to Payment” and choose how many tickets to buy.',
                   'You must enter a skill question before making the purchase',
                   'Confirm payment using your Pi wallet. Once complete, your entry is locked and shown in your account.',

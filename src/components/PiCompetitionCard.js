@@ -285,7 +285,7 @@ export default function PiCompetitionCard({
                   ? t('pre_book_ticket', 'Pre-Book Ticket')
                   : status === t('upcoming', 'UPCOMING') || status === t('coming_soon', 'COMING SOON')
                   ? t('coming_soon', 'Coming Soon')
-                  : t('enter_now', 'Enter Now')}
+                  : t('enter_now', 'More Details')}
               </button>
             </Link>
           ) : (

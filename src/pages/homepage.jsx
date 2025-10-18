@@ -830,7 +830,7 @@ function FreeSection({ t, items = [], viewMoreHref = '/competitions/free' }) {
             title={cardData.title}
             prize={cardData.prize}
             hideEntryButton={false}
-            buttonLabel={t('enter_now', 'Enter Now')}
+            buttonLabel={t('enter_now', 'More Details')}
           />
         </div>
 

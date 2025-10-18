@@ -248,7 +248,7 @@ export default function CompetitionCard({
               {comp?.comp?.slug || comp?.slug ? (
                 <Link href={`/ticket-purchase/${comp.comp?.slug || comp.slug}`} className="block">
                   <button className="w-full py-2 rounded-md font-bold text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-sm hover:opacity-90">
-                    {t('enter_now', 'Enter Now')}
+                    {t('enter_now', 'More Details')}
                   </button>
                 </Link>
               ) : (
