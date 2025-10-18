@@ -169,6 +169,9 @@ export default function PiCompetitionCard({
           <span className="px-3 py-1 rounded-full border border-cyan-400 bg-cyan-600/30 text-white font-semibold">
             🌍 {t('pioneers_global_draw', 'Pioneers Global Competition')}
           </span>
+        </div>
+        {/* Status */}
+        <div className="text-right text-sm mb-2 z-10 relative">
           <span
             className={`px-3 py-1 rounded-full font-bold text-xs shadow-md ${
               status === 'LIVE NOW'
@@ -272,7 +275,7 @@ export default function PiCompetitionCard({
                   status === 'ENDED' ||
                   isSoldOut ||
                   (status === 'UPCOMING' && !preCfg?.enabled) ||
-                  (status === 'COMING SOUN' && !preCfg?.enabled)
+                  (status === 'COMING SOON' && !preCfg?.enabled)
                     ? 'bg-gradient-to-r from-[#00ffd5] to-[#0077ff] opacity-60 cursor-not-allowed'
                     : 'bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:brightness-110'
                 }`}
@@ -373,3 +376,4 @@ export default function PiCompetitionCard({
     </>
   )
 }
+```
