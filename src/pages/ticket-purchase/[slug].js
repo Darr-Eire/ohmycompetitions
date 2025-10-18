@@ -7,7 +7,6 @@ import Head from 'next/head';
 import { usePiAuth } from '../../context/PiAuthContext';
 import GiftTicketModal from '@components/GiftTicketModal';
 import LaunchCompetitionDetailCard from 'components/LaunchCompetitionDetailCard';
-import { describeCompetition } from '../../data/competitionDescriptions';
 export default function TicketPurchasePage() {
   const router = useRouter();
   const slugArr = router.query.slug || [];

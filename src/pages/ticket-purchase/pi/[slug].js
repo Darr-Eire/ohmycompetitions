@@ -6,8 +6,6 @@ import { useEffect, useMemo, useState } from 'react';
 
 import LaunchCompetitionDetailCard from 'components/LaunchCompetitionDetailCard';
 import GiftTicketModal from '@components/GiftTicketModal';
-// ⬇️ use the centralized description helper
-// If you have a baseUrl alias, you can also do: import { describeCompetition } from '@/data/competitionDescriptions';
 
 export default function PiTicketPage() {
   const router = useRouter();
