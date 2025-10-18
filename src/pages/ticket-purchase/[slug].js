@@ -1,3 +1,17 @@
+
+Model
+Let's make the `TicketPurchasePage` more mobile-friendly. The main component (`LaunchCompetitionDetailCard`) is where most of the content lives, so ensuring it's responsive is key. I'll focus on the structural elements of this page and assume `LaunchCompetitionDetailCard`, `TradingViewWidget`, and `GiftTicketModal` also implement responsive design.
+
+Here's a strategy and the updated code:
+
+1.  **Reduce Horizontal Padding on Smaller Screens:** The current `px-4` is a good start, but ensure overall content isn't too wide or too narrow.
+2.  **Adjust `TradingViewWidget` Size:** On mobile, a fixed height of `380px` might be too tall. We'll make it more flexible or reduce its height for smaller screens.
+3.  **Font Sizes and Spacing:** Ensure headings and paragraphs are readable on mobile.
+4.  **Error/Loading States:** Keep them centered and simple, which they largely are already.
+
+Here's the refactored `TicketPurchasePage` code:
+
+```jsx
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
@@ -142,9 +156,9 @@ export default function TicketPurchasePage() {
   if (error || !comp) {
     return (
       <div className="p-6 text-center text-white bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a] min-h-screen">
-        <h1 className="text-2xl font-bold text-red-500">Competition Not Found</h1>
-        <p className="mt-4">We couldn’t find “{slug}”.</p>
-        <Link href="/" className="mt-6 inline-block text-blue-400 underline font-semibold">
+        <h1 className="text-xl font-bold text-red-500 sm:text-2xl">Competition Not Found</h1>
+        <p className="mt-4 text-sm sm:text-base">We couldn’t find “{slug}”.</p>
+        <Link href="/" className="mt-6 inline-block text-blue-400 underline font-semibold text-sm sm:text-base">
           Back to Home
         </Link>
       </div>
@@ -162,10 +176,10 @@ export default function TicketPurchasePage() {
         {comp.imageUrl ? <meta property="og:image" content={comp.imageUrl} /> : null}
       </Head>
 
-      <main className="min-h-screen px-4 py-6 text-white bg-[#070d19] font-orbitron">
+      <main className="min-h-screen px-4 py-4 sm:px-6 sm:py-6 text-white bg-[#070d19] font-orbitron">
         {/* Optional chart for crypto comps */}
         {isCryptoCompetition && (
-          <div className="w-full max-w-xl mx-auto h-[380px] mb-6">
+          <div className="w-full max-w-xl mx-auto h-[250px] sm:h-[380px] mb-4 sm:mb-6">
             <TradingViewWidget />
           </div>
         )}
@@ -187,8 +201,8 @@ export default function TicketPurchasePage() {
           claimFreeTicket={claimFreeTicket}
           handleShare={handleShare}
           sharedBonus={sharedBonus}
-          // user={user}   // optional; card can read context
-          // login={login} // optional
+          user={user}
+          login={login}
         />
       </main>
     </>

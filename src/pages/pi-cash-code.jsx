@@ -307,8 +307,7 @@ export default function PiCashCodePage() {
     };
   }, [setFromFetch]);
 
-  /* ------------------------------ Pi SDK ------------------------------- */
-  // rely on global init from _app.js + context
+  
   const ready = !!ctxSdkReady;
 
   /* --------------------------- Skill Question -------------------------- */
@@ -475,7 +474,7 @@ export default function PiCashCodePage() {
         <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-between sm:gap-3">
           <div className="flex items-center gap-2">
             <NeonBadge icon={ShieldCheck}>
-              Fair • Transparent • Pi SDK
+              Fair • Transparent 
             </NeonBadge>
             <NeonBadge icon={Rocket}>Open Network</NeonBadge>
           </div>
