@@ -41,7 +41,7 @@ function HorizontalCarousel({
   ariaLabel = 'carousel',
   className = '',
   itemMinWidthCSS = 'min(440px, calc(100vw - 2rem))',
-  cardMaxWidth = 460, // <— visual clamp in px
+  cardMaxWidth = 460,
   gapPx = 16,
 }) {
   const listRef = useRef(null);
@@ -82,7 +82,6 @@ function HorizontalCarousel({
 
   return (
     <div className={`relative ${className}`}>
-      {/* Scrollable track */}
       <div
         ref={listRef}
         role="region"
@@ -96,7 +95,6 @@ function HorizontalCarousel({
           -mx-4 px-4
         "
       >
-        {/* edge fades */}
         <div className="pointer-events-none absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-[#0b1227] to-transparent" />
         <div className="pointer-events-none absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-[#0b1227] to-transparent" />
 
@@ -108,52 +106,12 @@ function HorizontalCarousel({
             className="snap-center shrink-0"
             style={{ minWidth: itemMinWidthCSS }}
           >
-            {/* CardFrame centers and clamps visual width */}
             <div className="w-full mx-auto" style={{ maxWidth: cardMaxWidth }}>
               {renderItem(item, idx)}
             </div>
           </div>
         ))}
       </div>
-
-      {/* Left / Right arrows — show on mobile too when applicable */}
-      {items.length > 1 && (
-        <>
-          <button
-            type="button"
-            aria-label="Scroll left"
-            onClick={() => scrollByDir(-1)}
-            disabled={!canLeft}
-            className={`
-              flex items-center justify-center
-              absolute left-1 top-1/2 -translate-y-1/2 z-20
-              h-9 w-9 sm:h-10 sm:w-10 rounded-full
-              border border-white/15 backdrop-blur
-              transition-opacity
-              ${canLeft ? 'bg-white/10 hover:bg-white/20 opacity-100' : 'bg-white/5 opacity-40'}
-            `}
-          >
-            ‹
-          </button>
-
-          <button
-            type="button"
-            aria-label="Scroll right"
-            onClick={() => scrollByDir(1)}
-            disabled={!canRight}
-            className={`
-              flex items-center justify-center
-              absolute right-1 top-1/2 -translate-y-1/2 z-20
-              h-9 w-9 sm:h-10 sm:w-10 rounded-full
-              border border-white/15 backdrop-blur
-              transition-opacity
-              ${canRight ? 'bg-white/10 hover:bg-white/20 opacity-100' : 'bg-white/5 opacity-40'}
-            `}
-          >
-            ›
-          </button>
-        </>
-      )}
     </div>
   );
 }
@@ -572,7 +530,7 @@ function HomePage() {
             </div>
           </section>
 
-          {/* -------------------- Free Competitions ------------------- */}
+          {/* -------------------- Free Competitions (centered, no carousel) ------------------- */}
           <FreeSection t={t} items={getCompetitionsByCategory('free')} />
 
           {/* ---------------------- Winners (placeholder) ------------- */}
@@ -602,10 +560,10 @@ function Section({
   viewMoreHref,
   viewMoreText = 'View More',
   extraClass = '',
-  category, // optional
-  cardSize, // override (md|lg|fluid); default derived from title/category
-  cardMaxWidth, // px clamp for visual frame
-  itemMinWidthCSS, // CSS function string for scroller item width
+  category,
+  cardSize,
+  cardMaxWidth,
+  itemMinWidthCSS,
 }) {
   const { t } = useSafeTranslation();
   const lowerTitle = typeof title === 'string' ? title.toLowerCase() : '';
@@ -623,7 +581,6 @@ function Section({
   const isTech  = lowerCat === 'tech'  || wordIncludes(lowerTitle, TECH_KEYWORDS);
   const isDaily = lowerCat === 'daily' || wordIncludes(lowerTitle, ['daily','weekly']);
 
-  // Defaults if not provided
   const resolvedCardSize = cardSize || ((isDaily || isTech) ? 'md' : 'lg');
   const resolvedItemMinWidth = itemMinWidthCSS ||
     ((isDaily || isTech)
@@ -828,22 +785,24 @@ function TopWinnersCarousel({ t }) {
   );
 }
 
+/* ---------- FREE SECTION: centered card, NO carousel ---------- */
 function FreeSection({ t, items = [], viewMoreHref = '/competitions/free' }) {
-  const fallback = [
-    {
-      comp: {
-        slug: 'pi-to-the-moon',
-        startsAt: '',
-        endsAt: '',
-        ticketsSold: 0,
-        totalTickets: 5000,
-        comingSoon: true,
-        status: 'active',
-      },
-      title: 'Pi To The Moon',
-      prize: '7,500 π',
+  const fallback = {
+    comp: {
+      slug: 'pi-to-the-moon',
+      startsAt: '',
+      endsAt: '',
+      ticketsSold: 0,
+      totalTickets: 5000,
+      comingSoon: true,
+      status: 'active',
     },
-  ];
+    title: 'Pi To The Moon',
+    prize: '7,500 π',
+  };
+
+  // Choose the first provided item or fallback
+  const cardData = Array.isArray(items) && items.length ? items[0] : fallback;
 
   return (
     <section className="space-y-6">
@@ -854,25 +813,23 @@ function FreeSection({ t, items = [], viewMoreHref = '/competitions/free' }) {
       </div>
 
       <div className="w-full bg-white/5 backdrop-blur-lg px-4 sm:px-6 py-8 border border-cyan-300 rounded-3xl shadow-[0_0_60px_#00ffd577] neon-outline">
-        <div className="max-w-7xl mx-auto">
-          <HorizontalCarousel
-            items={items.length ? items : fallback}
-            ariaLabel="Free competitions carousel"
-            itemMinWidthCSS="min(440px, calc(100vw - 2rem))"
-            cardMaxWidth={480}
-            renderItem={(item, i) => (
-              <FreeCompetitionCard key={item?.comp?.slug || `free-${i}`} {...item} />
-            )}
+        <div className="max-w-[520px] mx-auto">
+          <FreeCompetitionCard
+            comp={cardData.comp}
+            title={cardData.title}
+            prize={cardData.prize}
+            hideEntryButton={false}
+            buttonLabel={t('enter_now', 'Enter Now')}
           />
+        </div>
 
-          <div className="mt-6 text-center">
-            <Link
-              href={viewMoreHref}
-              className="inline-block mx-auto text-sm font-bold px-3 py-1.5 rounded-md text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow hover:opacity-90 transition"
-            >
-              {t('view_more', 'View More')}
-            </Link>
-          </div>
+        <div className="mt-6 text-center">
+          <Link
+            href={viewMoreHref}
+            className="inline-block mx-auto text-sm font-bold px-3 py-1.5 rounded-md text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow hover:opacity-90 transition"
+          >
+            {t('view_more', 'View More')}
+          </Link>
         </div>
       </div>
     </section>
