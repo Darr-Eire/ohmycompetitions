@@ -1,11 +1,9 @@
-// src/pages/competitions/featured.js
 'use client'
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import Head from 'next/head'
 import { ChevronLeft, ChevronRight, RefreshCw, Sparkles } from 'lucide-react'
 import CompetitionCard from '@components/CompetitionCard'
-import { techItems } from '@data/competitions'
 
 /* ------------------------------ Tagline Rotator ------------------------------ */
 function TaglineRotator() {

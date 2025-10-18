@@ -1,4 +1,4 @@
-import { connectToDatabase } from '@/lib/mongodb';
+import { connectToDatabase } from 'lib/mongodb';
 
 // Shape we’ll return to the UI
 // stages: [{stage:1..5, slug, title, pricePi, startsAt, endsAt, totalTickets, ticketsSold, winners, imageUrl }]
