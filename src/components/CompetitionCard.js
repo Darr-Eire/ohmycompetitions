@@ -10,10 +10,11 @@ import GiftTicketModal from './GiftTicketModal';
 import '@fontsource/orbitron';
 
 const WIDTH = {
-  fluid: 'w-full',
-  sm: 'min-w-[260px] sm:min-w-[280px]',
-  md: 'min-w-[300px] sm:min-w-[340px]',
-  lg: 'min-w-[340px] sm:min-w-[380px]',
+  // a touch narrower + capped, and centered with mx-auto in root
+  fluid: 'w-full max-w-[440px]',
+  sm: 'min-w-[240px] sm:min-w-[260px] max-w-[360px]',
+  md: 'min-w-[280px] sm:min-w-[320px] max-w-[420px]',
+  lg: 'min-w-[320px] sm:min-w-[360px] max-w-[440px]',
 };
 
 export default function CompetitionCard({
@@ -45,7 +46,6 @@ export default function CompetitionCard({
   }, [imageUrl, comp?.imageUrl, comp?.thumbnail]);
 
   const fitClass = imageFit === 'contain' ? 'object-contain' : 'object-cover';
-
   const headerTitle = title || comp?.title || t('exclusive_draw', 'Exclusive Draw');
 
   const startAt = comp?.comp?.startsAt || comp?.startsAt || null;
@@ -87,8 +87,7 @@ export default function CompetitionCard({
 
       setStatus('LIVE NOW');
       const diff = e - now;
-      // only show countdown in last 48h
-      setShowCountdown(diff <= 48 * 3600 * 1000);
+      setShowCountdown(diff <= 48 * 3600 * 1000); // last 48h only
 
       const d = Math.floor(diff / 86400000);
       const h = Math.floor((diff % 86400000) / 3600000);
@@ -113,6 +112,7 @@ export default function CompetitionCard({
 
   /* ---------- root classes ---------- */
   const root = [
+    'mx-auto', // center within its slot
     'flex flex-col overflow-hidden text-white font-orbitron',
     'bg-[#0f172a] border border-cyan-600 rounded-2xl shadow-md',
     'transition-transform duration-200 hover:scale-[1.02]',
@@ -195,10 +195,7 @@ export default function CompetitionCard({
                 : t('tba', 'TBA')
             }
           />
-          <Row
-            label={t('entry_fee', 'Entry Fee')}
-            value={status === 'UPCOMING' ? t('tba', 'TBA') : fee}
-          />
+          <Row label={t('entry_fee', 'Entry Fee')} value={status === 'UPCOMING' ? t('tba', 'TBA') : fee} />
 
           {/* Tickets */}
           <div className="mt-2">
