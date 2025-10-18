@@ -1,11 +1,9 @@
 'use client';
 /**
  * OMC Home
- * - Mobile-first layout with generous spacing and strong center alignment
- * - All competition sections render as a horizontal carousel (no external libs)
- * - Each slide uses a responsive min-width: min(420px, 100vw - 2rem) so it sits
- *   perfectly centered on mobile (respecting page padding) and looks great on tablet/desktop.
- * - Carousels use scroll-snap for buttery manual swipes + optional arrow controls on larger screens
+ * - Mobile-first, centered carousels
+ * - Slides clamp to a readable width and snap-center
+ * - Left/Right arrows now show on **mobile too** and only when scrolling is possible
  */
 
 import React, { useEffect, useRef, useState } from 'react';
@@ -40,38 +38,66 @@ const PageWrapper = ({ children }) => (
 
 /* -------------------------------------------------------------------
    Reusable Horizontal Carousel
-   - Centers slides visually on mobile by making each slide ~full-viewport width
-     (minus the page padding), so the card sits *centered* within the content column.
-   - Adds scroll padding so snap-center aligns to the same left/right page padding.
-   - Arrow buttons show on >= sm screens (not on narrow mobile).
+   - Perfectly centers slides on mobile: each slide has minWidth ~ (100vw - page padding)
+   - Uses scroll-snap with scrollPadding to align to page gutters
+   - Shows mobile arrows (compact) and only when there is overflow to scroll
 ------------------------------------------------------------------- */
 function HorizontalCarousel({
   items = [],
   renderItem,
   ariaLabel = 'carousel',
   className = '',
-  itemMinWidthCSS = 'min(420px, calc(100vw - 2rem))', // default slide width
+  // Tweak per section (Daily/Tech slightly tighter)
+  itemMinWidthCSS = 'min(420px, calc(100vw - 2rem))',
   gapPx = 16,
 }) {
-  const listRef = React.useRef(null);
+  const listRef = useRef(null);
+  const cardRef = useRef(null);
+  const [canLeft, setCanLeft] = useState(false);
+  const [canRight, setCanRight] = useState(false);
 
-  const scrollBy = (dir = 1) => {
+  const recalc = () => {
     const el = listRef.current;
     if (!el) return;
-    const card = el.querySelector('[data-card]');
-    const step = card ? card.clientWidth + gapPx : 320;
+    // allow a tiny epsilon so buttons react snappily
+    const EPS = 2;
+    setCanLeft(el.scrollLeft > EPS);
+    setCanRight(el.scrollLeft + el.clientWidth < el.scrollWidth - EPS);
+  };
+
+  const scrollByDir = (dir = 1) => {
+    const el = listRef.current;
+    if (!el) return;
+    const step = (cardRef.current?.clientWidth || 320) + gapPx;
     el.scrollBy({ left: dir * step, behavior: 'smooth' });
   };
 
+  useEffect(() => {
+    const el = listRef.current;
+    if (!el) return;
+    recalc();
+    const onScroll = () => recalc();
+    const ro = new ResizeObserver(recalc);
+    el.addEventListener('scroll', onScroll, { passive: true });
+    ro.observe(el);
+    window.addEventListener('resize', recalc);
+    return () => {
+      el.removeEventListener('scroll', onScroll);
+      ro.disconnect();
+      window.removeEventListener('resize', recalc);
+    };
+  }, []);
+
   return (
     <div className={`relative ${className}`}>
+      {/* Scrollable track */}
       <div
         ref={listRef}
         role="region"
         aria-label={ariaLabel}
         style={{ scrollPaddingLeft: '1rem', scrollPaddingRight: '1rem' }}
         className="
-          flex gap-4 overflow-x-auto pb-2
+          relative flex gap-4 overflow-x-auto pb-2
           snap-x snap-mandatory
           scrollbar-thin scrollbar-thumb-cyan-500/40
           [scrollbar-width:thin]
@@ -86,10 +112,11 @@ function HorizontalCarousel({
           <div
             key={item?.comp?.slug || idx}
             data-card
+            ref={idx === 0 ? cardRef : undefined}
             className="snap-center shrink-0"
             style={{ minWidth: itemMinWidthCSS }}
           >
-            {/* CardFrame keeps every slide the same visual width and centered */}
+            {/* CardFrame centers and clamps visual width */}
             <div className="max-w-[420px] w-full mx-auto">
               {renderItem(item, idx)}
             </div>
@@ -97,31 +124,41 @@ function HorizontalCarousel({
         ))}
       </div>
 
+      {/* Left / Right arrows — show on **mobile too** when applicable */}
       {items.length > 1 && (
         <>
+          {/* Left */}
           <button
             type="button"
             aria-label="Scroll left"
-            onClick={() => scrollBy(-1)}
-            className="
-              hidden sm:flex absolute -left-2 top-1/2 -translate-y-1/2 z-10
-              h-10 w-10 items-center justify-center rounded-full
-              bg-white/10 hover:bg-white/20 border border-white/15
-              shadow-[0_0_20px_rgba(34,211,238,0.25)] backdrop-blur
-            "
+            onClick={() => scrollByDir(-1)}
+            disabled={!canLeft}
+            className={`
+              flex items-center justify-center
+              absolute left-1 top-1/2 -translate-y-1/2 z-20
+              h-9 w-9 sm:h-10 sm:w-10 rounded-full
+              border border-white/15 backdrop-blur
+              transition-opacity
+              ${canLeft ? 'bg-white/10 hover:bg-white/20 opacity-100' : 'bg-white/5 opacity-40'}
+            `}
           >
             ‹
           </button>
+
+          {/* Right */}
           <button
             type="button"
             aria-label="Scroll right"
-            onClick={() => scrollBy(1)}
-            className="
-              hidden sm:flex absolute -right-2 top-1/2 -translate-y-1/2 z-10
-              h-10 w-10 items-center justify-center rounded-full
-              bg-white/10 hover:bg-white/20 border border-white/15
-              shadow-[0_0_20px_rgba(34,211,238,0.25)] backdrop-blur
-            "
+            onClick={() => scrollByDir(1)}
+            disabled={!canRight}
+            className={`
+              flex items-center justify-center
+              absolute right-1 top-1/2 -translate-y-1/2 z-20
+              h-9 w-9 sm:h-10 sm:w-10 rounded-full
+              border border-white/15 backdrop-blur
+              transition-opacity
+              ${canRight ? 'bg-white/10 hover:bg-white/20 opacity-100' : 'bg-white/5 opacity-40'}
+            `}
           >
             ›
           </button>
@@ -131,8 +168,8 @@ function HorizontalCarousel({
   );
 }
 
+/* ----------- Marquee with consistent speed (px/s) ----------- */
 function Marquee({ text, speed = 60, className = '' }) {
-  // speed: pixels per second (try 55–70 on mobile, 80–100 on desktop)
   const trackRef = React.useRef(null);
   const contentRef = React.useRef(null);
   const [duration, setDuration] = React.useState(30);
@@ -140,15 +177,12 @@ function Marquee({ text, speed = 60, className = '' }) {
   React.useEffect(() => {
     const update = () => {
       if (!contentRef.current) return;
-      const contentWidth = contentRef.current.offsetWidth; // width of one copy
-      // We animate -50% of the track, which equals one content width
+      const contentWidth = contentRef.current.offsetWidth;
       const pxPerSec = Math.max(10, Number(speed) || 60);
       const dur = contentWidth / pxPerSec;
       setDuration(dur);
     };
-
     update();
-    // Recalculate when fonts load or viewport changes
     const ro = new ResizeObserver(update);
     if (contentRef.current) ro.observe(contentRef.current);
     window.addEventListener('resize', update);
@@ -163,15 +197,13 @@ function Marquee({ text, speed = 60, className = '' }) {
     <div className={`relative overflow-hidden ${className}`}>
       <div
         ref={trackRef}
-        className="flex whitespace-nowrap will-change-transform select-none
-                   [animation-name:marquee]"
+        className="flex whitespace-nowrap will-change-transform select-none [animation-name:marquee]"
         style={{
           animationDuration: `${duration}s`,
           animationTimingFunction: 'linear',
           animationIterationCount: 'infinite',
         }}
       >
-        {/* Two copies => seamless loop */}
         <span ref={contentRef} className="pr-12 text-cyan-300 font-medium font-orbitron">
           {text}
         </span>
@@ -180,18 +212,14 @@ function Marquee({ text, speed = 60, className = '' }) {
         </span>
       </div>
 
-      {/* Optional: gradient edge fades */}
-      <div className="pointer-events-none absolute left-0 top-0 h-full w-10
-                      bg-gradient-to-r from-[#0b1227] to-transparent" />
-      <div className="pointer-events-none absolute right-0 top-0 h-full w-10
-                      bg-gradient-to-l from-[#0b1227] to-transparent" />
+      <div className="pointer-events-none absolute left-0 top-0 h-full w-10 bg-gradient-to-r from-[#0b1227] to-transparent" />
+      <div className="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-[#0b1227] to-transparent" />
 
       <style jsx global>{`
         @keyframes marquee {
           from { transform: translateX(0); }
-          to   { transform: translateX(-50%); } /* move by one content width */
+          to   { transform: translateX(-50%); }
         }
-        /* Respect reduced motion */
         @media (prefers-reduced-motion: reduce) {
           [animation-name="marquee"] { animation-play-state: paused !important; }
         }
@@ -243,7 +271,6 @@ function HomePage() {
         return new Date(comp.endsAt).getTime() > now;
       });
 
-    // Live first, then by soonest end date.
     const sorted = cleaned.sort((a, b) => {
       const aS = a?.comp?.startsAt ? new Date(a.comp.startsAt).getTime() : 0;
       const aE = a?.comp?.endsAt ? new Date(a.comp.endsAt).getTime() : Number.POSITIVE_INFINITY;
@@ -293,7 +320,6 @@ function HomePage() {
           aria-live="polite"
           aria-label="Loading OhMyCompetitions live competitions"
         >
-          {/* Brand spinner */}
           <div className="relative mb-6">
             <div className="absolute -inset-6 blur-xl rounded-full bg-cyan-500/15" />
             <div className="relative grid place-items-center h-24 w-24 rounded-full">
@@ -409,15 +435,14 @@ function HomePage() {
         "
       >
         {/* Marquee */}
-      <Marquee
-  text={t(
-    'marquee_text',
-    'Oh My Competitions is all about building with Pi Network for the Pi community. Our OMC launch competitions are zero profit designed to create trust, celebrate early winners and give back to Pioneers. All prizes go directly to you. Add us on all Socials and our Pi Profile darreire2020. More competitions are coming soon across a wide range of exciting categories. Join, win and help shape the future of Pi together.'
-  )}
-  speed={300}
-  className="py-1"
-/>
-
+        <Marquee
+          text={t(
+            'marquee_text',
+            'Oh My Competitions is all about building with Pi Network for the Pi community. Our OMC launch competitions are zero profit designed to create trust, celebrate early winners and give back to Pioneers. All prizes go directly to you. Add us on all Socials and our Pi Profile darreire2020. More competitions are coming soon across a wide range of exciting categories. Join, win and help shape the future of Pi together.'
+          )}
+          speed={300}
+          className="py-1"
+        />
 
         {/* Mini carousel */}
         <MiniPrizeCarousel />
@@ -509,12 +534,11 @@ function HomePage() {
             </div>
 
             <div className="max-w-6xl mx-auto px-2 sm:px-0">
-              {/* Mobile: horizontal scroll + snap (card width = centered) */}
+              {/* Mobile: horizontal scroll + snap */}
               <div className="sm:hidden">
                 <HorizontalCarousel
                   items={[{ stages, prizePoolPi }]}
                   ariaLabel="OMC stages"
-                  // Make the stages row behave like a wide card
                   renderItem={() => (
                     <FunnelStagesRow
                       stages={stages}
@@ -588,7 +612,7 @@ function Section({
   const isTech  = lowerCat === 'tech'  || wordIncludes(lowerTitle, TECH_KEYWORDS);
   const isDaily = lowerCat === 'daily' || wordIncludes(lowerTitle, ['daily','weekly']);
 
-  // Tighter card width for Daily/Tech to avoid edge crowding on small phones
+  // Slightly tighter on Daily/Tech for small phones
   const minWidthForSection = (isDaily || isTech)
     ? 'min(400px, calc(100vw - 2rem))'
     : 'min(420px, calc(100vw - 2rem))';
@@ -622,7 +646,6 @@ function Section({
     </section>
   );
 }
-
 
 /* ---------------- card resolver ---------------- */
 function renderCard(item, i, { isFree, isPi }) {
