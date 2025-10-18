@@ -50,11 +50,10 @@ function HorizontalCarousel({
   renderItem,
   ariaLabel = 'carousel',
   className = '',
-  // CSS string for min width (kept as CSS so it adapts without JS):
-  itemMinWidthCSS = 'min(420px, calc(100vw - 2rem))', // 2rem = page px-4
-  gapPx = 16, // keep in sync with Tailwind "gap-4"
+  itemMinWidthCSS = 'min(420px, calc(100vw - 2rem))', // default slide width
+  gapPx = 16,
 }) {
-  const listRef = useRef(null);
+  const listRef = React.useRef(null);
 
   const scrollBy = (dir = 1) => {
     const el = listRef.current;
@@ -70,20 +69,16 @@ function HorizontalCarousel({
         ref={listRef}
         role="region"
         aria-label={ariaLabel}
-        /* 
-          scrollPadding{Left,Right} makes the first and last snap-center positions
-          line up with the page padding (px-4).
-        */
         style={{ scrollPaddingLeft: '1rem', scrollPaddingRight: '1rem' }}
         className="
           flex gap-4 overflow-x-auto pb-2
           snap-x snap-mandatory
           scrollbar-thin scrollbar-thumb-cyan-500/40
           [scrollbar-width:thin]
-          -mx-4 px-4            /* let cards visually hug the page edges on mobile */
+          -mx-4 px-4
         "
       >
-        {/* gradient edge fades for a premium feel */}
+        {/* edge fades */}
         <div className="pointer-events-none absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-[#0b1227] to-transparent" />
         <div className="pointer-events-none absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-[#0b1227] to-transparent" />
 
@@ -94,12 +89,14 @@ function HorizontalCarousel({
             className="snap-center shrink-0"
             style={{ minWidth: itemMinWidthCSS }}
           >
-            {renderItem(item, idx)}
+            {/* CardFrame keeps every slide the same visual width and centered */}
+            <div className="max-w-[420px] w-full mx-auto">
+              {renderItem(item, idx)}
+            </div>
           </div>
         ))}
       </div>
 
-      {/* arrows (show on tablet/desktop only; mobile swipes naturally) */}
       {items.length > 1 && (
         <>
           <button
@@ -133,6 +130,7 @@ function HorizontalCarousel({
     </div>
   );
 }
+
 function Marquee({ text, speed = 60, className = '' }) {
   // speed: pixels per second (try 55–70 on mobile, 80–100 on desktop)
   const trackRef = React.useRef(null);
@@ -579,22 +577,26 @@ function Section({
   const lowerCat = typeof category === 'string' ? category.toLowerCase() : '';
 
   const TECH_KEYWORDS = [
-    'tech', 'technology', 'gadget', 'gadgets', 'electronics', 'electronic',
-    'device', 'devices', 'hardware', 'computer', 'pc', 'laptop', 'notebook',
-    'desktop', 'phone', 'smartphone', 'tablet', 'console', 'gaming', 'headset',
-    'earbuds', 'drone', 'camera', 'wearable', 'smartwatch', 'router', 'gpu', 'cpu'
+    'tech','technology','gadget','gadgets','electronics','electronic',
+    'device','devices','hardware','computer','pc','laptop','notebook',
+    'desktop','phone','smartphone','tablet','console','gaming','headset',
+    'earbuds','drone','camera','wearable','smartwatch','router','gpu','cpu'
   ];
 
-  const isFree = lowerCat === 'free' || wordIncludes(lowerTitle, ['free', 'gratis']);
-  const isPi = lowerCat === 'pi' || wordIncludes(lowerTitle, ['pi', 'π']);
-  const isCrypto = lowerCat === 'crypto' || wordIncludes(lowerTitle, ['crypto', 'web3', 'blockchain']);
-  const isTech = lowerCat === 'tech' || wordIncludes(lowerTitle, TECH_KEYWORDS);
-  void isCrypto; void isTech; // category flags available if needed later
+  const isFree  = lowerCat === 'free'  || wordIncludes(lowerTitle, ['free','gratis']);
+  const isPi    = lowerCat === 'pi'    || wordIncludes(lowerTitle, ['pi','π']);
+  const isTech  = lowerCat === 'tech'  || wordIncludes(lowerTitle, TECH_KEYWORDS);
+  const isDaily = lowerCat === 'daily' || wordIncludes(lowerTitle, ['daily','weekly']);
+
+  // Tighter card width for Daily/Tech to avoid edge crowding on small phones
+  const minWidthForSection = (isDaily || isTech)
+    ? 'min(400px, calc(100vw - 2rem))'
+    : 'min(420px, calc(100vw - 2rem))';
 
   return (
     <section className={`space-y-5 ${extraClass}`}>
-      <div className="text-center space-y-1">
-        <h2 className="w-full text-sm font-bold text-center text-cyan-300 px-3 py-1.5 rounded-lg font-orbitron shadow-[0_0_15px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
+      <div className="text-center space-y-2">
+        <h2 className="w-full text-sm font-bold text-cyan-300 px-4 py-2 rounded-lg font-orbitron shadow-[0_0_15px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
           {title}
         </h2>
         {subtitle && <p className="text-xs text-cyan-200 italic">{subtitle}</p>}
@@ -603,15 +605,15 @@ function Section({
       <HorizontalCarousel
         items={items}
         ariaLabel={`${title} carousel`}
-        itemMinWidthCSS="min(420px, calc(100vw - 2rem))"
+        itemMinWidthCSS={minWidthForSection}
         renderItem={(item, i) => renderCard(item, i, { isFree, isPi })}
       />
 
       {viewMoreHref && (
-        <div className="text-center">
+        <div className="text-center mt-6">
           <Link
             href={viewMoreHref}
-            className="inline-block mx-auto text-sm font-bold px-3 py-1.5 rounded-md text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow hover:opacity-90 transition"
+            className="inline-block text-sm font-bold px-3 py-1.5 rounded-md text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow hover:opacity-90 transition"
           >
             {t('view_more', viewMoreText)}
           </Link>
@@ -620,6 +622,7 @@ function Section({
     </section>
   );
 }
+
 
 /* ---------------- card resolver ---------------- */
 function renderCard(item, i, { isFree, isPi }) {
