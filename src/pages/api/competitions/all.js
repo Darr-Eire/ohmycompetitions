@@ -1,75 +1,123 @@
-import { dbConnect } from 'lib/dbConnect';
-import Competition from 'models/Competition';
+// pages/api/competitions/all.js
+import connectToDatabase from '../../../lib/mongodb'; // ⬅️ default export from src/lib/mongodb.(ts|js)
+import Competition from '../../../models/Competition';
+
+const ALLOWED_ORIGIN = process.env.CORS_ORIGIN || '*';
 
 export default async function handler(req, res) {
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  // --- CORS ---
+  res.setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
+  if (req.method === 'OPTIONS') {
+    // Preflight
+    return res.status(204).end();
+  }
   if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 
   try {
-    await dbConnect();
+    await connectToDatabase();
 
-    // Get all competitions using Mongoose
-    const competitions = await Competition.find({})
-      .select({
-        _id: 1,
-        'comp.status': 1,
-        'comp.ticketsSold': 1,
-        'comp.totalTickets': 1,
-        'comp.entryFee': 1,
-        'comp.startsAt': 1,
-        'comp.endsAt': 1,
-        'comp.slug': 1,
-        'comp.paymentType': 1,
-        'comp.piAmount': 1,
-        'comp.prizeBreakdown': 1,  // Include prizeBreakdown from comp
-        title: 1,
-        prize: 1,
-        imageUrl: 1,
-        thumbnail: 1,
-        theme: 1,
-        href: 1
-      })
+    // ---------- Query params ----------
+    const {
+      status,                 // e.g. active | upcoming
+      theme,                  // e.g. tech | daily | pi | launch
+      liveOnly,               // "true" => now between startsAt/endsAt
+      limit,                  // e.g. 50
+      sort = 'endsAtAsc',     // endsAtAsc | endsAtDesc | createdDesc
+    } = req.query;
+
+    // ---------- Filter ----------
+    const now = new Date();
+    const filter = {};
+
+    if (status) filter['comp.status'] = status;
+    if (theme) filter.theme = theme;
+
+    if (String(liveOnly) === 'true') {
+      filter['comp.startsAt'] = { $lte: now };
+      filter['comp.endsAt'] = { $gt: now };
+    }
+
+    // ---------- Projection ----------
+    const projection = {
+      _id: 1,
+      title: 1,
+      prize: 1,
+      imageUrl: 1,
+      thumbnail: 1,
+      theme: 1,
+      href: 1,
+      'comp.slug': 1,
+      'comp.status': 1,
+      'comp.ticketsSold': 1,
+      'comp.totalTickets': 1,
+      'comp.entryFee': 1,
+      'comp.startsAt': 1,
+      'comp.endsAt': 1,
+      'comp.paymentType': 1,
+      'comp.piAmount': 1,
+      'comp.prizeBreakdown': 1,
+    };
+
+    // ---------- Sorting ----------
+    const sortMap = {
+      endsAtAsc:  { 'comp.endsAt': 1 },
+      endsAtDesc: { 'comp.endsAt': -1 },
+      createdDesc:{ _id: -1 },
+    };
+    const sortStage = sortMap[sort] || sortMap.endsAtAsc;
+
+    const lim = Math.min(+(limit ?? 100), 200);
+
+    const docs = await Competition.find(filter)
+      .select(projection)
+      .sort(sortStage)
+      .limit(lim)
       .lean();
 
-    // Format the response
-    const formattedCompetitions = competitions.map(competition => ({
-      _id: competition._id,
-      comp: {
-        ...competition.comp,
-        ticketsSold: competition.comp?.ticketsSold || 0,
-        totalTickets: competition.comp?.totalTickets || 100,
-        entryFee: competition.comp?.entryFee || 0,
-        status: competition.comp?.status || 'active',
-        paymentType: competition.comp?.paymentType || 'pi',
-        prizeBreakdown: competition.comp?.prizeBreakdown || null,
-      },
-      title: competition.title,
-      prize: competition.prize,
-      imageUrl: competition.imageUrl || '/images/your.png',
-      thumbnail: competition.thumbnail || null,
-      theme: competition.theme,
-      href: competition.href,
-      fee: `${competition.comp?.entryFee || 0} π`
-    }));
+    // ---------- Normalize / defaults ----------
+    const data = docs.map((d) => {
+      const c = d.comp || {};
+      const entryFee = Number.isFinite(+c.entryFee) ? +c.entryFee : 0;
 
-    console.log(`✅ Found ${formattedCompetitions.length} competitions`);
-
-    res.status(200).json({
-      success: true,
-      data: formattedCompetitions
+      return {
+        _id: d._id,
+        title: d.title || '',
+        prize: d.prize ?? null,
+        imageUrl: d.imageUrl || '/images/your.png',
+        thumbnail: d.thumbnail || null,
+        theme: d.theme || 'tech',
+        href: d.href ?? null,
+        fee: `${entryFee} π`,
+        comp: {
+          slug: c.slug || '',
+          status: c.status || 'active',
+          ticketsSold: Number.isFinite(+c.ticketsSold) ? +c.ticketsSold : 0,
+          totalTickets: Number.isFinite(+c.totalTickets) ? +c.totalTickets : 100,
+          entryFee,
+          startsAt: c.startsAt || null,
+          endsAt: c.endsAt || null,
+          paymentType: c.paymentType || 'pi',
+          piAmount: c.piAmount ?? null,
+          prizeBreakdown: c.prizeBreakdown || null,
+        },
+      };
     });
+
+    // small cache for better TTFB on the homepage; adjust to your freshness needs
+    res.setHeader('Cache-Control', 'public, max-age=30, s-maxage=60, stale-while-revalidate=120');
+
+    return res.status(200).json({ success: true, data });
   } catch (error) {
-    console.error('❌ Error fetching competitions:', error);
-    res.status(500).json({ 
+    console.error('❌ /api/competitions/all', error);
+    return res.status(500).json({
       success: false,
-      error: error.message || 'Internal server error',
-      code: 'INTERNAL_ERROR'
+      error: error?.message || 'Internal server error',
+      code: 'INTERNAL_ERROR',
     });
   }
 }

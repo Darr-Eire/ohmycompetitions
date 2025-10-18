@@ -10,39 +10,35 @@ if (!MONGODB_URI) {
   throw new Error('Missing MONGODB_URI / MONGO_DB_URL');
 }
 
-/**
- * Mongoose 7 default will be strictQuery=false.
- * Set explicitly to silence the deprecation warning.
- * Flip to `true` if you want strict filtering behavior.
- */
+// Silence the deprecation + match Mongoose 7 default
 mongoose.set('strictQuery', false);
+// Optional: only if you see a populate warning
+// mongoose.set('strictPopulate', false);
 
-/** Cache the connection across hot reloads / serverless invocations */
 type MongooseCache = {
   conn: typeof mongoose | null;
   promise: Promise<typeof mongoose> | null;
 };
 
+// Attach to a NON-conflicting global key (avoid "mongoose")
 declare global {
   // eslint-disable-next-line no-var
-  var mongoose: MongooseCache | undefined;
+  var _mongoose: MongooseCache | undefined;
 }
 
-// Use the global cache if present
-const cached: MongooseCache = global.mongoose ?? { conn: null, promise: null };
-global.mongoose = cached;
+const cached: MongooseCache = globalThis._mongoose ?? { conn: null, promise: null };
+globalThis._mongoose = cached;
 
-/** Connect (or reuse) and return the Mongoose instance */
-export async function connectToDatabase(): Promise<typeof mongoose> {
+export default async function connectToDatabase(): Promise<typeof mongoose> {
   if (cached.conn) return cached.conn;
 
   if (!cached.promise) {
-    // You can add more options here if needed
     cached.promise = mongoose
       .connect(MONGODB_URI, {
-        // helpful in serverless
+        // If you specify DB via env var:
+        dbName: process.env.MONGODB_DB,
+        // Good defaults for serverless/Next.js:
         bufferCommands: false,
-        // pool & timeout tuning
         maxPoolSize: 5,
         serverSelectionTimeoutMS: 10_000,
       })
@@ -52,5 +48,3 @@ export async function connectToDatabase(): Promise<typeof mongoose> {
   cached.conn = await cached.promise;
   return cached.conn;
 }
-
-export default connectToDatabase;

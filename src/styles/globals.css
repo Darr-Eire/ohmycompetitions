@@ -1,81 +1,378 @@
 /* ============================================================================
-   Tailwind base setup
+   Tailwind base
 ============================================================================ */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* ============================================================================
-   Outfit Theme (Simple, Clean, Web3 Soft UI)
+   Theme Variables (single source of truth)
 ============================================================================ */
-@import url('https://fonts.googleapis.com/css2?family=Outfit&display=swap');
-
 :root {
-  --font-family: 'Outfit', sans-serif;
-
-  /* Primary palette */
+  /* Primary tokens */
   --primary-solid: #60A5FA;
   --primary-gradient: linear-gradient(135deg, #1E3A8A, #60A5FA);
   --primary-hover: #0052CC;
   --primary-text: #ffffff;
 
-  /* Secondary & accent */
   --secondary-color: #0052CC;
   --secondary-hover: #1834e6;
   --secondary-text: #2f019a;
-  --accent-color: #00E5FF;
+
+  --accent-color: #0f1f7d;
   --accent-hover: #1a0c54;
 
-  /* Backgrounds (dark Web3 vibe) */
-  --bg-dark: #000814;
-  --surface-dark: #071426;
-  --text-light: #E6F5FF;
+  --button-radius: 4px;
+  --transition-dur: 0.2s;
 
-  /* Glass & glow */
-  --glass-gradient: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0));
-  --transition-dur: 0.3s;
-  --border-radius: 1rem;
-}
+  /* OMC lock (prevents Pi Browser darkening) */
+  --omc-bg: #000814;
+  --omc-surface: #071426;
+  --omc-text: #E6F5FF;
 
-body {
-  font-family: var(--font-family);
-  background-color: var(--bg-dark);
-  color: var(--text-light);
-  line-height: 1.6;
-  transition: background var(--transition-dur) ease-in-out;
-}
+  --omc-cyan: #00E5FF;
+  --omc-blue: #0066FF;
+  --omc-grad: linear-gradient(135deg, #00E5FF 0%, #0066FF 100%);
 
-h1, h2, h3 {
-  font-family: var(--font-family);
-  font-weight: 500;
-  letter-spacing: -0.015em;
+  /* Fonts */
+  --font-body: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --font-heading: 'Orbitron', sans-serif;
+
+  color-scheme: dark;
 }
 
 /* ============================================================================
-   Utility Classes (Glass, Glow, etc.)
+   Base Reset (hard-lock base bg for Pi Browser)
 ============================================================================ */
-.glass {
-  backdrop-filter: blur(12px);
-  background: var(--glass-gradient);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: var(--border-radius);
+html,
+body,
+#__next {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  -webkit-text-size-adjust: 100%;
+  background: var(--omc-bg) !important; /* Hard lock base bg */
 }
 
-.glow {
-  box-shadow: 0 0 12px var(--accent-color);
-  transition: box-shadow var(--transition-dur);
+body {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #e5e7eb;
 }
 
-.glow:hover {
-  box-shadow: 0 0 24px var(--accent-hover);
+h1, h2, h3, h4 {
+  font-family: var(--font-heading);
+  font-weight: bold;
+  letter-spacing: 0.5px;
 }
 
-/* Add this to your main/global CSS file (e.g., globals.css) */
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
+/* Optional animated gradient section (use on wrappers, not body) */
+.omc-gradient {
+  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
 }
 
-.scrollbar-hide {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; background: none; border: none; padding: 0; }
+
+/* ============================================================================
+   Layout helpers
+============================================================================ */
+.layout { display: flex; flex-direction: column; min-height: 100vh; }
+.content { flex: 1; }
+
+/* ============================================================================
+   Utilities
+============================================================================ */
+@layer utilities {
+  .backdrop-blur      { backdrop-filter: blur(10px); }
+  .backdrop-blur-sm   { backdrop-filter: blur(4px); }
+
+  .text-neon-primary {
+    color: var(--omc-cyan);
+    text-shadow:
+      0 0 4px var(--omc-cyan),
+      0 0 8px var(--omc-cyan),
+      0 0 12px rgba(0,229,255,.7),
+      0 0 16px rgba(0,229,255,.7);
+  }
+
+  .animate-fade-in { animation: fadeIn 0.2s ease-in-out; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* used by homepage modal after removing styled-jsx */
+  .animate-omc-fade-in { animation: omc-fade-in .18s ease-out; }
+  @keyframes omc-fade-in {
+    from { transform: translateY(4px) scale(.98); opacity: 0; }
+    to   { transform: translateY(0)    scale(1);   opacity: 1; }
+  }
+
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }
+
+/* ============================================================================
+   Components
+============================================================================ */
+@layer components {
+  /* Buttons */
+  .neon-button {
+    background: linear-gradient(135deg, #00ffd5, #0077ff);
+    font-weight: bold;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    color: #0d0f1b;
+    box-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+    transition: all 0.3s ease;
+  }
+  .neon-button:hover { box-shadow: 0 0 15px #234242; }
+
+  .btn-gradient { @apply neon-button inline-block text-center; }
+
+  .btn-cyber {
+    background: linear-gradient(90deg, #00f2fe 0%, #4facfe 100%);
+    color: #000;
+    font-weight: bold;
+    padding: 0.75rem 1.5rem;
+    border-radius: 9999px;
+    box-shadow: 0 0 20px #00f2fe;
+    transition: transform 0.1s ease;
+  }
+  .btn-cyber:hover { transform: scale(1.05); }
+
+  /* Titles (opt-in class) */
+  .title-gradient {
+    background: linear-gradient(135deg, #00ffd5, #0077ff);
+    color: white;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 0.5rem 1rem;
+    text-align: center;
+    border-radius: 0.5rem;
+    box-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+  }
+  .omc-section-title { @apply title-gradient; margin: 0 auto 1rem; }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #00ffd5, #0077ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: bold;
+  }
+
+  /* Competition Card */
+  .competition-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    box-shadow: 0 0 12px rgba(0, 255, 255, 0.1);
+    transition: transform 0.3s ease;
+  }
+  .competition-card:hover { transform: translateY(-5px); }
+
+  .card-header-gradient {
+    @apply flex justify-between items-center px-3 py-2 text-sm font-bold uppercase rounded-t;
+    background: linear-gradient(135deg, #00ffd5, #0077ff);
+    color: #0d0f1b;
+    font-family: 'Orbitron', sans-serif;
+  }
+
+  .competition-info { padding: 1rem; color: #e0f7ff; font-family: 'Orbitron', sans-serif; }
+  .comp-button { @apply btn-gradient w-full; }
+
+  .competition-image {
+    width: 100%;
+    padding: 1rem;
+    background: #0f172a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    height: 260px;
+  }
+  .competition-image img { max-height: 100%; max-width: 100%; object-fit: contain; }
+
+  .competition-top-banner { @apply text-black; }
+
+  .card {
+    background-color: #1a1a2e;
+    border: 1px solid #00ffff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 0 10px #00ffff;
+  }
+  .glass-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* ============================================================================
+   Extras
+============================================================================ */
+.neon-text {
+  color: #fff;
+  text-shadow: 0 0 5px #0ff, 0 0 10px #0ff, 0 0 20px #0ff, 0 0 40px #0ff;
+}
+
+.glow-button {
+  background-color: transparent;
+  border: 2px solid #bf00ff;
+  color: #bf00ff;
+  padding: 10px 20px;
+  border-radius: 5px;
+  text-transform: uppercase;
+  transition: box-shadow 0.3s ease;
+}
+.glow-button:hover { box-shadow: 0 0 10px #bf00ff, 0 0 20px #bf00ff; cursor: pointer; }
+
+/* ============================================================================
+   Responsive & Grid
+============================================================================ */
+@media (max-width: 640px) {
+  .competition-card { width: 95%; max-width: 100%; margin: 1rem auto; border-radius: 0.75rem; }
+  .competition-image { height: 160px; padding: 0.5rem; }
+  .competition-image img { max-height: 100%; max-width: 100%; object-fit: contain; }
+}
+
+.category-grid {
+  display: grid;
+  gap: 1.5rem;
+  justify-items: center;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+@media (max-width: 1023px) {
+  .category-grid {
+    display: flex;
+    overflow-x: auto;
+    gap: 1rem;
+    padding: 1rem 0;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  .category-grid > * { flex: 0 0 80%; scroll-snap-align: center; }
+}
+
+html, body, #__next { height: 100%; }
+body { margin: 0; }
+
+/* Vault */
+.vault-container { position: relative; width: 100%; max-width: 600px; margin: auto; }
+.vault-bg { position: absolute; width: 100%; height: auto; z-index: 1; opacity: 0.8; }
+.vault-canvas { position: relative; z-index: 2; }
+
+/* ============================================================================
+   Animations & Effects
+============================================================================ */
+@keyframes pulse-glow {
+  0%, 100% { text-shadow: 0 0 10px rgba(0, 255, 255, 0.6), 0 0 20px rgba(0, 123, 255, 0.6); }
+  50%      { text-shadow: 0 0 20px rgba(0, 255, 255, 1),   0 0 40px rgba(0, 123, 255, 1); }
+}
+@keyframes floatDown { 0% { opacity: 0; transform: translateY(-30px); } 100% { opacity: 1; transform: translateY(0); } }
+.animate-floatDown { animation: floatDown 1.2s ease-out forwards; }
+
+@keyframes glowPulse {
+  0%,100% { text-shadow: 0 0 12px rgba(255, 220, 100, 0.5), 0 0 20px rgba(255, 255, 150, 0.7); transform: translateY(0); }
+  50%     { text-shadow: 0 0 24px rgba(255, 220, 100, 0.9), 0 0 30px rgba(255, 255, 150, 1);    transform: translateY(-4px); }
+}
+.animate-glow-float { animation: glowPulse 3s ease-in-out infinite; }
+
+@keyframes neonPulse { 0%, 100% { box-shadow: 0 0 15px #00ffd5; } 50% { box-shadow: 0 0 25px #0077ff; } }
+.neon-border { animation: neonPulse 2s infinite ease-in-out; }
+
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.animated-entry { animation: fadeInUp 0.6s ease-out forwards; }
+
+.container {
+  background-color: #1e1e2f;
+  color: #ffffff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding: 2rem;
+}
+h1 { color: #f5a623; }
+form { margin-top: 1rem; }
+
+@keyframes gradientShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+@keyframes glitch {
+  0% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(2px, -2px); }
+  60% { transform: translate(-1px, 1px); }
+  80% { transform: translate(1px, -1px); }
+  100% { transform: translate(0); }
+}
+.animate-glitch { animation: glitch 1s infinite; }
+
+.shadow-neon { box-shadow: 0 0 8px #22d3ee, 0 0 16px #0ff; }
+
+/* Inputs */
+.input { @apply w-full px-4 py-2 rounded-md bg-black/20 border border-cyan-400 focus:ring-2 focus:ring-cyan-500 outline-none; }
+
+/* ============================================================================
+   Carousel (mobile-first) + Marquee + Shimmer
+   NOTE: matches homepage.jsx structure
+============================================================================ */
+.centered-carousel {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 95%;
+  gap: 1rem;
+  padding: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scroll-padding: 1rem;
+  overscroll-behavior-x: contain;
+}
+.centered-carousel > * { scroll-snap-align: center; scroll-snap-stop: always; }
+.centered-carousel::-webkit-scrollbar { display: none; }
+
+@media (min-width: 480px) {
+  .centered-carousel { grid-auto-columns: 78%; }
+}
+@media (min-width: 640px) {
+  .centered-carousel { grid-auto-columns: 60%; }
+}
+@media (min-width: 1024px) {
+  .centered-carousel { display: none; } /* grid takes over on lg via JSX */
+}
+
+/* tiny variant used by some carousels */
+.centered-carousel.tiny-carousel { padding: 0; gap: 0; }
+.centered-carousel.tiny-carousel > * { width: 140px; max-width: 140px; }
+
+/* Marquee (for animate-[marquee_*]) */
+@keyframes marquee {
+  0%   { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+/* Legacy marquee class (still supported) */
+.marquee-content { display:inline-block; padding-left:100%; animation: scroll-marquee 50s linear infinite; white-space:nowrap; }
+@keyframes scroll-marquee { 0% { transform: translateX(0%) } 100% { transform: translateX(-100%) } }
+
+/* Shimmer text */
+@keyframes text-shimmer { 0% { background-position:-200% center } 100% { background-position:200% center } }
+.animate-text-shimmer { background-size:400% 100%; animation:text-shimmer 3s linear infinite; }
+
+/* Motion-safe overrides */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{ transition: none !important; animation: none !important; }
+}
+html.pibrowser .backdrop-blur,
+html.pibrowser .backdrop-blur-sm { backdrop-filter: none !important; }
+html.pibrowser .overlay { background: rgba(0,0,0,.5) !important; }

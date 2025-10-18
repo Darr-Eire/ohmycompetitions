@@ -60,7 +60,6 @@ export default function CompetitionCard({
         return;
       }
 
-      // show countdown only within the last 48 hours before draw date
       const twoDays = 48 * 60 * 60 * 1000;
       setShowCountdown(now >= start && diff <= twoDays);
 
@@ -107,7 +106,6 @@ export default function CompetitionCard({
     setShowGiftModal(true);
   };
 
-  // ---- winners: only show if there's a real number; hide TBA ----
   const rawWinners = comp?.winnersCount ?? comp?.comp?.winnersCount;
   const winnersNum = Number(rawWinners);
   const showWinners = Number.isFinite(winnersNum) && winnersNum > 0;
@@ -116,16 +114,13 @@ export default function CompetitionCard({
     <>
       <div className="flex flex-col w-full min-w-[280px] max-w-sm mx-auto h-full min-h-[500px] bg-[#0f172a] border border-cyan-600 rounded-xl shadow-lg text-white font-orbitron overflow-hidden transition-all duration-300 hover:scale-[1.03]">
 
-      
-     {/*Title*/}
-     <div className="text-center mb-2">
-          <p className="text-xs text-cyan-400 uppercase tracking-widest mb-1">
-            {t('exclusive_draw', 'Exclusive Draw')}
-          </p>
-          <h3 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-[#00ffd5] to-[#0077ff] drop-shadow-[0_0_6px_#00e5ff80]">
-            {title || comp?.title}
-          </h3>
+        {/* Title */}
+        <div className="card-header-gradient px-4 py-2 flex justify-center items-center">
+          <span className="text-sm sm:text-base font-semibold text-black">
+            {title}
+          </span>
         </div>
+
         {/* Image */}
         <div className="relative w-full aspect-[16/9] bg-black overflow-hidden flex-shrink-0">
           {isExternalUrl(normalizedImageUrl) ? (
@@ -148,7 +143,6 @@ export default function CompetitionCard({
 
         {/* Status Banner + Sub-Banner */}
         <div className="px-3 pt-2 flex-shrink-0">
-          {/* Main Status Pill */}
           <div
             className={`w-full text-center px-2 py-1 rounded-full text-xs font-bold shadow
               ${
@@ -166,7 +160,6 @@ export default function CompetitionCard({
               : status}
           </div>
 
-          {/* Pre-Tickets Sub-Banner */}
           {status === 'UPCOMING' && (
             <div className="w-full text-center mt-1 px-1 py-0.5 rounded-full bg-blue-600 text-white text-[0.6rem] font-medium">
               {t('pre_tickets_available', 'Pre Tickets Available')}
@@ -174,18 +167,16 @@ export default function CompetitionCard({
           )}
         </div>
 
-        {/* Live Timer (only visible inside last 48h before draw) */}
+        {/* Live Timer */}
         {status === 'LIVE NOW' && showCountdown && (
           <div className="flex justify-center items-center gap-2 px-3 pt-2 flex-shrink-0">
             <div className="bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-2 py-0.5 rounded-lg">
-              <p className="text-sm text-black font-mono font-bold">
-                {timeLeft}
-              </p>
+              <p className="text-sm text-black font-mono font-bold">{timeLeft}</p>
             </div>
           </div>
         )}
 
-        {/* Info Section (match PiCompetitionCard sizing) */}
+        {/* Info Section */}
         <div className="p-3 text-sm text-center space-y-2 flex-grow overflow-hidden">
           <div className="flex justify-between">
             <span className="text-cyan-300 font-semibold">{t('prize', 'Prize')}:</span>
@@ -209,7 +200,6 @@ export default function CompetitionCard({
             <span className="font-medium">{status === 'COMING SOON' ? t('tba', 'TBA') : fee}</span>
           </div>
 
-          {/* Winners: only render when we have a real number */}
           {showWinners && (
             <div className="flex justify-between">
               <span className="text-cyan-300 font-semibold">{t('winners', 'Winners')}:</span>
@@ -223,9 +213,7 @@ export default function CompetitionCard({
               <span className="text-cyan-300">{t('tickets_sold', 'Tickets Sold')}</span>
               <div className="text-right">
                 {status === 'COMING SOON' ? (
-                  <span className="font-semibold text-gray-300">
-                    {t('tba', 'TBA')}
-                  </span>
+                  <span className="font-semibold text-gray-300">{t('tba', 'TBA')}</span>
                 ) : (
                   <span
                     className={`font-semibold ${
@@ -241,9 +229,7 @@ export default function CompetitionCard({
                     {sold.toLocaleString()} / {total.toLocaleString()}
                   </span>
                 )}
-                {isSoldOut && (
-                  <div className="text-red-400 font-bold">{t('sold_out', 'SOLD OUT')}</div>
-                )}
+                {isSoldOut && <div className="text-red-400 font-bold">{t('sold_out', 'SOLD OUT')}</div>}
                 {isLowStock && !isSoldOut && (
                   <div className="text-orange-400 font-bold">
                     {t('only_left', 'Only {remaining} left!', { remaining })}
