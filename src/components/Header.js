@@ -21,6 +21,19 @@ export default function Header() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const sidebarRef = useRef(null);
 
+  /* ───────────────────────────── Shared button styles ───────────────────────────── */
+  const BTN_BASE =
+    'inline-flex items-center justify-center rounded-md text-sm font-bold px-3 py-2 ' +
+    'transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-black/40 active:scale-[0.99]';
+
+  // Matches your header gradient bar: from-[#00ffd5] via-[#00ccff] to-[#0077ff]
+  const BTN_GRADIENT =
+    'bg-gradient-to-r from-[#00ffd5] via-[#00ccff] to-[#0077ff] text-black ' +
+    'shadow-[0_0_14px_rgba(0,255,255,0.25)] hover:shadow-[0_0_18px_rgba(0,255,255,0.35)]';
+
+  const BTN_DISABLED = 'opacity-60 cursor-not-allowed shadow-none hover:shadow-none';
+
+  /* ───────────────────────────── Sidebar interactions ───────────────────────────── */
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (sidebarRef.current && !sidebarRef.current.contains(e.target)) setMenuOpen(false);
@@ -41,22 +54,25 @@ export default function Header() {
   }, [isLoggingIn]);
 
   useEffect(() => {
-    document.body.style.overflow = (menuOpen || showLoginModal) ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
+    document.body.style.overflow = menuOpen || showLoginModal ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [menuOpen, showLoginModal]);
 
   const safeT = (key, fallback = key) => (!mounted || !ready ? fallback : t(key));
 
-  /* ---------------- Nav data (tuples) ---------------- */
-const competitionCategories = [
-  [safeT('live_now', 'Live Now'), '/competitions/live-now'],
-  [safeT('launch_week', 'Launch Week'), '/competitions/launch-week'],
-  [safeT('tech_gadgets', 'Tech/Gadgets'), '/competitions/tech&gadgets'],
-  [safeT('daily_weekly', 'Daily/Weekly'), '/competitions/daily'],
-  [safeT('pi_giveaways', 'Pi Giveaways'), '/competitions/pi'],
-  [safeT('pi_stages', 'Pi Stages'), '/battles', safeT('coming_soon', 'Coming Soon')], // 👈 add note
-  [safeT('pi_cash_code', 'Pi Cash Code'), '/pi-cash-code', safeT('coming_soon', 'Coming Soon')],
-];
+  /* ───────────────────────────── Nav data (tuples) ───────────────────────────── */
+  const competitionCategories = [
+    [safeT('live_now', 'Live Now'), '/competitions/live-now'],
+    [safeT('launch_week', 'Launch Week'), '/competitions/launch-week'],
+    [safeT('tech_gadgets', 'Tech/Gadgets'), '/competitions/tech&gadgets'],
+    [safeT('daily_weekly', 'Daily/Weekly'), '/competitions/daily'],
+    [safeT('pi_giveaways', 'Pi Giveaways'), '/competitions/pi'],
+    // These two will be rendered as non-clickable (disabled) below:
+    [safeT('pi_stages', 'Pi Stages'), '/battles', safeT('coming_soon', 'Coming Soon')],
+    [safeT('pi_cash_code', 'Pi Cash Code'), '/pi-cash-code', safeT('coming_soon', 'Coming Soon')],
+  ];
 
   const navItems = [[safeT('home', 'Home'), '/homepage']];
   const miniGames = [[safeT('try_your_luck', 'Try Your Luck'), '/try-your-luck', safeT('coming_soon', 'Coming Soon')]];
@@ -74,7 +90,7 @@ const competitionCategories = [
     return arr;
   }, [user, mounted, ready]);
 
-  /* ---------------- Helpers ---------------- */
+  /* ───────────────────────────── Helpers ───────────────────────────── */
   const normalize = (p = '') => (p || '/').replace(/[#?].*$/, '').replace(/\/+$/, '') || '/';
 
   const linkBase =
@@ -102,9 +118,34 @@ const competitionCategories = [
     </div>
   );
 
+  // Non-clickable routes set
+  const DISABLED_ROUTES = new Set(['/pi-cash-code', '/battles']);
+
   const Item = ({ tuple }) => {
     const [label, href, note] = tuple;
     const isComingSoon = !!note?.toLowerCase().includes('coming soon');
+    const isDisabled = DISABLED_ROUTES.has(href) || isComingSoon;
+
+    if (isDisabled) {
+      // Render a disabled row (no Link)
+      return (
+        <div
+          className="block rounded px-3 py-2 text-sm font-medium text-white/60 cursor-not-allowed
+                     border border-white/10 bg-white/[0.04]"
+          aria-disabled="true"
+          title={note || safeT('coming_soon', 'Coming Soon')}
+        >
+          <span className="relative z-10 inline-flex items-center gap-2">
+            <span>{label}</span>
+            <span className="text-[10px] px-2 py-0.5 rounded-md bg-yellow-400/20 text-yellow-200 border border-yellow-400/30">
+              {note || safeT('coming_soon', 'Coming Soon')}
+            </span>
+          </span>
+        </div>
+      );
+    }
+
+    // Clickable nav item
     return (
       <Link href={href} className={getLinkClass(href)} onClick={() => setMenuOpen(false)}>
         <span className="relative z-10 flex items-center gap-2">
@@ -120,44 +161,47 @@ const competitionCategories = [
     );
   };
 
+  /* ───────────────────────────── Render ───────────────────────────── */
   return (
     <>
       {/* Top Header */}
       <header className="fixed top-0 left-0 right-0 z-50 px-3 py-2 flex items-center justify-between shadow-md backdrop-blur-md bg-[#0f172a] border-b border-cyan-700">
-        {/* Menu Button */}
+        {/* Menu Button (gradient + black text) */}
         <button
           onClick={() => setMenuOpen(true)}
-          className="neon-button text-white px-2 py-1 hover:scale-105 transition-transform"
+          className={`${BTN_BASE} ${BTN_GRADIENT} px-2 py-1`}
           aria-label={safeT('open_menu', 'Open menu')}
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor" /* inherits black from text color */
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 8h16M4 16h16" />
           </svg>
         </button>
 
-{/* Logo + welcome (always show title) */}
-<div className="flex flex-col items-center text-center leading-tight">
-  <Link href="/homepage" className="block">
-    <span className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent drop-shadow">
-      OMC
-    </span>
-  </Link>
+        {/* Logo + welcome (always show title) */}
+        <div className="flex flex-col items-center text-center leading-tight">
+          <Link href="/homepage" className="block">
+            <span className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent drop-shadow">
+              OMC
+            </span>
+          </Link>
 
-  {/* Show welcome only when logged in */}
-  {user ? (
-    <div className="text-cyan-300 text-sm font-orbitron mt-0.5">
-      {t?.('welcome', 'Welcome') || 'Welcome'}{' '}
-      <span className="text-cyan-300">{user.username}</span>
-    </div>
-  ) : (
-    // Keep the header height consistent when logged out
-    <div className="text-xs mt-0.5 opacity-0 select-none" aria-hidden="true">
-      placeholder
-    </div>
-  )}
-</div>
-
-
+          {user ? (
+            <div className="text-cyan-300 text-sm font-orbitron mt-0.5">
+              {t?.('welcome', 'Welcome') || 'Welcome'} <span className="text-cyan-300">{user.username}</span>
+            </div>
+          ) : (
+            <div className="text-xs mt-0.5 opacity-0 select-none" aria-hidden="true">
+              placeholder
+            </div>
+          )}
+        </div>
 
         {/* Language + auth + notifications */}
         <div className="flex items-center gap-3">
@@ -167,14 +211,14 @@ const competitionCategories = [
             {!user ? (
               <button
                 onClick={() => setShowLoginModal(true)}
-                className="neon-button text-xs px-2 py-1 w-fit"
+                className={`${BTN_BASE} ${BTN_GRADIENT} text-xs`}
                 aria-haspopup="dialog"
                 aria-expanded={showLoginModal ? 'true' : 'false'}
               >
                 {safeT('login', 'Login')}
               </button>
             ) : (
-              <button onClick={logout} className="neon-button text-xs px-2 py-1 w-fit">
+              <button onClick={logout} className={`${BTN_BASE} ${BTN_GRADIENT} text-xs`}>
                 {safeT('logout', 'Logout')}
               </button>
             )}
@@ -205,7 +249,7 @@ const competitionCategories = [
           <span className="text-cyan-300 font-orbitron text-lg">{safeT('menu', 'Menu')}</span>
           <button
             onClick={() => setMenuOpen(false)}
-            className="text-white hover:text-cyan-300 hover:scale-110 transition-transform"
+            className={`${BTN_BASE} ${BTN_GRADIENT} px-2 py-1`}
             aria-label={safeT('close_menu', 'Close menu')}
           >
             ✕
@@ -255,7 +299,9 @@ const competitionCategories = [
         <>
           <div
             className={`fixed inset-0 bg-black/70 backdrop-blur-sm z-50 ${isLoggingIn ? 'cursor-wait' : ''}`}
-            onClick={() => { if (!isLoggingIn) setShowLoginModal(false); }}
+            onClick={() => {
+              if (!isLoggingIn) setShowLoginModal(false);
+            }}
             aria-hidden="true"
           />
           <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -277,7 +323,9 @@ const competitionCategories = [
                 <Link
                   href="/signup"
                   className={`neon-button px-3 py-2 text-sm w-full ${isLoggingIn ? 'pointer-events-none opacity-60' : ''}`}
-                  onClick={() => { if (!isLoggingIn) setShowLoginModal(false); }}
+                  onClick={() => {
+                    if (!isLoggingIn) setShowLoginModal(false);
+                  }}
                   tabIndex={isLoggingIn ? -1 : 0}
                   aria-disabled={isLoggingIn}
                 >
@@ -291,23 +339,21 @@ const competitionCategories = [
               {/* Login with Pi */}
               <div className="flex flex-col gap-1">
                 <button
-                   onClick={async () => {
-   if (loading) return;
-   if (!sdkReady) {
-     try {
-       // If the SDK finished initializing a moment later, this resolves it.
-       if (typeof window !== 'undefined' && typeof window.__readyPi === 'function') {
-         await window.__readyPi();
-       } else {
-         // still not ready — guide the user
-         alert('Loading Pi SDK… Please try again in a moment (open in Pi Browser).');
-         return;
-       }
-     } catch {
-       alert('Pi SDK not ready yet. Please try again in a moment.');
-       return;
-     }
-   }
+                  onClick={async () => {
+                    if (loading) return;
+                    if (!sdkReady) {
+                      try {
+                        if (typeof window !== 'undefined' && typeof window.__readyPi === 'function') {
+                          await window.__readyPi();
+                        } else {
+                          alert('Loading Pi SDK… Please try again in a moment (open in Pi Browser).');
+                          return;
+                        }
+                      } catch {
+                        alert('Pi SDK not ready yet. Please try again in a moment.');
+                        return;
+                      }
+                    }
                     setIsLoggingIn(true);
                     try {
                       await login();
@@ -320,8 +366,14 @@ const competitionCategories = [
                     }
                   }}
                   className="neon-button px-3 py-2 text-sm w-full flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
-           disabled={loading || !sdkReady}
- title={loading ? 'Authorizing…' : (!sdkReady ? 'Loading Pi SDK… Open in Pi Browser' : 'Login with Pi')}
+                  disabled={loading || !sdkReady}
+                  title={
+                    loading
+                      ? 'Authorizing…'
+                      : !sdkReady
+                      ? 'Loading Pi SDK… Open in Pi Browser'
+                      : 'Login with Pi'
+                  }
                 >
                   {loading ? (
                     <>
@@ -331,7 +383,11 @@ const competitionCategories = [
                       </svg>
                       {safeT('logging_in', 'Logging in...')}
                     </>
-                  ) : !sdkReady ? safeT('loading_sdk', 'Loading Pi SDK…') : safeT('login', 'Login')}
+                  ) : !sdkReady ? (
+                    safeT('loading_sdk', 'Loading Pi SDK…')
+                  ) : (
+                    safeT('login', 'Login')
+                  )}
                 </button>
                 {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
                 <p className="text-cyan-400 text-xs italic">
@@ -340,7 +396,9 @@ const competitionCategories = [
               </div>
 
               <button
-                onClick={() => { if (!isLoggingIn) setShowLoginModal(false); }}
+                onClick={() => {
+                  if (!isLoggingIn) setShowLoginModal(false);
+                }}
                 className={`text-xs ${isLoggingIn ? 'text-gray-500' : 'text-gray-400 hover:text-cyan-300'} mt-2`}
                 disabled={isLoggingIn}
                 aria-disabled={isLoggingIn}
@@ -354,11 +412,22 @@ const competitionCategories = [
 
       {/* Scrollbar Styles */}
       <style jsx>{`
-        .custom-scroll::-webkit-scrollbar { width: 6px; }
-        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(0, 255, 255, 0.4); border-radius: 10px; }
-        .custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(0, 255, 255, 0.6); }
-        .neon-glow { box-shadow: 0 0 20px rgba(0, 255, 255, 0.3); }
+        .custom-scroll::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+          background: rgba(0, 255, 255, 0.4);
+          border-radius: 10px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+          background: rgba(0, 255, 255, 0.6);
+        }
+        .neon-glow {
+          box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        }
       `}</style>
     </>
   );

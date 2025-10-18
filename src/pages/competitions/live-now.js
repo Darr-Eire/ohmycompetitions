@@ -8,7 +8,6 @@ import CompetitionCard from '@components/CompetitionCard';
 import PiCompetitionCard from '@components/PiCompetitionCard';
 import DailyCompetitionCard from '@components/DailyCompetitionCard';
 import FreeCompetitionCard from '@components/FreeCompetitionCard';
-import CryptoGiveawayCard from '@components/CryptoGiveawayCard';
 import LaunchCompetitionCard from '@components/LaunchCompetitionCard';
 
 /* ------------------------------ Tagline Rotator ------------------------------ */
@@ -257,8 +256,6 @@ function renderCompetitionCardByTheme(item) {
       return <PiCompetitionCard {...props} />;
     case 'daily':
       return <DailyCompetitionCard {...props} />;
-    case 'crypto':
-      return <CryptoGiveawayCard {...props} />;
     case 'free':
       return <FreeCompetitionCard {...props} />;
     default:

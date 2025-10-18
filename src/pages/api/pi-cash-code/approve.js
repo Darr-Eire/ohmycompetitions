@@ -26,7 +26,7 @@ export default async function handler(req, res) {
 
     const payment = response.data;
 
-    // Check if payment is in correct state
+    // Check i payment is in correct state
     if (payment.status !== 'ready_for_completion') {
       return res.status(400).json({ error: 'Payment not ready for completion' });
     }

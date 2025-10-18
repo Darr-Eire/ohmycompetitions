@@ -10,27 +10,41 @@ export default function MiniPrizeCarousel() {
 
   useEffect(() => {
     fetch('/api/competitions/all')
-      .then(res => res.json())
-      .then(result => {
-        if (!result.success) throw new Error('Failed to fetch competitions');
-        const live = result.data.filter(item => item.comp?.status === 'active');
+      .then((res) => res.json())
+      .then((result) => {
+        if (!result?.success) throw new Error('Failed to fetch competitions');
+        const live = (result.data || []).filter((item) => item?.comp?.status === 'active');
+
         // free first
-        const freeComps = live.filter(item => item.comp?.entryFee === 0);
-        const paidComps = live.filter(item => item.comp?.entryFee > 0);
+        const freeComps = live.filter((item) => Number(item?.comp?.entryFee) === 0);
+        const paidComps = live.filter((item) => Number(item?.comp?.entryFee) > 0);
         setCompetitions([...freeComps, ...paidComps]);
       })
-      .catch(err => console.error('❌ Error loading competitions:', err));
+      .catch((err) => console.error('❌ Error loading competitions:', err));
   }, []);
 
   useEffect(() => {
     if (competitions.length <= groupSize) return;
+
+    // Respect reduced-motion users
+    const media =
+      typeof window !== 'undefined' && window.matchMedia
+        ? window.matchMedia('(prefers-reduced-motion: reduce)')
+        : null;
+    if (media?.matches) return;
+
     const interval = setInterval(() => {
-      setCurrentIndex(i => (i + groupSize) % competitions.length);
+      setCurrentIndex((i) => (i + groupSize) % competitions.length);
     }, 3500);
+
     return () => clearInterval(interval);
   }, [competitions]);
 
-  const displayItems = competitions.slice(currentIndex, currentIndex + groupSize);
+  // Wrap-around window of size groupSize
+  const displayItems =
+    competitions.length <= groupSize
+      ? competitions
+      : Array.from({ length: groupSize }, (_, k) => competitions[(currentIndex + k) % competitions.length]);
 
   if (!competitions.length) {
     return (
@@ -45,104 +59,80 @@ export default function MiniPrizeCarousel() {
       <h3 className="text-cyan-300 font-orbitron font-semibold text-center mb-2 text-lg select-none">
         Live Competitions
       </h3>
-      <div ref={containerRef} className="flex justify-center gap-3 transition-all duration-500">
-        {displayItems.map(item => (
-          <CompetitionCard key={item._id} item={item} />
+      <div
+        ref={containerRef}
+        className="flex justify-center gap-3 transition-all duration-500 scrollbar-none scroll-smooth"
+      >
+        {displayItems.map((item) => (
+          <CompetitionCard key={item?._id || item?.comp?._id || `${item?.slug}-${Math.random()}`} item={item} />
         ))}
       </div>
     </div>
   );
 }
 
-function CompetitionCard({ item }) {
-  const { comp, imageUrl, title, prize, theme } = item;
-  const isFree = comp?.entryFee === 0;
-  const dailyStyleThemes = ['daily', 'regional', 'launch', 'pi', 'event'];
-  const hasImage = !!imageUrl && !dailyStyleThemes.includes(theme);
+/* -------------------------- helpers: Pi prize -------------------------- */
 
-  const baseBg = 'bg-transparent';
-  const baseBorder = 'border border-cyan-400 text-cyan-300 opacity-70';
+const nf = new Intl.NumberFormat('en-GB', { maximumFractionDigits: 2 });
+const nfCompact = new Intl.NumberFormat('en-GB', { notation: 'compact', maximumFractionDigits: 1 });
 
-  return (
-    <div
-      className={`w-[100px] rounded-lg shadow text-center font-orbitron px-2 py-2 text-[10px] leading-tight select-none
-                  ${baseBg} ${baseBorder}`}
-    >
-      {isFree ? (
-        // Free competition block with banner inside border
-        <div className="flex flex-col justify-start items-center mb-1" style={{ minHeight: '70px' }}>
-          {/* FREE banner inside */}
-<div className="bg-cyan-500 bg-opacity-20 text-white font-semibold text-xs uppercase tracking-wider px-3 py-1 rounded-full shadow-md mb-2 transition-all hover:bg-opacity-30">
-  FREE
-</div>
-
-
-          <span className="text-[14px] font-extrabold text-cyan-300">
-            {prize ? `${prize} π` : 'N/A'}
-          </span>
-          <span className="text-[9px] uppercase tracking-widest font-light mt-1 text-cyan-300">
-            No Fee
-          </span>
-        </div>
-      ) : hasImage ? (
-        // Paid competition with image
-        <img
-          src={imageUrl}
-          alt={title}
-          className="w-full h-[70px] object-cover rounded-md mb-1"
-        />
-      ) : (
-        // Paid competition without image
-        <div
-          className="flex flex-col justify-center items-center mb-1 rounded-md text-center
-                     px-3 shadow-inner border border-cyan-400 bg-transparent"
-          style={{ minWidth: '80px', height: '70px' }}
-        >
-          <span className="text-[14px] text-cyan-300 uppercase tracking-wider font-medium mb-1">
-            Prize
-          </span>
-          <span
-            className="text-[14px] font-extrabold text-cyan-400 leading-snug animate-pulse truncate max-w-full"
-            title={prize}
-            style={{ lineHeight: 1.1 }}
-          >
-            {prize ? `${prize} π` : 'N/A'}
-          </span>
-          <span className="text-[9px] text-cyan-300 uppercase tracking-widest font-light mt-1">
-            Up for Grabs
-          </span>
-        </div>
-      )}
-
-      {/* Title */}
-      <div className="font-bold text-[11px] truncate text-cyan-300">
-        {title}
-      </div>
-
-      {/* Draw date */}
-      <div className="text-white text-[10px]">
-        Draw:{' '}
-        <span className="text-white">{formatDate(comp?.endsAt)}</span>
-      </div>
-
-      {/* Entry fee */}
-      <div className="text-white text-[10px]">
-        Fee:{' '}
-        <span className="text-white">
-          {isFree ? 'Free' : `${comp?.entryFee.toFixed(2)} π`}
-        </span>
-      </div>
-
-      {/* Tickets sold */}
-      <div className="text-white text-[10px]">
-        Tickets:{' '}
-        <span className="text-white">
-          {comp?.ticketsSold?.toLocaleString()} / {comp?.totalTickets?.toLocaleString()}
-        </span>
-      </div>
-    </div>
-  );
+function formatPi(amount) {
+  const n = Number(amount);
+  if (!Number.isFinite(n)) return null;
+  return `${n >= 1000 ? nfCompact.format(n) : nf.format(n)} π`;
 }
+
+function sanitizePrizeString(str) {
+  // Remove existing π or 'pi' tokens to avoid doubling, trim spaces
+  return String(str).replace(/π|pi/gi, '').trim();
+}
+
+function coerceNumber(v) {
+  if (typeof v === 'number' && Number.isFinite(v)) return v;
+  if (typeof v === 'string') {
+    const cleaned = sanitizePrizeString(v).replace(/[^\d.,-]/g, '');
+    const num = Number(cleaned.replace(/,/g, ''));
+    return Number.isFinite(num) ? num : null;
+  }
+  return null;
+}
+
+/** Derives whether prize is denominated in Pi and returns { isPi, display, amount } */
+function getPiPrizeDisplay(item) {
+  const comp = item?.comp || {};
+
+  const candidates = [
+    item?.prizePi,
+    comp?.prizePi,
+    item?.prize?.pi,
+    comp?.prize?.pi,
+    item?.prize?.amountPi,
+    comp?.prize?.amountPi,
+    // strings like "2200π", "2,200 pi"
+    item?.prize,
+    comp?.prize,
+  ];
+
+  for (const c of candidates) {
+    if (c == null) continue;
+
+    const n = coerceNumber(c);
+    if (n != null) {
+      return { isPi: true, amount: n, display: `${nf.format(n)} π` };
+    }
+
+    if (typeof c === 'string' && /π|pi/i.test(c)) {
+      const n2 = coerceNumber(c);
+      if (n2 != null) return { isPi: true, amount: n2, display: `${nf.format(n2)} π` };
+      const cleaned = sanitizePrizeString(c);
+      return { isPi: true, display: `${cleaned} π`.trim() };
+    }
+  }
+
+  return { isPi: false };
+}
+
+/* --------------------------- helpers: misc --------------------------- */
 
 function formatDate(dateStr) {
   if (!dateStr) return 'TBA';
@@ -150,6 +140,124 @@ function formatDate(dateStr) {
   return date.toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'short',
-    year: 'numeric',
   });
+}
+
+function toLocale(n) {
+  const num = Number(n);
+  return Number.isFinite(num) ? num.toLocaleString('en-GB') : '0';
+}
+
+/* Detect multiple winners to switch footnote to "1st Prize" */
+function hasMultipleWinners(item) {
+  const comp = item?.comp || item || {};
+
+  if (Number(comp?.numWinners) > 1) return true;
+  if (Array.isArray(comp?.winners) && comp.winners.length > 1) return true;
+  if (Array.isArray(comp?.prizes) && comp.prizes.length > 1) return true;
+  if (Array.isArray(comp?.prizeTiers) && comp.prizeTiers.length > 1) return true;
+  if (Array.isArray(comp?.prize_breakdown) && comp.prize_breakdown.length > 1) return true;
+
+  if (comp?.prizeBreakdown && typeof comp.prizeBreakdown === 'object') {
+    const keys = Object.keys(comp.prizeBreakdown).filter(Boolean);
+    if (keys.length > 1) return true;
+  }
+
+  return false;
+}
+
+/* ------------------------------ Card ------------------------------ */
+
+function CompetitionCard({ item }) {
+  const { comp, imageUrl, title, theme } = item || {};
+  const entryFeeNum = Number(comp?.entryFee);
+  const isFree = Number.isFinite(entryFeeNum) ? entryFeeNum === 0 : false;
+
+  const dailyStyleThemes = ['daily', 'regional', 'launch', 'pi', 'event'];
+  const hasImage = !!imageUrl && !dailyStyleThemes.includes(theme);
+
+  const baseBg = 'bg-transparent';
+  const baseBorder = 'border border-cyan-400 text-cyan-300 opacity-70';
+
+  // --- Prize display (Pi-aware) ---
+  const piPrize = getPiPrizeDisplay(item);
+  const piPrizeCompact = piPrize.isPi ? (formatPi(piPrize.amount) || piPrize.display) : 'N/A';
+
+  // --- Footer/footnote label ---
+  const multiWinners = hasMultipleWinners(item);
+  const prizeFootnote = multiWinners ? '1st Prize' : 'Up for Grabs';
+
+  return (
+    <div
+      role="group"
+      aria-label={`${title || 'Competition'} — Prize: ${piPrizeCompact}, Draw: ${formatDate(
+        comp?.endsAt
+      )}, Fee: ${isFree ? 'Free' : Number.isFinite(entryFeeNum) ? `${nf.format(entryFeeNum)} π` : 'TBA'}`}
+      className={`w-[116px] sm:w-[120px] rounded-lg shadow text-center font-orbitron px-2 py-2 text-[10px] leading-tight select-none
+                  ${baseBg} ${baseBorder}`}
+    >
+      {isFree ? (
+        // Free competition block with banner inside border
+        <div className="flex flex-col justify-start items-center mb-1" style={{ minHeight: '70px' }}>
+          {/* FREE banner inside */}
+          <div className="bg-cyan-500 bg-opacity-20 text-white font-semibold text-xs uppercase tracking-wider px-3 py-1 rounded-full shadow-md mb-2 transition-all">
+            FREE
+          </div>
+
+          <span className="text-[14px] font-extrabold text-cyan-300 whitespace-nowrap">
+            {piPrizeCompact}
+          </span>
+          <span className="text-[9px] uppercase tracking-widest font-light mt-1 text-cyan-300">
+            No Fee
+          </span>
+        </div>
+      ) : hasImage ? (
+        // Paid competition with image
+        <img src={imageUrl} alt={title || 'competition'} className="w-full h-[70px] object-cover rounded-md mb-1" />
+      ) : (
+        // Paid competition without image
+        <div
+          className="flex flex-col justify-center items-center mb-1 rounded-md text-center
+                     px-3 shadow-inner border border-cyan-400 bg-transparent"
+          style={{ minWidth: '80px', height: '70px' }}
+        >
+          <span className="text-[14px] text-cyan-300 uppercase tracking-wider font-medium mb-1">Prize</span>
+          <span
+            className="text-[14px] font-extrabold text-cyan-400 leading-snug animate-pulse whitespace-nowrap max-w-full"
+            title={piPrizeCompact}
+            style={{ lineHeight: 1.1 }}
+          >
+            {piPrizeCompact}
+          </span>
+          <span className="text-[9px] text-cyan-300 uppercase tracking-widest font-light mt-1">
+            {prizeFootnote}
+          </span>
+        </div>
+      )}
+
+      {/* Title */}
+      <div className="font-bold text-[11px] truncate text-cyan-300">{title || 'Untitled'}</div>
+
+      {/* Draw date */}
+      <div className="text-white text-[10px]">
+        Draw: <span className="text-white">{formatDate(comp?.endsAt)}</span>
+      </div>
+
+      {/* Entry fee */}
+      <div className="text-white text-[10px]">
+        Fee:{' '}
+        <span className="text-white">
+          {isFree ? 'Free' : Number.isFinite(entryFeeNum) ? `${nf.format(entryFeeNum)} π` : 'TBA'}
+        </span>
+      </div>
+
+      {/* Tickets sold */}
+      <div className="text-white text-[10px]">
+        Tickets:{' '}
+        <span className="text-white">
+          {toLocale(comp?.ticketsSold)} / {toLocale(comp?.totalTickets)}
+        </span>
+      </div>
+    </div>
+  );
 }

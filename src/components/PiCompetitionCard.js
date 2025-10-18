@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { usePiAuth } from 'context/PiAuthContext'
 import { useSafeTranslation } from '../hooks/useSafeTranslation'
 import GiftTicketModal from './GiftTicketModal'
@@ -25,11 +25,12 @@ export default function PiCompetitionCard({
 
   const [showGiftModal, setShowGiftModal] = useState(false)
   const [showCountdown, setShowCountdown] = useState(false)
-  const [showAllCountries, setShowAllCountries] = useState(false)
+  const [showCountriesModal, setShowCountriesModal] = useState(false) // modal
 
   // ✅ Dates
   const startsAt = new Date(comp?.startsAt || comp?.comp?.startsAt || new Date())
   const endsAt = new Date(comp?.endsAt || comp?.comp?.endsAt || new Date())
+  const hasStarted = Number.isFinite(startsAt.getTime()) ? Date.now() >= startsAt.getTime() : false
 
   // ✅ Pre-tickets config
   const preCfg = comp?.preTickets || comp?.comp?.preTickets || null
@@ -39,7 +40,6 @@ export default function PiCompetitionCard({
   const baseSold = comp?.ticketsSold || comp?.comp?.ticketsSold || 0
   const baseTotal = comp?.totalTickets || comp?.comp?.totalTickets || 100
 
-  // Will we show pre-sale numbers?
   const willPreSale =
     (status === 'UPCOMING' || status === 'COMING SOON') && preCfg?.enabled === true
 
@@ -69,7 +69,16 @@ export default function PiCompetitionCard({
       { name: 'Scotland', entries: 0 },
       { name: 'Wales', entries: 0 },
     ]
+
   const countryList = Array.isArray(topCountries) ? topCountries : []
+
+  // Sort and take top 5 (by entries desc)
+  const top5 = useMemo(() => {
+    const safe = countryList
+      .map(c => ({ name: c?.name ?? '—', entries: Number(c?.entries ?? 0) }))
+      .sort((a, b) => b.entries - a.entries)
+    return safe.slice(0, 5)
+  }, [countryList])
 
   /* ------------------------ Formatting helpers ------------------------ */
   function resolveNumeric(value) {
@@ -94,7 +103,6 @@ export default function PiCompetitionCard({
     return /\bπ\b|[$€£]/.test(value) ? value : `${value} π`
   }
 
-  // include other possible fields like piAmount just in case
   const rawFee =
     (willPreSale ? preCfg?.entryFee : undefined) ??
     fee ??
@@ -137,19 +145,21 @@ export default function PiCompetitionCard({
       const s = Math.floor((diff / 1000) % 60)
 
       setTimeLeft(
-        `${d > 0 ? `${d}D ` : ''}${h > 0 ? `${h}H ` : ''}${m}M ${
-          d === 0 && h === 0 ? `${s}S` : ''
-        }`
+        `${d > 0 ? `${d}D ` : ''}${h > 0 ? `${h}H ` : ''}${m}M ${d === 0 && h === 0 ? `${s}S` : ''}`
       )
     }
 
     updateTimer()
     const interval = setInterval(updateTimer, 1000)
     return () => clearInterval(interval)
-  }, [startsAt, endsAt, comp?.comingSoon])
+  }, [startsAt, endsAt, comp?.comingSoon, t])
 
-  // For display: when pre-sale is active, rename the status label
   const statusLabel = willPreSale ? t('pre_sale', 'PRE-SALE') : status
+
+  // Shared date formatter
+  const fmtOpts = { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }
+  const startsDisplay = Number.isFinite(startsAt.getTime()) ? startsAt.toLocaleString(undefined, fmtOpts) : '—'
+  const endsDisplay = Number.isFinite(endsAt.getTime()) ? endsAt.toLocaleString(undefined, fmtOpts) : '—'
 
   return (
     <>
@@ -157,7 +167,7 @@ export default function PiCompetitionCard({
         {/* Header */}
         <div className="flex justify-between items-center text-sm mb-2 z-10 relative">
           <span className="px-3 py-1 rounded-full border border-cyan-400 bg-cyan-600/30 text-white font-semibold">
-            🌍 {t('pioneers_global_draw', 'Pioneers Global Draw')}
+            🌍 {t('pioneers_global_draw', 'Pioneers Global Competition')}
           </span>
           <span
             className={`px-3 py-1 rounded-full font-bold text-xs shadow-md ${
@@ -175,43 +185,24 @@ export default function PiCompetitionCard({
         </div>
 
         {/* Title */}
-        <h3 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-center mb-3">
-          {title || comp?.title}
-        </h3>
-
-        {/* Countries Leaderboard (defensive) */}
-        <div className="bg-[#1a1c2e] p-3 rounded-lg border border-cyan-300 text-sm mb-3">
-          <p className="text-center text-cyan-300 font-semibold mb-2">
-            🌍 {t('countries_most_entries', 'Countries with Most Pioneer Entries')}
+        <div className="text-center mb-2">
+          <p className="text-xs text-cyan-400 uppercase tracking-widest mb-1">
+            {t('exclusive_draw', 'Exclusive Draw')}
           </p>
+          <h3 className="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-[#00ffd5] to-[#0077ff] drop-shadow-[0_0_6px_#00e5ff80]">
+            {title || comp?.title}
+          </h3>
+        </div>
 
-          <>
-            {countryList.length === 0 ? (
-              <div className="text-center text-cyan-300/70">{t('no_data_yet', 'No data yet')}</div>
-            ) : (
-              <ul className="space-y-1">
-                {(showAllCountries ? countryList : countryList.slice(0, 3)).map((c, i) => (
-                  <li key={`${c?.name ?? 'country'}-${i}`} className="flex justify-between">
-                    <span>{c?.name ?? '—'}</span>
-                    <span className="text-cyan-300">
-                      {Number(c?.entries ?? 0).toLocaleString()}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </>
-
-          {countryList.length > 3 && (
-            <div className="mt-2 text-center">
-              <button
-                onClick={() => setShowAllCountries(!showAllCountries)}
-                className="text-cyan-300 hover:text-cyan-300 text-xs underline transition"
-              >
-                {showAllCountries ? t('view_less', 'View Less') : t('view_more', 'View More')}
-              </button>
-            </div>
-          )}
+        {/* View Top Countries link UNDER the title */}
+        <div className="mt-1 mb-3 text-center">
+          <button
+            type="button"
+            onClick={() => setShowCountriesModal(true)}
+            className="text-cyan-300 text-xs underline hover:brightness-125"
+          >
+            {t('view_top_countries', 'View Top Countries')}
+          </button>
         </div>
 
         {/* Countdown */}
@@ -236,41 +227,23 @@ export default function PiCompetitionCard({
           <p className="flex justify-between">
             <span className="text-cyan-300">{t('multiple_winners', 'Multiple Winners')}:</span>
             <span>
-              {comp?.comp?.winners
-                ? comp.comp.winners
-                : comp?.winners
-                ? comp.winners
-                : '10'}
+              {comp?.comp?.winners ? comp.comp.winners : comp?.winners ? comp.winners : '10'}
             </span>
           </p>
 
+          {/* 🔄 Start/Draw date toggle */}
           <p className="flex justify-between">
-            <span className="text-cyan-300">{t('draw_date', 'Draw Date')}:</span>
-            <span>
-              {Number.isFinite(endsAt?.getTime())
-                ? endsAt.toLocaleDateString()
-                : '—'}
+            <span className="text-cyan-300">
+              {hasStarted ? t('draw_date', 'Draw Date') : t('starts', 'Starts')}:
             </span>
-          </p>
-
-          <p className="flex justify-between">
-            <span className="text-cyan-300">{t('max_per_user', 'Max Per User')}:</span>
-            <span>
-              {comp?.comp?.maxTicketsPerUser
-                ? comp.comp.maxTicketsPerUser.toLocaleString()
-                : comp?.maxTicketsPerUser
-                ? comp.maxTicketsPerUser.toLocaleString()
-                : '—'}
-            </span>
+            <span>{hasStarted ? endsDisplay : startsDisplay}</span>
           </p>
 
           <p className="flex justify-between">
             <span className="text-cyan-300">
               {statusLabel === t('pre_sale', 'PRE-SALE') ? t('pre_tickets', 'Pre-Tickets') : t('tickets', 'Tickets')}:
             </span>
-            <span>
-              {total ? `${sold.toLocaleString()} / ${total.toLocaleString()}` : '—'}
-            </span>
+            <span>{total ? `${sold.toLocaleString()} / ${total.toLocaleString()}` : '—'}</span>
           </p>
         </div>
 
@@ -278,13 +251,7 @@ export default function PiCompetitionCard({
         <div className="my-3 h-2 w-full bg-gray-700 rounded-full overflow-hidden">
           <div
             className={`h-full transition-all duration-500 ${
-              isSoldOut
-                ? 'bg-red-500'
-                : isLowStock
-                ? 'bg-orange-500'
-                : isNearlyFull
-                ? 'bg-yellow-500'
-                : 'bg-blue-500'
+              isSoldOut ? 'bg-red-500' : isLowStock ? 'bg-orange-500' : isNearlyFull ? 'bg-yellow-500' : 'bg-blue-500'
             }`}
             style={{ width: `${Math.min(soldOutPercentage, 100)}%` }}
           />
@@ -293,13 +260,7 @@ export default function PiCompetitionCard({
         {/* CTA Buttons */}
         <div className="space-y-2 mt-4">
           {slug ? (
-            <Link
-              href={
-                statusLabel === 'PRE-SALE'
-                  ? `/ticket-purchase/pi/${slug}?mode=pre`
-                  : `/ticket-purchase/pi/${slug}`
-              }
-            >
+            <Link href={statusLabel === 'PRE-SALE' ? `/ticket-purchase/pi/${slug}?mode=pre` : `/ticket-purchase/pi/${slug}`}>
               <button
                 disabled={
                   status === 'ENDED' ||
@@ -328,15 +289,11 @@ export default function PiCompetitionCard({
               </button>
             </Link>
           ) : (
-            <button
-              className="w-full py-2 bg-gray-500 text-white rounded-md cursor-not-allowed"
-              disabled
-            >
+            <button className="w-full py-2 bg-gray-500 text-white rounded-md cursor-not-allowed" disabled>
               {t('not_available', 'Not Available')}
             </button>
           )}
 
-          {/* Disable Gift Button during UPCOMING/COMING SOON too */}
           {isGiftable && !disableGift && user?.username && status !== 'UPCOMING' && (
             <button
               onClick={(e) => {
@@ -357,6 +314,62 @@ export default function PiCompetitionCard({
         onClose={() => setShowGiftModal(false)}
         preselectedCompetition={comp}
       />
+
+      {/* Top Countries Modal */}
+      {showCountriesModal && (
+        <div
+          className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('top_countries', 'Top Countries')}
+          onClick={() => setShowCountriesModal(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-xl border border-cyan-400 bg-[#101426] shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-4 py-3 border-b border-cyan-900/50 flex items-center justify-between">
+              <h4 className="text-lg font-bold text-cyan-300">
+                {t('top_countries', 'Top Countries')}
+              </h4>
+              <button onClick={() => setShowCountriesModal(false)} className="text-cyan-200 hover:text-white text-sm">
+                {t('close', 'Close')}
+              </button>
+            </div>
+
+            <div className="p-4">
+              {top5.length === 0 ? (
+                <div className="text-center text-cyan-300/70">{t('no_data_yet', 'No data yet')}</div>
+              ) : (
+                <ul className="space-y-2">
+                  {top5.map((c, idx) => (
+                    <li
+                      key={`${c.name}-${idx}`}
+                      className="flex items-center justify-between rounded-lg bg-[#0f172a] border border-cyan-900/40 px-3 py-2"
+                    >
+                      <span className="font-medium">
+                        {idx + 1}. {c.name}
+                      </span>
+                      <span className="text-cyan-300 font-semibold">
+                        {Number(c.entries).toLocaleString()} {t('entries', 'entries')}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <div className="px-4 pb-4">
+              <button
+                onClick={() => setShowCountriesModal(false)}
+                className="w-full py-2 rounded-md font-bold text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:brightness-110"
+              >
+                {t('got_it', 'Got it')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

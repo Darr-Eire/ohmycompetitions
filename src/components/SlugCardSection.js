@@ -1,13 +1,6 @@
 'use client';
 import SlugCard from './SlugCard';
-import {
-  techItems,
-  premiumItems,
-  piItems,
-  dailyItems,
-  freeItems,
-  cryptoGiveawaysItems,
-} from '../data/competitions';
+
 
 const categories = [
   { title: 'Tech Competitions', items: techItems },

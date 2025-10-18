@@ -6,7 +6,6 @@ import Link from 'next/link';
 import '@fontsource/orbitron';
 import BuyTicketButton from 'components/BuyTicketButton'; // adjust to your alias if needed
 import { usePiAuth } from 'context/PiAuthContext';        // keep this path consistent
-import { describeCompetition } from 'data/competitionDescriptions'; // 👈 centralized copy
 
 // Skill question helpers
 import { getRandomQuestion, isCorrectAnswer as checkAnswer } from 'data/skill-questions';

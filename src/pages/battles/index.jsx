@@ -1,529 +1,299 @@
 // file: src/pages/funnel/index.js
 'use client';
-import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react';
-import { postJSON } from '../../lib/api';
-import { useFunnelStage } from '../../hooks/useFunnel';
+
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import useSWR from 'swr';
 import { usePiAuth } from '../../context/PiAuthContext';
-import { formatPi } from '../../lib/funnelMath';
-import XPBar from '../../components/XPBar';
 
-/* ----------------------------- Config ------------------------------------ */
-const ENTRY_FEE_PI = 0.15;
-const STAGE1_CAPACITY = 25;
-const ADVANCING_PER_ROOM = 5;
+/** ----------------------
+ * Config & Helpers
+ * ---------------------- */
+const ENTRY_FEE_PI = 0.15; // Stage 1 entry
+const fetcher = (url) => fetch(url).then((r) => r.json());
 
-/* ---------------- Helpers ---------------- */
-function inFuture(minutes = 2, jitter = 60_000) {
-  const t = Date.now() + minutes * 60_000 + Math.floor(Math.random() * jitter);
-  return new Date(t).toISOString();
+function formatPi(v) {
+  if (typeof v !== 'number') return v ?? '—';
+  return `${v.toFixed(2)} π`;
 }
 
-/* ---------------- Mock helpers ---------------- */
-function mockItems(count, { stage, live = false } = {}) {
-  const arr = [];
-  for (let i = 0; i < count; i++) {
-    const deterministic = ((i * 17 + stage * 23) % STAGE1_CAPACITY);
-    const entrants = live ? STAGE1_CAPACITY : deterministic;
+async function postJSON(url, body) {
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
 
-    arr.push({
-      slug: `mock-stage${stage}-${String(i + 1).padStart(3, '0')}`,
-      entrantsCount: entrants,
-      capacity: STAGE1_CAPACITY,
-      advancing: stage < 5 ? ADVANCING_PER_ROOM : 1,
+function inFuture(hours = 2) {
+  return new Date(Date.now() + hours * 3600_000).toISOString();
+}
+
+/** ----------------------
+ * Live stages hook (with safe fallback)
+ * API expected at /api/funnel/stages:
+ *   { success: true, prizePoolPi: number, stages: [{ stage, rooms: [...] }] }
+ * If API not present, auto-mock.
+ * ---------------------- */
+function useFunnelStages() {
+  const { data, error, isLoading, mutate } = useSWR('/api/funnel/stages', fetcher, {
+    revalidateOnFocus: true,
+    dedupingInterval: 10_000,
+  });
+
+  // Fallback mock (keeps UX alive if API missing)
+  const fallback = useMemo(() => {
+    const now = Date.now();
+    const mkRoom = (i, n) => ({
+      slug: `room-${n}-${i + 1}`,
+      stage: n,
+      title: `Room ${i + 1}`,
+      nextStartAt: new Date(now + (i + 1) * 60 * 60 * 1000).toISOString(),
       imageUrl: '/pi.jpeg',
-      startsAt: live ? '2025-01-01T00:00:00.000Z' : null,
-      stage,
-      advancedLastHour: Math.floor(Math.random() * 10),
-      nextStartAt: inFuture(2 + i),
     });
-  }
-  return arr;
+    return {
+      success: true,
+      prizePoolPi: 2150, // 1st–5th + 6th–25th @ 25π each (your finals plan)
+      stages: [1, 2, 3, 4, 5].map((n) => ({
+        stage: n,
+        rooms:
+          n === 1
+            ? Array.from({ length: 4 }, (_, i) => mkRoom(i, n))
+            : Array.from({ length: Math.max(1, 6 - n) }, (_, i) => mkRoom(i, n)),
+      })),
+    };
+  }, []);
+
+  const ok = data?.success && Array.isArray(data?.stages);
+  const stages = ok ? data.stages : fallback.stages;
+  const prizePoolPi = ok ? data.prizePoolPi ?? 0 : fallback.prizePoolPi;
+
+  const s1Filling = stages.find((s) => s.stage === 1)?.rooms ?? [];
+  const s2Live = stages.find((s) => s.stage === 2)?.rooms ?? [];
+  const s3Live = stages.find((s) => s.stage === 3)?.rooms ?? [];
+  const s4Live = stages.find((s) => s.stage === 4)?.rooms ?? [];
+  const s5Live = stages.find((s) => s.stage === 5)?.rooms ?? [];
+
+  return {
+    isLoading: isLoading && !ok,
+    isError: !!error && !ok,
+    stages,
+    prizePoolPi,
+    s1Filling,
+    s2Live,
+    s3Live,
+    s4Live,
+    s5Live,
+    mutate,
+  };
 }
 
-/* ---------------- Toast Hook ---------------- */
+/** ----------------------
+ * Toasts (minimal)
+ * ---------------------- */
 function useToasts() {
-  const [toasts, setToasts] = useState([]);
-  const pushToast = useCallback((msg, type = 'info', ttl = 2800) => {
+  const [items, setItems] = useState([]);
+  const pushToast = (text, kind = 'info', ttl = 3000) => {
     const id = Math.random().toString(36).slice(2);
-    setToasts(t => [...t, { id, msg, type }]);
-    setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), ttl);
-  }, []);
-  const Toasts = useCallback(() => (
-    <div className="fixed bottom-[calc(env(safe-area-inset-bottom,0)+1rem)] left-1/2 -translate-x-1/2 z-50 space-y-2 px-4 w-[calc(100%-1rem)] sm:w-auto">
-      {toasts.map(t => (
+    setItems((arr) => [...arr, { id, text, kind }]);
+    setTimeout(() => setItems((arr) => arr.filter((t) => t.id !== id)), ttl);
+  };
+  const Toasts = () => (
+    <div className="fixed z-50 bottom-4 left-1/2 -translate-x-1/2 space-y-2 w-[calc(100%-2rem)] max-w-md">
+      {items.map((t) => (
         <div
           key={t.id}
-          className={`rounded-xl px-5 py-3 text-sm sm:text-base font-semibold shadow-lg text-center ${
-            t.type === 'success' ? 'bg-emerald-400 text-black' :
-            t.type === 'warn'    ? 'bg-amber-400 text-black'  :
-            t.type === 'error'   ? 'bg-rose-500 text-white'   :
-                                   'bg-cyan-400 text-black'
+          className={`rounded-lg px-3 py-2 text-sm backdrop-blur border ${
+            t.kind === 'error'
+              ? 'bg-red-500/20 border-red-400 text-red-100'
+              : t.kind === 'warn'
+              ? 'bg-yellow-500/20 border-yellow-400 text-yellow-100'
+              : 'bg-cyan-500/20 border-cyan-400 text-cyan-100'
           }`}
         >
-          {t.msg}
+          {t.text}
         </div>
       ))}
     </div>
-  ), [toasts]);
+  );
   return { pushToast, Toasts };
 }
 
-/* ---------------- Countdown Circle ---------------- */
-function CountdownCircle({ targetISO, size = 64, stroke = 6, label = 'Next Stage' }) {
-  const [mounted, setMounted] = useState(false);
-  const [now, setNow] = useState(() => Date.now());
-
-  useEffect(() => {
-    setMounted(true);
-    const id = setInterval(() => setNow(Date.now()), 250);
-    return () => clearInterval(id);
-  }, []);
-
-  const target = new Date(targetISO).getTime();
-  const remaining = Math.max(0, target - now);
-
-  const estTotal = 2 * 60 * 1000;
-  const progress = 1 - (remaining / estTotal);
-  const r = (size - stroke) / 2;
-  const C = 2 * Math.PI * r;
-  const dash = Math.min(C, Math.max(0, progress * C));
-
-  const total = Math.max(0, Math.floor(remaining / 1000));
-  const m = Math.floor(total / 60);
-  const s = total % 60;
-  const display = total === 0 ? 'Live' : `${m}:${String(s).padStart(2, '0')}`;
-
-  return (
-    <div className="flex flex-col items-center">
-      <div className="relative" style={{ width: size, height: size }}>
-        <svg width={size} height={size} className="transform -rotate-90">
-          <circle cx={size/2} cy={size/2} r={r} stroke="rgba(255,255,255,0.15)" strokeWidth={stroke} fill="none" />
-          <circle
-            cx={size/2}
-            cy={size/2}
-            r={r}
-            stroke="rgb(34,211,238)"
-            strokeWidth={stroke}
-            strokeDasharray={`${dash} ${C-dash}`}
-            strokeLinecap="round"
-            fill="none"
-            className="drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]"
-          />
-        </svg>
-        <div className="absolute inset-0 grid place-items-center text-xs font-bold text-white">
-          <span suppressHydrationWarning>{mounted ? display : '—:—'}</span>
-        </div>
-        <div className="absolute -inset-1 rounded-full animate-[ping_1.5s_ease-out_infinite] bg-cyan-400/10" />
-      </div>
-      <div className="mt-1 text-[11px] text-white/60">{label}</div>
-    </div>
-  );
-}
-
-/* ---------------- Reusable KPI ---------------- */
+/** ----------------------
+ * Small UI bits
+ * ---------------------- */
 function KPI({ icon, label, value, sub }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur p-4 text-left">
-      <div className="flex items-center gap-2 text-white/70 text-xs">
-        <span className="text-base">{icon}</span>
-        <span>{label}</span>
+    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+      <div className="text-xl">{icon}</div>
+      <div className="text-sm text-white/60 mt-1">{label}</div>
+      <div className="text-lg font-bold text-white mt-1">{value}</div>
+      {sub ? <div className="text-xs text-white/50">{sub}</div> : null}
+    </div>
+  );
+}
+
+function CountdownCircle({ targetISO, size = 56, stroke = 5, label = 'Next' }) {
+  const [left, setLeft] = useState('');
+  useEffect(() => {
+    const i = setInterval(() => {
+      const t = new Date(targetISO).getTime() - Date.now();
+      if (t <= 0) return setLeft('Now');
+      const h = Math.floor(t / 3_600_000);
+      const m = Math.floor((t % 3_600_000) / 60_000);
+      setLeft(`${h}h ${m}m`);
+    }, 1000);
+    return () => clearInterval(i);
+  }, [targetISO]);
+  return (
+    <div className="flex flex-col items-center justify-center">
+      <div
+        className="rounded-full border border-cyan-400/60 text-cyan-200 flex items-center justify-center"
+        style={{ width: size, height: size }}
+      >
+        <span className="text-xs font-bold">{left}</span>
       </div>
-      <div className="mt-2 text-2xl font-extrabold text-cyan-300">{value}</div>
-      {sub ? <div className="text-[11px] text-white/50 mt-1">{sub}</div> : null}
+      <div className="text-[11px] text-white/60 mt-1">{label}</div>
     </div>
   );
 }
 
-/* ---------------- Stage Rules (shared) ---------------- */
-function getStageRules(stage) {
-  switch (stage) {
-    case 1:
-      return [
-        'Entry cost required to join Stage 1.',
-        'Tickets are drawn at random to decide who advances.',
-        'If you win a Stage 2 ticket, you move on.',
-        'One account per player; anti-cheat enforced.',
-      ];
-    case 2:
-      return [
-        'Only players with a Stage 2 ticket may enter.',
-        'Tickets are randomly selected for Stage 3.',
-        'Winning a ticket guarantees your advance.',
-        'Fair play and account checks apply.',
-      ];
-    case 3:
-      return [
-        'Stage 3 requires a valid ticket to join.',
-        'Random draw determines who moves to Stage 4.',
-        'Keep your ticket safe without it you cannot enter.',
-      ];
-    case 4:
-      return [
-        'Final qualifier before the Finals.',
-        'Stage 4 tickets are drawn at random.',
-        'Winners advance to the Finals with a Final Ticket.',
-        'Strict fairness checks on duplicate or suspicious accounts.',
-      ];
-    case 5:
-      return [
-        'Final Ticket required to enter.',
-        'Random draw determines where evryone is placement for the final prizes',
-        'Prize pool is shared according to placement.',
-        'Anti-cheat & manual review apply to all finalists.',
-      ];
-    default:
-      return ['General rules apply.'];
-  }
-}
-
-function StageRulesModal({ stage, onClose }) {
-  if (!stage) return null;
-  const rules = getStageRules(stage);
+function XPBar({ xp, level }) {
+  const next = 100 + (level - 1) * 50;
+  const pct = Math.min(100, Math.round((xp / next) * 100));
   return (
-    <div className="fixed inset-0 z-50">
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-      <div className="absolute inset-x-4 sm:inset-x-auto sm:right-6 top-10 sm:top-16 z-10 max-w-md rounded-2xl border border-white/10 bg-[#0f1b33] p-4 shadow-2xl">
-        <div className="flex items-center justify-between">
-          <div className="text-white font-semibold">Stage {stage} Rules</div>
-          <button
-            onClick={onClose}
-            className="text-white/70 hover:text-white text-sm px-2 py-1 rounded-md hover:bg-white/10"
-          >
-            Close
-          </button>
-        </div>
-        <ul className="mt-3 text-sm text-white/70 space-y-2 list-disc pl-5">
-          {rules.map((r, i) => <li key={i}>{r}</li>)}
-        </ul>
-        <div className="mt-4 text-[11px] text-white/50">
-          Note: Rule enforcement includes automated and manual review.
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ---------------- Finals prize: single source of truth ---------------- */
-const FINALS_BREAKDOWN = [
-  { place: '1st', prizePi: 750 },
-  { place: '2nd', prizePi: 500 },
-  { place: '3rd', prizePi: 250 },
-  { place: '4th', prizePi: 100 },
-  { place: '5th', prizePi: 50  },
-  ...Array.from({ length: 20 }, () => ({ prizePi: 25 })), // 6th–25th @ 25 π
-];
-
-/* ---------------- Finals meta / header ---------------- */
-function computeFinalsMeta(list = []) {
-  const rooms = list.length;
-  const entrants = list.reduce((s, r) => s + (r.entrantsCount || 0), 0);
-  const capacity = list.reduce((s, r) => s + (r.capacity || 0), 0);
-
-  // Fixed prize pool from FINALS_BREAKDOWN (total = 2150 π)
-  const prizePoolPi = FINALS_BREAKDOWN.reduce((sum, r) => sum + (r.prizePi || 0), 0);
-
-  const nextStartTs = list
-    .map(r => r.nextStartAt ? new Date(r.nextStartAt).getTime() : Infinity)
-    .reduce((min, t) => Math.min(min, t), Infinity);
-  const nextStartISO = Number.isFinite(nextStartTs) ? new Date(nextStartTs).toISOString() : null;
-
-  return { rooms, entrants, capacity, nextStartISO, prizePoolPi };
-}
-
-function FinalsHeader({ list }) {
-  const meta = useMemo(() => computeFinalsMeta(list), [list]);
-  return (
-    <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
-      <KPI icon="👥" label="Finalists" value={String(meta.entrants)} sub={`${meta.rooms} room${meta.rooms===1?'':'s'}`} />
-      <KPI icon="🪪" label="Capacity" value={String(meta.capacity)} sub="total slots" />
-      <KPI icon="🏆" label="Prize Pool" value={`${meta.prizePoolPi.toLocaleString()} π`} sub="fixed" />
-      <div className="rounded-xl border border-white/10 bg-white/5 p-4 flex items-center justify-center">
-        <CountdownCircle targetISO={meta.nextStartISO || inFuture(2)} size={56} stroke={5} label="Next Final" />
-      </div>
-    </div>
-  );
-}
-
-/* ---------------- Finals Prize Breakdown (fixed) ---------------- */
-function FinalsPrizeCard() {
-  const breakdown = [
-    { place: '1st Place', prize: '750 π' },
-    { place: '2nd Place', prize: '500 π' },
-    { place: '3rd Place', prize: '250 π' },
-    { place: '4th Place', prize: '100 π' },
-    { place: '5th Place', prize: '50 π' },
-    { place: '6th – 25th', prize: '25 π each' },
-  ];
-  return (
-    <div className="rounded-2xl border border-cyan-400/40 bg-[#0f1b33] p-4 shadow-lg shadow-cyan-400/10">
-      <div className="text-sm font-bold text-cyan-300 mb-3 flex items-center gap-2 drop-shadow-[0_0_6px_rgba(34,211,238,0.6)]">
-        Finals Prize Breakdown
-      </div>
-      <ul className="space-y-2 text-sm text-white/80">
-        {breakdown.map((b, i) => (
-          <li key={i} className="flex justify-between border-b border-white/5 pb-2 last:border-0 last:pb-0">
-            <span>{b.place}</span>
-            <span className="font-semibold text-cyan-200 drop-shadow-[0_0_4px_rgba(34,211,238,0.7)]">{b.prize}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-/* ---------------- Finals Rules Card ---------------- */
-function FinalsRulesCard() {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-      <div className="text-white font-semibold">Finals Rules</div>
-      <ul className="mt-2 text-xs text-white/70 space-y-1 list-disc pl-5">
-        <li>One final ticket required to enter.</li>
-        <li>Winners share the prize pool (see breakdown).</li>
-        <li>Anti-cheat & fairness checks apply.</li>
-      </ul>
-    </div>
-  );
-}
-
-function MiniCard({ data, stage, onJoin, entryFee }) {
-  const spotsLeft = Math.max(0, (data.capacity || STAGE1_CAPACITY) - (data.entrantsCount || 0));
-  const pct = Math.max(0, Math.min(100, Math.floor((data.entrantsCount / (data.capacity || STAGE1_CAPACITY)) * 100)));
-  const canJoinStage1 = stage === 1 && spotsLeft > 0;
-
-  const entrants = data.entrantsCount || 0;
-  const adv = data.advancing || (stage === 1 ? ADVANCING_PER_ROOM : 1);
-  // Win chance shown as fixed 20% (per your request)
-  // const winChance = entrants > 0 ? Math.round((adv / entrants) * 100) : null;
-
-  const isFinals = stage === 5;
-
-  return (
-    <div
-      dir={isFinals ? 'rtl' : 'ltr'}
-      className={`min-w-[260px] sm:min-w-[300px] rounded-2xl border 
-        ${isFinals ? 'border-cyan-400 text-right' : 'border-white/10 text-left'} 
-        bg-[#0f1b33] p-5`}
-    >
-      <div className="flex items-center justify-between">
-        <div className="text-white font-semibold">
-          {stage === 1 ? 'Qualifier' : `Stage ${stage}`}
-        </div>
-        <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-cyan-400 text-black">
-          {stage === 1 ? 'FILLING' : 'TICKETS'}
+    <div>
+      <div className="flex items-center justify-between text-xs text-white/70 mb-1">
+        <span>Level {level}</span>
+        <span>
+          {xp}/{next} XP
         </span>
       </div>
-
-      <div className="mt-3 text-xs sm:text-sm text-white/80">
-        Players {data.entrantsCount}/{data.capacity} • Advance Top {adv}
-      </div>
-
-      <div className="mt-3 h-2 rounded-full bg-white/10 overflow-hidden" dir="ltr">
-        <div className="h-full bg-cyan-400" style={{ width: `${pct}%` }} />
-      </div>
-
-      <div className="mt-2 text-[11px] text-white/60 space-y-1">
-        <div>+5 XP when you join this stage</div>
-        <div>Top {adv} advance for a share of the pool</div>
-        <div>Win chance: 20%</div>
-      </div>
-
-      <div className="mt-4 flex items-center justify-between gap-3">
-        <CountdownCircle targetISO={data.nextStartAt || inFuture(2)} size={44} stroke={5} label="Starts" />
-        {stage === 1 ? (
-          canJoinStage1 ? (
-            <button
-              onClick={() => onJoin?.({ slug: null, stage })}
-              className="flex-1 rounded-lg bg-cyan-400 text-black py-2 font-bold"
-            >
-              Enter {formatPi(entryFee)}
-            </button>
-          ) : (
-            <div className="flex-1 text-center rounded-lg bg-white/10 py-2 text-sm text-white/70">Full</div>
-          )
-        ) : (
-          <button
-            onClick={() => onJoin?.({ slug: data.slug, stage })}
-            className="flex-1 rounded-lg bg-emerald-400 text-black py-2 font-bold"
-          >
-            {isFinals ? 'Use Final Ticket' : 'Use Ticket'}
-          </button>
-        )}
+      <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+        <div className="h-full bg-gradient-to-r from-cyan-400 to-blue-500" style={{ width: `${pct}%` }} />
       </div>
     </div>
   );
 }
 
-function HScrollCards({ list, stage, onJoin, entryFee }) {
-  if (!list?.length) return null;
+/** ----------------------
+ * Cards & Blocks
+ * ---------------------- */
+function RoomCard({ room, onJoin, entryFee }) {
   return (
-    <div className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      <div className="flex gap-4 pr-2">
-        {list.map((c) => (
-          <MiniCard key={c.slug} data={c} stage={stage} onJoin={onJoin} entryFee={entryFee} />
-        ))}
+    <div className="rounded-xl border border-white/10 bg-white/5 p-4 flex flex-col gap-2">
+      <div className="text-white font-semibold">{room.title}</div>
+      <div className="text-xs text-white/60">
+        Starts:{' '}
+        <span className="text-cyan-300">
+          {new Date(room.nextStartAt).toLocaleString(undefined, {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          })}
+        </span>
       </div>
-    </div>
-  );
-}
-
-/* ---------------- Stage Block ---------------- */
-function StageBlock({ stage, title, list, onJoin, entryFee, onShowRules }) {
-  if (!list?.length) return null;
-
-  const advancing = list[0]?.advancing ?? (stage === 1 ? 5 : 1);
-  const advancedLastHour = list.reduce((sum, room) => sum + (room.advancedLastHour || 0), 0);
-  const entrantsLastHour = list.reduce((sum, room) => sum + (room.entrantsLastHour || 0), 0);
-  const winRate = entrantsLastHour > 0 ? Math.round((advancedLastHour / entrantsLastHour) * 100) : 0;
-
-  const nextISO = list
-    .map(r => r.nextStartAt ? new Date(r.nextStartAt).getTime() : Infinity)
-    .reduce((min, t) => Math.min(min, t), Infinity);
-
-  return (
-    <section className="space-y-4" id={`stage-${stage}`}>
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <h3 className="text-lg sm:text-xl font-bold text-white">{title}</h3>
-          <p className="text-xs text-white/60 mt-1">
-            {stage < 5 ? `Top ${advancing} advance • Last hour win rate: ` : `Finals • Last hour win rate: `}
-            <span className="text-cyan-300 font-semibold">{winRate}%</span>
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 sm:gap-3">
-          <button
-            onClick={() => onShowRules?.(stage)}
-            className="text-xs px-3 py-1 rounded-full border border-white/15 text-white/80 hover:bg-white/5"
-            aria-label={`Stage ${stage} rules`}
-          >
-            Rules
-          </button>
-
-          {Number.isFinite(nextISO) && (
-            <div className="hidden sm:flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-2 py-1">
-              <CountdownCircle targetISO={new Date(nextISO).toISOString()} size={40} stroke={4} label="Next" />
-            </div>
-          )}
-          {stage === 1 && (
-            <div className="hidden sm:flex items-center gap-2 text-xs text-white/70">
-              <span className="rounded-full bg-cyan-400/20 text-cyan-300 border border-cyan-400/30 px-2 py-1">
-                Entry {formatPi(ENTRY_FEE_PI)}
-              </span>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <HScrollCards list={list} stage={stage} onJoin={onJoin} entryFee={entryFee} />
-    </section>
-  );
-}
-
-/* ---------------- Finals Leaderboard (mock simple list) ---------------- */
-function FinalsLeaderboard({ items = [] }) {
-  const data = items.slice(0, 5).map((r, i) => ({
-    place: i + 1,
-    slug: r.slug,
-    entrants: r.entrantsCount || 0,
-  }));
-  if (data.length === 0) return null;
-  return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
-      <div className="px-4 py-3 text-white font-semibold">Live Finals Rooms</div>
-      <div className="divide-y divide-white/10">
-        {data.map(row => (
-          <div key={row.slug} className="px-4 py-3 flex items-center justify-between text-sm">
-            <div className="flex items-center gap-3">
-              <span className="w-6 h-6 grid place-items-center rounded-full bg-cyan-400 text-black font-bold text-xs">{row.place}</span>
-              <span className="text-white/90 font-medium">{row.slug}</span>
-            </div>
-            <div className="text-white/70">Players {row.entrants}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ---------------- Finals Tab Content ---------------- */
-function FinalsTab({ list, onJoin, entryFee, onShowRules }) {
-  const meta = useMemo(() => computeFinalsMeta(list), [list]);
-
-  return (
-    <>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mt-1">
+        <div className="text-xs text-white/60">Entry {formatPi(entryFee)}</div>
         <button
-          onClick={() => onShowRules?.(5)}
-          className="text-xs px-3 py-1 rounded-full border border-white/15 text-white/80 hover:bg-white/5"
-          aria-label="Finals rules"
+          onClick={() => onJoin({ slug: room.slug, stage: room.stage })}
+          className="rounded-md bg-cyan-400 text-black px-3 py-1 text-sm font-bold"
         >
+          Join
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function StageBlock({ stage, title, list, onJoin, entryFee, onShowRules }) {
+  return (
+    <section className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="text-white font-bold">{title}</h3>
+        <button onClick={() => onShowRules(stage)} className="text-xs underline text-cyan-300 hover:text-cyan-200">
           Rules
         </button>
       </div>
 
-      <FinalsHeader list={list} />
-
-      <div className="mt-6 grid lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          {list?.length ? (
-            <div className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              <div className="flex gap-4 pr-2" id="stage-5">
-                {list.map((c) => (
-                  <MiniCard key={c.slug} data={c} stage={5} onJoin={onJoin} entryFee={entryFee} />
-                ))}
-              </div>
+      {/* Mobile: horizontal scroll */}
+      <div className="sm:hidden -mx-2 px-2">
+        <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2">
+          {list.map((r) => (
+            <div key={r.slug} className="min-w-[85%] snap-center">
+              <RoomCard room={r} onJoin={onJoin} entryFee={entryFee} />
             </div>
-          ) : (
-            <div className="text-white/70">No finals room available right now.</div>
-          )}
-
-          <FinalsLeaderboard items={list} />
+          ))}
         </div>
-
-        <aside className="space-y-6">
-          <FinalsPrizeCard />
-          <FinalsRulesCard />
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-            <div className="text-sm font-semibold text-white">Enter Finals</div>
-            <div className="text-[11px] text-white/60 mt-1">Requires a Final Ticket</div>
-            <button
-              onClick={() => {
-                const el = document.getElementById('stage-5');
-                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }}
-              className="mt-3 w-full rounded-lg bg-emerald-400 text-black py-2 font-bold"
-            >
-              Choose a Finals Room
-            </button>
-          </div>
-        </aside>
       </div>
-    </>
+
+      {/* Desktop grid */}
+      <div className="hidden sm:grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+        {list.map((r) => (
+          <RoomCard key={r.slug} room={r} onJoin={onJoin} entryFee={entryFee} />
+        ))}
+      </div>
+    </section>
   );
 }
 
-/* ---------------- Main Page ---------------- */
+function FinalsTab({ list, onJoin, entryFee, onShowRules }) {
+  return (
+    <section className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="text-white font-bold">Finals</h3>
+        <button onClick={() => onShowRules(5)} className="text-xs underline text-cyan-300 hover:text-cyan-200">
+          Rules
+        </button>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {list.map((r) => (
+          <RoomCard key={r.slug} room={r} onJoin={onJoin} entryFee={entryFee} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function StageRulesModal({ stage, onClose }) {
+  if (!stage) return null;
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={onClose}>
+      <div
+        className="w-full max-w-lg rounded-xl border border-cyan-400 bg-[#0f172a] text-white p-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-2">
+          <h4 className="text-cyan-300 font-bold">Stage {stage} Rules</h4>
+          <button onClick={onClose} className="text-cyan-200 hover:text-white text-sm">
+            Close
+          </button>
+        </div>
+        <ul className="text-sm space-y-2 text-white/80">
+          <li>• Standard competition rules apply.</li>
+          <li>• Anti-bot checks enabled.</li>
+          <li>• Prizes distributed on-chain after verification.</li>
+        </ul>
+        <div className="mt-3 text-right">
+          <button onClick={onClose} className="rounded-md bg-cyan-400 text-black px-4 py-2 font-bold">
+            Got it
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** ----------------------
+ * MAIN PAGE
+ * ---------------------- */
 export default function FunnelIndexPage() {
   const { user } = usePiAuth();
-  const s1 = useFunnelStage(1);
-  const s2 = useFunnelStage(2);
-  const s3 = useFunnelStage(3);
-  const s4 = useFunnelStage(4);
-  const s5 = useFunnelStage(5);
 
-  const [mock] = useState(() => ({
-    s1Filling: mockItems(4, { stage: 1 }),
-    s2Live: mockItems(3, { stage: 2, live: true }),
-    s3Live: mockItems(2, { stage: 3, live: true }),
-    s4Live: mockItems(2, { stage: 4, live: true }),
-    s5Live: mockItems(1, { stage: 5, live: true }),
-  }));
-
-  const s1Filling = s1.filling?.length ? s1.filling : mock.s1Filling;
-  const s2Live = s2.live?.length ? s2.live : mock.s2Live;
-  const s3Live = s3.live?.length ? s3.live : mock.s3Live;
-  const s4Live = s4.live?.length ? s4.live : mock.s4Live;
-  const s5Live = s5.live?.length ? s5.live : mock.s5Live;
+  const { stages, prizePoolPi, s1Filling, s2Live, s3Live, s4Live, s5Live, isLoading, isError, mutate } =
+    useFunnelStages();
 
   const { pushToast, Toasts } = useToasts();
 
@@ -533,113 +303,117 @@ export default function FunnelIndexPage() {
 
   useEffect(() => {
     const nextLevelXP = 100 + (level - 1) * 50;
-    if (xp >= nextLevelXP) setLevel(prev => prev + 1);
+    if (xp >= nextLevelXP) setLevel((prev) => prev + 1);
   }, [xp, level]);
 
-  const handleJoin = useCallback(async ({ slug, stage }) => {
-    if (joining) return;
-    if (!user?.id && !user?.piUserId) {
-      pushToast('Please log in with Pi to enter.', 'warn');
-      return;
-    }
-    setJoining(true);
-    const userId = user?.id || user?.piUserId;
-
-    try {
-      if (stage === 1) {
-        const assignedSlug = null;
-        const Pi = typeof window !== 'undefined' ? window.Pi : undefined;
-
-        if (Pi?.createPayment) {
-          await Pi.createPayment(
-            {
-              amount: ENTRY_FEE_PI,
-              memo: 'OMC Funnel Stage 1',
-              metadata: { slug: assignedSlug, stage, type: 'funnel-entry' },
-            },
-            {
-              onReadyForServerApproval: async (paymentId) => {
-                const resp = await postJSON('/api/funnel/join', {
-                  slug: assignedSlug,
-                  userId,
-                  stage,
-                  paymentId,
-                  amount: ENTRY_FEE_PI,
-                  currency: 'pi',
-                });
-                if (resp?.slug) pushToast(`Placed in ${resp.slug}`, 'success');
-              },
-              onReadyForServerCompletion: async (paymentId, txId) => {
-                await postJSON('/api/funnel/confirm', {
-                  slug: assignedSlug,
-                  userId,
-                  stage,
-                  paymentId,
-                  txId,
-                  amount: ENTRY_FEE_PI,
-                  currency: 'pi',
-                });
-                s1.mutate();
-              },
-              onCancel: () => pushToast('Payment canceled.', 'warn'),
-              onError: (err) => pushToast(err?.message || 'Payment failed.', 'error'),
-            }
-          );
-        } else {
-          // Dev fallback, no paymentId path
-          const resp = await postJSON('/api/funnel/join', {
-            slug: assignedSlug,
-            userId,
-            stage,
-            amount: ENTRY_FEE_PI,
-            currency: 'pi',
-          });
-          pushToast(`Entered • ${resp?.slug ? `Room ${resp.slug}` : ''}`, 'success');
-          s1.mutate();
-        }
-      } else {
-        // TODO: implement /api/funnel/use-ticket for stages 2+
-        pushToast('Ticket entry coming soon.', 'warn');
+  const handleJoin = useCallback(
+    async ({ slug, stage }) => {
+      if (joining) return;
+      if (!user?.id && !user?.piUserId) {
+        pushToast('Please log in with Pi to enter.', 'warn');
+        return;
       }
+      setJoining(true);
+      const userId = user?.id || user?.piUserId;
 
-      setXp(x => x + 20);
-    } catch (e) {
-      pushToast(e?.message || 'Could not enter', 'error');
-    } finally {
-      setJoining(false);
-    }
-  }, [user, pushToast, s1, joining]);
+      try {
+        if (stage === 1) {
+          const assignedSlug = slug ?? null; // server can place user if null
+          const Pi = typeof window !== 'undefined' ? window.Pi : undefined;
 
-  const allLists = [s2Live, s3Live, s4Live, s5Live].flat();
+          if (Pi?.createPayment) {
+            await Pi.createPayment(
+              {
+                amount: ENTRY_FEE_PI,
+                memo: 'OMC Funnel Stage 1',
+                metadata: { slug: assignedSlug, stage, type: 'funnel-entry' },
+              },
+              {
+                onReadyForServerApproval: async (paymentId) => {
+                  const resp = await postJSON('/api/funnel/join', {
+                    slug: assignedSlug,
+                    userId,
+                    stage,
+                    paymentId,
+                    amount: ENTRY_FEE_PI,
+                    currency: 'pi',
+                  });
+                  if (resp?.slug) pushToast(`Placed in ${resp.slug}`, 'success');
+                },
+                onReadyForServerCompletion: async (paymentId, txId) => {
+                  await postJSON('/api/funnel/confirm', {
+                    slug: assignedSlug,
+                    userId,
+                    stage,
+                    paymentId,
+                    txId,
+                    amount: ENTRY_FEE_PI,
+                    currency: 'pi',
+                  });
+                  mutate();
+                },
+                onCancel: () => pushToast('Payment canceled.', 'warn'),
+                onError: (err) => pushToast(err?.message || 'Payment failed.', 'error'),
+              }
+            );
+          } else {
+            // Dev fallback (no payment id path)
+            const resp = await postJSON('/api/funnel/join', {
+              slug: assignedSlug,
+              userId,
+              stage,
+              amount: ENTRY_FEE_PI,
+              currency: 'pi',
+            });
+            pushToast(`Entered • ${resp?.slug ? `Room ${resp.slug}` : ''}`, 'success');
+            mutate();
+          }
+        } else {
+          pushToast('Ticket entry coming soon.', 'warn');
+        }
+
+        setXp((x) => x + 20);
+      } catch (e) {
+        pushToast(e?.message || 'Could not enter', 'error');
+      } finally {
+        setJoining(false);
+      }
+    },
+    [user, pushToast, joining, mutate]
+  );
+
+  // Hero next countdown: earliest start across live stages
+  const allLists = useMemo(() => [s2Live, s3Live, s4Live, s5Live].flat(), [s2Live, s3Live, s4Live, s5Live]);
   const heroNextISO = useMemo(() => {
     const ts = allLists
-      .map(r => r?.nextStartAt ? new Date(r.nextStartAt).getTime() : Infinity)
+      .map((r) => (r?.nextStartAt ? new Date(r.nextStartAt).getTime() : Infinity))
       .reduce((min, t) => Math.min(min, t), Infinity);
     return Number.isFinite(ts) ? new Date(ts).toISOString() : inFuture(2);
   }, [allLists]);
 
-  /* Tabs (no "All") */
-  const stageTabs = useMemo(() => ([
-    { key: '1', label: 'Stage 1', n: 1, list: s1Filling },
-    { key: '2', label: 'Stage 2', n: 2, list: s2Live },
-    { key: '3', label: 'Stage 3', n: 3, list: s3Live },
-    { key: '4', label: 'Stage 4', n: 4, list: s4Live },
-    { key: '5', label: 'Finals',  n: 5, list: s5Live },
-  ]), [s1Filling, s2Live, s3Live, s4Live, s5Live]);
-
+  // Tabs
+  const stageTabs = useMemo(
+    () => [
+      { key: '1', label: 'Stage 1', n: 1, list: s1Filling },
+      { key: '2', label: 'Stage 2', n: 2, list: s2Live },
+      { key: '3', label: 'Stage 3', n: 3, list: s3Live },
+      { key: '4', label: 'Stage 4', n: 4, list: s4Live },
+      { key: '5', label: 'Finals', n: 5, list: s5Live },
+    ],
+    [s1Filling, s2Live, s3Live, s4Live, s5Live]
+  );
   const [activeTab, setActiveTab] = useState('1');
 
-  // NEW: defer scrolling until after render
+  // deferred smooth scroll to stage
   const pendingScrollRef = useRef(null);
   useEffect(() => {
     if (!pendingScrollRef.current) return;
     const key = pendingScrollRef.current;
     const n = Number(key);
-
     requestAnimationFrame(() => {
       const el = document.getElementById(`stage-${n}`);
       if (!el) return;
-      const SCROLL_OFFSET = 72; // adjust if you have a sticky header height
+      const SCROLL_OFFSET = 72;
       const top = el.getBoundingClientRect().top + window.scrollY - SCROLL_OFFSET;
       window.scrollTo({ top, behavior: 'smooth' });
       pendingScrollRef.current = null;
@@ -647,14 +421,37 @@ export default function FunnelIndexPage() {
   }, [activeTab]);
 
   const handleTab = (key) => {
-    pendingScrollRef.current = key; // remember target
-    setActiveTab(key);              // trigger render; effect will scroll
+    pendingScrollRef.current = key;
+    setActiveTab(key);
   };
 
-  /* Stage Rules modal control */
+  // rules modal
   const [rulesStage, setRulesStage] = useState(null);
   const openRules = useCallback((stage) => setRulesStage(stage), []);
   const closeRules = useCallback(() => setRulesStage(null), []);
+
+  /** Loading / Error */
+  if (isLoading) {
+    return (
+      <main className="min-h-screen bg-[#0f1b33] p-6 text-white/80">
+        <div className="animate-pulse h-10 rounded-xl bg-cyan-900/20 mb-3" />
+        <div className="animate-pulse h-24 rounded-xl bg-cyan-900/20 mb-4" />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-32 rounded-xl bg-cyan-900/10 border border-cyan-700/30" />
+          ))}
+        </div>
+      </main>
+    );
+  }
+
+  if (isError) {
+    return (
+      <main className="min-h-screen bg-[#0f1b33] p-6 text-white/80">
+        <div className="text-red-400">Error loading stages.</div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[#0f1b33] pb-24">
@@ -669,34 +466,18 @@ export default function FunnelIndexPage() {
                 OMC Stages
               </h1>
               <p className="mt-2 text-white/70 text-sm max-w-xl">
-              Start in <span className="text-cyan-300 font-semibold">Stage 1</span>, progress through each stage and reach the finals to claim your share of the prize pool.
-
+                Start in <span className="text-cyan-300 font-semibold">Stage 1</span>, progress through each stage and
+                reach the finals to claim your share of the prize pool.
               </p>
 
               <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
-  <KPI
-    icon="👥"
-    label="Active Players"
-    value="246"
-    sub="currently online"
-  />
-  <KPI
-    icon="🏁"
-    label="Stages"
-    value="3"
-    sub="open now"
-  />
-  <KPI
-    icon="💰"
-    label="Stage 5 Prize Pool"
-    value="2,150 π"
-    sub="fixed"
-  />
-  <div className="rounded-xl border border-white/10 bg-white/5 p-4 flex items-center justify-center">
-    <CountdownCircle targetISO={heroNextISO} size={56} stroke={5} label="Next Stage" />
-  </div>
-</div>
-
+                <KPI icon="👥" label="Active Players" value="246" sub="currently online" />
+                <KPI icon="🏁" label="Stages" value={[s2Live, s3Live, s4Live].filter((x) => x.length).length + 1} sub="open now" />
+                <KPI icon="💰" label="Stage 5 Prize Pool" value={`${prizePoolPi.toLocaleString()} π`} sub="fixed" />
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4 flex items-center justify-center">
+                  <CountdownCircle targetISO={heroNextISO} size={56} stroke={5} label="Next Stage" />
+                </div>
+              </div>
 
               <div className="mt-4">
                 <XPBar xp={xp} level={level} />
@@ -717,9 +498,7 @@ export default function FunnelIndexPage() {
                     Enter
                   </button>
                 </div>
-                <div className="mt-4 text-[11px] text-white/50">
-                  Earn XP every time you play and advance.
-                </div>
+                <div className="mt-4 text-[11px] text-white/50">Earn XP every time you play and advance.</div>
               </div>
             </aside>
           </div>
@@ -731,15 +510,15 @@ export default function FunnelIndexPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 lg:py-10">
           {/* Tabs */}
           <div className="mb-6 flex flex-wrap gap-2">
-            {stageTabs.map(t => {
+            {stageTabs.map((t) => {
               const active = activeTab === t.key;
               return (
                 <button
                   key={t.key}
                   onClick={() => handleTab(t.key)}
-                  className={`px-3 py-1 rounded-full text-xs border transition
-                    ${active ? 'bg-cyan-400 text-black border-cyan-400'
-                             : 'border-white/15 text-white/80 hover:bg-white/5'}`}
+                  className={`px-3 py-1 rounded-full text-xs border transition ${
+                    active ? 'bg-cyan-400 text-black border-cyan-400' : 'border-white/15 text-white/80 hover:bg-white/5'
+                  }`}
                   aria-pressed={active}
                 >
                   {t.label}
@@ -752,11 +531,11 @@ export default function FunnelIndexPage() {
           {activeTab === '5' ? (
             <>
               <div id="stage-5" className="h-0" />
-              <FinalsTab list={s5Live} onJoin={handleJoin} entryFee={ENTRY_FEE_PI} onShowRules={openRules} />
+              <FinalsTab list={s5Live} onJoin={handleJoin} entryFee={ENTRY_FEE_PI} onShowRules={setRulesStage} />
             </>
           ) : (
             (() => {
-              const tab = stageTabs.find(t => t.key === activeTab);
+              const tab = stageTabs.find((t) => t.key === activeTab);
               if (!tab) return null;
               const title = tab.n === 1 ? 'Stage 1 · Open Qualifiers' : `Stage ${tab.n}`;
               if (!tab.list || tab.list.length === 0) {
@@ -771,7 +550,7 @@ export default function FunnelIndexPage() {
                     list={tab.list}
                     onJoin={handleJoin}
                     entryFee={ENTRY_FEE_PI}
-                    onShowRules={openRules}
+                    onShowRules={setRulesStage}
                   />
                 </>
               );
@@ -797,7 +576,7 @@ export default function FunnelIndexPage() {
       </div>
 
       {/* Rules Modal */}
-      <StageRulesModal stage={rulesStage} onClose={closeRules} />
+      <StageRulesModal stage={rulesStage} onClose={() => setRulesStage(null)} />
 
       <Toasts />
     </main>
