@@ -95,12 +95,7 @@ function getCustomHighlightMessage(comp) {
   }
 }
 
-/* ───────────────────────────── Component ─────────────────────────────
- * Props that make it center perfectly on mobile:
- * - asSlide: wraps the card in a “slide shell” used by carousels
- * - slideMinWidth: defaults to viewport minus page padding (2rem)
- * - maxCardWidth: hard cap so the card never grows too wide
- * ------------------------------------------------------------------- */
+
 export default function DailyCompetitionCard({
   comp = {},
   title,
@@ -322,4 +317,3 @@ export default function DailyCompetitionCard({
       </div>
     </SlideShellOpen>
   )
-}

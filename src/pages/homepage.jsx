@@ -459,8 +459,9 @@ function HomePage() {
             items={getCompetitionsByCategory('daily')}
             viewMoreHref="/competitions/daily"
             cardSize="md"
-            cardMaxWidth={440}
-            itemMinWidthCSS="min(400px, calc(100vw - 2rem))"
+            // Adjusted for smaller card width
+            cardMaxWidth={320}
+            itemMinWidthCSS="min(320px, calc(100vw - 2rem))"
           />
 
           <Section
@@ -468,8 +469,9 @@ function HomePage() {
             items={getCompetitionsByCategory('tech')}
             viewMoreHref="/competitions/tech&gadgets"
             cardSize="md"
-            cardMaxWidth={460}
-            itemMinWidthCSS="min(420px, calc(100vw - 2rem))"
+            // Adjusted for smaller card width
+            cardMaxWidth={320}
+            itemMinWidthCSS="min(320px, calc(100vw - 2rem))"
           />
 
           <Section
@@ -616,9 +618,9 @@ function Section({
   const resolvedCardSize = cardSize || ((isDaily || isTech) ? 'md' : 'lg');
   const resolvedItemMinWidth = itemMinWidthCSS ||
     ((isDaily || isTech)
-      ? 'min(400px, calc(100vw - 2rem))'
+      ? 'min(320px, calc(100vw - 2rem))' // Adjusted for smaller card width
       : 'min(440px, calc(100vw - 2rem))');
-  const resolvedCardMaxWidth = cardMaxWidth ?? ((isDaily || isTech) ? 460 : 480);
+  const resolvedCardMaxWidth = cardMaxWidth ?? ((isDaily || isTech) ? 320 : 480); // Adjusted for smaller card width
 
   return (
     <section className={`space-y-5 ${extraClass}`}>
