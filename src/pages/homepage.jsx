@@ -420,7 +420,7 @@ function HomePage() {
             'marquee_text',
             'Oh My Competitions is all about building with Pi Network for the Pi community. Our OMC launch competitions are zero profit designed to create trust, celebrate early winners and give back to Pioneers. All prizes go directly to you. Add us on all Socials and our Pi Profile darreire2020. More competitions are coming soon across a wide range of exciting categories. Join, win and help shape the future of Pi together.'
           )}
-          speed={700}
+          speed={450}
           className="py-1"
         />
 
@@ -491,60 +491,90 @@ function HomePage() {
             cardMaxWidth={480}
             itemMinWidthCSS="min(440px, calc(100vw - 2rem))"
           />
+   {/* ===================== OMC Pi Stages ===================== */}
+<section
+  role="region"
+  aria-labelledby="omc-stages-title"
+  className="space-y-6 sm:space-y-7"
+>
+  {/* Title + mini explainer */}
+  <div className="text-center space-y-3 px-3">
+    <h2
+      id="omc-stages-title"
+      className="w-full text-lg sm:text-xl font-extrabold text-cyan-300 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl font-orbitron
+                 shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70
+                 backdrop-blur-md border border-cyan-400"
+    >
+      {t('omc_pi_stages_competitions', 'OMC Pi Stages Competitions')}
+    </h2>
 
-          {/* ----------------------- OMC Stages ----------------------- */}
-       <section className="space-y-5 sm:space-y-6">
-            <div className="text-center space-y-3 px-3">
-              <h2 className="w-full text-lg sm:text-xl font-extrabold text-cyan-300 px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl font-orbitron shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
-                {t('omc_pi_stages_competitions', 'OMC Pi Stages Competitions')}
-              </h2>
+    <div className="max-w-5xl mx-auto text-[0.85rem] sm:text-sm text-cyan-300/90 italic
+                    flex items-start justify-center gap-x-6 gap-y-2 flex-wrap leading-relaxed mt-1.5 sm:mt-2.5">
+      <span className="text-center">
+        {t('qualify', 'Qualify')}{' '}
+        <span className="text-white font-semibold">({t('stage_1', 'Stage 1')})</span>
+        <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
+          {t('s1_desc', '25 enter, 5 come out with an Advance Ticket. Will you be one?')}
+        </span>
+      </span>
 
-              <div className="text-[0.85rem] sm:text-sm text-cyan-300/90 italic flex items-start justify-center gap-x-6 gap-y-2 flex-wrap leading-relaxed mt-2 sm:mt-3">
-                <span className="text-center">
-                  {t('qualify', 'Qualify')}{' '}
-                  <span className="text-white font-semibold">({t('stage_1', 'Stage 1')})</span>
-                  <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
-                    {t('s1_desc', '25 enter, 5 come out with an Advance Ticket. Will you be one?')}
-                  </span>
-                </span>
+      <span className="text-center">
+        {t('advance', 'Advance')}{' '}
+        <span className="text-white font-semibold">({t('stages_2_4', 'Stages 2–4')})</span>
+        <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
+          {t('s2_4_desc', 'Each room: 25 enter, top 5 move on using their Advance Ticket.')}
+        </span>
+      </span>
 
-                <span className="text-center">
-                  {t('advance', 'Advance')}{' '}
-                  <span className="text-white font-semibold">({t('stages_2_4', 'Stages 2–4')})</span>
-                  <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
-                    {t('s2_4_desc', 'Each room: 25 enter, top 5 move on using their Advance Ticket.')}
-                  </span>
-                </span>
+      <span className="text-center">
+        {t('win', 'Win')}{' '}
+        <span className="text-white font-semibold">({t('stage_5', 'Stage 5')})</span>
+      </span>
 
-                <span className="text-center">
-                  {t('win', 'Win')}{' '}
-                  <span className="text-white font-semibold">({t('stage_5', 'Stage 5')})</span>
-                </span>
+      <span className="text-cyan-300 font-semibold text-center">
+        {t('stage_5_prize_pool', 'Stage 5 Prize Pool')}:{' '}
+        <span className="text-white">
+          {Number(prizePoolPi || 2200).toLocaleString()}π
+        </span>
+      </span>
+    </div>
+  </div>
 
-                <span className="text-cyan-300 font-semibold text-center">
-                  {t('stage_5_prize_pool', 'Stage 5 Prize Pool')}: <span className="text-white">2200π</span>
-                </span>
-              </div>
-            </div>
+  {/* Panel wrapper keeps the row perfectly centered and aligned with the rest of the page */}
+  <div className="px-3">
+    <div className="max-w-6xl mx-auto">
+      {/* gradient frame */}
+      <div className="p-[1px] rounded-2xl bg-gradient-to-r from-cyan-500/40 via-blue-500/35 to-cyan-500/40">
+        <div
+          className="rounded-2xl bg-[#0f172a]/80 backdrop-blur border border-white/10
+                     shadow-[0_0_24px_rgba(34,211,238,0.16)] px-3 sm:px-4 py-4 sm:py-5"
+        >
+          {/* The row handles its own responsive layout (stack on mobile, grid on larger) */}
+          <FunnelStagesRow
+            stages={stages}
+            prizePoolPi={prizePoolPi}
+            onEnterStage1={handleEnterStage1}
+            className="shadow-[0_0_25px_rgba(0,255,255,0.15)]"
+          />
 
-            <div className="max-w-6xl mx-auto px-2 sm:px-0">
-              {/* This is where we simply render FunnelStagesRow */}
-              {/* FunnelStagesRow itself now handles its internal mobile carousel logic */}
-              <FunnelStagesRow
-                stages={stages}
-                prizePoolPi={prizePoolPi}
-                onEnterStage1={handleEnterStage1}
-                className="shadow-[0_0_25px_rgba(0,255,255,0.15)]"
-                // layout prop is handled internally by FunnelStagesRow based on screen size
-                // comingSoon and ctaLabel props are not directly used by FunnelStagesRow's layout
-              />
-            </div>
-          </section>
+          {/* Optional CTA under the row (kept subtle and centered) */}
+          <div className="mt-4 text-center">
+            <button
+              type="button"
+              onClick={handleEnterStage1}
+              className="inline-flex items-center justify-center rounded-xl px-5 py-2 text-sm font-semibold
+                         bg-cyan-400 text-[#0a1024] shadow transition-colors hover:bg-cyan-300"
+            >
+              {t('enter_stage_1', 'Enter Stage 1')}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
-          {/* -------------------- Free Competitions (centered, no carousel) ------------------- */}
           <FreeSection t={t} items={getCompetitionsByCategory('free')} />
-
-          {/* ---------------------- Winners (placeholder) ------------- */}
           <TopWinnersCarousel t={t} />
           <VisionBlock t={t} />
         </main>
