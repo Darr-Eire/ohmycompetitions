@@ -8,7 +8,7 @@ import { useRouter } from 'next/router';
 import { usePiAuth } from '../context/PiAuthContext';
 import GiftTicketModal from 'components/GiftTicketModal';
 import PiCashClaimBox from 'components/PiCashClaimBox';
-import StagesXPSection from 'components/StagesXPSection';
+import StagesXPSection from '../components/StagesXPSection';
 import RedeemVoucherPanel from 'components/RedeemVoucherPanel';
 import AccountTicketsPanel from 'components/AccountTicketsPanel';
 
