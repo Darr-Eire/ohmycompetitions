@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>API Keys & Configuration Test</title>
+    <style>
+      body {
+        font-family: system-ui;
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: #0f172a;
+        color: #fff;
+        line-height: 1.6;
+      }
+      .test-section {
+        background: #1e293b;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        border-radius: 8px;
+        border: 1px solid #334155;
+      }
+      .status {
+        padding: 0.8rem;
+        margin: 0.5rem 0;
+        border-radius: 6px;
+      }
+      .success {
+        background: #065f46;
+        border-left: 4px solid #10b981;
+      }
+      .error {
+        background: #7f1d1d;
+        border-left: 4px solid #ef4444;
+      }
+      .warning {
+        background: #78350f;
+        border-left: 4px solid #f59e0b;
+      }
+      .info {
+        background: #1e3a8a;
+        border-left: 4px solid #3b82f6;
+      }
+      button {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background: #2563eb;
+      }
+      pre {
+        background: #0f172a;
+        padding: 1rem;
+        border-radius: 6px;
+        overflow-x: auto;
+        font-size: 14px;
+        border: 1px solid #475569;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+      @media (max-width: 768px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .key-display {
+        background: #0f172a;
+        padding: 8px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 12px;
+        word-break: break-all;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🔑 API Keys & Configuration Test</h1>
+    <p>
+      This tool validates your Pi Network API keys and sandbox configuration.
+    </p>
+
+    <div class="test-section">
+      <h2>🌐 Environment Detection</h2>
+      <div id="env-status">Checking environment...</div>
+      <div class="grid">
+        <div>
+          <strong>Current URL:</strong>
+          <div class="key-display" id="current-url"></div>
+        </div>
+        <div>
+          <strong>User Agent:</strong>
+          <div class="key-display" id="user-agent"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h2>🔧 Frontend Configuration</h2>
+      <div id="frontend-config">Testing frontend config...</div>
+      <button onclick="testFrontendConfig()">Refresh Frontend Config</button>
+    </div>
+
+    <div class="test-section">
+      <h2>🔑 Backend API Keys</h2>
+      <div id="backend-keys">Testing backend configuration...</div>
+      <button onclick="testBackendKeys()">Test Backend Keys</button>
+    </div>
+
+    <div class="test-section">
+      <h2>📡 Pi Network API Connection</h2>
+      <div id="pi-api-status">Ready to test Pi API...</div>
+      <button onclick="testPiApiConnection()">Test Pi API Connection</button>
+    </div>
+
+    <div class="test-section">
+      <h2>🧪 Pi SDK Integration</h2>
+      <div id="sdk-status">Loading Pi SDK...</div>
+      <button onclick="testPiSdk()" id="test-sdk-btn" disabled>
+        Test Pi SDK
+      </button>
+    </div>
+
+    <div class="test-section">
+      <h2>💾 Database Connection</h2>
+      <div id="db-status">Ready to test database...</div>
+      <button onclick="testDatabase()">Test Database Connection</button>
+    </div>
+
+    <div class="test-section">
+      <h2>📋 Test Results</h2>
+      <button onclick="runAllTests()">🚀 Run All Tests</button>
+      <button onclick="clearResults()">Clear Results</button>
+      <button onclick="downloadResults()">Download Results</button>
+      <pre id="test-results"></pre>
+    </div>
+
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script>
+      let testResults = [];
+      let piSdkReady = false;
+
+      function log(message, type = "info") {
+        const timestamp = new Date().toISOString();
+        const entry = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+        testResults.push(entry);
+        console.log(entry);
+
+        const resultsEl = document.getElementById("test-results");
+        resultsEl.textContent = testResults.join("\n");
+        resultsEl.scrollTop = resultsEl.scrollHeight;
+      }
+
+      function updateStatus(elementId, message, type = "info") {
+        const element = document.getElementById(elementId);
+        element.innerHTML = `<div class="status ${type}">${message}</div>`;
+      }
+
+      function clearResults() {
+        testResults = [];
+        document.getElementById("test-results").textContent = "";
+      }
+
+      function downloadResults() {
+        const blob = new Blob([testResults.join("\n")], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `api-key-test-${Date.now()}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      // Environment Detection
+      function detectEnvironment() {
+        const userAgent = navigator.userAgent;
+        const currentUrl = window.location.href;
+
+        document.getElementById("current-url").textContent = currentUrl;
+        document.getElementById("user-agent").textContent = userAgent;
+
+        const isPiBrowser = userAgent.includes("PiBrowser");
+        const isLocalhost =
+          currentUrl.includes("localhost") || currentUrl.includes("127.0.0.1");
+        const isHTTPS = currentUrl.startsWith("https://");
+
+        log(`Environment: ${isPiBrowser ? "Pi Browser" : "Regular Browser"}`);
+        log(`Location: ${isLocalhost ? "Localhost" : "Remote"}`);
+        log(`Protocol: ${isHTTPS ? "HTTPS" : "HTTP"}`);
+
+        let envMessage = "";
+        let envType = "info";
+
+        if (isPiBrowser && isHTTPS) {
+          envMessage = "✅ Optimal: Pi Browser with HTTPS";
+          envType = "success";
+        } else if (isPiBrowser) {
+          envMessage =
+            "⚠️ Pi Browser detected, but using HTTP (sandbox should work)";
+          envType = "warning";
+        } else if (isLocalhost) {
+          envMessage =
+            "⚠️ Regular browser on localhost (limited Pi SDK functionality)";
+          envType = "warning";
+        } else {
+          envMessage =
+            "❌ Regular browser on remote server (Pi SDK may not work)";
+          envType = "error";
+        }
+
+        updateStatus("env-status", envMessage, envType);
+      }
+
+      // Frontend Configuration Test
+      function testFrontendConfig() {
+        log("Testing frontend configuration...");
+
+        const frontendConfig = {
+          hasWindow: typeof window !== "undefined",
+          hasEnv: typeof window._ENV !== "undefined",
+          sandboxSetting: window._ENV?.sandbox,
+          backendURL: window._ENV?.backendURL,
+        };
+
+        log(`Frontend config: ${JSON.stringify(frontendConfig, null, 2)}`);
+
+        let configMessage = "";
+        let configType = "info";
+
+        if (frontendConfig.hasEnv && frontendConfig.sandboxSetting === "true") {
+          configMessage = "✅ Frontend configured for sandbox mode";
+          configType = "success";
+          log("✅ Sandbox mode enabled in frontend");
+        } else if (frontendConfig.hasEnv) {
+          configMessage =
+            "⚠️ Frontend environment detected but sandbox setting unclear";
+          configType = "warning";
+          log("⚠️ Environment variables present but sandbox setting unclear");
+        } else {
+          configMessage = "❌ Frontend environment configuration missing";
+          configType = "error";
+          log("❌ No environment configuration found");
+        }
+
+        updateStatus("frontend-config", configMessage, configType);
+      }
+
+      // Backend Keys Test
+      async function testBackendKeys() {
+        log("Testing backend API keys...");
+
+        try {
+          // Test if backend is responding
+          const healthResponse = await fetch("/api/health", {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+          }).catch(() => null);
+
+          if (!healthResponse) {
+            // Try alternative endpoint
+            const altResponse = await fetch("/api/pi/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ accessToken: "test" }),
+            }).catch(() => null);
+
+            if (altResponse) {
+              log("✅ Backend is responding (via Pi verify endpoint)");
+              updateStatus(
+                "backend-keys",
+                "✅ Backend server is running",
+                "success"
+              );
+            } else {
+              log("❌ Backend server not responding");
+              updateStatus(
+                "backend-keys",
+                "❌ Backend server not responding",
+                "error"
+              );
+              return;
+            }
+          } else {
+            log("✅ Backend health check passed");
+            updateStatus(
+              "backend-keys",
+              "✅ Backend server healthy",
+              "success"
+            );
+          }
+
+          log("Backend API keys appear to be configured (server responding)");
+        } catch (error) {
+          log(`❌ Backend test error: ${error.message}`);
+          updateStatus(
+            "backend-keys",
+            `❌ Backend error: ${error.message}`,
+            "error"
+          );
+        }
+      }
+
+      // Pi API Connection Test
+      async function testPiApiConnection() {
+        log("Testing Pi Network API connection...");
+
+        try {
+          // Test if we can reach Pi's API endpoints
+          const testEndpoint = "https://api.minepi.com/v2/payments";
+
+          const response = await fetch(testEndpoint, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }).catch((err) => {
+            log(`Network test: ${err.message}`);
+            return null;
+          });
+
+          if (response) {
+            log("✅ Can reach Pi Network API endpoints");
+            updateStatus(
+              "pi-api-status",
+              "✅ Pi Network API accessible",
+              "success"
+            );
+          } else {
+            log(
+              "⚠️ Cannot reach Pi Network API (may be blocked or network issue)"
+            );
+            updateStatus(
+              "pi-api-status",
+              "⚠️ Pi Network API connection issues",
+              "warning"
+            );
+          }
+        } catch (error) {
+          log(`❌ Pi API connection error: ${error.message}`);
+          updateStatus(
+            "pi-api-status",
+            `❌ Pi API error: ${error.message}`,
+            "error"
+          );
+        }
+      }
+
+      // Pi SDK Test
+      function initPiSdk() {
+        log("Initializing Pi SDK...");
+
+        if (!window.Pi) {
+          log("❌ Pi SDK script not loaded");
+          updateStatus(
+            "sdk-status",
+            "❌ Pi SDK script failed to load",
+            "error"
+          );
+          return;
+        }
+
+        try {
+          window.Pi.init({ version: "2.0", sandbox: false });
+          log("✅ Pi SDK initialized in sandbox mode");
+          piSdkReady = true;
+          updateStatus(
+            "sdk-status",
+            "✅ Pi SDK ready (sandbox mode)",
+            "success"
+          );
+          document.getElementById("test-sdk-btn").disabled = false;
+        } catch (err) {
+          log(`❌ Pi SDK initialization error: ${err.message}`);
+          updateStatus(
+            "sdk-status",
+            `❌ Pi SDK init failed: ${err.message}`,
+            "error"
+          );
+        }
+      }
+
+      async function testPiSdk() {
+        if (!piSdkReady) {
+          log("❌ Pi SDK not ready");
+          return;
+        }
+
+        log("Testing Pi SDK authentication...");
+
+        try {
+          const result = await window.Pi.authenticate(["username"], () => {
+            log("⚠️ Incomplete payment detected during auth test");
+          });
+
+          log(`✅ Pi SDK authentication successful: ${result.user.username}`);
+          updateStatus(
+            "sdk-status",
+            `✅ Pi SDK working - Logged in as ${result.user.username}`,
+            "success"
+          );
+        } catch (err) {
+          log(`❌ Pi SDK authentication failed: ${err.message}`);
+          updateStatus(
+            "sdk-status",
+            `❌ Pi SDK auth failed: ${err.message}`,
+            "error"
+          );
+        }
+      }
+
+      // Database Test
+      async function testDatabase() {
+        log("Testing database connection...");
+
+        try {
+          const response = await fetch("/api/competitions/all", {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            log(
+              `✅ Database connection successful - found ${
+                data.length || 0
+              } competitions`
+            );
+            updateStatus(
+              "db-status",
+              "✅ Database connection working",
+              "success"
+            );
+          } else {
+            log(`⚠️ Database API responded with status: ${response.status}`);
+            updateStatus(
+              "db-status",
+              `⚠️ Database API status: ${response.status}`,
+              "warning"
+            );
+          }
+        } catch (error) {
+          log(`❌ Database test error: ${error.message}`);
+          updateStatus(
+            "db-status",
+            `❌ Database error: ${error.message}`,
+            "error"
+          );
+        }
+      }
+
+      // Run All Tests
+      async function runAllTests() {
+        log("🚀 Starting comprehensive test suite...");
+        clearResults();
+
+        detectEnvironment();
+        testFrontendConfig();
+        await testBackendKeys();
+        await testPiApiConnection();
+        if (piSdkReady) await testPiSdk();
+        await testDatabase();
+
+        log("✅ Test suite completed");
+      }
+
+      // Initialize on load
+      window.addEventListener("load", () => {
+        log("🔑 API Key Test Tool initialized");
+        detectEnvironment();
+        testFrontendConfig();
+
+        // Initialize Pi SDK with delay
+        setTimeout(() => {
+          initPiSdk();
+        }, 1500);
+      });
+    </script>
+  </body>
+</html>

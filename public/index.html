@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script>
+      Pi.init({
+        version: "2.0",
+        sandbox: false,
+      });
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Oh My Competitions - Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #0a1024;
+        color: white;
+        padding: 2rem;
+        text-align: center;
+      }
+      .status {
+        padding: 1rem;
+        margin: 1rem;
+        border-radius: 8px;
+        border: 1px solid #333;
+      }
+      .success {
+        background: #0f5132;
+        border-color: #198754;
+      }
+      .error {
+        background: #58151c;
+        border-color: #dc3545;
+      }
+      .warning {
+        background: #664d03;
+        border-color: #ffc107;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🧪 Oh My Competitions - App Test</h1>
+
+    <div id="status" class="status">
+      <h3>Checking App Status...</h3>
+      <p id="message">Loading...</p>
+    </div>
+
+    <div>
+      <h3>Quick Tests:</h3>
+      <p><strong>Current URL:</strong> <span id="url"></span></p>
+      <p><strong>Environment:</strong> <span id="env"></span></p>
+      <p>
+        <strong>Next.js App:</strong>
+        <a href="/api/health" target="_blank">Health Check</a>
+      </p>
+      <p>
+        <strong>Pi Sandbox Test:</strong>
+        <a href="/pi-sandbox-test.html" target="_blank">Pi SDK Test</a>
+      </p>
+      <p>
+        <strong>Main App:</strong> <a href="/" target="_blank">Go to App</a>
+      </p>
+    </div>
+
+    <script>
+      document.getElementById("url").textContent = window.location.href;
+      document.getElementById("env").textContent =
+        window.location.hostname === "localhost" ? "Development" : "Production";
+
+      // Test if we can reach the API
+      fetch("/api/health")
+        .then((response) => response.text())
+        .then((data) => {
+          document.getElementById("status").className = "status success";
+          document.getElementById("message").textContent =
+            "✅ App is running! API endpoint is responsive.";
+        })
+        .catch((error) => {
+          document.getElementById("status").className = "status error";
+          document.getElementById("message").textContent =
+            '❌ App is not running. Please start the development server with "npm run dev"';
+        });
+    </script>
+  </body>
+</html>
