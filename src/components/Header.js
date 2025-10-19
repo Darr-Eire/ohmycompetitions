@@ -183,11 +183,19 @@ export default function Header() {
 
           {/* Middle: Title + Welcome (always perfectly centered) */}
           <div className="justify-self-center text-center leading-tight">
-            <Link href="/homepage" className="block">
-              <span className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent drop-shadow">
-                Oh My Competitions
-              </span>
-            </Link>
+     <Link href="/homepage" className="block">
+  <span
+    className="
+      text-lg sm:text-xl font-bold font-orbitron 
+      bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent 
+      drop-shadow 
+      whitespace-nowrap tracking-wide
+    "
+  >
+    Oh My Competitions
+  </span>
+</Link>
+
             {user ? (
               <div className="text-cyan-300 text-[12px] sm:text-sm font-orbitron mt-0.5">
                 {(t?.('welcome', 'Welcome') || 'Welcome')}{' '}
