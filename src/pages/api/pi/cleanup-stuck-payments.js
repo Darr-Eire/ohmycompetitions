@@ -9,7 +9,7 @@ import Payment from 'models/Payment';
  *  - If transaction_verified -> attempt /complete
  *  - Else -> /cancel (optional branch)
  *
- * For safety, this version only completes verified payments, and logs others.
+ * For safety, this version only completes verified payments and logs others.
  */
 
 function getPiApiKey() {

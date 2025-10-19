@@ -1,7 +1,7 @@
 # OhMyCompetitions 🎮✨
 
 A **competition-based decentralized app (dApp)** built for the **Pi Network**.  
-Pioneers can **buy or gift tickets**, **win prizes**, **earn referral rewards**, and play **skill-based mini-games** — all powered by Pi.
+Pioneers can **buy or gift tickets**, **win prizes**, **earn referral rewards** and play **skill-based mini-games** — all powered by Pi.
 
 ---
 

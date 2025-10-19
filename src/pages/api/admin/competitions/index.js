@@ -58,7 +58,7 @@ export default async function handler(req, res) {
       if (!slug || !title || (!prize && prizeBreakdown.length === 0)) {
         return res.status(400).json({
           message:
-            'Missing required: slug, title, and a prize (prize or prizeBreakdown[])',
+            'Missing required: slug, title and a prize (prize or prizeBreakdown[])',
         });
       }
 

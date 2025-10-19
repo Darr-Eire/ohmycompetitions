@@ -14,7 +14,7 @@ export default function VaultProTermsPage() {
          
 
           <p>
-            By playing <strong>Hack the Vault</strong> on <strong>Oh My Competitions</strong>, you agree to the following terms. These are in place to keep the game secure, fair, and enjoyable for every pioneer.
+            By playing <strong>Hack the Vault</strong> on <strong>Oh My Competitions</strong>, you agree to the following terms. These are in place to keep the game secure, fair and enjoyable for every pioneer.
           </p>
 
           <ol className="list-decimal list-inside space-y-3">

@@ -7,7 +7,7 @@ export default function FuturePage() {
     <>
       <Head>
         <title>The Future • OhMyCompetitions</title>
-        <meta name="description" content="A glimpse of upcoming competitions, rewards, and community features on OMC." />
+        <meta name="description" content="A glimpse of upcoming competitions, rewards and community features on OMC." />
       </Head>
 
       <main className="app-background min-h-screen flex justify-center px-4 text-white">

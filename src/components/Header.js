@@ -70,7 +70,7 @@ export default function Header() {
     [safeT('daily_weekly', 'Daily/Weekly'), '/competitions/daily'],
     [safeT('pi_giveaways', 'Pi Giveaways'), '/competitions/pi'],
     // These two will be rendered as non-clickable (disabled) below:
-    [safeT('pi_stages', 'Pi Stages'), '/battles', safeT('coming_soon', 'Coming Soon')],
+    [safeT('pi_stages', 'Pi Stages'), '/stages', safeT('coming_soon', 'Coming Soon')],
     [safeT('pi_cash_code', 'Pi Cash Code'), '/pi-cash-code', safeT('coming_soon', 'Coming Soon')],
   ];
 
@@ -119,7 +119,7 @@ export default function Header() {
   );
 
   // Non-clickable routes set
-  const DISABLED_ROUTES = new Set(['/pi-cash-code', '/battles']);
+  const DISABLED_ROUTES = new Set(['/pi-cash-code', '/stages']);
 
   const Item = ({ tuple }) => {
     const [label, href, note] = tuple;

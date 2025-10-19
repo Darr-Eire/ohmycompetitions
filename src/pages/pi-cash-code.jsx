@@ -64,7 +64,7 @@ function useIsPiBrowser() {
 /* ----------------------------- Tiny UI Helpers ----------------------------- */
 function NeonBadge({ icon: Icon, children }) {
   return (
-    <div className="flex items-center gap-2 rounded-full border border-cyan-400/60 bg-white/5 px-3 py-1 text-xs font-semibold text-cyan-200 shadow-[0_0_20px_#22d3ee33]">
+    <div className="flex items-center gap-1.5 rounded-full border border-cyan-400/60 bg-white/5 px-2.5 py-[6px] text-[11px] font-semibold text-cyan-200 shadow-[0_0_16px_#22d3ee33] sm:text-xs sm:px-3 sm:py-1.5">
       {Icon ? <Icon size={14} className="shrink-0" /> : null}
       <span>{children}</span>
     </div>
@@ -73,12 +73,16 @@ function NeonBadge({ icon: Icon, children }) {
 
 function Stat({ label, value, sub }) {
   return (
-    <div className="rounded-xl border border-cyan-500/60 bg-gradient-to-b from-white/5 to-transparent p-4 text-center shadow-[0_0_40px_#22d3ee22]">
-      <div className="text-cyan-300/90 text-xs tracking-widest uppercase">
+    <div className="rounded-xl border border-cyan-500/60 bg-gradient-to-b from-white/5 to-transparent p-3 text-center shadow-[0_0_28px_#22d3ee22] sm:p-4">
+      <div className="text-cyan-300/90 text-[10px] tracking-widest uppercase sm:text-xs">
         {label}
       </div>
-      <div className="mt-1 text-2xl font-bold text-white">{value}</div>
-      {sub ? <div className="mt-1 text-xs text-white/60">{sub}</div> : null}
+      <div className="mt-0.5 text-xl font-bold text-white sm:text-2xl">
+        {value}
+      </div>
+      {sub ? (
+        <div className="mt-0.5 text-[11px] text-white/60 sm:text-xs">{sub}</div>
+      ) : null}
     </div>
   );
 }
@@ -108,7 +112,7 @@ function CountdownRing({
     <svg
       width={size}
       height={size}
-      className="drop-shadow-[0_0_30px_#22d3ee55]"
+      className="drop-shadow-[0_0_24px_#22d3ee55]"
     >
       <defs>
         <linearGradient id={`grad-${id}`} x1="0%" y1="0%" x2="100%" y2="0%">
@@ -211,7 +215,7 @@ function CountdownRing({
             filter: drop-shadow(0 0 0px #22d3ee);
           }
           50% {
-            filter: drop-shadow(0 0 8px #22d3ee);
+            filter: drop-shadow(0 0 6px #22d3ee);
           }
         }
         .glow {
@@ -231,7 +235,7 @@ function Toast({ show, kind = "info", children }) {
           initial={{ y: 80, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 80, opacity: 0 }}
-          className={`fixed bottom-6 left-1/2 z-[60] -translate-x-1/2 rounded-full border px-4 py-2 text-sm shadow-lg backdrop-blur-md ${
+          className={`fixed bottom-4 left-1/2 z-[60] -translate-x-1/2 rounded-full border px-3.5 py-2 text-[13px] shadow-lg backdrop-blur-md ${
             kind === "error"
               ? "border-rose-400/60 bg-rose-500/10 text-rose-200"
               : kind === "success"
@@ -250,7 +254,6 @@ function Toast({ show, kind = "info", children }) {
 /*                                Main Component                              */
 /* -------------------------------------------------------------------------- */
 export default function PiCashCodePage() {
-  // use context: one source of truth
   const { user: authUser, loginWithPi, sdkReady: ctxSdkReady } = usePiAuth();
 
   const [data, setData] = useState(null);
@@ -307,7 +310,6 @@ export default function PiCashCodePage() {
     };
   }, [setFromFetch]);
 
-  
   const ready = !!ctxSdkReady;
 
   /* --------------------------- Skill Question -------------------------- */
@@ -384,7 +386,6 @@ export default function PiCashCodePage() {
       const amount = parseFloat(totalPrice);
       const memo = `Pi Cash Code Entry Week ${data?.weekStart || ""}`;
 
-      // Use the single global SDK instance initialized in _app.js
       const Pi = await (window && (window).__readyPi?.());
       if (!Pi?.createPayment) throw new Error("Pi SDK not available");
 
@@ -470,56 +471,52 @@ export default function PiCashCodePage() {
       </div>
 
       {/* Top badges */}
-      <div className="mx-auto w-full max-w-5xl px-4 pt-4 sm:pt-6">
+      <div className="mx-auto w-full max-w-5xl px-3 pt-3 sm:px-4 sm:pt-5">
         <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-between sm:gap-3">
           <div className="flex items-center gap-2">
-            <NeonBadge icon={ShieldCheck}>
-              Fair • Transparent 
-            </NeonBadge>
+            <NeonBadge icon={ShieldCheck}>Fair • Transparent</NeonBadge>
             <NeonBadge icon={Rocket}>Open Network</NeonBadge>
           </div>
           <div className="flex items-center gap-2 mt-2 sm:mt-0">
             <NeonBadge icon={Ticket}>{ticketPrice} π per ticket</NeonBadge>
-            <NeonBadge icon={Timer}>
-              {isPiBrowser ? "Pi Browser" : "Open in Pi Browser"}
-            </NeonBadge>
+            <NeonBadge icon={Timer}>Live</NeonBadge>
           </div>
         </div>
       </div>
 
       {/* Hero */}
-      <section className="mx-auto mt-4 w-full max-w-5xl px-4 sm:mt-6">
-        <div className="relative overflow-hidden rounded-3xl border border-cyan-500/50 bg-white/5 p-4 shadow-[0_0_60px_#22d3ee33] sm:p-10">
+      <section className="mx-auto mt-3 w-full max-w-5xl px-3 sm:mt-5 sm:px-4">
+        <div className="relative overflow-hidden rounded-2xl border border-cyan-500/50 bg-white/5 p-3 shadow-[0_0_40px_#22d3ee33] sm:rounded-3xl sm:p-8">
           <motion.button
-            whileTap={{ scale: 0.9 }}
+            whileTap={{ scale: 0.94 }}
             onClick={() => window.location.reload()}
-            className="absolute right-3 top-3 inline-flex items-center gap-2 rounded-full border border-cyan-400/60 bg-black/40 px-3 py-1 text-xs text-cyan-100 hover:bg-cyan-400/20 active:bg-cyan-400/30 transition sm:right-4 sm:top-4"
+            className="absolute right-2.5 top-2.5 inline-flex items-center gap-1.5 rounded-full border border-cyan-400/60 bg-black/40 px-2.5 py-1.5 text-[11px] text-cyan-100 hover:bg-cyan-400/20 active:bg-cyan-400/30 transition sm:right-4 sm:top-4 sm:text-xs sm:px-3 sm:py-1.5"
           >
             <Loader2 className="h-3.5 w-3.5 animate-spin" /> Refresh
           </motion.button>
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
             {/* Left */}
             <div className="flex flex-col items-center justify-center text-center">
               <motion.h1
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="text-balance text-2xl font-extrabold tracking-tight text-cyan-200 sm:text-5xl animate-pulse"
+                transition={{ duration: 0.5 }}
+                className="text-balance text-xl font-extrabold tracking-tight text-cyan-200 sm:text-5xl"
               >
                 Pi Cash Code
               </motion.h1>
 
-              <p className="mt-2 max-w-md text-white/80 text-sm sm:text-base">
-                Keep the code safe, watch the drop and be the Pioneer who’s
-                enough
+              <p className="mt-1.5 max-w-md text-white/80 text-[13px] leading-relaxed sm:text-base sm:mt-2">
+                Keep the code safe, watch the drop and be the Pioneer who’s fast
+                enough.
               </p>
 
-              <div className="mt-4 sm:mt-6">
-                <div className="inline-block rounded-2xl border border-cyan-500/70 bg-gradient-to-r from-[#081425] via-[#0e1b33] to-[#081425] p-[2px] shadow-[0_0_40px_#22d3ee44]">
-                  <div className="flex justify-center mt-4 sm:mt-6">
-                    <div className="flex items-center gap-2 sm:gap-3 rounded-[14px] bg-black/40 px-4 py-3 font-mono text-xl sm:text-4xl tracking-[0.2em] sm:tracking-[0.25em] text-cyan-100 whitespace-nowrap shadow-[0_0_35px_#22d3eeaa] animate-[pulse_1.5s_ease-in-out_infinite]">
-                      <LockKeyhole className="text-cyan-300 shrink-0 h-5 w-5 sm:h-auto sm:w-auto" />
+              <div className="mt-3 sm:mt-5">
+                <div className="inline-block rounded-2xl border border-cyan-500/70 bg-gradient-to-r from-[#081425] via-[#0e1b33] to-[#081425] p-[2px] shadow-[0_0_32px_#22d3ee44]">
+                  <div className="flex justify-center mt-3 sm:mt-5">
+                    <div className="flex items-center gap-2 sm:gap-3 rounded-[12px] bg-black/40 px-3.5 py-2.5 font-mono text-lg sm:text-4xl tracking-[0.18em] sm:tracking-[0.25em] text-cyan-100 whitespace-nowrap shadow-[0_0_28px_#22d3eeaa]">
+                      <LockKeyhole className="text-cyan-300 shrink-0 h-4 w-4 sm:h-auto sm:w-auto" />
                       <span className="select-all">
                         {showCode ? data?.code || "0000-0000" : "XXXX-XXXX"}
                       </span>
@@ -527,7 +524,7 @@ export default function PiCashCodePage() {
                   </div>
                 </div>
                 {data?.dropAt && (
-                  <p className="mt-2 text-xs text-cyan-300/80">
+                  <p className="mt-1.5 text-[11px] text-cyan-300/80 sm:text-xs">
                     Drop time: {new Date(data.dropAt).toLocaleString()}
                   </p>
                 )}
@@ -535,21 +532,17 @@ export default function PiCashCodePage() {
             </div>
 
             {/* Right */}
-            <div className="flex flex-col items-center justify-center gap-4 sm:gap-5">
+            <div className="flex flex-col items-center justify-center gap-3.5 sm:gap-5">
               <CountdownRing
-                size={140} // Slightly smaller for mobile
-                stroke={8} // Adjust stroke accordingly
+                size={116}          // tighter on mobile
+                stroke={8}
                 pct={
                   data?.dropAt && data?.expiresAt
                     ? clamp((now - dropAt) / (expiresAt - dropAt), 0, 1)
                     : 0
                 }
                 label={
-                  beforeDrop
-                    ? "UNTIL DROP"
-                    : showCode
-                    ? "ENDS IN"
-                    : "UNTIL DRAW"
+                  beforeDrop ? "UNTIL DROP" : showCode ? "ENDS IN" : "UNTIL DRAW"
                 }
                 time={`${timeLeft.days} Days ${pad2(
                   timeLeft.hours
@@ -557,8 +550,16 @@ export default function PiCashCodePage() {
                   timeLeft.seconds
                 )} Secs`}
               />
+              <style jsx>{`
+                @media (min-width: 640px) {
+                  :global(svg[width="116"]) {
+                    width: 168px !important;
+                    height: 168px !important;
+                  }
+                }
+              `}</style>
 
-              <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-3">
+              <div className="grid w-full grid-cols-3 gap-2 sm:gap-3">
                 <Stat
                   label="Prize Pool"
                   value={`${data?.prizePool?.toLocaleString?.() ?? "—"} π`}
@@ -574,24 +575,26 @@ export default function PiCashCodePage() {
           </div>
 
           {/* CTA */}
-          <div className="mt-6 flex flex-col items-stretch gap-3 sm:mt-8">
+          <div className="mt-4 flex flex-col items-stretch gap-2.5 sm:mt-6 sm:gap-3">
             {!authUser ? (
               <button
                 onClick={loginWithPi}
-                className="group inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-5 py-3 font-bold text-black shadow-[0_10px_30px_#22d3ee55] hover:brightness-110 text-base"
+                className="group inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-4 py-2.5 font-bold text-black text-sm shadow-[0_8px_24px_#22d3ee55] hover:brightness-110 sm:text-base sm:px-5 sm:py-3"
               >
-                <Ticket className="transition-transform group-hover:scale-110" />
+                <Ticket className="h-4 w-4 transition-transform group-hover:scale-110" />
                 Login with Pi to enter
               </button>
             ) : (
               <>
                 {/* Quantity selector */}
-                <div className="flex items-center justify-between gap-3 rounded-xl border border-cyan-500/60 bg-black/30 px-3 py-2">
-                  <span className="text-sm text-cyan-200">Tickets</span>
+                <div className="flex items-center justify-between gap-2.5 rounded-xl border border-cyan-500/60 bg-black/30 px-2.5 py-2 sm:px-3 sm:py-2.5">
+                  <span className="text-[13px] text-cyan-200 sm:text-sm">
+                    Tickets
+                  </span>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setQty((q) => Math.max(1, q - 1))}
-                      className="h-8 w-8 rounded-lg bg-cyan-300/90 text-black font-extrabold text-lg sm:h-9 sm:w-9"
+                      className="h-8 w-8 rounded-lg bg-cyan-300/90 text-black font-extrabold text-lg leading-none"
                     >
                       −
                     </button>
@@ -606,7 +609,7 @@ export default function PiCashCodePage() {
                     />
                     <button
                       onClick={() => setQty((q) => q + 1)}
-                      className="h-8 w-8 rounded-lg bg-cyan-300/90 text-black font-extrabold text-lg sm:h-9 sm:w-9"
+                      className="h-8 w-8 rounded-lg bg-cyan-300/90 text-black font-extrabold text-lg leading-none"
                     >
                       +
                     </button>
@@ -616,9 +619,9 @@ export default function PiCashCodePage() {
                 {/* Purchase button */}
                 <button
                   onClick={() => setShowSkill(true)}
-                  className="group inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-5 py-3 font-extrabold text-black shadow-[0_10px_30px_#22d3ee55] hover:brightness-110 text-base"
+                  className="group inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-4 py-2.5 font-extrabold text-black text-sm shadow-[0_8px_24px_#22d3ee55] hover:brightness-110 sm:text-base sm:px-5 sm:py-3"
                 >
-                  <Sparkles className="transition-transform group-hover:scale-110" />
+                  <Sparkles className="h-4 w-4 transition-transform group-hover:scale-110" />
                   Purchase {qty} ticket{qty > 1 ? "s" : ""} · {totalPrice} π
                 </button>
               </>
@@ -628,31 +631,31 @@ export default function PiCashCodePage() {
       </section>
 
       {/* Info blocks */}
-      <section className="mx-auto w-full max-w-5xl px-4 py-6 sm:py-10">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="rounded-2xl border border-cyan-500/40 bg-white/5 p-4 sm:p-5">
-            <h3 className="flex items-center gap-2 text-base font-bold text-cyan-200 sm:text-lg">
+      <section className="mx-auto w-full max-w-5xl px-3 py-5 sm:px-4 sm:py-8">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+          <div className="rounded-2xl border border-cyan-500/40 bg-white/5 p-3 sm:p-5">
+            <h3 className="flex items-center gap-2 text-sm font-bold text-cyan-200 sm:text-lg">
               <ShieldCheck size={18} /> Proven Fairness
             </h3>
-            <p className="mt-1 text-sm text-white/70">
-              Blockchain-backed, Pi SDK payments, server-side approvals, and
+            <p className="mt-1 text-[13px] text-white/70 sm:text-sm">
+              Blockchain-backed, Pi SDK payments, server-side approvals and
               auditable history.
             </p>
           </div>
-          <div className="rounded-2xl border border-cyan-500/40 bg-white/5 p-4 sm:p-5">
-            <h3 className="flex items-center gap-2 text-base font-bold text-cyan-200 sm:text-lg">
+          <div className="rounded-2xl border border-cyan-500/40 bg-white/5 p-3 sm:p-5">
+            <h3 className="flex items-center gap-2 text-sm font-bold text-cyan-200 sm:text-lg">
               <Timer size={18} /> Real-Time Thrill
             </h3>
-            <p className="mt-1 text-sm text-white/70">
-              Watch the countdown, track progress, and be ready. When the code
+            <p className="mt-1 text-[13px] text-white/70 sm:text-sm">
+              Watch the countdown, track progress and be ready. When the code
               drops, speed matters.
             </p>
           </div>
-          <div className="rounded-2xl border border-cyan-500/40 bg-white/5 p-4 sm:p-5">
-            <h3 className="flex items-center gap-2 text-base font-bold text-cyan-200 sm:text-lg">
+          <div className="rounded-2xl border border-cyan-500/40 bg-white/5 p-3 sm:p-5">
+            <h3 className="flex items-center gap-2 text-sm font-bold text-cyan-200 sm:text-lg">
               <Trophy size={18} /> Big Prize Energy
             </h3>
-            <p className="mt-1 text-sm text-white/70">
+            <p className="mt-1 text-[13px] text-white/70 sm:text-sm">
               Prize pool grows with every ticket. More players, bigger rewards.
               Simple.
             </p>
@@ -661,22 +664,22 @@ export default function PiCashCodePage() {
       </section>
 
       {/* Live widgets */}
-      <section className="mx-auto w-full max-w-5xl px-4 pb-12 sm:pb-16">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
-          <div className="rounded-2xl border border-cyan-500/50 bg-white/5 p-4">
-            <h4 className="mb-3 text-center text-sm font-bold tracking-widest text-cyan-300">
+      <section className="mx-auto w-full max-w-5xl px-3 pb-10 sm:px-4 sm:pb-14">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5">
+          <div className="rounded-2xl border border-cyan-500/50 bg-white/5 p-3 sm:p-4">
+            <h4 className="mb-2 text-center text-[12px] font-bold tracking-widest text-cyan-300 sm:text-sm">
               LIVE ACTIVITY
             </h4>
             <LiveActivityFeed />
           </div>
-          <div className="rounded-2xl border border-cyan-500/50 bg-white/5 p-4">
-            <h4 className="mb-3 text-center text-sm font-bold tracking-widest text-cyan-300">
+          <div className="rounded-2xl border border-cyan-500/50 bg-white/5 p-3 sm:p-4">
+            <h4 className="mb-2 text-center text-[12px] font-bold tracking-widest text-cyan-300 sm:text-sm">
               CODE HISTORY
             </h4>
             <CodeHistory />
           </div>
         </div>
-        <p className="mt-4 text-center text-xs text-cyan-300/70 sm:mt-6">
+        <p className="mt-3 text-center text-[11px] text-cyan-300/70 sm:mt-5 sm:text-xs">
           By entering you agree to our rules.{" "}
           <a
             className="underline"
@@ -696,40 +699,40 @@ export default function PiCashCodePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 sm:p-4"
           >
             <motion.div
-              initial={{ y: 30, opacity: 0 }}
+              initial={{ y: 24, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 30, opacity: 0 }}
-              className="w-full max-w-sm rounded-2xl border border-cyan-500/60 bg-white/95 p-5 text-black shadow-2xl"
+              exit={{ y: 24, opacity: 0 }}
+              className="w-full max-w-sm rounded-2xl border border-cyan-500/60 bg-white/95 p-4 text-black shadow-2xl sm:p-5"
             >
-              <div className="mb-2 text-xs font-semibold text-cyan-700">
+              <div className="mb-1.5 text-[11px] font-semibold text-cyan-700 sm:text-xs">
                 SKILL CHECK
               </div>
-              <div className="text-sm text-black/80">{skill.q}</div>
+              <div className="text-[13px] text-black/80 sm:text-sm">{skill.q}</div>
               <input
                 autoFocus
-                className="mt-3 w-full rounded-lg border border-cyan-500/50 bg-white px-3 py-2 font-semibold outline-none focus:ring-2 focus:ring-cyan-400"
+                className="mt-2.5 w-full rounded-lg border border-cyan-500/50 bg-white px-3 py-2 font-semibold outline-none focus:ring-2 focus:ring-cyan-400"
                 value={answer}
                 onChange={(e) => setAnswer(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && buy()}
               />
               {answerOk === false && (
-                <div className="mt-2 text-xs font-semibold text-rose-600">
+                <div className="mt-1.5 text-[11px] font-semibold text-rose-600">
                   Incorrect — try again!
                 </div>
               )}
-              <div className="mt-4 flex items-center justify-end gap-2">
+              <div className="mt-3.5 flex items-center justify-end gap-2">
                 <button
                   onClick={() => setShowSkill(false)}
-                  className="rounded-lg px-3 py-2 text-sm font-semibold text-cyan-800 hover:bg-cyan-50"
+                  className="rounded-lg px-3 py-2 text-[13px] font-semibold text-cyan-800 hover:bg-cyan-50 sm:text-sm"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={buy}
-                  className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-4 py-2 text-sm font-extrabold text-black shadow-[0_10px_30px_#22d3ee55] hover:brightness-110"
+                  className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-3.5 py-2 text-[13px] font-extrabold text-black shadow-[0_8px_24px_#22d3ee55] hover:brightness-110 sm:text-sm sm:px-4 sm:py-2"
                 >
                   <Ticket size={16} /> Pay {totalPrice} π
                 </button>

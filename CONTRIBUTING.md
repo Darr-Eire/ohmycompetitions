@@ -2,7 +2,7 @@
 
 Thank you for your interest in contributing!
 OhMyCompetitions is built **by real Pioneers, for the Pi Network community**.  
-Every line of code, idea, and improvement helps us build the **fairest competition hub in the Pi ecosystem**. 🚀
+Every line of code, idea and improvement helps us build the **fairest competition hub in the Pi ecosystem**. 🚀
 
 ---
 

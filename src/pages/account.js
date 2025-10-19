@@ -331,7 +331,7 @@ function StagesPanel({ userId, username }) {
             Continue your run: <span className="font-bold">Stage {next.stage}</span>
           </div>
           <button
-            onClick={() => router.push(`/battles?stage=${next.stage}`)}
+            onClick={() => router.push(`/stages?stage=${next.stage}`)}
             className="bg-emerald-400 text-black font-bold px-4 py-2 rounded-lg"
             type="button"
           >
@@ -364,7 +364,7 @@ function StagesPanel({ userId, username }) {
                   </div>
                 )}
                 <button
-                  onClick={() => router.push(`/battles?stage=${t.stage}`)}
+                  onClick={() => router.push(`/stages?stage=${t.stage}`)}
                   className="mt-3 w-full bg-cyan-400 text-black font-bold text-sm py-2 rounded-lg"
                   type="button"
                 >

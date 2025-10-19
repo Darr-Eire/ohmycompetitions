@@ -197,7 +197,7 @@ Go to: `http://localhost:3000/admin/competitions/create`
 - Theme: `free`
 
 ### Status After Fix:
-Once these 6 competitions are added through the admin panel, all competitions from the static data will be synchronized with the database, and the purchase system will work correctly for all competitions.
+Once these 6 competitions are added through the admin panel, all competitions from the static data will be synchronized with the database and the purchase system will work correctly for all competitions.
 
 ### Error Prevention:
 The admin API has been updated to handle duplicate entries gracefully, so you'll get clear error messages instead of 500 errors if you accidentally try to add an existing competition. 

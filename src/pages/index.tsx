@@ -17,7 +17,7 @@ const IndexPage: NextPageWithLayout = () => {
     { icon: '🔄', text: 'Daily Competitions', href: '/competitions/daily' },
     { icon: '🚀', text: 'Launch Week', href: '/competitions/launch-week' },
     { icon: '🎁', text: 'Pi Giveaways', href: '/competitions/pi' },
-    { icon: '🏆', text: 'Pi Stages', href: '/battles' },
+    { icon: '🏆', text: 'Pi Stages', href: '/stages' },
     { icon: '🎮', text: 'Mini Games', href: '/try-your-luck' },
     { icon: '❓', text: 'Mystery Features', href: '' },
   ];

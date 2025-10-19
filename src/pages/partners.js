@@ -1,8 +1,8 @@
+// src/pages/partners.jsx
 'use client'
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
 import { useRef } from 'react'
 
 /* ------------------------------- Partners data ------------------------------ */
@@ -19,9 +19,13 @@ export default function PartnersPage() {
       <div className="relative max-w-5xl mx-auto space-y-10">
         {/* Header */}
         <header className="text-center">
-          <div className="competition-top-banner title-gradient mb-4">Partners & Sponsors</div>
+          <h1 className="text-2xl sm:text-2xl font-extrabold tracking-tight mb-2">
+            <span className="bg-gradient-to-r from-[#00ffd5] to-[#0077ff] bg-clip-text text-transparent">
+              Partners &amp; Sponsors
+            </span>
+          </h1>
           <p className="text-white/80 max-w-2xl mx-auto text-sm sm:text-base">
-            Collaborating with visionary pioneers, developers, and brands to grow the Pi ecosystem together.
+            Collaborating with visionary pioneers, developers and brands to grow the Pi ecosystem together.
           </p>
 
           {/* Stats */}
@@ -41,23 +45,17 @@ export default function PartnersPage() {
           </p>
           <ul className="space-y-2 text-white/90 text-sm">
             <li>✅ Transparent prize draws powered by real Pi transactions</li>
-            <li>✅ Verified winner announcements & built-in fraud protection</li>
+            <li>✅ Verified winner announcements &amp; built-in fraud protection</li>
             <li>✅ Reach thousands of active Pi users instantly</li>
-            <li>✅ Optional live draws, auto-payments, and branded banners</li>
+            <li>✅ Optional live draws, auto-payments and branded banners</li>
           </ul>
           <div className="text-center mt-6">
             <GlowButton href="/contact">Let’s Talk →</GlowButton>
           </div>
         </GlassCard>
 
-        {/* Partners Grid */}
-        <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: '-100px' }}
-          variants={{ hidden: {}, show: { transition: { staggerChildren: 0.08 } } }}
-        >
+        {/* Partners Grid (no scroll-appear) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {partnerItems.map((partner) => (
             <TiltCard key={partner.slug}>
               <div className="flex flex-col items-center text-center">
@@ -88,7 +86,7 @@ export default function PartnersPage() {
               </GlowButton>
             </div>
           </TiltCard>
-        </motion.div>
+        </div>
 
         {/* Why Partner */}
         <GlassCard>
@@ -106,7 +104,7 @@ export default function PartnersPage() {
               projects.
             </li>
             <li>
-              <strong className="gradient-text">Security & Compliance:</strong> Leverage our audited infrastructure.
+              <strong className="gradient-text">Security &amp; Compliance:</strong> Leverage our audited infrastructure.
             </li>
             <li>
               <strong className="gradient-text">Partner Competition:</strong> Feature your competitions across our
@@ -132,33 +130,17 @@ function BackgroundFX() {
       <div className="absolute inset-0 [background-image:radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:18px_18px] opacity-20" />
       <style jsx global>{`
         @keyframes float-slow {
-          0% {
-            transform: translateY(0) translateX(0);
-          }
-          50% {
-            transform: translateY(18px) translateX(6px);
-          }
-          100% {
-            transform: translateY(0) translateX(0);
-          }
+          0% { transform: translateY(0) translateX(0); }
+          50% { transform: translateY(18px) translateX(6px); }
+          100% { transform: translateY(0) translateX(0); }
         }
         @keyframes float-slower {
-          0% {
-            transform: translateY(0) translateX(0);
-          }
-          50% {
-            transform: translateY(-14px) translateX(-8px);
-          }
-          100% {
-            transform: translateY(0) translateX(0);
-          }
+          0% { transform: translateY(0) translateX(0); }
+          50% { transform: translateY(-14px) translateX(-8px); }
+          100% { transform: translateY(0) translateX(0); }
         }
-        .animate-float-slow {
-          animation: float-slow 12s ease-in-out infinite;
-        }
-        .animate-float-slower {
-          animation: float-slower 16s ease-in-out infinite;
-        }
+        .animate-float-slow { animation: float-slow 12s ease-in-out infinite; }
+        .animate-float-slower { animation: float-slower 16s ease-in-out infinite; }
       `}</style>
     </div>
   )
@@ -166,17 +148,14 @@ function BackgroundFX() {
 
 /* =================== Small reusable components & polish ===================== */
 function GlassCard({ children, className = '' }) {
+  // Removed scroll-in animation
   return (
-    <motion.div
+    <div
       className={`competition-card relative flex flex-col bg-white/[0.05] border border-cyan-500/20 backdrop-blur-md rounded-2xl p-6 shadow-[0_0_40px_rgba(34,211,238,0.15)] ${className}`}
-      initial={{ opacity: 0, y: 14 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-100px' }}
-      transition={{ duration: 0.35 }}
     >
       <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-white/10" />
       {children}
-    </motion.div>
+    </div>
   )
 }
 
@@ -189,17 +168,12 @@ function SectionTitle({ children }) {
 }
 
 function StatPill({ label, value }) {
+  // Removed motion + viewport props
   return (
-    <motion.div
-      className="rounded-xl border border-white/10 bg-white/5 px-3 py-2"
-      initial={{ opacity: 0, y: 8 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.35 }}
-    >
+    <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
       <div className="text-center text-cyan-300 font-bold text-sm">{value}</div>
       <div className="text-center text-[11px] text-white/70">{label}</div>
-    </motion.div>
+    </div>
   )
 }
 
@@ -242,21 +216,18 @@ function TiltCard({ children }) {
     if (!el) return
     el.style.transform = ''
   }
+  // Removed framer-motion scroll-appear; keep hover tilt
   return (
-    <motion.div
+    <div
       ref={ref}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleLeave}
       className="relative group rounded-2xl bg-white/[0.05] border border-white/10 p-5 backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.25)]"
-      initial={{ opacity: 0, y: 12 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-100px' }}
-      transition={{ duration: 0.35 }}
     >
       <div className="pointer-events-none absolute inset-0 rounded-2xl overflow-hidden">
         <div className="absolute -inset-[1px] rounded-2xl bg-[conic-gradient(from_180deg_at_50%_50%,#00ffd566,transparent_50%,#0077ff66)] opacity-0 group-hover:opacity-40 transition-opacity duration-500 blur-[6px]" />
       </div>
       {children}
-    </motion.div>
+    </div>
   )
 }

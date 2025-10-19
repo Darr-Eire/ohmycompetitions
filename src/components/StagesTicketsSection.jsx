@@ -42,7 +42,7 @@ export default function StagesTicketsSection({ userId }) {
                 </div>
               )}
               <button
-                onClick={() => location.assign(`/battles?stage=${t.stage}`)}
+                onClick={() => location.assign(`/stages?stage=${t.stage}`)}
                 className="mt-3 w-full bg-cyan-400 text-black font-bold text-sm py-2 rounded-lg"
               >
                 Use in Stage {t.stage}

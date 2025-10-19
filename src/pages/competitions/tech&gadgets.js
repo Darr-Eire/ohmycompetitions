@@ -321,7 +321,7 @@ export default function FeaturedCompetitionsPage() {
             ) : (
               <>
                 <p className="text-white/90">
-                  Explore hand-picked tech prizes — phones, consoles, gadgets, and more.
+                  Explore hand-picked tech prizes — phones, consoles, gadgets and more.
                 </p>
 
                 <TaglineRotator />

@@ -45,8 +45,8 @@ export default function StageHistorySection({ userId }) {
   function goContinue() {
     if (!next) return;
     const targetStage = next.stage;
-    // Adjust this route to your stage/battles page
-    router.push(`/battles?stage=${targetStage}`);
+  
+    router.push(`/stages?stage=${targetStage}`);
   }
 
   return (

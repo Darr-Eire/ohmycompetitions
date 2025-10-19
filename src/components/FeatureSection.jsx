@@ -25,14 +25,14 @@ const features = [
   {
     icon: '⚔️',
     title: 'Pi Battles',
-    description: 'Battle it out in head-to-head Pi duels. Highest streaks, fastest times, and boldest moves win big.',
+    description: 'Battle it out in head-to-head Pi duels. Highest streaks, fastest times and boldest moves win big.',
     link: '/pi-battles',
     cta: 'Join a Battle →',
   },
   {
     icon: '🎮',
     title: 'Mini Games',
-    description: 'Compete in skill-based games. Score high, top the leaderboard, and earn Pi prizes!',
+    description: 'Compete in skill-based games. Score high, top the leaderboard and earn Pi prizes!',
     link: '/mini-games',
     cta: 'Play Now →',
   },

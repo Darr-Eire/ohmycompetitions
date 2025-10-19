@@ -37,7 +37,7 @@ export default function FunnelStageCard({
       // Treat obvious "free" strings as 0
       if (/^free(?:\s+ticket)?$/i.test(raw)) return { num: 0, label: 'Free' };
 
-      // Allow things like "0", "0.15", "0,15", and ignore currency symbols
+      // Allow things like "0", "0.15", "0,15" and ignore currency symbols
       const cleaned = raw.replace(/[^\d.,-]/g, '').replace(',', '.');
       const num = Number(cleaned);
 
@@ -193,7 +193,7 @@ export default function FunnelStageCard({
               </button>
             ) : (
               <Link
-                href="/battles"
+                href="/stages"
                 className={`rounded-lg bg-cyan-400 text-black font-semibold hover:brightness-110 active:translate-y-[1px] ${btnPad} ${btnText}`}
               >
                 Enter Now

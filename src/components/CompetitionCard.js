@@ -10,7 +10,7 @@ import GiftTicketModal from './GiftTicketModal';
 import '@fontsource/orbitron';
 
 const WIDTH = {
-  // a touch narrower + capped, and centered with mx-auto in root
+  // a touch narrower + capped and centered with mx-auto in root
   fluid: 'w-full max-w-[440px]',
   sm: 'min-w-[240px] sm:min-w-[260px] max-w-[360px]',
   md: 'min-w-[280px] sm:min-w-[320px] max-w-[420px]',

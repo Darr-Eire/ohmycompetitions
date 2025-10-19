@@ -177,7 +177,7 @@ export default function ForumsPage() {
             transition={{ duration: .4 }}
             className="mb-8 text-center"
           >
-        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight -mt-16 leading-tight">
+        <h1 className="text-2xl sm:text-2xl font-extrabold tracking-tight -mt-16 leading-tight">
   <span className="bg-gradient-to-r from-[#00ffd5] to-[#0077ff] bg-clip-text text-transparent">
     Community Forums
   </span>

@@ -14,7 +14,7 @@ export default function MatchPiTermsPage() {
          
 
           <p>
-            By entering the <strong>Match the Pi Code</strong> challenge on <strong>Oh My Competitions</strong>, you confirm your agreement to the following rules. These terms are designed to keep the game fair, secure, and enjoyable for everyone.
+            By entering the <strong>Match the Pi Code</strong> challenge on <strong>Oh My Competitions</strong>, you confirm your agreement to the following rules. These terms are designed to keep the game fair, secure and enjoyable for everyone.
           </p>
 
           <ol className="list-decimal list-inside space-y-3">
