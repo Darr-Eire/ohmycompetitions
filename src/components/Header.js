@@ -185,7 +185,7 @@ export default function Header() {
           <div className="justify-self-center text-center leading-tight">
             <Link href="/homepage" className="block">
               <span className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent drop-shadow">
-                OMC
+                Oh My Competitions
               </span>
             </Link>
             {user ? (
@@ -201,24 +201,24 @@ export default function Header() {
             )}
           </div>
 
-          {/* Right: notifications + auth (no LanguageSwitcher) */}
-          <div className="justify-self-end flex items-center gap-2">
-            {user && <NotificationsBell username={user.username} />}
-            {!user ? (
-              <button
-                onClick={() => setShowLoginModal(true)}
-                className={`${BTN_BASE} ${BTN_GRADIENT} text-xs`}
-                aria-haspopup="dialog"
-                aria-expanded={showLoginModal ? 'true' : 'false'}
-              >
-                {safeT('login', 'Login')}
-              </button>
-            ) : (
-              <button onClick={logout} className={`${BTN_BASE} ${BTN_GRADIENT} text-xs`}>
-                {safeT('logout', 'Logout')}
-              </button>
-            )}
-          </div>
+       {/* Right: auth only (bell moved into sidebar header) */}
+<div className="justify-self-end flex items-center gap-2">
+  {!user ? (
+    <button
+      onClick={() => setShowLoginModal(true)}
+      className={`${BTN_BASE} ${BTN_GRADIENT} text-xs`}
+      aria-haspopup="dialog"
+      aria-expanded={showLoginModal ? 'true' : 'false'}
+    >
+      {safeT('login', 'Login')}
+    </button>
+  ) : (
+    <button onClick={logout} className={`${BTN_BASE} ${BTN_GRADIENT} text-xs`}>
+      {safeT('logout', 'Logout')}
+    </button>
+  )}
+</div>
+
         </div>
       </header>
 

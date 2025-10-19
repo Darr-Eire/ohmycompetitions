@@ -847,7 +847,7 @@ function TopWinnersCarousel({ t }) {
 }
 
 /* ---------- FREE SECTION: centered card, NO carousel ---------- */
-function FreeSection({ t, items = [], viewMoreHref = '/competitions/free' }) {
+function FreeSection({ t, items = [] }) {
   const fallback = {
     comp: {
       slug: 'pi-to-the-moon',
@@ -882,19 +882,11 @@ function FreeSection({ t, items = [], viewMoreHref = '/competitions/free' }) {
             buttonLabel={t('enter_now', 'More Details')}
           />
         </div>
-
-        <div className="mt-6 text-center">
-          <Link
-            href={viewMoreHref}
-            className="inline-block mx-auto text-sm font-bold px-3 py-1.5 rounded-md text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow hover:opacity-90 transition"
-          >
-            {t('view_more', 'View More')}
-          </Link>
-        </div>
       </div>
     </section>
   );
 }
+
 
 /* -------- Disable SSR for this page to avoid hydration issues -------- */
 const HomePageNoSSR = dynamic(() => Promise.resolve(HomePage), { ssr: false });
