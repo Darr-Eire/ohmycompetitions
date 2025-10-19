@@ -548,34 +548,41 @@ function HomePage() {
               </div>
             </div>
 
-            <div className="px-3">
-              <div className="max-w-6xl mx-auto">
-                <div className="p-[1px] rounded-2xl bg-gradient-to-r from-cyan-500/40 via-blue-500/35 to-cyan-500/40">
-                  <div
-                    className="rounded-2xl bg-[#0f172a]/80 backdrop-blur border border-white/10
-                     shadow-[0_0_24px_rgba(34,211,238,0.16)] px-3 sm:px-4 py-4 sm:py-5"
-                  >
-                    <FunnelStagesRow
-                      stages={stages}
-                      prizePoolPi={prizePoolPi}
-                      onEnterStage1={handleEnterStage1}
-                      className="shadow-[0_0_25px_rgba(0,255,255,0.15)]"
-                    />
+         <div className="px-3">
+  <div className="max-w-6xl mx-auto">
+    <div className="p-[1px] rounded-2xl bg-gradient-to-r from-cyan-500/40 via-blue-500/35 to-cyan-500/40">
+      <div className="rounded-2xl bg-[#0f172a]/80 backdrop-blur border border-white/10 shadow-[0_0_24px_rgba(34,211,238,0.16)] px-3 sm:px-4 py-4 sm:py-5">
 
-                    <div className="mt-4 text-center">
-                      <button
-                        type="button"
-                        onClick={handleEnterStage1}
-                        className="inline-flex items-center justify-center rounded-xl px-5 py-2 text-sm font-semibold
-                         bg-cyan-400 text-[#0a1024] shadow transition-colors hover:bg-cyan-300"
-                      >
-                        {t('enter_stage_1', 'Enter Stage 1')}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+        {/* Mobile: horizontally scrollable container; Desktop: normal */}
+        <div className="-mx-3 sm:mx-0">
+          <div className="overflow-x-auto overscroll-x-contain px-3 sm:px-0 sm:overflow-visible scrollbar-thin scrollbar-thumb-cyan-500/40">
+            {/* Clamp & center on small screens so it lines up with other cards */}
+            <div className="min-w-0 mx-auto w-full max-w-[520px] sm:max-w-none">
+              <FunnelStagesRow
+                stages={stages}
+                prizePoolPi={prizePoolPi}
+                onEnterStage1={handleEnterStage1}
+                className="w-full sm:w-auto shadow-[0_0_25px_rgba(0,255,255,0.15)]"
+              />
             </div>
+          </div>
+        </div>
+
+        <div className="mt-4 text-center">
+          <button
+            type="button"
+            onClick={handleEnterStage1}
+            className="inline-flex items-center justify-center rounded-xl px-5 py-2 text-sm font-semibold
+                       bg-cyan-400 text-[#0a1024] shadow transition-colors hover:bg-cyan-300"
+          >
+            {t('enter_stage_1', 'Enter Stage 1')}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
           </section>
 
           <FreeSection t={t} items={getCompetitionsByCategory('free')} />

@@ -24,7 +24,7 @@ Pioneers can **buy or gift tickets**, **win prizes**, **earn referral rewards** 
 ## 📸 Screenshots
 <!-- Add real screenshots of your UI here -->
 ![Competition Dashboard](./screenshots/dashboard.png)
-![Pi Stacker Game](./screenshots/stacker.png)
+![Pi Mini Game](./screenshots/minigames.png)
 
 ---
 
