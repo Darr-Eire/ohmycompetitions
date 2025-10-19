@@ -4,18 +4,10 @@ import { useEffect, useMemo, useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-
 import TradingViewWidget from '@components/TradingViewWidget';
 import GiftTicketModal from '@components/GiftTicketModal';
 import LaunchCompetitionDetailCard from '@components/LaunchCompetitionDetailCard';
 import { usePiAuth } from '../../context/PiAuthContext';
-
-/**
- * Ticket Purchase Page — Pages Router
- * - Robust slug handling with useRouter()
- * - Client fetch to /api/competitions/:slug
- * - No undefined globals; safe fallbacks for images/description
- */
 
 export default function TicketPurchasePage() {
   const router = useRouter();
@@ -162,34 +154,41 @@ export default function TicketPurchasePage() {
         {comp.imageUrl ? <meta property="og:image" content={comp.imageUrl} /> : null}
       </Head>
 
-      <main className="min-h-screen px-4 py-4 sm:px-6 sm:py-6 text-white bg-[#070d19] font-orbitron">
+      {/* MODIFIED: Adjusted padding to control the "border" and "zoomed-in" feel */}
+      <main className="min-h-screen w-full p-0 text-white bg-[#070d19] font-orbitron">
         {/* Optional chart for crypto comps */}
         {isCryptoCompetition && (
-          <div className="w-full max-w-xl mx-auto h-[250px] sm:h-[380px] mb-4 sm:mb-6">
+          // MODIFIED: Ensure TradingViewWidget takes full width on small screens,
+          // but can be constrained on larger screens if desired for layout.
+          // Removed max-w-xl mx-auto for mobile, keeping it for sm and above.
+          <div className="w-full h-[250px] sm:h-[380px] mb-4 sm:mb-6 sm:max-w-xl sm:mx-auto">
             <TradingViewWidget />
           </div>
         )}
 
-        <LaunchCompetitionDetailCard
-          comp={comp}
-          title={comp?.title}
-          prize={comp?.firstPrize ?? comp?.prize}
-          imageUrl={comp?.imageUrl || comp?.thumbnail}
-          endsAt={comp?.endsAt}
-          startsAt={comp?.startsAt}
-          ticketsSold={liveTicketsSold ?? comp?.ticketsSold ?? 0}
-          totalTickets={comp?.totalTickets ?? 0}
-          status={status}
-          fee={comp?.entryFee}
-          GiftTicketModal={GiftTicketModal}
-          description={desc}
-          handlePaymentSuccess={handlePaymentSuccess}
-          claimFreeTicket={claimFreeTicket}
-          handleShare={handleShare}
-          sharedBonus={sharedBonus}
-          user={user}
-          login={login}
-        />
+        {/* MODIFIED: Added a div for content padding around the card */}
+        <div className="px-4 sm:px-6 py-4 sm:py-6">
+            <LaunchCompetitionDetailCard
+            comp={comp}
+            title={comp?.title}
+            prize={comp?.firstPrize ?? comp?.prize}
+            imageUrl={comp?.imageUrl || comp?.thumbnail}
+            endsAt={comp?.endsAt}
+            startsAt={comp?.startsAt}
+            ticketsSold={liveTicketsSold ?? comp?.ticketsSold ?? 0}
+            totalTickets={comp?.totalTickets ?? 0}
+            status={status}
+            fee={comp?.entryFee}
+            GiftTicketModal={GiftTicketModal}
+            description={desc}
+            handlePaymentSuccess={handlePaymentSuccess}
+            claimFreeTicket={claimFreeTicket}
+            handleShare={handleShare}
+            sharedBonus={sharedBonus}
+            user={user}
+            login={login}
+            />
+        </div>
       </main>
     </>
   );
@@ -265,5 +264,5 @@ function toNum(v, d = 0) {
   return Number.isFinite(n) ? n : d;
 }
 function isFiniteNum(v) {
-  return typeof v === 'number' && Number.isFinite(v);
+  return typeof v === 'number' && Number.isFinite(v); 
 }

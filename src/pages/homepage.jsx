@@ -1,10 +1,11 @@
+// file: src/pages/homepage.jsx
 'use client';
-import React, { useEffect, useRef, useState } from 'react';
+
+import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { useSafeTranslation } from '../hooks/useSafeTranslation';
-
 import DailyCompetitionCard from '@components/DailyCompetitionCard';
 import FreeCompetitionCard from '@components/FreeCompetitionCard';
 import PiCompetitionCard from '@components/PiCompetitionCard';
@@ -14,6 +15,7 @@ import LaunchCompetitionCard from '@components/LaunchCompetitionCard';
 import FunnelStagesRow from '@components/FunnelStagesRow';
 import { useFunnelStages } from 'hooks/useFunnelStages';
 import Layout from '@components/Layout';
+
 
 /* ------------------------- helpers ------------------------- */
 const toNumber = (v, fallback = 0) => {
@@ -49,7 +51,7 @@ const PageWrapper = ({ children }) => (
   </div>
 );
 
-
+/* --------------- Simple horizontal carousel shell --------------- */
 function HorizontalCarousel({
   items = [],
   renderItem,
@@ -62,22 +64,12 @@ function HorizontalCarousel({
 }) {
   const listRef = React.useRef(null);
   const cardRef = React.useRef(null);
-  const [canLeft, setCanLeft] = React.useState(false);
-  const [canRight, setCanRight] = React.useState(false);
 
   const recalc = () => {
     const el = listRef.current;
     if (!el) return;
-    const EPS = 2;
-    setCanLeft(el.scrollLeft > EPS);
-    setCanRight(el.scrollLeft + el.clientWidth < el.scrollWidth - EPS);
-  };
-
-  const scrollByDir = (dir = 1) => {
-    const el = listRef.current;
-    if (!el) return;
-    const step = (cardRef.current?.clientWidth || 360) + gapPx;
-    el.scrollBy({ left: dir * step, behavior: 'smooth' });
+    // (kept for potential future arrows)
+    void el;
   };
 
   const centerFirst = React.useCallback(() => {
@@ -85,11 +77,9 @@ function HorizontalCarousel({
     const el = listRef.current;
     const card = cardRef.current;
     if (!el || !card) return;
-
     const cardW = card.clientWidth;
     const viewW = el.clientWidth;
     const target = Math.max(0, Math.round(cardW / 2 - viewW / 2));
-
     if (el.scrollLeft <= 4 && Math.abs(el.scrollLeft - target) > 2) {
       el.scrollLeft = target;
     }
@@ -98,21 +88,17 @@ function HorizontalCarousel({
   React.useEffect(() => {
     const el = listRef.current;
     if (!el) return;
-
     centerFirst();
     recalc();
-
     const onScroll = () => recalc();
     const onResize = () => {
       recalc();
       centerFirst();
     };
-
     const ro = new ResizeObserver(onResize);
     el.addEventListener('scroll', onScroll, { passive: true });
     ro.observe(el);
     window.addEventListener('resize', onResize);
-
     return () => {
       el.removeEventListener('scroll', onScroll);
       ro.disconnect();
@@ -135,7 +121,7 @@ function HorizontalCarousel({
           -mx-4 px-4
         "
       >
-        {/* edge fades – keep transparent to blend with FX */}
+        {/* edges kept transparent to blend with FX */}
         <div className="pointer-events-none absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-black/0 to-black/0" />
         <div className="pointer-events-none absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-black/0 to-black/0" />
 
@@ -201,7 +187,7 @@ function Marquee({ text, speed = 60, className = '' }) {
         </span>
       </div>
 
-      {/* transparent edges so FX shows through */}
+      {/* transparent edges */}
       <div className="pointer-events-none absolute left-0 top-0 h-full w-10 bg-gradient-to-r from-black/0 to-black/0" />
       <div className="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-black/0 to-black/0" />
 
@@ -223,6 +209,18 @@ function HomePage() {
 
   /* ================= Funnel (live) ================= */
   const { stages, prizePoolPi } = useFunnelStages();
+
+  // ✅ Compute safe prize pool from live hook value (no SSR reference errors)
+const safePrizePool = useMemo(() => {
+  const raw = prizePoolPi;
+  if (raw == null) return 2200;
+  const n = Number(
+    typeof raw === 'string'
+      ? raw.replace(/[^\d.,-]/g, '').replace(',', '.')
+      : raw
+  );
+  return Number.isFinite(n) && n > 0 ? n : 2200;
+}, [prizePoolPi]);
 
   const handleEnterStage1 = () => {
     const s1 = Array.isArray(stages) ? stages.find(s => Number(s?.stage) === 1) : null;
@@ -434,7 +432,6 @@ function HomePage() {
           className="py-1"
         />
 
-      
         <MiniPrizeCarousel />
 
         {/* Pi Cash Code — centered highlight card */}
@@ -506,83 +503,92 @@ function HomePage() {
             aria-labelledby="omc-stages-title"
             className="space-y-6 sm:space-y-7"
           >
-            <div className="text-center space-y-3 px-3">
-              <h2
-                id="omc-stages-title"
-                className="w-full text-lg sm:text-xl font-extrabold text-cyan-300 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl font-orbitron
-                 shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70
-                 backdrop-blur-md border border-cyan-400"
-              >
-                {t('omc_pi_stages_competitions', 'OMC Pi Stages Competitions')}
-              </h2>
+          <div className="text-center space-y-3 px-3">
+  <h2
+    id="omc-stages-title"
+    className="w-full text-lg sm:text-xl font-extrabold text-cyan-300 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl font-orbitron
+             shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70
+             backdrop-blur-md border border-cyan-400"
+  >
+    {t('omc_pi_stages_competitions', 'OMC Pi Stages Competitions')}
+  </h2>
 
-              <div className="max-w-5xl mx-auto text-[0.85rem] sm:text-sm text-cyan-300/90 italic
-                    flex items-start justify-center gap-x-6 gap-y-2 flex-wrap leading-relaxed mt-1.5 sm:mt-2.5">
-                <span className="text-center">
-                  {t('qualify', 'Qualify')}{' '}
-                  <span className="text-white font-semibold">({t('stage_1', 'Stage 1')})</span>
-                  <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
-                    {t('s1_desc', '25 enter, 5 come out with an Advance Ticket. Will you be one?')}
-                  </span>
-                </span>
+  <div
+    className="max-w-5xl mx-auto text-[0.85rem] sm:text-sm text-cyan-300/90 italic
+               flex items-start justify-center gap-x-6 gap-y-2 flex-wrap leading-relaxed mt-1.5 sm:mt-2.5"
+    aria-describedby="omc-stages-desc"
+  >
+    <span id="omc-stages-desc" className="sr-only">
+      {t('stages_summary', 'Play through five stages: qualify in Stage 1, advance in Stages 2–4, and win in Stage 5.')}
+    </span>
 
-                <span className="text-center">
-                  {t('advance', 'Advance')}{' '}
-                  <span className="text-white font-semibold">({t('stages_2_4', 'Stages 2–4')})</span>
-                  <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
-                    {t('s2_4_desc', 'Each room: 25 enter, top 5 move on using their Advance Ticket.')}
-                  </span>
-                </span>
+    <span className="text-center">
+      {t('qualify', 'Qualify')}{' '}
+      <span className="text-white font-semibold">({t('stage_1', 'Stage 1')})</span>
+      <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
+        {t('s1_desc', '25 enter. Top 5 earn an Advance Ticket.')}
+      </span>
+    </span>
 
-                <span className="text-center">
-                  {t('win', 'Win')}{' '}
-                  <span className="text-white font-semibold">({t('stage_5', 'Stage 5')})</span>
-                </span>
+    <span className="text-center">
+      {t('advance', 'Advance')}{' '}
+      <span className="text-white font-semibold">({t('stages_2_4', 'Stages 2–4')})</span>
+      <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
+        {t('s2_4_desc', 'Each room has 25 players; the top 5 move on using their Advance Ticket.')}
+      </span>
+    </span>
 
-                <span className="text-cyan-300 font-semibold text-center">
-                  {t('stage_5_prize_pool', 'Stage 5 Prize Pool')}:{' '}
-                  <span className="text-white">
-                    {Number(prizePoolPi || 2200).toLocaleString()}π
-                  </span>
-                </span>
-              </div>
-            </div>
+    <span className="text-center">
+      {t('win', 'Win')}{' '}
+      <span className="text-white font-semibold">({t('stage_5', 'Stage 5')})</span>
+      <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
+        {t('s5_desc', 'Finals room—compete for your share of the prize pool.')}
+      </span>
+    </span>
 
-         <div className="px-3">
-  <div className="max-w-6xl mx-auto">
-    <div className="p-[1px] rounded-2xl bg-gradient-to-r from-cyan-500/40 via-blue-500/35 to-cyan-500/40">
-      <div className="rounded-2xl bg-[#0f172a]/80 backdrop-blur border border-white/10 shadow-[0_0_24px_rgba(34,211,238,0.16)] px-3 sm:px-4 py-4 sm:py-5">
-
-        {/* Mobile: horizontally scrollable container; Desktop: normal */}
-        <div className="-mx-3 sm:mx-0">
-          <div className="overflow-x-auto overscroll-x-contain px-3 sm:px-0 sm:overflow-visible scrollbar-thin scrollbar-thumb-cyan-500/40">
-            {/* Clamp & center on small screens so it lines up with other cards */}
-            <div className="min-w-0 mx-auto w-full max-w-[520px] sm:max-w-none">
-              <FunnelStagesRow
-                stages={stages}
-                prizePoolPi={prizePoolPi}
-                onEnterStage1={handleEnterStage1}
-                className="w-full sm:w-auto shadow-[0_0_25px_rgba(0,255,255,0.15)]"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-4 text-center">
-          <button
-            type="button"
-            onClick={handleEnterStage1}
-            className="inline-flex items-center justify-center rounded-xl px-5 py-2 text-sm font-semibold
-                       bg-cyan-400 text-[#0a1024] shadow transition-colors hover:bg-cyan-300"
-          >
-            {t('enter_stage_1', 'Enter Stage 1')}
-          </button>
-        </div>
-      </div>
-    </div>
+    <span className="text-cyan-300 font-semibold text-center" aria-live="polite">
+      {t('stage_5_prize_pool', 'Stage 5 Prize Pool')}:{' '}
+      <span className="text-white" aria-label={t('prize_pool_value', 'Prize pool value')}>
+        {safePrizePool.toLocaleString()}{'\u2009'}π
+      </span>
+    </span>
   </div>
 </div>
 
+
+            <div className="px-3">
+              <div className="max-w-6xl mx-auto">
+                <div className="p-[1px] rounded-2xl bg-gradient-to-r from-cyan-500/40 via-blue-500/35 to-cyan-500/40">
+                  <div className="rounded-2xl bg-[#0f172a]/80 backdrop-blur border border-white/10 shadow-[0_0_24px_rgba(34,211,238,0.16)] px-3 sm:px-4 py-4 sm:py-5">
+                    <div className="-mx-3 sm:mx-0">
+                      <div className="overflow-x-auto overscroll-x-contain px-3 sm:px-0 sm:overflow-visible scrollbar-thin scrollbar-thumb-cyan-500/40">
+                        <div className="min-w-0 mx-auto w-full max-w-[520px] sm:max-w-none">
+                          <FunnelStagesRow
+                            stages={stages}
+                            prizePoolPi={safePrizePool}
+                            onEnterStage1={handleEnterStage1}
+                            className="w-full sm:w-auto shadow-[0_0_25px_rgba(0,255,255,0.15)]"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 text-center">
+                      <button
+                        type="button"
+                        onClick={handleEnterStage1}
+                        className="inline-flex items-center justify-center rounded-xl px-5 py-2 text-sm font-semibold
+                                   bg-cyan-400 text-[#0a1024] shadow transition-colors hover:bg-cyan-300"
+                        aria-label={t('enter_stage_1_aria', 'Enter Stage 1 qualifiers')}
+                      >
+                        {t('enter_stage_1', 'Enter Stage 1')}
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+            </div>
           </section>
 
           <FreeSection t={t} items={getCompetitionsByCategory('free')} />
@@ -599,7 +605,6 @@ function wordIncludes(text = '', words = []) {
   const s = String(text).toLowerCase();
   return words.some((w) => new RegExp(`\\b${w}\\b`, 'i').test(s));
 }
-
 
 function Section({
   title,
@@ -701,12 +706,10 @@ function renderCard(item, i, { isFree, isPi, cardSize = 'md' }) {
 
   if (isFree) return <FreeCompetitionCard key={key} {...item} />;
 
-  // ✅ Wrap the Pi card so it matches the carousel’s centered/clamped width
   if (isPi) {
     const maxW = cardSize === 'md' ? 320 : 480; // keep in sync with Section config
     return (
       <div key={key} className="mx-auto w-full" style={{ maxWidth: maxW }}>
-        {/* If your PiCompetitionCard supports className, pass w-full to ensure no inner width shrink */}
         <PiCompetitionCard {...item} className="w-full" />
       </div>
     );
@@ -884,7 +887,6 @@ function FreeSection({ t, items = [] }) {
     </section>
   );
 }
-
 
 /* -------- Disable SSR for this page to avoid hydration issues -------- */
 const HomePageNoSSR = dynamic(() => Promise.resolve(HomePage), { ssr: false });

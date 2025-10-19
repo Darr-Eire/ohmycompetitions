@@ -12,13 +12,13 @@ function toNum(v, d = 0) {
 /**
  * FunnelStagesRow
  *
- * Props (all optional, safe defaults):
- * - stages: array of objects per stage [{ stage:1..5, capacity, entrants, advancing, endsAt, tags, isPoolPrize }]
- * - s1..s5: individual stage objects (if you prefer passing separately)
- * - entryFeePi: number (Stage 1 price display)
- * - onEnterStage1: function to handle Stage 1 Enter button
- * - headline: string title above the row
- * - subline: string subtitle below the title
+ * Props:
+ * - stages?: [{ stage:1..5, capacity, entrants, advancing, hasTicket, status, slug, endsAt }]
+ * - s1..s5?: individual stage objects
+ * - entryFeePi?: number (Stage 1 price, default 0.15)
+ * - onEnterStage1?: () => void
+ * - headline?: string
+ * - subline?: string
  */
 export default function FunnelStagesRow({
   stages = [],
@@ -32,33 +32,28 @@ export default function FunnelStagesRow({
   headline = 'OMC Pi Stages',
   subline = 'Each room: 25 enter — top 5 advance with an Advance Ticket. Stage 5 is the Pool Prize.'
 }) {
-  /* ---------- normalize one stage object ---------- */
+  /* ---------- normalize one stage object to FunnelStageCard props ---------- */
   const shape = (obj, stage) => {
     const cap = toNum(obj?.capacity, 25);
     const ent = Math.max(0, Math.min(toNum(obj?.entrants ?? obj?.entrantsCount, 0), cap));
     const adv = toNum(obj?.advancing, stage < 5 ? 5 : 1);
 
-    // Stage 1 shows price; others show "Advance Ticket"
-    const price =
-      stage === 1
-        ? (typeof entryFeePi === 'number' ? entryFeePi : 0.15)
-        : undefined;
-
-    const isPoolPrize = stage === 5 || !!obj?.isPoolPrize;
+    // Stage 1 shows a numeric price; all others require an Advance Ticket.
+    const pricePi = stage === 1
+      ? (typeof entryFeePi === 'number' ? entryFeePi : 0.15)
+      : undefined;
 
     return {
-      title: obj?.title || (isPoolPrize ? 'Pool Prize' : `Stage ${stage}`),
-      detail: obj?.detail || (stage === 1 ? 'Open Qualifiers' : `Invite-only: advance to enter`),
+      // names that FunnelStageCard.jsx expects:
+      stage,
+      title: obj?.title || (stage === 5 ? 'Finals' : `Stage ${stage}`),
       entrants: ent,
       capacity: cap,
       advancing: adv,
-      price,
-      endsAt: obj?.endsAt || null,
-      tags: Array.isArray(obj?.tags) ? obj.tags : (isPoolPrize ? ['Final'] : [`Stage ${stage}`]),
-      comingSoon: !!obj?.comingSoon,
-      isPoolPrize,
-      ctaLabel: stage === 1 ? 'Enter' : 'Advance Ticket',
-      joinHref: stage === 1 ? undefined : (obj?.joinHref || undefined),
+      status: obj?.status || 'filling',
+      pricePi,                      // only defined for stage 1
+      hasTicket: !!obj?.hasTicket,  // default false -> shows “Qualified Only/Locked”
+      compSlug: obj?.slug || '',
     };
   };
 
@@ -103,30 +98,30 @@ export default function FunnelStagesRow({
       <div className="sm:hidden -mx-2 px-2">
         <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2">
           <div className="min-w-[85%] snap-center">
-            <FunnelStageCard stage={1} {...S1} onClickJoin={onEnterStage1} />
+            <FunnelStageCard {...S1} onEnter={onEnterStage1} />
           </div>
           <div className="min-w-[70%] snap-center">
-            <FunnelStageCard micro stage={2} {...S2} />
+            <FunnelStageCard micro {...S2} />
           </div>
           <div className="min-w-[70%] snap-center">
-            <FunnelStageCard micro stage={3} {...S3} />
+            <FunnelStageCard micro {...S3} />
           </div>
           <div className="min-w-[70%] snap-center">
-            <FunnelStageCard micro stage={4} {...S4} />
+            <FunnelStageCard micro {...S4} />
           </div>
           <div className="min-w-[70%] snap-center">
-            <FunnelStageCard micro stage={5} {...S5} />
+            <FunnelStageCard micro {...S5} />
           </div>
         </div>
       </div>
 
       {/* Desktop grid */}
       <div className="hidden sm:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
-        <FunnelStageCard stage={1} {...S1} micro={false} onClickJoin={onEnterStage1} />
-        <FunnelStageCard stage={2} {...S2} micro={false} />
-        <FunnelStageCard stage={3} {...S3} micro={false} />
-        <FunnelStageCard stage={4} {...S4} micro={false} />
-        <FunnelStageCard stage={5} {...S5} micro={false} />
+        <FunnelStageCard {...S1} micro={false} onEnter={onEnterStage1} />
+        <FunnelStageCard {...S2} micro={false} />
+        <FunnelStageCard {...S3} micro={false} />
+        <FunnelStageCard {...S4} micro={false} />
+        <FunnelStageCard {...S5} micro={false} />
       </div>
     </section>
   );
