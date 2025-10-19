@@ -241,16 +241,32 @@ export default function Header() {
         aria-modal="true"
         aria-label="Site navigation"
       >
-        <div className="flex items-center justify-between px-4 py-3 border-b border-cyan-700">
-          <span className="text-cyan-300 font-orbitron text-lg">{safeT('menu', 'Menu')}</span>
-          <button
-            onClick={() => setMenuOpen(false)}
-            className={`${BTN_BASE} ${BTN_GRADIENT} px-2 py-1`}
-            aria-label={safeT('close_menu', 'Close menu')}
-          >
-            ✕
-          </button>
-        </div>
+ <div className="flex items-center justify-between px-4 py-3 border-b border-cyan-700">
+  <span className="text-cyan-300 font-orbitron text-lg">
+    {safeT('menu', 'Menu')}
+  </span>
+
+  {/* Right cluster: Bell + Close */}
+  <div className="flex items-center gap-2">
+    {user && (
+      <div className="h-8 w-8 grid place-items-center rounded-md bg-white/5 border border-cyan-700/40">
+        {/* If NotificationsBell supports className, pass size; else keep wrapper */}
+        <NotificationsBell username={user.username} />
+      </div>
+    )}
+
+    <button
+      onClick={() => setMenuOpen(false)}
+      className={`${BTN_BASE} ${BTN_GRADIENT} h-8 px-2`}
+      aria-label={safeT('close_menu', 'Close menu')}
+      title={safeT('close_menu', 'Close menu')}
+    >
+      ✕
+    </button>
+  </div>
+</div>
+
+
 
         <nav className="p-4 space-y-6">
           <div>
