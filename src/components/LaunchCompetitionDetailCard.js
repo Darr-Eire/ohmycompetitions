@@ -312,9 +312,20 @@ const onCheckAnswer = (e) => {
   }
 
   setAnswerOK(ok);
-  setAnswerError(ok ? '' : 'Incorrect answer. Try again.');
-  if (ok && !isFree) setShowPayButton(true);
+
+  if (ok) {
+    setAnswerError('');
+    setShowSkill(false);       // <-- hide the quiz form
+    setShowPayButton(true);    // <-- reveal the Pay button
+    // optional: scroll the user to the purchase panel
+    const el = document.getElementById('purchase-panel');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } else {
+    setShowPayButton(false);
+    setAnswerError('Incorrect answer. Try again.');
+  }
 };
+
 
 
   const onProceed = async () => {
