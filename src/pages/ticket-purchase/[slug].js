@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import TradingViewWidget from '@components/TradingViewWidget';
+
 import GiftTicketModal from '@components/GiftTicketModal';
 import LaunchCompetitionDetailCard from '@components/LaunchCompetitionDetailCard';
 import { usePiAuth } from '../../context/PiAuthContext';
@@ -156,20 +156,11 @@ export default function TicketPurchasePage() {
 
       {/* MODIFIED: Adjusted padding to control the "border" and "zoomed-in" feel */}
       <main className="min-h-screen w-full p-0 text-white bg-[#070d19] font-orbitron">
-        {/* Optional chart for crypto comps */}
-        {isCryptoCompetition && (
-          // MODIFIED: Ensure TradingViewWidget takes full width on small screens,
-          // but can be constrained on larger screens if desired for layout.
-          // Removed max-w-xl mx-auto for mobile, keeping it for sm and above.
-          <div className="w-full h-[250px] sm:h-[380px] mb-4 sm:mb-6 sm:max-w-xl sm:mx-auto">
-            <TradingViewWidget />
-          </div>
-        )}
+     
 
         {/* MODIFIED: Added a div for content padding around the card */}
         <div className="px-4 sm:px-6 py-4 sm:py-6">
-            <LaunchCompetitionDetailCard
-            comp={comp}
+            <LaunchCompetitionDetailCard            comp={comp}
             title={comp?.title}
             prize={comp?.firstPrize ?? comp?.prize}
             imageUrl={comp?.imageUrl || comp?.thumbnail}

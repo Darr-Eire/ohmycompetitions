@@ -4,7 +4,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-import LaunchCompetitionDetailCard from 'components/LaunchCompetitionDetailCard';
+import LaunchCompetitionDetailCard from '@/components/LaunchCompetitionDetailCard';
 
 export default function PiToTheMoonPage() {
   // --- Competition data (normalized like your slug pages expect) ---

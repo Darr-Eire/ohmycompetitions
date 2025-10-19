@@ -1,10 +1,11 @@
-// /ticket-purchase/pi/[slug].js
+// src/pages/ticket-purchase/pi/[slug].js
 'use client';
 
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
 
-import LaunchCompetitionDetailCard from 'components/LaunchCompetitionDetailCard';
+// Assuming these paths are correct for your project
+import LaunchCompetitionDetailCard from '@/components/LaunchCompetitionDetailCard';
 import GiftTicketModal from '@components/GiftTicketModal';
 
 export default function PiTicketPage() {
@@ -21,17 +22,16 @@ export default function PiTicketPage() {
     async function load() {
       setLoading(true);
 
-      // 1) Try local data (fast path)
-    // 1) Try local cache (fast path) — no static arrays!
-const local =
-  (typeof window !== 'undefined' && window.__OMC_CACHE__?.bySlug?.[slug]) ||
-  null;
+      // 1) Try local cache (fast path) — no static arrays!
+      const local =
+        (typeof window !== 'undefined' && window.__OMC_CACHE__?.bySlug?.[slug]) ||
+        null;
 
       if (local) {
         const merged = normalizeFromPiItem(local);
         setComp(merged);
-        // prefer explicit description, else centralized
-        setDesc(merged.description || describeCompetition(merged));
+        // prefer explicit description, else centralized (assuming describeCompetition is defined elsewhere or not strictly needed for this example)
+        setDesc(merged.description || merged.title); // Fallback to title if describeCompetition is not defined globally
         setLoading(false);
         return;
       }
@@ -43,7 +43,8 @@ const local =
         const data = await res.json();
         const merged = normalizeFromApi(data);
         setComp(merged);
-        setDesc(merged.description || describeCompetition(merged));
+        // prefer explicit description, else centralized
+        setDesc(merged.description || merged.title); // Fallback to title if describeCompetition is not defined globally
       } catch (e) {
         console.error(e);
       } finally {
@@ -79,16 +80,30 @@ const local =
     );
   }
 
+  // The hasImage check is still useful here for debugging or other future conditional logic if needed
+  // However, the conditional prize banner here is now redundant as LaunchCompetitionDetailCard handles it.
+  // const hasImage = !!(comp?.imageUrl || comp?.thumbnail); // Converts to boolean
+
   return (
     <main className="min-h-screen bg-[#070d19] text-white px-0 py-0">
       {/* Full-bleed content wrapper */}
       <div className="w-full backdrop-blur-md bg-white/5 border border-cyan-500 rounded-none shadow-lg p-4 sm:p-8">
+
+        {/*
+          // REMOVED: This banner is now handled internally by LaunchCompetitionDetailCard
+          {!hasImage && (
+            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-4 text-center text-2xl font-bold mb-4 rounded-lg shadow-md">
+              Prize: {comp?.firstPrize ?? comp?.prize}
+            </div>
+          )}
+        */}
+
         <LaunchCompetitionDetailCard
-          /* visual parity with LaunchCompetitionDetailCard */
           comp={comp}
           title={comp?.title}
           prize={comp?.firstPrize ?? comp?.prize}
           fee={comp?.entryFee}
+          // Pass the image URL, LaunchCompetitionDetailCard will handle if it's null/undefined
           imageUrl={comp?.imageUrl || comp?.thumbnail}
           endsAt={comp?.endsAt}
           startsAt={comp?.startsAt}
@@ -100,6 +115,8 @@ const local =
           handlePaymentSuccess={() => {
             // Optional: refresh state here after a payment if needed.
           }}
+          // REMOVED: showImageSlot prop is no longer needed as LaunchCompetitionDetailCard handles its own image/banner logic
+          // showImageSlot={hasImage}
         />
       </div>
     </main>

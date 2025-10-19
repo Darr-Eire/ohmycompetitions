@@ -1,17 +1,14 @@
-// src/components/LaunchCompetitionDetailCard.js
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import '@fontsource/orbitron';
-import BuyTicketButton from 'components/BuyTicketButton'; // adjust to your alias if needed
-import { usePiAuth } from 'context/PiAuthContext';        // keep this path consistent
-
-// Skill question helpers
+import BuyTicketButton from 'components/BuyTicketButton';
+import { usePiAuth } from 'context/PiAuthContext';
 import { getRandomQuestion, isCorrectAnswer as checkAnswer } from 'data/skill-questions';
 import { CreatePayment } from '@lib/pi/PiIntegration';
 
-/* ───────────────────────── prize helpers ───────────────────────── */
+/* ----------------------------- helpers ----------------------------- */
 function normalizePrizeBreakdown(raw) {
   if (!raw) return {};
   if (typeof raw === 'object' && !Array.isArray(raw)) {
@@ -85,20 +82,15 @@ function getWinnersCount(comp, tiers) {
   return Math.min(3, count || 1);
 }
 
-/** Format prize text.
- * - For tech/gadgets themes, NEVER append the π symbol (and strip it if present).
- * - For other themes, append π to plain numerics/strings that lack a currency.
- */
 function formatPrize(v, theme) {
   if (v === null || v === undefined) return null;
 
-  const isTechOrGadgets = ['tech', 'gadgets'].includes(String(theme || '').toLowerCase());
+  const isTechOrGadgets = ['tech', 'gadgets', 'premium'].includes(String(theme || '').toLowerCase());
 
   if (typeof v === 'string') {
     let s = v.trim();
     if (!s) return null;
     if (isTechOrGadgets) {
-      // strip trailing/embedded π (or " pi") defensively
       s = s.replace(/\s*π\s*/gi, '').replace(/\s*pi\s*$/i, '');
       return s;
     }
@@ -110,14 +102,71 @@ function formatPrize(v, theme) {
   const formatted = n >= 1000 ? Math.round(n).toLocaleString('en-US') : n.toFixed(2);
   return isTechOrGadgets ? `${formatted}` : `${formatted} π`;
 }
+function primaryPrizeFrom({ comp, prize, tiers, theme }) {
+  // prefer explicit prize tiers, then prop, then comp defaults
+  const p = tiers?.['1st'] ?? prize ?? comp?.prize ?? comp?.prizeLabel ?? comp?.firstPrize;
+  return formatPrize(p ?? 'TBA', theme);
+}
 
-/* ───────────────────────── component ───────────────────────── */
+function PrizeBanner({ value, theme, className = '' }) {
+  const isTech = ['tech', 'gadgets', 'premium'].includes(String(theme || '').toLowerCase());
+  return (
+    <div
+      className={`h-48 w-full grid place-items-center text-center
+        rounded-xl border border-cyan-300/40 overflow-hidden
+        bg-[radial-gradient(ellipse_at_top_left,rgba(34,211,238,.18),transparent_40%),radial-gradient(ellipse_at_bottom_right,rgba(59,130,246,.18),transparent_45%)]
+        ${className}`}
+      aria-label="Top prize"
+      role="img"
+    >
+      <div className="px-4">
+        <div className="text-[11px] uppercase tracking-[0.15em] text-cyan-200/90">
+          Top Prize
+        </div>
+        <div className="mt-1 text-2xl sm:text-3xl font-extrabold text-cyan-300 drop-shadow">
+          {value}
+          {!isTech && !/π/.test(String(value)) ? ' π' : ''}
+        </div>
+        <div className="mt-1 text-xs text-white/70">
+          Win big — limited tickets available
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ----------------------------- UI atoms ----------------------------- */
+function Pill({ children, tone = 'cyan' }) {
+  const tones = {
+    cyan: 'from-cyan-400 to-blue-500',
+    green: 'from-green-400 to-emerald-500',
+    amber: 'from-amber-400 to-orange-500',
+    red: 'from-rose-500 to-red-600',
+  };
+  const t = tones[tone] || tones.cyan;
+  return (
+    <span className={`inline-block rounded-full bg-gradient-to-r ${t} text-black font-bold px-3 py-1 text-xs`}>
+      {children}
+    </span>
+  );
+}
+
+function Stat({ label, value }) {
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+      <div className="text-[11px] uppercase tracking-wider text-cyan-300">{label}</div>
+      <div className="mt-0.5 text-sm font-semibold text-white">{value}</div>
+    </div>
+  );
+}
+
+/* ===================== COMPONENT ===================== */
 export default function LaunchCompetitionDetailCard({
   comp,
   title,
   prize,
   fee,
-  imageUrl,
+  imageUrl, // This prop is used directly in the conditional rendering below
   endsAt,
   startsAt,
   ticketsSold,
@@ -132,531 +181,445 @@ export default function LaunchCompetitionDetailCard({
   sharedBonus = false,
   GiftTicketModal,
   handlePaymentSuccess,
-  description, // 👈 optional prop
+  description,
 
-  // OPTIONAL: allow parent to seed a question
   initialQuestion,
 }) {
-  /* -------------------- Auth (context with prop fallback) -------------------- */
-  const ctx = usePiAuth?.() || {};
-  const ctxUser  = ctx.user  ?? null;
-  const ctxLogin = ctx.login ?? (() => {});
-  const effectiveUser = userProp ?? ctxUser;
-  const loginFn       = loginProp ?? ctxLogin;
+  /* ---------- Auth ---------- */
+  const ctx = (typeof usePiAuth === 'function' ? usePiAuth() : {}) || {};
+  const effectiveUser = userProp ?? ctx.user ?? null;
+  const loginFn       = loginProp ?? ctx.login ?? (() => {});
+  const userId =
+    effectiveUser?.id ?? effectiveUser?.uid ?? effectiveUser?.userId ?? effectiveUser?.pi_user_id ?? effectiveUser?.username ?? null;
 
-  const getUserId = (u) =>
-    u?.id ?? u?.uid ?? u?.userId ?? u?.pi_user_id ?? u?.username ?? null;
+  /* ---------- Derived ---------- */
+  const theme = comp?.theme || comp?.comp?.theme;
+  const displayTitle = title ?? comp?.title ?? comp?.comp?.title ?? 'Competition';
 
-  const effectiveUserId = getUserId(effectiveUser);
-
-  /* -------------------- Description (centralized) -------------------- */
   const effectiveDescription = useMemo(() => {
-    // Priority: explicit prop -> comp.description -> centralized describeCompetition
-    return description ?? comp?.description ?? describeCompetition(comp);
-  }, [description, comp]);
+    if (description) return description;
+    if (comp?.description) return comp.description;
+    const name = comp?.comp?.title || comp?.title || displayTitle;
+    return `${name} — Enter for a chance to win!`;
+  }, [description, comp, displayTitle]);
 
-  /* -------------------- Formatting / derived values -------------------- */
   const formattedStart = startsAt
     ? new Date(startsAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
     : 'TBA';
-
   const formattedEnd = endsAt
     ? new Date(endsAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
     : 'TBA';
 
-  const availableTickets = Math.max(0, (totalTickets ?? 0) - (ticketsSold ?? 0));
-  const percent = totalTickets > 0 ? Math.min(100, Math.floor(((ticketsSold ?? 0) / totalTickets) * 100)) : 0;
-  const isNearlyFull = availableTickets > 0 && availableTickets <= Math.ceil((totalTickets ?? 0) * 0.25);
+  const available = Math.max(0, (totalTickets ?? 0) - (ticketsSold ?? 0));
+  const soldPct = totalTickets > 0 ? Math.min(100, Math.floor(((ticketsSold ?? 0) / totalTickets) * 100)) : 0;
 
-  /* -------------------- Countdown (24h mode) -------------------- */
-  const [nowTs, setNowTs] = useState(Date.now());
-  const msLeft = useMemo(() => {
-    if (!endsAt) return null;
-    return Math.max(0, new Date(endsAt).getTime() - nowTs);
-  }, [endsAt, nowTs]);
+  // Countdown
+  const [now, setNow] = useState(Date.now());
+  const msLeft = useMemo(() => (endsAt ? Math.max(0, new Date(endsAt).getTime() - now) : null), [endsAt, now]);
   const isLast24h = msLeft !== null && msLeft <= 24 * 60 * 60 * 1000;
 
   useEffect(() => {
     if (!endsAt) return;
-    const tickMs = isLast24h ? 1000 : 60000; // seconds in last 24h, minutes otherwise
-    const id = setInterval(() => setNowTs(Date.now()), tickMs);
+    const tick = isLast24h ? 1000 : 60000;
+    const id = setInterval(() => setNow(Date.now()), tick);
     return () => clearInterval(id);
   }, [endsAt, isLast24h]);
 
-  /* -------------------- Purchase flow state -------------------- */
-  const [quantity, setQuantity] = useState(1);
-  const [showSkillQuestion, setShowSkillQuestion] = useState(false);
-  const [skillAnswer, setSkillAnswer] = useState('');
-  const [showGiftModal, setShowGiftModal] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
-
-  // Skill flow gating
-  const [hasValidAnswer, setHasValidAnswer] = useState(false);
-  const [recordedAnswer, setRecordedAnswer] = useState('');
-  const [showPayment, setShowPayment] = useState(false);
-  const [answerError, setAnswerError] = useState('');
-
   const rawEntry = typeof fee !== 'undefined' ? fee : comp?.entryFee ?? 0;
-  const numericEntry = typeof rawEntry === 'string' ? parseFloat(rawEntry) : Number(rawEntry) || 0;
-  const isFree = numericEntry <= 0;
-  const totalPrice = Math.max(0, numericEntry * quantity);
+  const entryNum = typeof rawEntry === 'string' ? parseFloat(rawEntry) : Number(rawEntry) || 0;
+  const isFree = entryNum <= 0;
 
-  /* -------------------- Skill question (single source of truth) -------------------- */
-  const [selectedQuestion, setSelectedQuestion] = useState(
-    () => initialQuestion || getRandomQuestion({ difficulty: 'easy' })
-  );
+  /* ---------- Prize tiers ---------- */
+  const tiers = useMemo(() => buildPrizeBreakdownFromComp(comp, prize), [comp, prize]);
+  const winnersCount = useMemo(() => getWinnersCount(comp, tiers), [comp, tiers]);
+  const ordinals = useMemo(() => ['1st', '2nd', '3rd'].slice(0, winnersCount), [winnersCount]);
+
+  /* ---------- Skill gate & payment ---------- */
+  const [qty, setQty] = useState(1);
+  const [showSkill, setShowSkill] = useState(false);
+  const [skillAnswer, setSkillAnswer] = useState('');
+  const [answerOK, setAnswerOK] = useState(false);
+  const [answerError, setAnswerError] = useState('');
+  const [showPayButton, setShowPayButton] = useState(false);
+
+  const [question, setQuestion] = useState(() => initialQuestion || getRandomQuestion({ difficulty: 'easy' }));
   useEffect(() => {
-    if (initialQuestion) setSelectedQuestion(initialQuestion);
+    if (initialQuestion) setQuestion(initialQuestion);
   }, [initialQuestion]);
 
-  const isAnswerCorrect = () => checkAnswer(selectedQuestion, skillAnswer);
+  const totalPrice = Math.max(0, entryNum * qty);
 
-  const handleProceedClick = async() => {
-    if (hasValidAnswer) {
-     await CreatePayment("",totalPrice,"competition",()=>{
-      alert("bow to my greatness you mortal")
-     })
-      setShowSkillQuestion(false);
-    } else {
-      setShowSkillQuestion(true);
-      setShowPayment(false);
-    }
-  };
-
-  const handleSubmitSkill = (e) => {
+  const onCheckAnswer = (e) => {
     e?.preventDefault?.();
-    const ok = isAnswerCorrect();
-    if (ok) {
-      setRecordedAnswer(String(skillAnswer).trim());
-      setHasValidAnswer(true);
-      setAnswerError('');
-      setShowSkillQuestion(false);
-      setShowPayment(false);
-    } else {
-      setHasValidAnswer(false);
-      setAnswerError('You must answer correctly to proceed.');
+    const ok = checkAnswer(question, skillAnswer);
+    setAnswerOK(ok);
+    setAnswerError(ok ? '' : 'Incorrect answer. Try again.');
+    if (ok && !isFree) setShowPayButton(true);
+  };
+
+  const onProceed = async () => {
+    if (!isFree && !answerOK) {
+      setShowSkill(true);
+      setShowPayButton(false);
+      return;
+    }
+    try {
+      if (isFree) {
+        await claimFreeTicket?.(qty);
+        handlePaymentSuccess?.();
+      } else {
+        await CreatePayment('', totalPrice, 'competition', () => {
+          try { handlePaymentSuccess?.(); } catch {}
+        });
+      }
+    } catch (err) {
+      console.error('Payment/claim failed:', err);
     }
   };
 
-  /* -------------------- PRIZE TIERS (dynamic 1/2/3) -------------------- */
-  const tiers = useMemo(
-    () => buildPrizeBreakdownFromComp(comp, prize),
-    [comp, prize]
-  );
-  const winnersCount = useMemo(
-    () => getWinnersCount(comp, tiers),
-    [comp, tiers]
-  );
-  const ordinals = useMemo(
-    () => ['1st', '2nd', '3rd'].slice(0, winnersCount),
-    [winnersCount]
-  );
-
-  const banner =
-    winnersCount === 3 ? '1st • 2nd • 3rd Prizes'
-  : winnersCount === 2 ? '1st • 2nd Prizes'
-  : 'Single Winner';
-
-  // Dynamic layout: center 1 prize, 2-column for 2 prizes, 3-column for 3 prizes
-  const prizesLayoutClass = useMemo(() => {
-    if (winnersCount === 1) return 'flex justify-center';
-    if (winnersCount === 2) return 'grid grid-cols-1 sm:grid-cols-2 gap-3';
-    return 'grid grid-cols-1 sm:grid-cols-3 gap-3';
-  }, [winnersCount]);
-
-  /* --------------------------------- UI --------------------------------- */
+  /* ===================== RENDER ===================== */
   return (
-    <div className="flex justify-center p-0 my-0 -mt-4 -mb-3">
-      <div className="relative w-full max-w-xl">
-        {/* Outer Glow */}
-        <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-green-400/15 via-cyan-500/10 to-blue-500/15 blur-xl" />
-        <div className="relative rounded-3xl p-[1.5px] bg-[linear-gradient(135deg,rgba(0,255,213,0.6),rgba(0,119,255,0.5))]">
-          {/* Card body */}
-          <section className="rounded-3xl bg-[#0b1220]/95 backdrop-blur-xl border border-cyan-300 text-white font-orbitron p-5 sm:p-6">
-            {/* Title */}
-            <h2 className="text-2xl sm:text-[28px] font-extrabold tracking-wide text-center bg-gradient-to-r from-green-300 via-cyan-300 to-blue-300 bg-clip-text text-transparent drop-shadow">
-              {title}
-            </h2>
+    <div className="relative">
+      {/* subtle glow */}
+      <div className="pointer-events-none absolute -inset-2 rounded-3xl blur-2xl opacity-40
+                      bg-[radial-gradient(circle_at_20%_10%,rgba(34,211,238,0.25),transparent_40%),radial-gradient(circle_at_80%_90%,rgba(59,130,246,0.25),transparent_35%)]" />
 
-            {/* Theme-specific image */}
-            {(comp?.theme === 'tech' || comp?.theme === 'premium') && (
-              <div className="mt-4 flex justify-center">
-                <img
-                  src={
-                    imageUrl ||
-                    (comp?.theme === 'tech'
-                      ? '/images/tech-default.jpg'
-                      : comp?.theme === 'premium'
-                      ? '/images/premium-default.jpg'
-                      : '/images/placeholder.jpg')
-                  }
-                  alt={title || 'Competition image'}
-                  className="w-48 h-32 rounded-lg border border-cyan-300/30 shadow-[0_0_12px_rgba(34,211,238,0.25)] object-cover"
-                />
-              </div>
+      <div className="relative grid gap-6 lg:grid-cols-[1fr_420px]">
+        {/* ============ LEFT: HERO & DETAILS ============ */}
+        <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-5 sm:p-6">
+          {/* title + status */}
+          <div className="flex items-start justify-between gap-3">
+            <h1 className="font-orbitron text-2xl sm:text-3xl font-extrabold tracking-wide
+                           bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-blue-400 to-cyan-300">
+              {displayTitle}
+            </h1>
+            {status === 'active' && <Pill tone="green">Live</Pill>}
+            {status === 'upcoming' && <Pill tone="amber">Coming Soon</Pill>}
+            {status === 'ended' && <Pill tone="red">Closed</Pill>}
+          </div>
+
+          {/* Conditional image/banner section */}
+          <div className="mt-4 relative rounded-xl overflow-hidden border border-white/10">
+            {imageUrl ? ( // If imageUrl is provided, show the image
+              <img
+                src={imageUrl}
+                alt={displayTitle}
+                className="h-48 w-full object-cover"
+                loading="lazy"
+              />
+            ) : ( // Otherwise, show the PrizeBanner
+              <PrizeBanner
+                value={primaryPrizeFrom({ comp, prize, tiers, theme })}
+                theme={theme}
+              />
             )}
+          </div>
 
-            {/* Status */}
-            {status === 'active' && (
-              <div className="mt-2 text-center">
-                <span className="inline-block rounded-full bg-gradient-to-r from-green-400 to-green-600 text-black font-bold px-4 py-1 animate-pulse">
-                  Live Now
-                </span>
 
-                <div className={`text-lg font-bold ${isLast24h ? 'text-amber-300' : 'text-cyan-300'} mt-1`}>
-                  {(() => {
-                    const diff = msLeft ?? 0;
-                    if (isLast24h) {
-                      const hours = Math.floor(diff / 3600000);
-                      const mins  = Math.floor((diff % 3600000) / 60000);
-                      const secs  = Math.floor((diff % 60000) / 1000);
-                      const pad = (n) => String(n).padStart(2, '0');
-                      return `${pad(hours)}:${pad(mins)}:${pad(secs)}`;
-                    }
-                    const days  = Math.floor(diff / 86400000);
-                    const hours = Math.floor((diff % 86400000) / 3600000);
-                    const mins  = Math.floor((diff % 3600000) / 60000);
-                    return `${days} ${days === 1 ? 'Day' : 'Days'} ${hours} ${hours === 1 ? 'Hour' : 'Hours'} ${mins} ${mins === 1 ? 'Min' : 'Mins'}`;
-                  })()}
-                </div>
+          {/* description */}
+          <p className="mt-4 text-sm text-white/80 leading-relaxed">{effectiveDescription}</p>
 
-                <div className="mt-2 text-cyan-300 text-sm">
-                  Draw Date <span className="text-white">{formattedEnd}</span>
-                </div>
-              </div>
-            )}
+          {/* small stats row */}
+          <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <Stat label="Starts" value={formattedStart} />
+            <Stat label="Ends" value={formattedEnd} />
+            <Stat label="Entry" value={isFree ? 'Free' : `${entryNum.toFixed(2)} π`} />
+            <Stat label="Tickets" value={`${ticketsSold ?? 0} / ${totalTickets ?? 0}`} />
+          </div>
 
-            {status === 'upcoming' && (
-              <div className="mt-4 text-center">
-                <span className="inline-block rounded-full bg-gradient-to-r from-orange-400 to-orange-600 text-black font-bold px-4 py-1 shadow-[0_0_8px_rgba(251,146,60,0.6)]">
-                  Coming Soon
-                </span>
-              </div>
-            )}
-
-            {status === 'ended' && (
-              <div className="mt-4 text-center">
-                <span className="inline-block rounded-full bg-red-500 text-white font-bold px-4 py-1">
-                  ❌ Closed
-                </span>
-              </div>
-            )}
-
-            {/* Winners banner */}
-            <div className="mt-5 text-center text-xs bg-cyan-500 text-black font-semibold py-1 mx-auto rounded-md max-w-xs">
-              {banner}
+          {/* progress */}
+          <div className="mt-4">
+            <div className="flex items-center justify-between text-[11px] text-cyan-300 mb-1">
+              <span>Progress</span>
+              <span>{soldPct}%</span>
             </div>
+            <div className="h-2 w-full rounded-full bg-white/10 overflow-hidden border border-white/10">
+              <div
+                className="h-full rounded-full bg-gradient-to-r from-cyan-300 to-blue-400 transition-[width] duration-700"
+                style={{ width: `${soldPct}%` }}
+              />
+            </div>
+          </div>
 
-            {/* PRIZES (dynamic 1/2/3) */}
-            <div className={`mt-4 ${prizesLayoutClass}`}>
-              {ordinals.map((label) => (
-                <div
-                  key={label}
-                  className="rounded-xl border border-cyan-300/50 bg-white/5 px-4 py-3 text-center shadow-[0_0_8px_rgba(34,211,238,0.25)]"
-                >
-                  <div className="text-[11px] uppercase tracking-wide text-cyan-300 font-semibold">
-                    {label} Prize
-                  </div>
-                  <div
-                    className="mt-1 text-lg font-extrabold text-cyan-300 motion-safe:animate-pulse drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]"
-                    style={{ animationDuration: '1.1s' }}
-                  >
-                    {formatPrize(tiers[label], comp?.theme) ?? 'TBA'}
+          {/* prizes */}
+          <div className="mt-6">
+            <h2 className="text-sm font-semibold text-cyan-300 mb-2">Prizes</h2>
+            <div className={`grid gap-3 ${winnersCount === 1 ? 'sm:grid-cols-1' : winnersCount === 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-3'}`}>
+              {ordinals.map((k) => (
+                <div key={k} className="rounded-xl border border-cyan-300/40 bg-cyan-300/10 p-3 text-center">
+                  <div className="text-[11px] uppercase tracking-wide text-cyan-200">{k} Prize</div>
+                  <div className="mt-1 text-lg font-extrabold text-cyan-300">
+                    {formatPrize(tiers[k] ?? 'TBA', theme)}
                   </div>
                 </div>
               ))}
             </div>
+          </div>
 
-            {/* Key Details */}
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              <Stat
-                size="sm"
-                label="Entry Fee"
-                value={(() => {
-                  const v = typeof fee !== 'undefined' ? fee : comp?.entryFee;
-                  if (v == null) return '0.00 π';
-                  if (typeof v === 'string') return /\bπ\b/.test(v) ? v : `${v} π`;
-                  const n = Number(v);
-                  return `${Number.isFinite(n) ? n.toFixed(2) : '0.00'} π`;
-                })()}
-                customClass="border-cyan-300/50 text-cyan-300"
-              />
-              <Stat
-                size="sm"
-                label="Tickets Sold"
-                value={`${ticketsSold ?? 0} / ${totalTickets ?? 0}`}
-                customClass="border-cyan-300/50 text-cyan-300"
-              />
-              <Stat
-                size="xs"
-                label="Available"
-                value={`${availableTickets} left (max ${comp?.maxTicketsPerUser ?? 'N/A'}/user)`}
-                customClass="border-cyan-300/50 text-cyan-300"
-              />
-              <Stat
-                size="sm"
-                label="Winners"
-                value={String(winnersCount)}
-                customClass="border-cyan-300/50 text-cyan-300"
-              />
+          {/* terms link */}
+          <div className="mt-6 text-center">
+            <Link href="/terms-conditions" className="text-sm text-cyan-300 underline hover:text-cyan-200">
+              View Full Terms & Conditions
+            </Link>
+          </div>
+        </section>
+
+        {/* ============ RIGHT: PURCHASE PANEL ============ */}
+        <aside
+          id="purchase-panel"
+          className="rounded-2xl border border-cyan-400/40 bg-[#0b1220]/90 p-5 sm:p-6 shadow-[0_0_24px_rgba(34,211,238,0.16)]"
+        >
+          {/* countdown */}
+          {status === 'active' && endsAt && (
+            <div className={`mb-3 text-center text-sm ${isLast24h ? 'text-amber-300' : 'text-cyan-300'}`} aria-live="polite">
+              {(() => {
+                const d = msLeft ?? 0;
+                if (isLast24h) {
+                  const h = Math.floor(d / 3600000);
+                  const m = Math.floor((d % 3600000) / 60000);
+                  const s = Math.floor((d % 60000) / 1000);
+                  const pad = (n) => String(n).padStart(2, '0');
+                  return `Ends in ${pad(h)}:${pad(m)}:${pad(s)}`;
+                }
+                const days  = Math.floor(d / 86400000);
+                const hours = Math.floor((d % 86400000) / 3600000);
+                const mins  = Math.floor((d % 3600000) / 60000);
+                return `Ends in ${days}d ${hours}h ${mins}m`;
+              })()}
             </div>
+          )}
 
-            {/* Progress Bar — cyan theme */}
-            <div className="mt-5">
-              <div className="flex items-center justify-between text-[11px] text-cyan-300 mb-1">
-                <span>Progress</span>
-                <span>{percent}%</span>
-              </div>
-              <div
-                className="h-2 w-full rounded-full bg-cyan-300/15 border border-cyan-300/30 overflow-hidden"
-                role="progressbar"
-                aria-valuenow={percent}
-                aria-valuemin={0}
-                aria-valuemax={100}
-              >
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-cyan-300 to-cyan-400 shadow-[0_0_10px_rgba(103,232,249,0.55)] transition-[width] duration-700 ease-out"
-                  style={{ width: `${percent}%` }}
-                />
-              </div>
+          {/* totals */}
+          <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-white/80">Entry Fee</span>
+              <span className="font-semibold text-white">{isFree ? 'Free' : `${entryNum.toFixed(2)} π`}</span>
             </div>
-
-            {/* ------------------------- PURCHASE PANEL ------------------------- */}
-            <div className="mt-6">
-              {isFree ? (
-                <>
-                  <p className="text-cyan-300 font-semibold text-sm sm:text-base text-center mb-2">
-                    Free Ticket Claimed: {quantity}/2
-                  </p>
-
-                  <button
-                    onClick={claimFreeTicket}
-                    disabled={quantity >= (sharedBonus ? 2 : 1)}
-                    className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 px-4 rounded-xl mb-3 disabled:opacity-60"
-                  >
-                    Claim Free Ticket
-                  </button>
-
-                  {!sharedBonus && (
+            {!isFree && (
+              <>
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="text-sm text-white/80">Quantity</span>
+                  <div className="flex items-center gap-2">
                     <button
-                      onClick={handleShare}
-                      className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-bold py-3 px-4 rounded-xl"
-                    >
-                      Share for Bonus Ticket
-                    </button>
-                  )}
-                </>
-              ) : (
-                <>
-                  <p className="text-lg font-bold mt-1 text-center">
-                    Total {Number(totalPrice).toFixed(2)} π
-                  </p>
-
-                  {/* Quantity picker */}
-                  <div className="flex justify-center gap-4 mt-4">
-                    <button
-                      onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                      disabled={quantity <= 1}
-                      className="bg-blue-500 px-4 py-1 rounded-full disabled:opacity-50"
+                      onClick={() => setQty(q => Math.max(1, q - 1))}
+                      disabled={qty <= 1}
+                      className="rounded-lg bg-white/10 px-2 py-1 text-white/90 disabled:opacity-50"
+                      aria-label="Decrease quantity"
                     >
                       −
                     </button>
-                    <span className="text-lg font-semibold">{quantity}</span>
+                    <span className="w-6 text-center font-semibold">{qty}</span>
                     <button
-                      onClick={() => setQuantity(q => Math.min(availableTickets, q + 1))}
-                      disabled={quantity >= availableTickets}
-                      className="bg-blue-500 px-4 py-1 rounded-full disabled:opacity-50"
+                      onClick={() => setQty(q => Math.min(available, q + 1))}
+                      disabled={qty >= available}
+                      className="rounded-lg bg-white/10 px-2 py-1 text-white/90 disabled:opacity-50"
+                      aria-label="Increase quantity"
                     >
                       +
                     </button>
                   </div>
+                </div>
+                <div className="mt-2 flex items-center justify-between text-sm">
+                  <span className="text-white/80">Total</span>
+                  <span className="font-bold text-cyan-300">{totalPrice.toFixed(2)} π</span>
+                </div>
+              </>
+            )}
+          </div>
 
-                  {/* Stock notes */}
-                  {isNearlyFull && availableTickets > 0 && (
-                    <div className="text-cyan-300 text-sm font-bold mt-2 text-center">
-                      ⚠️ Only {availableTickets} tickets remaining!
-                    </div>
-                  )}
-                  {quantity > availableTickets && (
-                    <div className="text-cyan-300 text-sm font-bold mt-2 text-center">
-                      ❌ Cannot buy {quantity} tickets — only {availableTickets} available
-                    </div>
-                  )}
+          {/* stock note */}
+          {!isFree && available > 0 && available <= Math.ceil((totalTickets ?? 0) * 0.25) && (
+            <div className="mt-2 text-center text-xs text-amber-300">Hurry — only {available} tickets left</div>
+          )}
+          {!isFree && available === 0 && (
+            <div className="mt-2 text-center text-xs text-red-300">Sold out</div>
+          )}
 
-                  {/* Proceed / Continue button (gated by skill) */}
-                  {!showSkillQuestion && !showPayment && (
-                    <>
-                      <button
-                        onClick={handleProceedClick}
-                        className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 px-4 rounded-xl mt-6"
-                      >
-                        {hasValidAnswer ? 'Continue to Payment' : 'Pay With π'}
-                      </button>
-                      {hasValidAnswer && (
-                        <p className="mt-2 text-center text-emerald-300 text-xs">
-                          ✓ Answer verified{recordedAnswer ? `: “${recordedAnswer}”` : ''}
-                        </p>
-                      )}
-                    </>
-                  )}
+          {/* login */}
+          {!effectiveUser && status === 'active' && (
+            <button
+              onClick={loginFn}
+              className="mt-4 w-full rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 py-3 font-semibold text-black"
+            >
+              Login with Pi Network
+            </button>
+          )}
 
-                  {/* Payment button appears once proceed is clicked after a correct answer */}
-                  {!showSkillQuestion && showPayment && (
-                    <div className="mt-4">
-                      <BuyTicketButton
-                        competitionSlug={comp?.slug}
-                        entryFee={numericEntry}
-                        quantity={quantity}
-                        piUser={effectiveUser}
-                        userId={effectiveUserId}
-                        onPaymentSuccess={handlePaymentSuccess}
-                        endsAt={comp?.endsAt ?? endsAt}
-                      />
-                    </div>
-                  )}
+          {/* free flow */}
+          {isFree && status === 'active' && (
+            <div className="mt-4 space-y-3">
+              <button
+                onClick={() => claimFreeTicket?.(1)}
+                className="w-full rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 py-3 font-semibold text-black"
+              >
+                Claim Free Ticket
+              </button>
+              {!sharedBonus && (
+                <button
+                  onClick={handleShare}
+                  className="w-full rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 py-3 font-semibold text-black"
+                >
+                  Share for Bonus Ticket
+                </button>
+              )}
+            </div>
+          )}
 
-                  {/* Login prompt if needed */}
-                  {!effectiveUser && !showSkillQuestion && !showPayment && (
-                    <button
-                      onClick={loginFn}
-                      className="w-full mt-3 py-2 px-4 rounded-xl font-bold text-black bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 transition"
-                    >
-                      Login With Pi Network
-                    </button>
-                  )}
-
-                  {/* Gift button */}
-                  {!showSkillQuestion && effectiveUser?.username && (
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setShowGiftModal(true);
-                      }}
-                      className="w-full mt-3 py-3 px-4 rounded-xl font-bold text-black bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 transition"
-                    >
-                      🎁 Gift a Ticket
-                    </button>
-                  )}
-
-                  {/* Inspiration + thanks */}
-                  <p className="mt-2 text-center text-cyan-300 text-sm italic">
-                    Your journey to victory starts here play smart, dream big and claim the Pi prize
-                  </p>
-                  <p className="text-cyan-300 text-xs sm:text-sm mt-3 text-center">
-                    Thank you for participating and good luck!
-                  </p>
-
-                  {/* Details */}
-                  {showDetails && (
-                    <div className="mt-3 bg-white/10 p-4 rounded-lg border border-cyan-400 text-sm whitespace-pre-wrap leading-relaxed">
-                      <h2 className="text-center text-lg font-bold mb-2 text-cyan-300">Competition Details</h2>
-                      <p>{effectiveDescription || '—'}</p>
-                    </div>
-                  )}
-                </>
+          {/* paid flow */}
+          {!isFree && status === 'active' && effectiveUser && (
+            <>
+              {!showSkill && !showPayButton && (
+                <button
+                  onClick={() => setShowSkill(true)}
+                  className="mt-4 w-full rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 py-3 font-semibold text-black"
+                >
+                  Pay with π
+                </button>
               )}
 
-              {/* Skill question step */}
-              {showSkillQuestion && (
-                <div className="mt-6 max-w-md mx-auto text-center">
-                  <label htmlFor="skill-question" className="block font-semibold mb-1 text-white">
-                    Skill Question (Required to Enter):
-                  </label>
-                  <p className="mb-2">{selectedQuestion?.question ?? 'Answer the question to proceed.'}</p>
-
+              {showSkill && (
+                <form onSubmit={onCheckAnswer} className="mt-4 space-y-2">
+                  <div className="text-sm text-white/90">{question?.question ?? 'Answer to continue'}</div>
                   <input
-                    id="skill-question"
-                    type="text"
-                    className="w-full px-4 py-2 rounded-lg bg-[#0f172a]/60 border border-cyan-500 text-white focus:outline-none focus:ring-2 focus:ring-cyan-400"
                     value={skillAnswer}
-                    onChange={(e) => {
-                      setSkillAnswer(e.target.value);
-                      setAnswerError('');
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleSubmitSkill(e);
-                    }}
-                    placeholder="Enter your answer"
-                    style={{ maxWidth: '300px' }}
-                    aria-invalid={Boolean(answerError)}
-                    aria-describedby="skill-error"
+                    onChange={(e) => { setSkillAnswer(e.target.value); setAnswerError(''); }}
+                    className="w-full rounded-lg bg-white/10 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-cyan-400"
+                    placeholder="Your answer"
+                    aria-invalid={!!answerError}
                   />
+                  {answerError && <div className="text-xs text-red-400">{answerError}</div>}
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      type="submit"
+                      className="flex-1 rounded-lg bg-cyan-400 py-2 text-sm font-semibold text-black"
+                    >
+                      Check Answer
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setShowSkill(false); setShowPayButton(false); }}
+                      className="rounded-lg border border-white/15 bg-white/5 px-3 text-xs text-white/80"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              )}
 
+              {!showSkill && showPayButton && (
+                <div className="mt-4">
+                  <BuyTicketButton
+                    competitionSlug={comp?.slug}
+                    entryFee={entryNum}
+                    quantity={qty}
+                    piUser={effectiveUser}
+                    userId={userId}
+                    onPaymentSuccess={handlePaymentSuccess}
+                    endsAt={comp?.endsAt ?? endsAt}
+                  />
                   <button
                     type="button"
-                    onClick={handleSubmitSkill}
-                    className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 px-4 rounded-xl mt-3 hover:from-cyan-300 hover:to-blue-400 transition"
+                    onClick={onProceed}
+                    className="mt-2 w-full rounded-xl border border-white/15 bg-white/5 py-2 text-sm text-white/90"
                   >
-                    Enter Answer
-                  </button>
-
-                  {answerError && (
-                    <p id="skill-error" className="text-sm text-red-400 mt-2">{answerError}</p>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={() => setShowSkillQuestion(false)}
-                    className="mt-3 text-xs text-cyan-300 hover:text-cyan-200 underline"
-                  >
-                    Cancel
+                    Or Continue via Pi Payment
                   </button>
                 </div>
               )}
+            </>
+          )}
+
+          {/* gift (optional) */}
+          {GiftTicketModal && effectiveUser?.username && status === 'active' && (
+            <GiftTicketModalTrigger comp={comp} GiftTicketModal={GiftTicketModal} />
+          )}
+
+          {/* footer note */}
+          <p className="mt-6 text-center text-xs text-cyan-300/90">
+            Good luck, Pioneer! Make your move.
+          </p>
+        </aside>
+      </div>
+
+      {/* Sticky purchase bar (mobile) */}
+      <div className="lg:hidden fixed inset-x-0 bottom-0 z-40">
+        <div className="mx-3 mb-3 rounded-xl border border-white/10 bg-[#0b1220]/95 backdrop-blur">
+          <div className="flex items-center justify-between px-4 py-3">
+            <div className="min-w-0">
+              <div className="text-xs text-white/70">
+                {status === 'active' ? 'Entry' : 'Status'}
+              </div>
+              <div className="text-base font-semibold text-white truncate">
+                {status !== 'active'
+                  ? (status === 'upcoming' ? 'Coming Soon' : 'Closed')
+                  : (isFree ? 'Free' : `${entryNum.toFixed(2)} π`)
+                }
+              </div>
             </div>
 
-            {/* Gift modal (optional) */}
-            {GiftTicketModal && (
-              <GiftTicketModal
-                isOpen={showGiftModal}
-                onClose={() => setShowGiftModal(false)}
-                preselectedCompetition={comp}
-              />
+            {!isFree && (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setQty(q => Math.max(1, q - 1))}
+                  disabled={qty <= 1}
+                  className="h-10 w-10 grid place-items-center rounded-lg bg-white/10 text-white/90 disabled:opacity-50"
+                  aria-label="Decrease quantity"
+                >−</button>
+                <span className="w-6 text-center font-semibold">{qty}</span>
+                <button
+                  onClick={() => setQty(q => Math.min(available, q + 1))}
+                  disabled={qty >= available}
+                  className="h-10 w-10 grid place-items-center rounded-lg bg-white/10 text-white/90 disabled:opacity-50"
+                  aria-label="Increase quantity"
+                >+</button>
+              </div>
             )}
 
-            {/* Links */}
-            <div className="mt-8 text-center flex flex-col gap-5">
-              <button
-                onClick={() => setShowDetails((prev) => !prev)}
-                className="text-sm text-cyan-300 underline hover:text-cyan-200"
-              >
-                {showDetails ? 'Hide Competition Details' : 'View Competition Details'}
-              </button>
-
-              <Link href="/terms-conditions" className="text-sm text-cyan-300 underline hover:text-cyan-200">
-                View Full Terms & Conditions
-              </Link>
-            </div>
-          </section>
+            <button
+              onClick={() => {
+                const el = document.getElementById('purchase-panel');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                if (!isFree && !answerOK) {
+                  setShowSkill(true);
+                  setShowPayButton(false);
+                }
+              }}
+              className="ml-3 shrink-0 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 px-5 py-3 text-sm font-semibold text-black"
+            >
+              {status !== 'active'
+                ? (status === 'upcoming' ? 'Notify Me' : 'Closed')
+                : (isFree ? 'Claim Free' : `Pay ${Math.max(0, entryNum * qty).toFixed(2)} π`)}
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* motion preferences */}
+      <style jsx global>{`
+        @media (prefers-reduced-motion: reduce) {
+          .motion-safe\\:animate-spin,
+          .motion-safe\\:animate-pulse {
+            animation: none !important;
+          }
+          * { scroll-behavior: auto !important; }
+        }
+      `}</style>
     </div>
   );
 }
 
-/* ----------------------------- UI Helpers ----------------------------- */
-function Stat({ label, value, highlight = false, strong = false, customClass = '', size = 'md' }) {
-  const sizes = {
-    xs: { pad: 'px-2 py-1',   label: 'text-[9px]',  value: 'text-[10px]' },
-    sm: { pad: 'px-2.5 py-1.5', label: 'text-[10px]', value: 'text-[11px]' },
-    md: { pad: 'px-3 py-2',     label: 'text-[11px]', value: 'text-[12px]' },
-    lg: { pad: 'px-3.5 py-2.5', label: 'text-[12px]', value: 'text-[13px]' },
-  };
-  const s = sizes[size] || sizes.md;
-
+/* ---------- small helper for optional gift modal ---------- */
+function GiftTicketModalTrigger({ comp, GiftTicketModal }) {
+  const [open, setOpen] = useState(false);
   return (
-    <div
-      className={`rounded-xl border ${s.pad} ${customClass} ${
-        highlight ? 'border-amber-300/30 bg-amber-300/10'
-                  : !customClass ? 'border-white/10 bg-white/5' : ''
-      }`}
-    >
-      <div className={`uppercase tracking-wide ${highlight ? 'text-amber-200' : 'text-cyan-300'} ${s.label}`}>
-        {label}
-      </div>
-      <div className={`mt-0.5 ${strong ? 'text-white font-bold' : 'text-white/90'} ${s.value}`}>
-        {value}
-      </div>
-    </div>
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="mt-3 w-full rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 py-3 font-semibold text-black"
+      >
+        🎁 Gift a Ticket
+      </button>
+      <GiftTicketModal isOpen={open} onClose={() => setOpen(false)} preselectedCompetition={comp} />
+    </>
   );
 }
