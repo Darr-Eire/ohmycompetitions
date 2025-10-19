@@ -18,7 +18,7 @@ const CompetitionCard = dynamic(
   { ssr: false }
 );
 const StagesCard = dynamic(
-  () => import('../../components/StagesCard').then((m) => pick(m, 'StagesCard')).catch(() => null),
+  () => import('../../components/FunnelStagesCard').then((m) => pick(m, 'StagesCard')).catch(() => null),
   { ssr: false }
 );
 const CashCodeCard = dynamic(

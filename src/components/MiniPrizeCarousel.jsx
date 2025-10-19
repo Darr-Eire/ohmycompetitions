@@ -193,70 +193,77 @@ function CompetitionCard({ item }) {
       aria-label={`${title || 'Competition'} — Prize: ${piPrizeCompact}, Draw: ${formatDate(
         comp?.endsAt
       )}, Fee: ${isFree ? 'Free' : Number.isFinite(entryFeeNum) ? `${nf.format(entryFeeNum)} π` : 'TBA'}`}
-      className={`w-[116px] sm:w-[120px] rounded-lg shadow text-center font-orbitron px-2 py-2 text-[10px] leading-tight select-none
-                  ${baseBg} ${baseBorder}`}
+      className={`w-[130px] h-[190px] rounded-lg shadow text-center font-orbitron px-2 py-2 text-[10px] leading-tight select-none
+                  flex flex-col ${baseBg} ${baseBorder}`}
     >
-      {isFree ? (
-        // Free competition block with banner inside border
-        <div className="flex flex-col justify-start items-center mb-1" style={{ minHeight: '70px' }}>
-          {/* FREE banner inside */}
-          <div className="bg-cyan-500 bg-opacity-20 text-white font-semibold text-xs uppercase tracking-wider px-3 py-1 rounded-full shadow-md mb-2 transition-all">
-            FREE
+      {/* Top section for FREE banner, Image, or Prize block - consistent min-height, flex-grow to fill */}
+      <div className="flex flex-col justify-center items-center w-full min-h-[70px] flex-grow">
+        {isFree ? (
+          <div className="flex flex-col justify-center items-center">
+            <div className="bg-cyan-500 bg-opacity-20 text-white font-semibold text-xs uppercase tracking-wider px-3 py-1 rounded-full shadow-md mb-1 transition-all">
+              FREE
+            </div>
+            <span className="text-[14px] font-extrabold text-cyan-300 whitespace-nowrap">
+              {piPrizeCompact}
+            </span>
+            <span className="text-[9px] uppercase tracking-widest font-light text-cyan-300 mt-1">
+              No Fee
+            </span>
           </div>
-
-          <span className="text-[14px] font-extrabold text-cyan-300 whitespace-nowrap">
-            {piPrizeCompact}
-          </span>
-          <span className="text-[9px] uppercase tracking-widest font-light mt-1 text-cyan-300">
-            No Fee
-          </span>
-        </div>
-      ) : hasImage ? (
-        // Paid competition with image
-        <img src={imageUrl} alt={title || 'competition'} className="w-full h-[70px] object-cover rounded-md mb-1" />
-      ) : (
-        // Paid competition without image
-        <div
-          className="flex flex-col justify-center items-center mb-1 rounded-md text-center
-                     px-3 shadow-inner border border-cyan-400 bg-transparent"
-          style={{ minWidth: '80px', height: '70px' }}
-        >
-          <span className="text-[14px] text-cyan-300 uppercase tracking-wider font-medium mb-1">Prize</span>
-          <span
-            className="text-[14px] font-extrabold text-cyan-400 leading-snug animate-pulse whitespace-nowrap max-w-full"
-            title={piPrizeCompact}
-            style={{ lineHeight: 1.1 }}
+        ) : hasImage ? (
+          <img
+            src={imageUrl}
+            alt={title || 'competition'}
+            className="w-full h-full object-cover rounded-md"
+          />
+        ) : (
+          <div
+            className="flex flex-col justify-center items-center w-full h-full rounded-md text-center
+                       px-3 shadow-inner border border-cyan-400 bg-transparent"
           >
-            {piPrizeCompact}
-          </span>
-          <span className="text-[9px] text-cyan-300 uppercase tracking-widest font-light mt-1">
-            {prizeFootnote}
+            <span className="text-[14px] text-cyan-300 uppercase tracking-wider font-medium mb-1">Prize</span>
+            <span
+              className="text-[14px] font-extrabold text-cyan-400 leading-snug animate-pulse whitespace-nowrap max-w-full"
+              title={piPrizeCompact}
+              style={{ lineHeight: 1.1 }}
+            >
+              {piPrizeCompact}
+            </span>
+            <span className="text-[9px] text-cyan-300 uppercase tracking-widest font-light mt-1">
+              {prizeFootnote}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Title - fixed height and line-clamp for multiline truncation */}
+      <div className="h-[30px] flex items-center justify-center w-full mt-2 mb-1 overflow-hidden">
+        <div
+          className="font-bold text-[11px] text-cyan-300 px-1 w-full text-center
+                     line-clamp-2" // Ensures title takes max 2 lines
+          title={title || 'Untitled'}
+        >
+          {title || 'Untitled'}
+        </div>
+      </div>
+
+      {/* Bottom section for details - flex-grow-0 to take only necessary space */}
+      <div className="flex flex-col justify-end w-full flex-grow-0">
+        <div className="text-white text-[10px]">
+          Draw: <span className="text-white">{formatDate(comp?.endsAt)}</span>
+        </div>
+        <div className="text-white text-[10px]">
+          Fee:{' '}
+          <span className="text-white">
+            {isFree ? 'Free' : Number.isFinite(entryFeeNum) ? `${nf.format(entryFeeNum)} π` : 'TBA'}
           </span>
         </div>
-      )}
-
-      {/* Title */}
-      <div className="font-bold text-[11px] truncate text-cyan-300">{title || 'Untitled'}</div>
-
-      {/* Draw date */}
-      <div className="text-white text-[10px]">
-        Draw: <span className="text-white">{formatDate(comp?.endsAt)}</span>
-      </div>
-
-      {/* Entry fee */}
-      <div className="text-white text-[10px]">
-        Fee:{' '}
-        <span className="text-white">
-          {isFree ? 'Free' : Number.isFinite(entryFeeNum) ? `${nf.format(entryFeeNum)} π` : 'TBA'}
-        </span>
-      </div>
-
-      {/* Tickets sold */}
-      <div className="text-white text-[10px]">
-        Tickets:{' '}
-        <span className="text-white">
-          {toLocale(comp?.ticketsSold)} / {toLocale(comp?.totalTickets)}
-        </span>
+        <div className="text-white text-[10px]">
+          Tickets:{' '}
+          <span className="text-white">
+            {toLocale(comp?.ticketsSold)} / {toLocale(comp?.totalTickets)}
+          </span>
+        </div>
       </div>
     </div>
   );
