@@ -6,14 +6,14 @@ import { useRouter } from 'next/router';
 import { usePiAuth } from '../context/PiAuthContext';
 import { useSafeTranslation } from '../hooks/useSafeTranslation';
 import NotificationsBell from './NotificationsBell';
-import LanguageSwitcher from './LanguageSwitcher';
+// ⛔ Removed LanguageSwitcher import
 
 export default function Header() {
   const { user, login, logout, loading, sdkReady, error } = usePiAuth();
   const { t, ready } = useSafeTranslation();
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
 
+  const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -23,13 +23,10 @@ export default function Header() {
 
   /* ───────────────────────────── Shared button styles ───────────────────────────── */
   const BTN_BASE =
-    'inline-flex items-center justify-center rounded-md text-sm font-bold px-3 py-2 ' +
-    'transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-black/40 active:scale-[0.99]';
+    'inline-flex items-center justify-center rounded-md text-sm font-bold px-3 py-2 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-black/40 active:scale-[0.99]';
 
-  // Matches your header gradient bar: from-[#00ffd5] via-[#00ccff] to-[#0077ff]
   const BTN_GRADIENT =
-    'bg-gradient-to-r from-[#00ffd5] via-[#00ccff] to-[#0077ff] text-black ' +
-    'shadow-[0_0_14px_rgba(0,255,255,0.25)] hover:shadow-[0_0_18px_rgba(0,255,255,0.35)]';
+    'bg-gradient-to-r from-[#00ffd5] via-[#00ccff] to-[#0077ff] text-black shadow-[0_0_14px_rgba(0,255,255,0.25)] hover:shadow-[0_0_18px_rgba(0,255,255,0.35)]';
 
   const BTN_DISABLED = 'opacity-60 cursor-not-allowed shadow-none hover:shadow-none';
 
@@ -69,7 +66,6 @@ export default function Header() {
     [safeT('tech_gadgets', 'Tech/Gadgets'), '/competitions/tech&gadgets'],
     [safeT('daily_weekly', 'Daily/Weekly'), '/competitions/daily'],
     [safeT('pi_giveaways', 'Pi Giveaways'), '/competitions/pi'],
-    // These two will be rendered as non-clickable (disabled) below:
     [safeT('pi_stages', 'Pi Stages'), '/stages', safeT('coming_soon', 'Coming Soon')],
     [safeT('pi_cash_code', 'Pi Cash Code'), '/pi-cash-code', safeT('coming_soon', 'Coming Soon')],
   ];
@@ -118,7 +114,6 @@ export default function Header() {
     </div>
   );
 
-  // Non-clickable routes set
   const DISABLED_ROUTES = new Set(['/pi-cash-code', '/stages']);
 
   const Item = ({ tuple }) => {
@@ -127,11 +122,9 @@ export default function Header() {
     const isDisabled = DISABLED_ROUTES.has(href) || isComingSoon;
 
     if (isDisabled) {
-      // Render a disabled row (no Link)
       return (
         <div
-          className="block rounded px-3 py-2 text-sm font-medium text-white/60 cursor-not-allowed
-                     border border-white/10 bg-white/[0.04]"
+          className="block rounded px-3 py-2 text-sm font-medium text-white/60 cursor-not-allowed border border-white/10 bg-white/[0.04]"
           aria-disabled="true"
           title={note || safeT('coming_soon', 'Coming Soon')}
         >
@@ -145,7 +138,6 @@ export default function Header() {
       );
     }
 
-    // Clickable nav item
     return (
       <Link href={href} className={getLinkClass(href)} onClick={() => setMenuOpen(false)}>
         <span className="relative z-10 flex items-center gap-2">
@@ -165,49 +157,53 @@ export default function Header() {
   return (
     <>
       {/* Top Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 px-3 py-2 flex items-center justify-between shadow-md backdrop-blur-md bg-[#0f172a] border-b border-cyan-700">
-        {/* Menu Button (gradient + black text) */}
-        <button
-          onClick={() => setMenuOpen(true)}
-          className={`${BTN_BASE} ${BTN_GRADIENT} px-2 py-1`}
-          aria-label={safeT('open_menu', 'Open menu')}
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor" /* inherits black from text color */
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 8h16M4 16h16" />
-          </svg>
-        </button>
+      <header
+        className="
+          fixed top-0 left-0 right-0 z-50
+          px-3 py-2
+          border-b border-cyan-700
+          backdrop-blur-md bg-[#0f172a]
+          shadow-md
+        "
+      >
+        {/* 3-column grid keeps center perfectly centered on mobile */}
+        <div className="grid grid-cols-3 items-center">
+          {/* Left: menu button */}
+          <div className="justify-self-start">
+            <button
+              onClick={() => setMenuOpen(true)}
+              className={`${BTN_BASE} ${BTN_GRADIENT} px-2 py-1`}
+              aria-label={safeT('open_menu', 'Open menu')}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 8h16M4 16h16" />
+              </svg>
+            </button>
+          </div>
 
-        {/* Logo + welcome (always show title) */}
-        <div className="flex flex-col items-center text-center leading-tight">
-          <Link href="/homepage" className="block">
-            <span className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent drop-shadow">
-              OMC
-            </span>
-          </Link>
+          {/* Middle: Title + Welcome (always perfectly centered) */}
+          <div className="justify-self-center text-center leading-tight">
+            <Link href="/homepage" className="block">
+              <span className="text-lg sm:text-xl font-bold font-orbitron bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent drop-shadow">
+                OMC
+              </span>
+            </Link>
+            {user ? (
+              <div className="text-cyan-300 text-[12px] sm:text-sm font-orbitron mt-0.5">
+                {(t?.('welcome', 'Welcome') || 'Welcome')}{' '}
+                <span className="text-cyan-300">{user.username}</span>
+              </div>
+            ) : (
+              // Keep height stable when logged out so the header doesn’t jump
+              <div className="text-[11px] sm:text-xs mt-0.5 opacity-0 select-none" aria-hidden="true">
+                placeholder
+              </div>
+            )}
+          </div>
 
-          {user ? (
-            <div className="text-cyan-300 text-sm font-orbitron mt-0.5">
-              {t?.('welcome', 'Welcome') || 'Welcome'} <span className="text-cyan-300">{user.username}</span>
-            </div>
-          ) : (
-            <div className="text-xs mt-0.5 opacity-0 select-none" aria-hidden="true">
-              placeholder
-            </div>
-          )}
-        </div>
-
-        {/* Language + auth + notifications */}
-        <div className="flex items-center gap-3">
-          <LanguageSwitcher />
-          {user && <NotificationsBell username={user.username} />}
-          <div className="flex flex-col gap-1 items-end">
+          {/* Right: notifications + auth (no LanguageSwitcher) */}
+          <div className="justify-self-end flex items-center gap-2">
+            {user && <NotificationsBell username={user.username} />}
             {!user ? (
               <button
                 onClick={() => setShowLoginModal(true)}
