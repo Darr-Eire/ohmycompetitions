@@ -465,7 +465,8 @@ export default function LaunchCompetitionDetailCard({
             </div>
           )}
 
-          {/* paid flow */}
+ 
+
           {!isFree && status === 'active' && effectiveUser && (
             <>
               {!showSkill && !showPayButton && (
