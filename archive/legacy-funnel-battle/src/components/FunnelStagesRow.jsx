@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import React, { useMemo } from 'react';
-import FunnelStageCard from 'components/FunnelStagesCard';
+import FunnelStageCard from 'components/FunnelStageCard';
 
 export default function FunnelStagesRow({
   // Backward-compat single props
