@@ -107,6 +107,59 @@ function primaryPrizeFrom({ comp, prize, tiers, theme }) {
   const p = tiers?.['1st'] ?? prize ?? comp?.prize ?? comp?.prizeLabel ?? comp?.firstPrize;
   return formatPrize(p ?? 'TBA', theme);
 }
+function normalizeText(x) {
+  if (x == null) return '';
+  return String(x)
+    .trim()
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}.\- ]+/gu, '') // strip punctuation/symbols (keeps letters, digits, dot, dash, space)
+    .replace(/\s+/g, ' ');               // collapse spaces
+}
+
+function asAnswerList(q) {
+  // Accept: answer (string), answers (array/string), acceptableAnswers (array/string)
+  const raw =
+    q?.acceptableAnswers ??
+    q?.answers ??
+    q?.answer ??
+    q?.correct ??
+    null;
+
+  if (Array.isArray(raw)) return raw.filter(Boolean);
+  if (raw == null) return [];
+  return [raw];
+}
+
+function isProbablyNumber(str) {
+  // Allow commas and spaces for user input like "1,000"
+  const s = String(str).replace(/,/g, '').trim();
+  const n = Number(s);
+  return Number.isFinite(n);
+}
+
+function numbersEqualLoose(a, b, eps = 1e-6) {
+  const na = Number(String(a).replace(/,/g, '').trim());
+  const nb = Number(String(b).replace(/,/g, '').trim());
+  if (!Number.isFinite(na) || !Number.isFinite(nb)) return false;
+  return Math.abs(na - nb) <= eps;
+}
+
+function isAnswerCorrectFlexible(q, userInput) {
+  const answers = asAnswerList(q);
+  if (!answers.length) return false;
+
+  // If any expected or user looks numeric, compare numerically first
+  const userLooksNumeric = isProbablyNumber(userInput);
+  const anyExpectedNumeric = answers.some(isProbablyNumber);
+
+  if (userLooksNumeric || anyExpectedNumeric) {
+    if (answers.some(ans => numbersEqualLoose(ans, userInput))) return true;
+  }
+
+  // Fallback: normalized text compare
+  const u = normalizeText(userInput);
+  return answers.some(ans => normalizeText(ans) === u);
+}
 
 function PrizeBanner({ value, theme, className = '' }) {
   const isTech = ['tech', 'gadgets', 'premium'].includes(String(theme || '').toLowerCase());
@@ -249,13 +302,20 @@ export default function LaunchCompetitionDetailCard({
 
   const totalPrice = Math.max(0, entryNum * qty);
 
-  const onCheckAnswer = (e) => {
-    e?.preventDefault?.();
-    const ok = checkAnswer(question, skillAnswer);
-    setAnswerOK(ok);
-    setAnswerError(ok ? '' : 'Incorrect answer. Try again.');
-    if (ok && !isFree) setShowPayButton(true);
-  };
+const onCheckAnswer = (e) => {
+  e?.preventDefault?.();
+
+  // Prefer local flexible checker; fallback to imported checker if available
+  let ok = isAnswerCorrectFlexible(question, skillAnswer);
+  if (!ok && typeof checkAnswer === 'function') {
+    try { ok = checkAnswer(question, skillAnswer); } catch {}
+  }
+
+  setAnswerOK(ok);
+  setAnswerError(ok ? '' : 'Incorrect answer. Try again.');
+  if (ok && !isFree) setShowPayButton(true);
+};
+
 
   const onProceed = async () => {
     if (!isFree && !answerOK) {
