@@ -22,9 +22,29 @@ const toNumber = (v, fallback = 0) => {
   return Number.isFinite(n) ? n : fallback;
 };
 
+/* ---------------------- background FX ---------------------- */
+function BackgroundFX() {
+  return (
+    <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+      {/* aurora swirl */}
+      <div className="absolute -inset-32 blur-3xl opacity-35 [background:conic-gradient(from_180deg_at_50%_50%,#00ffd5,rgba(0,255,213,.2),#0077ff,#00ffd5)] animate-[spin_35s_linear_infinite]" />
+      {/* star grid */}
+      <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:18px_18px]" />
+      {/* drifting glows */}
+      <div className="absolute -top-20 -left-24 h-[420px] w-[420px] rounded-full blur-3xl opacity-25 bg-cyan-400 animate-[float_14s_ease-in-out_infinite]" />
+      <div className="absolute -bottom-20 -right-24 h-[420px] w-[420px] rounded-full blur-3xl opacity-20 bg-blue-500 animate-[float2_18s_ease-in-out_infinite]" />
+      <style jsx global>{`
+        @keyframes float {0%{transform:translate(0,0)}50%{transform:translate(12px,18px)}100%{transform:translate(0,0)}}
+        @keyframes float2{0%{transform:translate(0,0)}50%{transform:translate(-16px,-14px)}100%{transform:translate(0,0)}}
+      `}</style>
+    </div>
+  );
+}
+
 /* ------------------ page background wrapper ---------------- */
 const PageWrapper = ({ children }) => (
-  <div className="min-h-screen w-full bg-gradient-to-b from-[#0b1227] via-[#0f1b33] to-[#0a1024] text-white">
+  <div className="app-background relative min-h-screen w-full text-white">
+    <BackgroundFX />
     {children}
   </div>
 );
@@ -43,7 +63,7 @@ function HorizontalCarousel({
   itemMinWidthCSS = 'min(440px, calc(100vw - 2rem))',
   cardMaxWidth = 460,
   gapPx = 16,
-  centerFirstSlide = true, // NEW
+  centerFirstSlide = true,
 }) {
   const listRef = React.useRef(null);
   const cardRef = React.useRef(null);
@@ -65,7 +85,6 @@ function HorizontalCarousel({
     el.scrollBy({ left: dir * step, behavior: 'smooth' });
   };
 
-  // NEW: center the first slide initially (and on resize) so it sits perfectly in view
   const centerFirst = React.useCallback(() => {
     if (!centerFirstSlide) return;
     const el = listRef.current;
@@ -74,11 +93,8 @@ function HorizontalCarousel({
 
     const cardW = card.clientWidth;
     const viewW = el.clientWidth;
-
-    // amount needed so the first card’s center matches the viewport center
     const target = Math.max(0, Math.round(cardW / 2 - viewW / 2));
 
-    // Only push if we’re still near the left (don’t override user scroll)
     if (el.scrollLeft <= 4 && Math.abs(el.scrollLeft - target) > 2) {
       el.scrollLeft = target;
     }
@@ -88,7 +104,6 @@ function HorizontalCarousel({
     const el = listRef.current;
     if (!el) return;
 
-    // initial layout
     centerFirst();
     recalc();
 
@@ -125,9 +140,9 @@ function HorizontalCarousel({
           -mx-4 px-4
         "
       >
-        {/* edge fades */}
-        <div className="pointer-events-none absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-[#0b1227] to-transparent" />
-        <div className="pointer-events-none absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-[#0b1227] to-transparent" />
+        {/* edge fades – keep transparent to blend with FX */}
+        <div className="pointer-events-none absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-black/0 to-black/0" />
+        <div className="pointer-events-none absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-black/0 to-black/0" />
 
         {items.map((item, idx) => (
           <div
@@ -146,7 +161,6 @@ function HorizontalCarousel({
     </div>
   );
 }
-
 
 /* ----------- Marquee with consistent speed (px/s) ----------- */
 function Marquee({ text, speed = 60, className = '' }) {
@@ -192,8 +206,9 @@ function Marquee({ text, speed = 60, className = '' }) {
         </span>
       </div>
 
-      <div className="pointer-events-none absolute left-0 top-0 h-full w-10 bg-gradient-to-r from-[#0b1227] to-transparent" />
-      <div className="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-[#0b1227] to-transparent" />
+      {/* transparent edges so FX shows through */}
+      <div className="pointer-events-none absolute left-0 top-0 h-full w-10 bg-gradient-to-r from-black/0 to-black/0" />
+      <div className="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-black/0 to-black/0" />
 
       <style jsx global>{`
         @keyframes marquee {
@@ -459,7 +474,6 @@ function HomePage() {
             items={getCompetitionsByCategory('daily')}
             viewMoreHref="/competitions/daily"
             cardSize="md"
-            // Adjusted for smaller card width
             cardMaxWidth={320}
             itemMinWidthCSS="min(320px, calc(100vw - 2rem))"
           />
@@ -469,7 +483,6 @@ function HomePage() {
             items={getCompetitionsByCategory('tech')}
             viewMoreHref="/competitions/tech&gadgets"
             cardSize="md"
-            // Adjusted for smaller card width
             cardMaxWidth={320}
             itemMinWidthCSS="min(320px, calc(100vw - 2rem))"
           />
@@ -491,88 +504,84 @@ function HomePage() {
             cardMaxWidth={480}
             itemMinWidthCSS="min(440px, calc(100vw - 2rem))"
           />
-   {/* ===================== OMC Pi Stages ===================== */}
-<section
-  role="region"
-  aria-labelledby="omc-stages-title"
-  className="space-y-6 sm:space-y-7"
->
-  {/* Title + mini explainer */}
-  <div className="text-center space-y-3 px-3">
-    <h2
-      id="omc-stages-title"
-      className="w-full text-lg sm:text-xl font-extrabold text-cyan-300 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl font-orbitron
+
+          {/* ===================== OMC Pi Stages ===================== */}
+          <section
+            role="region"
+            aria-labelledby="omc-stages-title"
+            className="space-y-6 sm:space-y-7"
+          >
+            <div className="text-center space-y-3 px-3">
+              <h2
+                id="omc-stages-title"
+                className="w-full text-lg sm:text-xl font-extrabold text-cyan-300 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl font-orbitron
                  shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70
                  backdrop-blur-md border border-cyan-400"
-    >
-      {t('omc_pi_stages_competitions', 'OMC Pi Stages Competitions')}
-    </h2>
+              >
+                {t('omc_pi_stages_competitions', 'OMC Pi Stages Competitions')}
+              </h2>
 
-    <div className="max-w-5xl mx-auto text-[0.85rem] sm:text-sm text-cyan-300/90 italic
+              <div className="max-w-5xl mx-auto text-[0.85rem] sm:text-sm text-cyan-300/90 italic
                     flex items-start justify-center gap-x-6 gap-y-2 flex-wrap leading-relaxed mt-1.5 sm:mt-2.5">
-      <span className="text-center">
-        {t('qualify', 'Qualify')}{' '}
-        <span className="text-white font-semibold">({t('stage_1', 'Stage 1')})</span>
-        <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
-          {t('s1_desc', '25 enter, 5 come out with an Advance Ticket. Will you be one?')}
-        </span>
-      </span>
+                <span className="text-center">
+                  {t('qualify', 'Qualify')}{' '}
+                  <span className="text-white font-semibold">({t('stage_1', 'Stage 1')})</span>
+                  <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
+                    {t('s1_desc', '25 enter, 5 come out with an Advance Ticket. Will you be one?')}
+                  </span>
+                </span>
 
-      <span className="text-center">
-        {t('advance', 'Advance')}{' '}
-        <span className="text-white font-semibold">({t('stages_2_4', 'Stages 2–4')})</span>
-        <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
-          {t('s2_4_desc', 'Each room: 25 enter, top 5 move on using their Advance Ticket.')}
-        </span>
-      </span>
+                <span className="text-center">
+                  {t('advance', 'Advance')}{' '}
+                  <span className="text-white font-semibold">({t('stages_2_4', 'Stages 2–4')})</span>
+                  <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
+                    {t('s2_4_desc', 'Each room: 25 enter, top 5 move on using their Advance Ticket.')}
+                  </span>
+                </span>
 
-      <span className="text-center">
-        {t('win', 'Win')}{' '}
-        <span className="text-white font-semibold">({t('stage_5', 'Stage 5')})</span>
-      </span>
+                <span className="text-center">
+                  {t('win', 'Win')}{' '}
+                  <span className="text-white font-semibold">({t('stage_5', 'Stage 5')})</span>
+                </span>
 
-      <span className="text-cyan-300 font-semibold text-center">
-        {t('stage_5_prize_pool', 'Stage 5 Prize Pool')}:{' '}
-        <span className="text-white">
-          {Number(prizePoolPi || 2200).toLocaleString()}π
-        </span>
-      </span>
-    </div>
-  </div>
+                <span className="text-cyan-300 font-semibold text-center">
+                  {t('stage_5_prize_pool', 'Stage 5 Prize Pool')}:{' '}
+                  <span className="text-white">
+                    {Number(prizePoolPi || 2200).toLocaleString()}π
+                  </span>
+                </span>
+              </div>
+            </div>
 
-  {/* Panel wrapper keeps the row perfectly centered and aligned with the rest of the page */}
-  <div className="px-3">
-    <div className="max-w-6xl mx-auto">
-      {/* gradient frame */}
-      <div className="p-[1px] rounded-2xl bg-gradient-to-r from-cyan-500/40 via-blue-500/35 to-cyan-500/40">
-        <div
-          className="rounded-2xl bg-[#0f172a]/80 backdrop-blur border border-white/10
+            <div className="px-3">
+              <div className="max-w-6xl mx-auto">
+                <div className="p-[1px] rounded-2xl bg-gradient-to-r from-cyan-500/40 via-blue-500/35 to-cyan-500/40">
+                  <div
+                    className="rounded-2xl bg-[#0f172a]/80 backdrop-blur border border-white/10
                      shadow-[0_0_24px_rgba(34,211,238,0.16)] px-3 sm:px-4 py-4 sm:py-5"
-        >
-          {/* The row handles its own responsive layout (stack on mobile, grid on larger) */}
-          <FunnelStagesRow
-            stages={stages}
-            prizePoolPi={prizePoolPi}
-            onEnterStage1={handleEnterStage1}
-            className="shadow-[0_0_25px_rgba(0,255,255,0.15)]"
-          />
+                  >
+                    <FunnelStagesRow
+                      stages={stages}
+                      prizePoolPi={prizePoolPi}
+                      onEnterStage1={handleEnterStage1}
+                      className="shadow-[0_0_25px_rgba(0,255,255,0.15)]"
+                    />
 
-          {/* Optional CTA under the row (kept subtle and centered) */}
-          <div className="mt-4 text-center">
-            <button
-              type="button"
-              onClick={handleEnterStage1}
-              className="inline-flex items-center justify-center rounded-xl px-5 py-2 text-sm font-semibold
+                    <div className="mt-4 text-center">
+                      <button
+                        type="button"
+                        onClick={handleEnterStage1}
+                        className="inline-flex items-center justify-center rounded-xl px-5 py-2 text-sm font-semibold
                          bg-cyan-400 text-[#0a1024] shadow transition-colors hover:bg-cyan-300"
-            >
-              {t('enter_stage_1', 'Enter Stage 1')}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+                      >
+                        {t('enter_stage_1', 'Enter Stage 1')}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
 
           <FreeSection t={t} items={getCompetitionsByCategory('free')} />
           <TopWinnersCarousel t={t} />
@@ -625,9 +634,9 @@ function Section({
   const resolvedCardSize = cardSize || ((isDaily || isTech) ? 'md' : 'lg');
   const resolvedItemMinWidth = itemMinWidthCSS ||
     ((isDaily || isTech)
-      ? 'min(320px, calc(100vw - 2rem))' // Adjusted for smaller card width
+      ? 'min(320px, calc(100vw - 2rem))'
       : 'min(440px, calc(100vw - 2rem))');
-  const resolvedCardMaxWidth = cardMaxWidth ?? ((isDaily || isTech) ? 320 : 480); // Adjusted for smaller card width
+  const resolvedCardMaxWidth = cardMaxWidth ?? ((isDaily || isTech) ? 320 : 480);
 
   return (
     <section className={`space-y-5 ${extraClass}`}>
@@ -644,6 +653,7 @@ function Section({
         itemMinWidthCSS={resolvedItemMinWidth}
         cardMaxWidth={resolvedCardMaxWidth}
         renderItem={(item, i) => renderCard(item, i, { isFree, isPi, cardSize: resolvedCardSize })}
+        centerFirstSlide
       />
 
       {viewMoreHref && (
@@ -692,7 +702,17 @@ function renderCard(item, i, { isFree, isPi, cardSize = 'md' }) {
   }
 
   if (isFree) return <FreeCompetitionCard key={key} {...item} />;
-  if (isPi) return <PiCompetitionCard key={key} {...item} />;
+
+  // ✅ Wrap the Pi card so it matches the carousel’s centered/clamped width
+  if (isPi) {
+    const maxW = cardSize === 'md' ? 320 : 480; // keep in sync with Section config
+    return (
+      <div key={key} className="mx-auto w-full" style={{ maxWidth: maxW }}>
+        {/* If your PiCompetitionCard supports className, pass w-full to ensure no inner width shrink */}
+        <PiCompetitionCard {...item} className="w-full" />
+      </div>
+    );
+  }
 
   return (
     <CompetitionCard
@@ -842,7 +862,6 @@ function FreeSection({ t, items = [], viewMoreHref = '/competitions/free' }) {
     prize: '7,500 π',
   };
 
-  // Choose the first provided item or fallback
   const cardData = Array.isArray(items) && items.length ? items[0] : fallback;
 
   return (

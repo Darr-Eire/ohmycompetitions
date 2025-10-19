@@ -169,13 +169,6 @@ export default function ResultsPage() {
           <p className="mt-2 text-white/80 text-sm sm:text-base">
             Congrats to our winners! Check back after every draw for fresh results.
           </p>
-
-          {/* quick stats bar */}
-          <div className="mt-4 inline-flex flex-wrap items-center justify-center gap-2 rounded-full border border-cyan-500/40 bg-white/5 px-4 py-1.5 backdrop-blur">
-            <span className="text-xs sm:text-sm">
-              🎉 Total results:&nbsp;<b className="text-cyan-300">{results.length}</b>
-            </span>
-          </div>
         </header>
 
         {/* Filters */}
