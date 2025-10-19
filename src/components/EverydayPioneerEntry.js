@@ -58,7 +58,7 @@ export default function EverydayPioneerEntry() {
           { emoji: '⏳', label: 'Draw ends in', value: '13h 58m' },
         ]}
         entryFee={entryFeePerTicket}
-        actionLabel={`Pay with Pi (${totalCost} π)`}
+        actionLabel={`Pay With π (${totalCost} π)`}
         onAction={handleEnter}
         loading={loading}
         disabled={!sdkReady}

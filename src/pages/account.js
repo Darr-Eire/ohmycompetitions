@@ -143,7 +143,7 @@ export default function Account() {
     return (
       <div className="bg-[#0a1024] min-h-[100dvh] max-w-md mx-auto p-6 text-white flex flex-col items-center justify-center gap-6">
         <h1 className="text-2xl font-bold">Account</h1>
-        <p className="text-cyan-300 text-center">Log in with Pi to view your dashboard</p>
+        <p className="text-cyan-300 text-center">login with Pi to view your dashboard</p>
         <button
           onClick={loginWithPi}
           className="bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 px-6 rounded-xl hover:brightness-110"

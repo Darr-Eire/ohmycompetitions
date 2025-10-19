@@ -490,7 +490,7 @@ export default function LaunchCompetitionDetailCard({
                         onClick={handleProceedClick}
                         className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold py-3 px-4 rounded-xl mt-6"
                       >
-                        {hasValidAnswer ? 'Continue to Payment' : 'Proceed to Payment'}
+                        {hasValidAnswer ? 'Continue to Payment' : 'Pay With π'}
                       </button>
                       {hasValidAnswer && (
                         <p className="mt-2 text-center text-emerald-300 text-xs">
@@ -521,7 +521,7 @@ export default function LaunchCompetitionDetailCard({
                       onClick={loginFn}
                       className="w-full mt-3 py-2 px-4 rounded-xl font-bold text-black bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 transition"
                     >
-                      Log in with Pi
+                      Login With Pi Network
                     </button>
                   )}
 

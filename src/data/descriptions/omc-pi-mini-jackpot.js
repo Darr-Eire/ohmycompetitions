@@ -16,7 +16,7 @@ Details:
 - Progress: 0%
 
 Rules:
-1. All participants must log in with Pi Network to enter.
+1. All participants must login with Pi Network to enter.
 2. Each ticket costs 0.50 π and is non-refundable.
 3. The competition closes automatically on Aug 12, 2025, at the draw time shown.
 4. Winners will be selected at random using a fair draw system.

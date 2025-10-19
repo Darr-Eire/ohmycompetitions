@@ -50,7 +50,7 @@ export default function RedeemVoucherPanel({ onRedeemed }) {
 
     if (busy || submittingRef.current) return; // NEW: bail if already submitting
     if (!username && !userId) {
-      setErr(t('please_log_in_first', 'Please log in first.'));
+      setErr(t('please_log_in_first', 'Please login first.'));
       inputRef.current?.focus();
       return;
     }

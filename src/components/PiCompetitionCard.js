@@ -7,7 +7,7 @@ import { usePiAuth } from 'context/PiAuthContext'
 import { useSafeTranslation } from '../hooks/useSafeTranslation'
 import GiftTicketModal from './GiftTicketModal'
 import '@fontsource/orbitron'
-
+import React from 'react';
 export default function PiCompetitionCard({
   comp,
   title,
@@ -15,6 +15,7 @@ export default function PiCompetitionCard({
   fee,
   imageUrl = '/pi.jpeg',
   disableGift = false,
+  className = '',    
 }) {
   const { t } = useSafeTranslation()
   const { user } = usePiAuth()
@@ -163,27 +164,31 @@ export default function PiCompetitionCard({
 
   return (
     <>
-      <div className="relative w-full max-w-sm mx-auto p-4 bg-[#0f172a] rounded-xl text-white font-orbitron shadow-xl border-2 border-cyan-400 overflow-hidden">
+      <div className="relative w-full max-w-[19rem] sm:max-w-sm mx-auto p-4 bg-[#0f172a] rounded-xl text-white font-orbitron shadow-xl border-2 border-cyan-400 overflow-hidden">
         {/* Header */}
-        <div className="flex justify-between items-center text-sm mb-2 z-10 relative">
-          <span className="px-3 py-1 rounded-full border border-cyan-400 bg-cyan-600/30 text-white font-semibold">
-            🌍 {t('pioneers_global_draw', 'Pioneers Global Competition')}
-          </span>
-          {/* Status */}
-          <span
-            className={`px-3 py-1 rounded-full font-bold text-xs shadow-md ${
-              status === 'LIVE NOW'
-                ? 'bg-green-400 text-black animate-pulse'
-                : status === 'ENDED'
-                ? 'bg-red-500 text-white'
-                : statusLabel === 'PRE-SALE'
-                ? 'bg-gradient-to-r from-cyan-300 to-blue-400 text-black'
-                : 'bg-gradient-to-r from-orange-400 to-orange-500 text-black'
-            }`}
-          >
-            {statusLabel}
-          </span>
-        </div>
+    {/* Header */}
+<div className="flex flex-col items-center justify-center gap-2 text-sm mb-3 z-10 relative">
+  {/* Global competition badge */}
+  <span className="px-3 py-1 rounded-full border border-cyan-400 bg-cyan-600/30 text-white font-semibold text-center">
+    🌍 {t('pioneers_global_draw', 'Pioneers Global Competition')}
+  </span>
+
+  {/* Status directly under it, centered */}
+  <span
+    className={`px-3 py-1 rounded-full font-bold text-xs shadow-md text-center ${
+      status === 'LIVE NOW'
+        ? 'bg-green-400 text-black animate-pulse'
+        : status === 'ENDED'
+        ? 'bg-red-500 text-white'
+        : statusLabel === 'PRE-SALE'
+        ? 'bg-gradient-to-r from-cyan-300 to-blue-400 text-black'
+        : 'bg-gradient-to-r from-orange-400 to-orange-500 text-black'
+    }`}
+  >
+    {statusLabel}
+  </span>
+</div>
+
 
         {/* Title */}
         <div className="text-center mb-2">

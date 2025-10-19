@@ -310,7 +310,7 @@ export default function FunnelIndexPage() {
     async ({ slug, stage }) => {
       if (joining) return;
       if (!user?.id && !user?.piUserId) {
-        pushToast('Please log in with Pi to enter.', 'warn');
+        pushToast('Please login with Pi to enter.', 'warn');
         return;
       }
       setJoining(true);

@@ -124,7 +124,6 @@ export default async function handler(req, res) {
         });
         console.log('[recover-payment] Called /complete successfully (or non-fatal)');
       } catch (e) {
-        // Non-fatal: if verification already happened, we'll proceed to award idempotently.
         console.warn('[recover-payment] /complete call failed after verification; proceeding', e?.response?.data || e?.message);
       }
     }

@@ -100,7 +100,7 @@ How It Works:
 4) Winners claim prizes instantly to their Pi wallet.
 
 Rules:
-1) You must log in with Pi Network to receive the free ticket.
+1) You must login with Pi Network to receive the free ticket.
 2) One account per person; attempts to create multiple accounts will void entries.
 3) Winners are selected randomly using our verifiable draw system.
 4) Prizes are paid within 48 hours to the winner’s Pi wallet.

@@ -87,7 +87,7 @@ export default function BuyTicketButton({
       className="btn btn-primary"
       aria-busy={loading ? 'true' : 'false'}
     >
-      {loading ? 'Processing…' : `Proceed to Payment`}
+      {loading ? 'Processing…' : `Pay With π`}
     </button>
   );
 }

@@ -39,10 +39,10 @@ export default function HowToPlay() {
             {/* On mobile, we don’t show the left timeline rule; it appears on sm+ */}
             <ol className="relative sm:border-s sm:border-white/10 sm:pl-6 space-y-4 sm:space-y-7">
               <Step
-                title="Log In & Secure Your Account"
+                title="login & Secure Your Account"
                 items={[
                   'Open ohmycompetitions.com in the Pi Browser.',
-                  'Tap “Login”. Choose Sign up (optional referral) or Log in.',
+                  'Tap “Login”. Choose Sign up (optional referral) or login.',
                   'Select “Login with Pi” and approve in the Pi Browser.',
                   'Your wallet is connected and ready.',
                 ]}
@@ -53,7 +53,7 @@ export default function HowToPlay() {
                 items={[
                   'Browse live/upcoming competitions on the homepage.',
                   'Open a card for prize, draw time, tickets & fee.',
-                  'Tap “Proceed to Payment” and choose ticket quantity.',
+                  'Tap “Pay With π” and choose ticket quantity.',
                   'Answer the skill question to continue.',
                   'Confirm with your Pi wallet your entry appears in your account.',
                 ]}

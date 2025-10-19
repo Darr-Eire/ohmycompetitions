@@ -15,7 +15,7 @@ Entry Fee: ${typeof comp?.entryFee === 'number' ? `${comp.entryFee.toFixed(2)} Ï
 Tickets Sold: ${comp?.ticketsSold ?? 0} / ${comp?.totalTickets ?? 500}
 
 Rules:
-1) Log in with Pi Network to enter.
+1) login with Pi Network to enter.
 2) Tickets are non-refundable.
 3) Winners chosen randomly at draw time; prize sent within 48 hours.
 4) Prize is awarded as advertised regardless of sellout unless the comp states otherwise.

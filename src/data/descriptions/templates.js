@@ -40,7 +40,7 @@ Available: ${available} left
 Winners: ${winners || 'Multiple'}
 
 Rules:
-1) Log in with Pi Network to enter.
+1) login with Pi Network to enter.
 2) Each ticket is non-refundable.
 3) Winners are selected randomly via our verifiable draw system.
 4) Prizes are paid within 48 hours to the winner’s Pi wallet.

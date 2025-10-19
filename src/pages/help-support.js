@@ -19,7 +19,7 @@ const faqSections = [
      'Click the “Enter Now” button on any competition. If it’s a Pi competition, you’ll be asked to confirm a small Pi payment through the Pi Network SDK.'],
     ['Is joining free?', 
      'Yes! We offer a mix of free and paid competitions. Free entries are open to all users, while premium entries require a small Pi entry fee.'],
-    ['How do I pay with Pi?', 
+    ['How do I Pay With π?', 
      'Simply click to enter a competition that requires Pi and you’ll be prompted to confirm the transaction through the official Pi payment popup. Make sure you\'re logged into your Pi Wallet.'],
     ['Where are my tickets?', 
      'You can view all your active and past tickets on the “My Entries” page, accessible after logging in.'],
@@ -133,7 +133,7 @@ const faqSections = [
      'First off — congrats! 🎉 If you win, you’ll get a real-time in-app notification. Head to your dashboard to view the winning competition. If it’s a Pi Cash Code win, you’ll need to enter the correct code before your claim timer runs out. For standard competitions, Pi is sent automatically.'],
 
     ['Do I need to verify my wallet?', 
-     'No additional wallet verification is required. Since you log in with the official Pi Network, your Pi Wallet is already securely linked. All payouts are processed via the Pi SDK.'],
+     'No additional wallet verification is required. Since you login with the official Pi Network, your Pi Wallet is already securely linked. All payouts are processed via the Pi SDK.'],
 
     ['When is Pi sent?', 
      'For normal competitions, Pi is transferred directly to your linked wallet **within moments** of the competition ending. For Pi Cash Code, the prize is only released after you submit the correct code within the 31:04 time window.'],

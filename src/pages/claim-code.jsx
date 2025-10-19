@@ -52,9 +52,9 @@ export default function ClaimCodePage() {
   if (!user)
     return (
       <div className="p-6 text-center text-white">
-        <p className="mb-4">🔐 Please log in with Pi to access this page.</p>
+        <p className="mb-4">🔐 Please Login With Pi to access this page.</p>
         <button onClick={login} className="btn-gradient px-6 py-3 rounded-full font-bold">
-          Log In
+          login
         </button>
       </div>
     );

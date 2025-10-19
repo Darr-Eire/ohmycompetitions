@@ -49,12 +49,7 @@ const PageWrapper = ({ children }) => (
   </div>
 );
 
-/**
- * HorizontalCarousel
- * - Controls actual card width via:
- *   - itemMinWidthCSS: the scroller item width (e.g. "min(440px, 100vw - 2rem)")
- *   - cardMaxWidth: the inner visual clamp (pixels) to keep cards tidy
- */
+
 function HorizontalCarousel({
   items = [],
   renderItem,
@@ -439,7 +434,7 @@ function HomePage() {
           className="py-1"
         />
 
-        {/* Mini carousel */}
+      
         <MiniPrizeCarousel />
 
         {/* Pi Cash Code — centered highlight card */}
@@ -598,11 +593,7 @@ function wordIncludes(text = '', words = []) {
   return words.some((w) => new RegExp(`\\b${w}\\b`, 'i').test(s));
 }
 
-/**
- * Section
- * - Chooses sensible defaults for width per category
- * - Passes CompetitionCard size (md/lg) and carousel width clamps
- */
+
 function Section({
   title,
   subtitle,

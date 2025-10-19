@@ -22,7 +22,7 @@ Entry fee: 0.45 π per ticket.
 Competition ends on 16 July 2025.
 
 Rules:
-1. All participants must log in with Pi Network to enter.
+1. All participants must login with Pi Network to enter.
 2. Each ticket costs 0.45 π and is non-refundable.
 3. The winner will be selected at random after the competition ends.
 4. The competition will close on 16 July 2025, regardless of ticket sales.

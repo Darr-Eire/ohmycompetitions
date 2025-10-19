@@ -12,7 +12,7 @@ export default function ReferPage() {
       <div className="p-8 text-center">
         <p>Please sign in with Pi to get your referral link.</p>
         <button onClick={login} className="btn btn-primary mt-4">
-          Log In
+          login
         </button>
       </div>
     );

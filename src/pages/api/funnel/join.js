@@ -126,7 +126,6 @@ export default async function handler(req, res) {
           console.log('ℹ payment already developer_approved, skipping approve');
         }
       } catch (e) {
-        // Do not hard-fail the flow; let client proceed to completion
         console.warn('approvePayment warning', e?.response?.data || e?.message || e);
       }
 
