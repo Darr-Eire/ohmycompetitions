@@ -221,7 +221,6 @@ export default function LaunchCompetitionDetailCard({
   description,
 
   initialQuestion,
-  disableStickyPurchaseBar = false, // ADDED PROP
 }) {
   /* ---------- Auth ---------- */
   const ctx = (typeof usePiAuth === 'function' ? usePiAuth() : {}) || {};
@@ -425,7 +424,8 @@ export default function LaunchCompetitionDetailCard({
         {/* ============ RIGHT: PURCHASE PANEL ============ */}
         <aside
           id="purchase-panel"
-          className="rounded-2xl border border-cyan-400/40 bg-[#0b1220]/90 p-5 sm:p-6 shadow-[0_0_24px_rgba(34,211,238,0.16)]"
+          // --- MODIFIED LINE BELOW ---
+          className="rounded-2xl border border-cyan-400/40 bg-[#0b1220]/90 p-5 sm:p-6 shadow-[0_0_24px_rgba(34,211,238,0.16)] lg:pb-0 pb-20"
         >
           {/* countdown (cosmetic) */}
           {endsAt && (
@@ -602,69 +602,67 @@ export default function LaunchCompetitionDetailCard({
         </aside>
       </div>
 
-      {/* Sticky purchase bar (mobile) — always functional, ignores status */}
-      {!disableStickyPurchaseBar && ( // CONDITIONALLY RENDERED
-        <div className="lg:hidden fixed inset-x-0 bottom-0 z-40">
-          <div className="mx-3 mb-3 rounded-xl border border-white/10 bg-[#0b1220]/95 backdrop-blur">
-            <div className="flex items-center justify-between px-4 py-3">
-              <div className="min-w-0">
-                <div className="text-xs text-white/70">Entry</div>
-                <div className="text-base font-semibold text-white truncate">
-                  {isFree ? 'Free' : `${entryNum.toFixed(2)} π`}
-                </div>
+      {/* Sticky purchase bar (mobile) — always functional */}
+      <div className="lg:hidden fixed inset-x-0 bottom-0 z-40">
+        <div className="mx-3 mb-3 rounded-xl border border-white/10 bg-[#0b1220]/95 backdrop-blur">
+          <div className="flex items-center justify-between px-4 py-3">
+            <div className="min-w-0">
+              <div className="text-xs text-white/70">Entry</div>
+              <div className="text-base font-semibold text-white truncate">
+                {isFree ? 'Free' : `${entryNum.toFixed(2)} π`}
               </div>
-
-              {!isFree && (
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setQty(q => Math.max(1, q - 1))}
-                    disabled={qty <= 1}
-                    className="h-10 w-10 grid place-items-center rounded-lg bg-white/10 text-white/90 disabled:opacity-50"
-                    aria-label="Decrease quantity"
-                  >−</button>
-                  <span className="w-6 text-center font-semibold">{qty}</span>
-                  <button
-                    onClick={() => setQty(q => q + 1)}
-                    className="h-10 w-10 grid place-items-center rounded-lg bg-white/10 text-white/90"
-                    aria-label="Increase quantity"
-                  >+</button>
-                </div>
-              )}
-
-              <button
-                onClick={() => {
-                  const el = document.getElementById('purchase-panel');
-                  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-                  // If the user isn't logged in and it's a paid comp, ask them to log in first
-                  if (!isFree && !effectiveUser) {
-                    loginFn?.();
-                    return;
-                  }
-
-                  if (isFree) {
-                    claimFreeTicket?.(1);
-                    return;
-                  }
-
-                  // If the user already passed the skill check, proceed to payment
-                  if (answerOK) {
-                    onProceed();
-                    return;
-                  }
-
-                  // Otherwise open the skill gate
-                  setShowSkill(true);
-                  setShowPayButton(false);
-                }}
-                className="ml-3 shrink-0 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 px-5 py-3 text-sm font-semibold text-black"
-              >
-                {isFree ? 'Claim Free' : `Pay ${Math.max(0, entryNum * qty).toFixed(2)} π`}
-              </button>
             </div>
+
+            {!isFree && (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setQty(q => Math.max(1, q - 1))}
+                  disabled={qty <= 1}
+                  className="h-10 w-10 grid place-items-center rounded-lg bg-white/10 text-white/90 disabled:opacity-50"
+                  aria-label="Decrease quantity"
+                >−</button>
+                <span className="w-6 text-center font-semibold">{qty}</span>
+                <button
+                  onClick={() => setQty(q => q + 1)}
+                  className="h-10 w-10 grid place-items-center rounded-lg bg-white/10 text-white/90"
+                  aria-label="Increase quantity"
+                >+</button>
+              </div>
+            )}
+
+            <button
+              onClick={() => {
+                const el = document.getElementById('purchase-panel');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                // If the user isn't logged in and it's a paid comp, ask them to log in first
+                if (!isFree && !effectiveUser) {
+                  loginFn?.();
+                  return;
+                }
+
+                if (isFree) {
+                  claimFreeTicket?.(1);
+                  return;
+                }
+
+                // If the user already passed the skill check, proceed to payment
+                if (answerOK) {
+                  onProceed();
+                  return;
+                }
+
+                // Otherwise open the skill gate
+                setShowSkill(true);
+                setShowPayButton(false);
+              }}
+              className="ml-3 shrink-0 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 px-5 py-3 text-sm font-semibold text-black"
+            >
+              {isFree ? 'Claim Free' : `Pay ${Math.max(0, entryNum * qty).toFixed(2)} π`}
+            </button>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Terms Modal */}
       <UiModal open={showTerms} onClose={() => setShowTerms(false)} title={termsContent.title}>
@@ -701,11 +699,11 @@ export default function LaunchCompetitionDetailCard({
 
 /* ---------- small helper for optional gift modal ---------- */
 function GiftTicketModalTrigger({ comp, GiftTicketModal }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false); // Corrected: setOpen is now available
   return (
     <>
       <button
-        onClick={() => setOpen(true)}
+        onClick={() => setOpen(true)} // This will now correctly open the modal
         className="mt-3 w-full rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 py-3 font-semibold text-black"
       >
         🎁 Gift a Ticket
