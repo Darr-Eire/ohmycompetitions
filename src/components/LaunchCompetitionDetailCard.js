@@ -371,9 +371,6 @@ export default function LaunchCompetitionDetailCard({
             )}
           </div>
 
-          {/* description */}
-          <p className="mt-4 text-sm text-white/80 leading-relaxed">{effectiveDescription}</p>
-
           {/* small stats row */}
           <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
             <Stat label="Starts" value={formattedStart} />
@@ -398,7 +395,6 @@ export default function LaunchCompetitionDetailCard({
 
           {/* prizes */}
           <div className="mt-6">
-            <h2 className="text-sm font-semibold text-cyan-300 mb-2">Prizes</h2>
             <div className={`grid gap-3 ${winnersCount === 1 ? 'sm:grid-cols-1' : winnersCount === 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-3'}`}>
               {ordinals.map((k) => (
                 <div key={k} className="rounded-xl border border-cyan-300/40 bg-cyan-300/10 p-3 text-center">
