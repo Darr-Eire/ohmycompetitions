@@ -209,7 +209,7 @@ export default function LaunchCompetitionDetailCard({
   startsAt,
   ticketsSold,
   totalTickets,
-  status, // 'active' | 'upcoming' | 'ended'
+  status, // cosmetic only now
 
   // PURCHASE-FLOW props (optional; context will be used if present)
   user:  userProp,
@@ -251,7 +251,7 @@ export default function LaunchCompetitionDetailCard({
   const available = Math.max(0, (totalTickets ?? 0) - (ticketsSold ?? 0));
   const soldPct = totalTickets > 0 ? Math.min(100, Math.floor(((ticketsSold ?? 0) / totalTickets) * 100)) : 0;
 
-  // Countdown
+  // Countdown (cosmetic)
   const [now, setNow] = useState(Date.now());
   const msLeft = useMemo(() => (endsAt ? Math.max(0, new Date(endsAt).getTime() - now) : null), [endsAt, now]);
   const isLast24h = msLeft !== null && msLeft <= 24 * 60 * 60 * 1000;
@@ -304,7 +304,6 @@ export default function LaunchCompetitionDetailCard({
       setAnswerError('');
       setShowSkill(false);
       setShowPayButton(true);
-
       const el = document.getElementById('purchase-panel');
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
@@ -343,7 +342,7 @@ export default function LaunchCompetitionDetailCard({
       <div className="relative grid gap-6 lg:grid-cols-[1fr_420px]">
         {/* ============ LEFT: HERO & DETAILS ============ */}
         <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-5 sm:p-6">
-          {/* title + status */}
+          {/* title + status (cosmetic) */}
           <div className="flex items-start justify-between gap-3">
             <h1 className="font-orbitron text-2xl sm:text-3xl font-extrabold tracking-wide
                            bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-blue-400 to-cyan-300">
@@ -370,6 +369,9 @@ export default function LaunchCompetitionDetailCard({
               />
             )}
           </div>
+
+          {/* description */}
+          <p className="mt-4 text-sm text-white/80 leading-relaxed">{effectiveDescription}</p>
 
           {/* small stats row */}
           <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -425,8 +427,8 @@ export default function LaunchCompetitionDetailCard({
           id="purchase-panel"
           className="rounded-2xl border border-cyan-400/40 bg-[#0b1220]/90 p-5 sm:p-6 shadow-[0_0_24px_rgba(34,211,238,0.16)]"
         >
-          {/* countdown */}
-          {status === 'active' && endsAt && (
+          {/* countdown (cosmetic) */}
+          {endsAt && (
             <div className={`mb-3 text-center text-sm ${isLast24h ? 'text-amber-300' : 'text-cyan-300'}`} aria-live="polite">
               {(() => {
                 const d = msLeft ?? 0;
@@ -466,8 +468,8 @@ export default function LaunchCompetitionDetailCard({
                     </button>
                     <span className="w-6 text-center font-semibold">{qty}</span>
                     <button
-                      onClick={() => setQty(q => Math.min(available, q + 1))}
-                      disabled={qty >= available}
+                      onClick={() => setQty(q => Math.min(available || Infinity, q + 1))}
+                      disabled={available > 0 ? qty >= available : false}
                       className="rounded-lg bg-white/10 px-2 py-1 text-white/90 disabled:opacity-50"
                       aria-label="Increase quantity"
                     >
@@ -491,8 +493,8 @@ export default function LaunchCompetitionDetailCard({
             <div className="mt-2 text-center text-xs text-red-300">Sold out</div>
           )}
 
-          {/* login */}
-          {!effectiveUser && status === 'active' && (
+          {/* login (no longer gated by status) */}
+          {!effectiveUser && (
             <button
               onClick={loginFn}
               className="mt-4 w-full rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 py-3 font-semibold text-black"
@@ -501,8 +503,8 @@ export default function LaunchCompetitionDetailCard({
             </button>
           )}
 
-          {/* free flow */}
-          {isFree && status === 'active' && (
+          {/* free flow (no longer gated by status) */}
+          {isFree && (
             <div className="mt-4 space-y-3">
               <button
                 onClick={() => claimFreeTicket?.(1)}
@@ -521,8 +523,8 @@ export default function LaunchCompetitionDetailCard({
             </div>
           )}
 
-          {/* paid flow */}
-          {!isFree && status === 'active' && effectiveUser && (
+          {/* paid flow (no longer gated by status) */}
+          {!isFree && effectiveUser && (
             <>
               {!showSkill && !showPayButton && (
                 <button
@@ -583,15 +585,13 @@ export default function LaunchCompetitionDetailCard({
                     onPaymentSuccess={handlePaymentSuccess}
                     endsAt={comp?.endsAt ?? endsAt}
                   />
-
-              
                 </div>
               )}
             </>
           )}
 
           {/* gift (optional) */}
-          {GiftTicketModal && effectiveUser?.username && status === 'active' && (
+          {GiftTicketModal && effectiveUser?.username && (
             <GiftTicketModalTrigger comp={comp} GiftTicketModal={GiftTicketModal} />
           )}
 
@@ -602,19 +602,14 @@ export default function LaunchCompetitionDetailCard({
         </aside>
       </div>
 
-      {/* Sticky purchase bar (mobile) */}
-      <div className="fixed inset-x-0 bottom-0 z-40">
+      {/* Sticky purchase bar (mobile) — always functional, ignores status */}
+      <div className="lg:hidden fixed inset-x-0 bottom-0 z-40">
         <div className="mx-3 mb-3 rounded-xl border border-white/10 bg-[#0b1220]/95 backdrop-blur">
           <div className="flex items-center justify-between px-4 py-3">
             <div className="min-w-0">
-              <div className="text-xs text-white/70">
-                {status === 'active' ? 'Entry' : 'Status'}
-              </div>
+              <div className="text-xs text-white/70">Entry</div>
               <div className="text-base font-semibold text-white truncate">
-                {status !== 'active'
-                  ? (status === 'upcoming' ? 'Coming Soon' : 'Closed')
-                  : (isFree ? 'Free' : `${entryNum.toFixed(2)} π`)
-                }
+                {isFree ? 'Free' : `${entryNum.toFixed(2)} π`}
               </div>
             </div>
 
@@ -628,9 +623,8 @@ export default function LaunchCompetitionDetailCard({
                 >−</button>
                 <span className="w-6 text-center font-semibold">{qty}</span>
                 <button
-                  onClick={() => setQty(q => Math.min(available, q + 1))}
-                  disabled={qty >= available}
-                  className="h-10 w-10 grid place-items-center rounded-lg bg-white/10 text-white/90 disabled:opacity-50"
+                  onClick={() => setQty(q => q + 1)}
+                  className="h-10 w-10 grid place-items-center rounded-lg bg-white/10 text-white/90"
                   aria-label="Increase quantity"
                 >+</button>
               </div>
@@ -641,7 +635,11 @@ export default function LaunchCompetitionDetailCard({
                 const el = document.getElementById('purchase-panel');
                 if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-                if (status !== 'active') return;
+                // If the user isn't logged in and it's a paid comp, ask them to log in first
+                if (!isFree && !effectiveUser) {
+                  loginFn?.();
+                  return;
+                }
 
                 if (isFree) {
                   claimFreeTicket?.(1);
@@ -660,9 +658,7 @@ export default function LaunchCompetitionDetailCard({
               }}
               className="ml-3 shrink-0 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 px-5 py-3 text-sm font-semibold text-black"
             >
-              {status !== 'active'
-                ? (status === 'upcoming' ? 'Notify Me' : 'Closed')
-                : (isFree ? 'Claim Free' : `Pay ${Math.max(0, entryNum * qty).toFixed(2)} π`)}
+              {isFree ? 'Claim Free' : `Pay ${Math.max(0, entryNum * qty).toFixed(2)} π`}
             </button>
           </div>
         </div>
