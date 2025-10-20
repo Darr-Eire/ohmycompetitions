@@ -6,11 +6,8 @@ import Head from 'next/head';
 import { ChevronRight, RefreshCw, Sparkles, Trophy } from 'lucide-react'; // Added Trophy icon
 import CompetitionCard from '@components/CompetitionCard'; // Assuming these can accept style overrides
 import PiCompetitionCard from '@components/PiCompetitionCard';
-// import DailyCompetitionCard from '@components/DailyCompetitionCard'; // Can simplify to CompetitionCard with type
-// import FreeCompetitionCard from '@components/CompetitionCard'; // Using generic card for simplicity
-// import LaunchCompetitionCard from '@components/CompetitionCard'; // Using generic card for simplicity
+import DaulyCompetitionCard from '@components/DailyCompetitionCard';
 
-/* ------------------------------ Tagline Rotator ------------------------------ */
 function TaglineRotator() {
   const taglines = useMemo(() => [
     'Pi-powered prizes. Tech, Pi & more.',

@@ -10,14 +10,7 @@ let assignStage1Room = async (userId) => ({
   etaSec: 0,
 });
 
-// Try to load funnel service (non-fatal)
-try {
-  const funnelService = require('../../../lib/funnelService');
-  if (typeof funnelService.ENTRY_FEE_PI !== 'undefined') ENTRY_FEE_PI = funnelService.ENTRY_FEE_PI;
-  if (typeof funnelService.assignStage1Room === 'function') assignStage1Room = funnelService.assignStage1Room;
-} catch {
-  console.warn('⚠ funnelService not found, using fallbacks');
-}
+
 
 // Optional referral rewards (non-fatal)
 let grantReferralRewards = async () => {};
