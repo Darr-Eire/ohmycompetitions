@@ -603,7 +603,7 @@ export default function LaunchCompetitionDetailCard({
       </div>
 
       {/* Sticky purchase bar (mobile) */}
-      <div className="lg:hidden fixed inset-x-0 bottom-0 z-40">
+      <div className="fixed inset-x-0 bottom-0 z-40">
         <div className="mx-3 mb-3 rounded-xl border border-white/10 bg-[#0b1220]/95 backdrop-blur">
           <div className="flex items-center justify-between px-4 py-3">
             <div className="min-w-0">
