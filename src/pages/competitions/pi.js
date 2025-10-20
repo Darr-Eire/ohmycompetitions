@@ -1,33 +1,11 @@
 // src/pages/competitions/pi.js
 'use client';
 
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Head from 'next/head';
-import { ChevronLeft, ChevronRight, RefreshCw, Sparkles } from 'lucide-react';
+import { RefreshCw, Sparkles } from 'lucide-react';
 import { useSafeTranslation } from '../../hooks/useSafeTranslation';
 import PiCompetitionCard from '@components/PiCompetitionCard';
-
-/* ------------------------------ Tagline Rotator ------------------------------ */
-function TaglineRotator({ t }) {
-  const taglines = [
-    t('pi_powered_prizes', 'Pi-powered prizes pure on-chain.'),
-    t('compete_win_repeat', 'Compete. Win. Repeat. 🔥'),
-    t('epic_rewards_pi', 'Epic rewards paid in Pi.'),
-    t('join_action_entry', 'Join the action ⚡ Entry from 0.00 π'),
-  ];
-  const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    const id = setInterval(() => setIndex((i) => (i + 1) % taglines.length), 3500);
-    return () => clearInterval(id);
-  }, []);
-
-  return (
-    <p className="text-center text-white/80 text-sm sm:text-base mt-1 transition-opacity duration-500 ease-in-out">
-      {taglines[index]}
-    </p>
-  );
-}
 
 /* ------------------------------ Subtle Background Motion ------------------------------ */
 function BackgroundFX() {
@@ -40,41 +18,84 @@ function BackgroundFX() {
   );
 }
 
-/* ------------------------------ Live Counter (frontend trickle) ------------------------------ */
-function useLiveCounter(initial = 420) {
-  const [count, setCount] = useState(initial);
-  useEffect(() => {
-    const tick = () => setCount((c) => c + Math.floor(1 + Math.random() * 5));
-    const id = setInterval(tick, 2000 + Math.random() * 2000);
-    return () => clearInterval(id);
-  }, []);
-  return count;
+/* ------------------------------ Helpers (numbers & prize) ------------------------------ */
+const toNum = (v, d = 0) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : d;
+};
+
+function parseNumericLike(v) {
+  if (v == null) return NaN;
+  if (typeof v === 'number') return Number.isFinite(v) ? v : NaN;
+  if (typeof v === 'string') {
+    const stripped = v.replace(/[^\d.,-]/g, '').replace(',', '.').trim();
+    const n = Number(stripped);
+    return Number.isFinite(n) ? n : NaN;
+  }
+  return NaN;
 }
 
-/* ------------------------------ Skeleton / Empty ------------------------------ */
-function SkeletonSlide() {
-  return (
-    <div className="snap-start basis-full shrink-0">
-      <div className="px-3 sm:px-4">
-        <div className="mx-auto w-full max-w-[min(92vw,820px)] animate-pulse rounded-2xl bg-white/5 border border-white/10 overflow-hidden">
-          <div className="h-48 sm:h-64 bg-white/10" />
-          <div className="p-4 space-y-3">
-            <div className="h-6 w-2/3 bg-white/10 rounded" />
-            <div className="h-4 w-1/2 bg-white/10 rounded" />
-            <div className="h-10 w-full bg-white/10 rounded" />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+/** Extract a *π number* for the prize (never the entry fee). */
+function prizePiNumber(compLike) {
+  if (!compLike) return NaN;
+  const c = compLike.comp ?? compLike;
+  const entryFee = parseNumericLike(c.entryFee);
+
+  // prizeBreakdown: prefer first; fallback to sum
+  if (c.prizeBreakdown && typeof c.prizeBreakdown === 'object') {
+    const first = parseNumericLike(c.prizeBreakdown.first);
+    if (Number.isFinite(first) && first > 0 && first !== entryFee) return first;
+    let sum = 0;
+    for (const k of Object.keys(c.prizeBreakdown)) {
+      const n = parseNumericLike(c.prizeBreakdown[k]);
+      if (Number.isFinite(n)) sum += n;
+    }
+    if (sum > 0 && sum !== entryFee) return sum;
+  }
+
+  // prizes[] array: first numeric amount
+  if (Array.isArray(c.prizes)) {
+    for (const p of c.prizes) {
+      const n = parseNumericLike(p?.amount);
+      if (Number.isFinite(n) && n > 0 && n !== entryFee) return n;
+    }
+  }
+
+  // explicit π fields
+  for (const key of ['prizeValuePi', 'prizePi', 'topPrizePi']) {
+    const n = parseNumericLike(c[key]);
+    if (Number.isFinite(n) && n > 0 && n !== entryFee) return n;
+  }
+
+  // generic prizeValue (assume π)
+  const val = parseNumericLike(c.prizeValue);
+  if (Number.isFinite(val) && val > 0 && val !== entryFee) return val;
+
+  // textual firstPrize/prize
+  for (const s of [c.firstPrize, c.prize, c.prizeText, c.prizeLabel]) {
+    if (typeof s === 'string') {
+      const n = parseNumericLike(s);
+      if (Number.isFinite(n) && n > 0) return n;
+    }
+  }
+
+  return NaN;
 }
 
+function feePiString(compLike) {
+  const c = compLike.comp ?? compLike;
+  const fee = c?.entryFee;
+  if (typeof fee === 'number') return `${fee.toFixed(2)} π`;
+  return '0.00 π';
+}
+
+/* ------------------------------ Empty ------------------------------ */
 function EmptyState({ onRefresh, t }) {
   return (
-    <div className="text-center py-16 rounded-2xl border border-white/10 bg-white/5 mx-4">
+    <div className="text-center py-16 rounded-2xl bg-white/5 mx-2 sm:mx-0">
       <Sparkles className="mx-auto mb-4" />
       <h3 className="text-xl font-semibold">{t('no_pi_competitions_yet', 'No Pi competitions yet')}</h3>
-      <p className="text-white/70 mt-2">{t('check_back_soon_pi_prizes', 'Check back soon new Pi prizes are on the way.')}</p>
+      <p className="text-white/70 mt-2">{t('check_back_soon_pi_prizes', 'Check back soon — new Pi prizes are on the way.')}</p>
       <button
         onClick={onRefresh}
         type="button"
@@ -86,155 +107,12 @@ function EmptyState({ onRefresh, t }) {
   );
 }
 
-/* ------------------------------- Full-width Carousel ------------------------------- */
-function FullWidthCarousel({ items, renderItem }) {
-  const scrollerRef = useRef(null);
-  const [index, setIndex] = useState(0);
-
-  const clamp = useCallback(
-    (i) => Math.max(0, Math.min(i, (items?.length || 1) - 1)),
-    [items?.length]
-  );
-
-  const scrollToIndex = useCallback(
-    (i) => {
-      const el = scrollerRef.current;
-      if (!el) return;
-      const target = clamp(i);
-      const left = target * el.clientWidth;
-      el.scrollTo({ left, behavior: 'smooth' });
-    },
-    [clamp]
-  );
-
-  const onScroll = useCallback(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    const i = Math.round(el.scrollLeft / el.clientWidth);
-    if (i !== index) setIndex(i);
-  }, [index]);
-
-  useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === 'ArrowRight') scrollToIndex(index + 1);
-      if (e.key === 'ArrowLeft') scrollToIndex(index - 1);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [index, scrollToIndex]);
-
-  useEffect(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    el.addEventListener('scroll', onScroll, { passive: true });
-    return () => el.removeEventListener('scroll', onScroll);
-  }, [onScroll]);
-
-  if (!items?.length) return null;
-
-  return (
-    <div className="relative">
-      {/* edge fades use app bg */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-[#0f1b33] to-transparent z-10" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[#0f1b33] to-transparent z-10" />
-
-      {/* scroller */}
-      <div
-        ref={scrollerRef}
-        className="
-          w-full
-          snap-x snap-mandatory
-          overflow-x-auto overflow-y-visible
-          scroll-smooth
-          overscroll-x-contain
-          [touch-action:pan-x pan-y]
-          [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden
-        "
-        aria-roledescription="carousel"
-        aria-label="Pi competitions"
-      >
-        <div className="flex">
-          {items.map((item, i) => (
-            <div
-              key={item.key || i}
-              className="snap-start snap-always basis-full shrink-0"
-              role="group"
-              aria-roledescription="slide"
-              aria-label={`${i + 1} of ${items.length}`}
-            >
-              <div className="px-3 sm:px-4">
-                <div
-                  className="mx-auto w-full max-w-[min(92vw,820px)] carousel-card competition-card select-none"
-                  style={{ WebkitTapHighlightColor: 'transparent' }}
-                >
-                  {renderItem(item, i)}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Prev / Next */}
-      <div className="absolute inset-y-0 left-1 sm:left-2 flex items-center z-20">
-        <button
-          type="button"
-          onClick={() => scrollToIndex(index - 1)}
-          disabled={index === 0}
-          className={`h-11 w-11 sm:h-12 sm:w-12 rounded-full p-2 border bg-white/10 backdrop-blur border-white/20 hover:bg-white/15 active:scale-95 transition
-            ${index === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-          aria-label="Previous"
-        >
-          <ChevronLeft />
-        </button>
-      </div>
-      <div className="absolute inset-y-0 right-1 sm:right-2 flex items-center z-20">
-        <button
-          type="button"
-          onClick={() => scrollToIndex(index + 1)}
-          disabled={index === items.length - 1}
-          className={`h-11 w-11 sm:h-12 sm:w-12 rounded-full p-2 border bg-white/10 backdrop-blur border-white/20 hover:bg-white/15 active:scale-95 transition
-            ${items?.length ? (index === items.length - 1 ? 'opacity-50 cursor-not-allowed' : '') : ''}`}
-          aria-label="Next"
-        >
-          <ChevronRight />
-        </button>
-      </div>
-
-      {/* dots */}
-      <div className="mt-4 flex items-center justify-center gap-2">
-        {items.map((_, i) => (
-          <button
-            key={i}
-            type="button"
-            onClick={() => scrollToIndex(i)}
-            className={`h-2.5 rounded-full transition-all ${i === index ? 'w-6 bg-cyan-400' : 'w-2.5 bg-white/40'}`}
-            aria-label={`Go to slide ${i + 1}`}
-          />
-        ))}
-      </div>
-
-      {/* reduced motion */}
-      <style jsx global>{`
-        @media (prefers-reduced-motion: reduce) {
-          * {
-            scroll-behavior: auto !important;
-            animation: none !important;
-            transition: none !important;
-          }
-        }
-      `}</style>
-    </div>
-  );
-}
-
 /* ---------------------------------- Page ---------------------------------- */
 export default function PiCompetitionsPage() {
   const { t } = useSafeTranslation();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const ticketsToday = useLiveCounter(420); // purely visual
 
   async function fetchPi() {
     setLoading(true);
@@ -256,13 +134,9 @@ export default function PiCompetitionsPage() {
 
       setItems(livePi);
     } catch (e) {
-  console.error('❌ Error loading Pi competitions:', e);
-
-// ✅ Use double quotes or escape apostrophe correctly
-setError(t('couldnt_load_pi_competitions', "Couldn't load Pi competitions."));
-
-setItems([]);
-
+      console.error('❌ Error loading Pi competitions:', e);
+      setError(t('couldnt_load_pi_competitions', "Couldn't load Pi competitions."));
+      setItems([]);
     } finally {
       setLoading(false);
     }
@@ -272,41 +146,54 @@ setItems([]);
     fetchPi();
   }, []);
 
-  // Normalize for carousel + hero stats
-  const slides = useMemo(() => {
+  // Normalize for grid
+  const cards = useMemo(() => {
     return (items || []).map((item) => {
       const comp = item.comp ?? item;
-      const fee = typeof comp.entryFee === 'number' ? `${comp.entryFee.toFixed(2)} π` : '0.00 π';
+      const fee = feePiString({ comp });
       return {
         key: comp.slug || comp._id || item.title,
         comp,
-        title: item.title,
-        prize: item.prize,
+        title: item.title || comp.title,
+        prize: item.prize || comp.prize,
         fee,
-        imageUrl: item.imageUrl,
+        imageUrl: item.imageUrl || comp.imageUrl, // PiCompetitionCard may render a banner instead of this
         endsAt: comp.endsAt,
         href: item.href,
       };
     });
   }, [items]);
 
-  const liveCount = slides.length;
-
-  const minFee = useMemo(() => {
-    const fees = slides.map(s => Number(s.comp?.entryFee ?? 0)).filter(Number.isFinite);
-    return fees.length ? Math.min(...fees) : 0;
-  }, [slides]);
+  /* ------------------------- REAL hero stats (no fakes) ------------------------- */
+  const liveCount = cards.length;
 
   const soonestStr = useMemo(() => {
     const soonest =
-      slides
+      cards
         .map(s => new Date(s.endsAt))
         .filter(d => Number.isFinite(d.getTime()))
         .sort((a, b) => a - b)[0] || null;
     return soonest
       ? new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(soonest)
       : 'TBA';
-  }, [slides]);
+  }, [cards]);
+
+  const minFeeStr = useMemo(() => {
+    const fees = cards
+      .map(s => toNum((s.comp?.entryFee), NaN))
+      .filter(Number.isFinite);
+    if (!fees.length) return '—';
+    const min = Math.min(...fees);
+    return `${min.toFixed(2)} π`;
+  }, [cards]);
+
+  const totalPrizePoolStr = useMemo(() => {
+    const total = cards.reduce((sum, c) => {
+      const n = prizePiNumber(c.comp);
+      return Number.isFinite(n) ? sum + n : sum;
+    }, 0);
+    return total > 0 ? `${total.toLocaleString()} π` : '—';
+  }, [cards]);
 
   if (loading) {
     return (
@@ -332,49 +219,34 @@ setItems([]);
       <main className="app-background min-h-[100svh] text-white bg-[#0f1b33] pt-[calc(10px+env(safe-area-inset-top))] md:pt-[calc(80px+env(safe-area-inset-top))] relative">
         <BackgroundFX />
 
-        <div className="max-w-screen-lg mx-auto px-4 sm:px-0">
-          <h1
-            className="
-              text-2xl font-bold text-center mb-1
-              bg-gradient-to-r from-[#00ffd5] to-[#0077ff]
-              bg-clip-text text-transparent
-            "
-          >
+        {/* Hero */}
+        <div className="max-w-screen-lg mx-auto px-3 sm:px-4">
+          <h1 className="text-2xl font-bold text-center mb-1 bg-gradient-to-r from-[#00FFD5] to-[#0077FF] bg-clip-text text-transparent">
             {t('pi_competitions', 'Pi Competitions')}
           </h1>
 
-          <div className="text-center max-w-md mx-auto mb-6 mt-3">
+          <div className="text-center max-w-2xl mx-auto mb-4 mt-3 space-y-2">
             {error ? (
               <p className="text-red-300">{error}</p>
             ) : (
               <>
                 <p className="text-white/90">
-                  {t('dive_into_pi_competitions', 'Dive into Pi-powered competitions win tech, Pi and more.')}
+                  {t('dive_into_pi_competitions', 'Dive into Pi-powered competitions — win tech, Pi and more.')}
                 </p>
 
-                {/* Rotating short tagline */}
-                <TaglineRotator t={t} />
-
-                {/* Live counter */}
-                <p className="text-center text-white/80 text-xs sm:text-sm mt-2">
-                   <span className="text-cyan-300 font-semibold">{ticketsToday.toLocaleString()}</span> {t('tickets_sold_today', 'tickets sold today')} ·{' '}
-                  <span className="text-cyan-300 font-semibold">{liveCount}</span> {t('live_competitions', 'live competitions')}
-                </p>
-
-                {/* Hint line smaller */}
-                <p className="text-white/70 text-xs sm:text-sm">
-                  {t('use_arrows_swipe_browse', 'Use arrows or swipe to browse.')}&nbsp;
-                </p>
-
+                {/* REAL stats row */}
                 <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
-                  <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
+                  <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 text-white/80">
+                    🔴 {t('live_now', 'Live now')}: <b className="text-white">{liveCount}</b>
+                  </span>
+                  <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 text-white/80">
                     ⏳ {t('soonest_draw', 'Soonest draw')}: <b className="text-white">{soonestStr}</b>
                   </span>
-                  <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
-                    💜 {t('pay_in_pi', 'Pay in Pi')}
+                  <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 text-white/80">
+                    🎟 {t('min_entry_fee', 'Min entry fee')}: <b className="text-white">{minFeeStr}</b>
                   </span>
-                  <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
-                    ⚡ {t('new_drops_weekly', 'New drops weekly')}
+                  <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 text-white/80">
+                    🏆 {t('total_prize_pool', 'Total prize pool')}: <b className="text-white">{totalPrizePoolStr}</b>
                   </span>
                 </div>
               </>
@@ -382,59 +254,42 @@ setItems([]);
           </div>
         </div>
 
-        {/* content: full-width, mobile-first carousel */}
+        {/* CONTENT — responsive grid (no carousel, no extra borders) */}
         <section className="pb-14">
-          {!error && slides.length > 0 ? (
-            <FullWidthCarousel
-              items={slides}
-              renderItem={(s) => (
-                <PiCompetitionCard
-                  key={s.key}
-                  comp={{ ...s.comp, comingSoon: s.comp?.comingSoon ?? false }}
-                  title={s.title}
-                  prize={s.prize}
-                  fee={s.fee}
-                  imageUrl={s.imageUrl}
-                  endsAt={s.endsAt}
-                  href={s.href}
-                />
-              )}
-            />
-          ) : (
-            <EmptyState onRefresh={fetchPi} t={t} />
-          )}
+          <div className="max-w-screen-lg mx-auto px-2 sm:px-4">
+            {(!error && cards.length > 0) ? (
+              <div
+                className="
+                  grid
+                  grid-cols-2
+                  sm:grid-cols-3
+                  lg:grid-cols-4
+                  gap-2 sm:gap-3 lg:gap-4
+                "
+              >
+                {cards.map((s) => (
+                  <div key={s.key} className="select-none">
+                    <PiCompetitionCard
+                      comp={{ ...s.comp, comingSoon: s.comp?.comingSoon ?? false }}
+                      title={s.title}
+                      prize={s.prize}
+                      fee={s.fee}
+                      imageUrl={s.imageUrl}
+                      endsAt={s.endsAt}
+                      href={s.href}
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <EmptyState onRefresh={fetchPi} t={t} />
+            )}
+          </div>
         </section>
       </main>
 
-      {/* Hard overrides to STOP any click/tap scaling in the carousel + hover glow */}
+      {/* Background float animations */}
       <style jsx global>{`
-        .competition-card {
-          transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
-          border-radius: 1rem;
-        }
-        .competition-card:hover {
-          transform: translateY(-4px) scale(1.02);
-          box-shadow: 0 0 18px rgba(0, 255, 213, 0.25), 0 0 28px rgba(0, 119, 255, 0.18);
-        }
-
-        .carousel-card,
-        .carousel-card a,
-        .carousel-card button {
-          -webkit-tap-highlight-color: transparent;
-        }
-        .carousel-card *:focus-visible {
-          outline: 2px solid #22d3ee !important;
-          outline-offset: 2px;
-        }
-        .carousel-card *,
-        .carousel-card:hover,
-        .carousel-card:active {
-          transform: none !important;
-          transition-property: transform !important;
-          transition-duration: 0s !important;
-        }
-
-        /* Background float animations */
         @keyframes float-slow {
           0% { transform: translateY(0) translateX(0); }
           50% { transform: translateY(18px) translateX(6px); }
@@ -455,3 +310,4 @@ setItems([]);
     </>
   );
 }
+

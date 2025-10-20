@@ -1,6 +1,7 @@
 // src/components/CompetitionCard.js
 'use client';
 
+import ResponsiveImage from "./ResponsiveImage";
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState, useMemo } from 'react';
