@@ -417,7 +417,7 @@ export default function LaunchCompetitionDetailCard({
               className="text-sm text-cyan-300 underline hover:text-cyan-200"
               aria-haspopup="dialog"
             >
-              View Full Terms & Conditions
+              More Details & Competition T&Cs
             </button>
           </div>
         </section>

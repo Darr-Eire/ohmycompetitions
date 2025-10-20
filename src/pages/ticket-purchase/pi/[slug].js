@@ -26,83 +26,88 @@ export default function PiTicketPage() {
   const [liveTicketsSold, setLiveTicketsSold] = useState(0);
 
   useEffect(() => {
-    if (!slug) return;
+    if (!router.isReady || !slug) return;
+
+    let cancelled = false;
 
     async function load() {
       setLoading(true);
 
-      // 1) Try local cache (fast path)
-      const local =
-        (typeof window !== 'undefined' && window.__OMC_CACHE__?.bySlug?.[slug]) ||
-        null;
-
-      if (local) {
-        const merged = normalizeFromPiItem(local);
-        setComp(merged);
-        setDesc(merged.description || merged.title);
-        setLiveTicketsSold(merged.ticketsSold ?? 0);
-        setLoading(false);
-        return;
-      }
-
-      // 2) Fallback to API
       try {
-        const res = await fetch(`/api/competitions/${slug}`, { cache: 'no-store' });
+        // 1) Try local cache (fast path)
+        const local =
+          (typeof window !== 'undefined' && window.__OMC_CACHE__?.bySlug?.[slug]) ||
+          null;
+
+        if (!cancelled && local) {
+          const merged = normalizeFromPiItem(local);
+          setComp(merged);
+          setDesc(merged.description || merged.title || '');
+          setLiveTicketsSold(merged.ticketsSold ?? 0);
+          setLoading(false);
+          return;
+        }
+
+        // 2) Fallback to API
+        const res = await fetch(`/api/competitions/${encodeURIComponent(slug)}`, { cache: 'no-store' });
         if (!res.ok) throw new Error('Competition not found');
         const data = await res.json();
+        if (cancelled) return;
+
         const merged = normalizeFromApi(data);
         setComp(merged);
-        setDesc(merged.description || merged.title);
+        setDesc(merged.description || merged.title || '');
         setLiveTicketsSold(merged.ticketsSold ?? 0);
       } catch (e) {
         console.error(e);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
 
     load();
-  }, [slug]);
+    return () => { cancelled = true; };
+  }, [router.isReady, slug]);
 
-  // Track share bonus like the other page
+  // Track share bonus (guard localStorage)
   useEffect(() => {
-    if (!slug) return;
-    setSharedBonus(localStorage.getItem(`${slug}-shared`) === 'true');
-  }, [slug]);
+    if (!router.isReady || !slug) return;
+    if (typeof window === 'undefined') return;
+    setSharedBonus(window.localStorage.getItem(`${slug}-shared`) === 'true');
+  }, [router.isReady, slug]);
 
   const claimFreeTicket = () => {
-    if (!slug) return;
+    if (!slug || typeof window === 'undefined') return;
     const key = `${slug}-claimed`;
-    const current = parseInt(localStorage.getItem(key) || '0', 10);
-    localStorage.setItem(key, String(current + 1));
+    const current = parseInt(window.localStorage.getItem(key) || '0', 10);
+    window.localStorage.setItem(key, String(current + 1));
     alert('✅ Free ticket claimed!');
   };
 
   const handleShare = () => {
-    if (!slug) return;
+    if (!slug || typeof window === 'undefined') return;
     if (sharedBonus) {
       alert('You already received your bonus ticket.');
       return;
     }
-    localStorage.setItem(`${slug}-shared`, 'true');
+    window.localStorage.setItem(`${slug}-shared`, 'true');
     setSharedBonus(true);
     alert('✅ Thanks for sharing! Bonus ticket unlocked.');
   };
 
-  // After successful payment, refresh displayed counts to mirror other page behavior
+  // After successful payment, refresh displayed counts
   const handlePaymentSuccess = async (result) => {
     try {
       if (result?.ticketQuantity) {
         setLiveTicketsSold((prev) => prev + Number(result.ticketQuantity || 0));
       }
-      // re-fetch to get latest state
-      if (slug) {
-        const res = await fetch(`/api/competitions/${slug}`, { cache: 'no-store' });
+      if (router.isReady && slug) {
+        const res = await fetch(`/api/competitions/${encodeURIComponent(slug)}`, { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
           const merged = normalizeFromApi(data);
           setComp(merged);
-          setDesc(merged.description || merged.title);
+          setDesc(merged.description || merged.title || '');
           setLiveTicketsSold(merged.ticketsSold ?? 0);
         }
       }
@@ -116,6 +121,7 @@ export default function PiTicketPage() {
     }
   };
 
+  // Cosmetic status only; purchase flow is handled inside the card regardless of status
   const { status, ticketsSold, totalTickets } = useMemo(() => {
     if (!comp) return { status: 'active', ticketsSold: 0, totalTickets: 0 };
     const now = Date.now();
@@ -128,12 +134,12 @@ export default function PiTicketPage() {
 
     return {
       status: st,
-      ticketsSold: liveTicketsSold || comp?.ticketsSold || 0,
+      ticketsSold: liveTicketsSold ?? comp?.ticketsSold ?? 0,
       totalTickets: comp?.totalTickets ?? 0,
     };
   }, [comp, liveTicketsSold]);
 
-  if (loading || !comp) {
+  if (!router.isReady || loading || !comp) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-[#070d19] text-white">
         Loading...
@@ -155,11 +161,12 @@ export default function PiTicketPage() {
           startsAt={comp?.startsAt}
           ticketsSold={ticketsSold}
           totalTickets={totalTickets}
-          status={status}
+          status={status} // cosmetic only
           GiftTicketModal={GiftTicketModal}
           description={desc}
           handlePaymentSuccess={handlePaymentSuccess}
-          // 🔽 these props align behavior w/ the other page so the sticky bar works the same
+
+          // keep sticky bar + flows consistent with your other page
           user={user}
           login={login}
           claimFreeTicket={claimFreeTicket}
