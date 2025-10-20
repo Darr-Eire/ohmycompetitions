@@ -1,12 +1,14 @@
+// src/components/LaunchCompetitionDetailCard.js
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import Link from 'next/link';
 import '@fontsource/orbitron';
 import BuyTicketButton from 'components/BuyTicketButton';
 import { usePiAuth } from 'context/PiAuthContext';
 import { getRandomQuestion, isCorrectAnswer as checkAnswer } from 'data/skill-questions';
 import { CreatePayment } from '@lib/pi/PiIntegration';
+import UiModal from 'components/UiModal';
+import { COMPETITION_TERMS, DEFAULT_TERMS } from 'data/competition-terms';
 
 /* ----------------------------- helpers ----------------------------- */
 function normalizePrizeBreakdown(raw) {
@@ -102,65 +104,53 @@ function formatPrize(v, theme) {
   const formatted = n >= 1000 ? Math.round(n).toLocaleString('en-US') : n.toFixed(2);
   return isTechOrGadgets ? `${formatted}` : `${formatted} π`;
 }
+
 function primaryPrizeFrom({ comp, prize, tiers, theme }) {
-  // prefer explicit prize tiers, then prop, then comp defaults
   const p = tiers?.['1st'] ?? prize ?? comp?.prize ?? comp?.prizeLabel ?? comp?.firstPrize;
   return formatPrize(p ?? 'TBA', theme);
 }
+
+/* --- local flexible answer checker (digits/words, minor punctuation) --- */
 function normalizeText(x) {
   if (x == null) return '';
   return String(x)
     .trim()
     .toLowerCase()
-    .replace(/[^\p{L}\p{N}.\- ]+/gu, '') // strip punctuation/symbols (keeps letters, digits, dot, dash, space)
-    .replace(/\s+/g, ' ');               // collapse spaces
+    .replace(/[^\p{L}\p{N}.\- ]+/gu, '')
+    .replace(/\s+/g, ' ');
 }
-
 function asAnswerList(q) {
-  // Accept: answer (string), answers (array/string), acceptableAnswers (array/string)
-  const raw =
-    q?.acceptableAnswers ??
-    q?.answers ??
-    q?.answer ??
-    q?.correct ??
-    null;
-
+  const raw = q?.acceptableAnswers ?? q?.answers ?? q?.answer ?? q?.correct ?? null;
   if (Array.isArray(raw)) return raw.filter(Boolean);
   if (raw == null) return [];
   return [raw];
 }
-
 function isProbablyNumber(str) {
-  // Allow commas and spaces for user input like "1,000"
   const s = String(str).replace(/,/g, '').trim();
   const n = Number(s);
   return Number.isFinite(n);
 }
-
 function numbersEqualLoose(a, b, eps = 1e-6) {
   const na = Number(String(a).replace(/,/g, '').trim());
   const nb = Number(String(b).replace(/,/g, '').trim());
   if (!Number.isFinite(na) || !Number.isFinite(nb)) return false;
   return Math.abs(na - nb) <= eps;
 }
-
 function isAnswerCorrectFlexible(q, userInput) {
   const answers = asAnswerList(q);
   if (!answers.length) return false;
 
-  // If any expected or user looks numeric, compare numerically first
   const userLooksNumeric = isProbablyNumber(userInput);
   const anyExpectedNumeric = answers.some(isProbablyNumber);
-
   if (userLooksNumeric || anyExpectedNumeric) {
     if (answers.some(ans => numbersEqualLoose(ans, userInput))) return true;
   }
 
-  // Fallback: normalized text compare
   const u = normalizeText(userInput);
   return answers.some(ans => normalizeText(ans) === u);
 }
 
+/* ----------------------------- UI atoms ----------------------------- */
 function PrizeBanner({ value, theme, className = '' }) {
   const isTech = ['tech', 'gadgets', 'premium'].includes(String(theme || '').toLowerCase());
   return (
@@ -173,22 +163,17 @@ function PrizeBanner({ value, theme, className = '' }) {
       role="img"
     >
       <div className="px-4">
-        <div className="text-[11px] uppercase tracking-[0.15em] text-cyan-200/90">
-          Top Prize
-        </div>
+        <div className="text-[11px] uppercase tracking-[0.15em] text-cyan-200/90">Top Prize</div>
         <div className="mt-1 text-2xl sm:text-3xl font-extrabold text-cyan-300 drop-shadow">
           {value}
           {!isTech && !/π/.test(String(value)) ? ' π' : ''}
         </div>
-        <div className="mt-1 text-xs text-white/70">
-          Win big — limited tickets available
-        </div>
+        <div className="mt-1 text-xs text-white/70">Win big — limited tickets available</div>
       </div>
     </div>
   );
 }
 
-/* ----------------------------- UI atoms ----------------------------- */
 function Pill({ children, tone = 'cyan' }) {
   const tones = {
     cyan: 'from-cyan-400 to-blue-500',
@@ -219,7 +204,7 @@ export default function LaunchCompetitionDetailCard({
   title,
   prize,
   fee,
-  imageUrl, // This prop is used directly in the conditional rendering below
+  imageUrl,
   endsAt,
   startsAt,
   ticketsSold,
@@ -287,6 +272,11 @@ export default function LaunchCompetitionDetailCard({
   const winnersCount = useMemo(() => getWinnersCount(comp, tiers), [comp, tiers]);
   const ordinals = useMemo(() => ['1st', '2nd', '3rd'].slice(0, winnersCount), [winnersCount]);
 
+  /* ---------- Terms content (modal) ---------- */
+  const slug = comp?.slug || comp?.comp?.slug;
+  const termsContent = (slug && COMPETITION_TERMS[slug]) || DEFAULT_TERMS;
+  const [showTerms, setShowTerms] = useState(false);
+
   /* ---------- Skill gate & payment ---------- */
   const [qty, setQty] = useState(1);
   const [showSkill, setShowSkill] = useState(false);
@@ -296,37 +286,32 @@ export default function LaunchCompetitionDetailCard({
   const [showPayButton, setShowPayButton] = useState(false);
 
   const [question, setQuestion] = useState(() => initialQuestion || getRandomQuestion({ difficulty: 'easy' }));
-  useEffect(() => {
-    if (initialQuestion) setQuestion(initialQuestion);
-  }, [initialQuestion]);
+  useEffect(() => { if (initialQuestion) setQuestion(initialQuestion); }, [initialQuestion]);
 
   const totalPrice = Math.max(0, entryNum * qty);
 
-const onCheckAnswer = (e) => {
-  e?.preventDefault?.();
+  const onCheckAnswer = (e) => {
+    e?.preventDefault?.();
 
-  // Prefer local flexible checker; fallback to imported checker if available
-  let ok = isAnswerCorrectFlexible(question, skillAnswer);
-  if (!ok && typeof checkAnswer === 'function') {
-    try { ok = checkAnswer(question, skillAnswer); } catch {}
-  }
+    let ok = isAnswerCorrectFlexible(question, skillAnswer);
+    if (!ok && typeof checkAnswer === 'function') {
+      try { ok = checkAnswer(question, skillAnswer); } catch {}
+    }
 
-  setAnswerOK(ok);
+    setAnswerOK(ok);
 
-  if (ok) {
-    setAnswerError('');
-    setShowSkill(false);       // <-- hide the quiz form
-    setShowPayButton(true);    // <-- reveal the Pay button
-    // optional: scroll the user to the purchase panel
-    const el = document.getElementById('purchase-panel');
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  } else {
-    setShowPayButton(false);
-    setAnswerError('Incorrect answer. Try again.');
-  }
-};
+    if (ok) {
+      setAnswerError('');
+      setShowSkill(false);
+      setShowPayButton(true);
 
-
+      const el = document.getElementById('purchase-panel');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      setShowPayButton(false);
+      setAnswerError('Incorrect answer. Try again.');
+    }
+  };
 
   const onProceed = async () => {
     if (!isFree && !answerOK) {
@@ -369,23 +354,22 @@ const onCheckAnswer = (e) => {
             {status === 'ended' && <Pill tone="red">Closed</Pill>}
           </div>
 
-          {/* Conditional image/banner section */}
+          {/* image OR prize banner */}
           <div className="mt-4 relative rounded-xl overflow-hidden border border-white/10">
-            {imageUrl ? ( // If imageUrl is provided, show the image
+            {imageUrl ? (
               <img
                 src={imageUrl}
                 alt={displayTitle}
                 className="h-48 w-full object-cover"
                 loading="lazy"
               />
-            ) : ( // Otherwise, show the PrizeBanner
+            ) : (
               <PrizeBanner
                 value={primaryPrizeFrom({ comp, prize, tiers, theme })}
                 theme={theme}
               />
             )}
           </div>
-
 
           {/* description */}
           <p className="mt-4 text-sm text-white/80 leading-relaxed">{effectiveDescription}</p>
@@ -427,11 +411,16 @@ const onCheckAnswer = (e) => {
             </div>
           </div>
 
-          {/* terms link */}
+          {/* terms modal trigger */}
           <div className="mt-6 text-center">
-            <Link href="/terms-conditions" className="text-sm text-cyan-300 underline hover:text-cyan-200">
+            <button
+              type="button"
+              onClick={() => setShowTerms(true)}
+              className="text-sm text-cyan-300 underline hover:text-cyan-200"
+              aria-haspopup="dialog"
+            >
               View Full Terms & Conditions
-            </Link>
+            </button>
           </div>
         </section>
 
@@ -536,8 +525,7 @@ const onCheckAnswer = (e) => {
             </div>
           )}
 
- 
-
+          {/* paid flow */}
           {!isFree && status === 'active' && effectiveUser && (
             <>
               {!showSkill && !showPayButton && (
@@ -579,7 +567,17 @@ const onCheckAnswer = (e) => {
               )}
 
               {!showSkill && showPayButton && (
-                <div className="mt-4">
+                <div className="mt-4 space-y-2">
+                  {/* Primary action after passing the skill check */}
+                  <button
+                    type="button"
+                    onClick={onProceed}
+                    className="w-full rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 py-3 font-semibold text-black"
+                  >
+                    Pay with π
+                  </button>
+
+                  {/* Optional existing integration button */}
                   <BuyTicketButton
                     competitionSlug={comp?.slug}
                     entryFee={entryNum}
@@ -589,10 +587,12 @@ const onCheckAnswer = (e) => {
                     onPaymentSuccess={handlePaymentSuccess}
                     endsAt={comp?.endsAt ?? endsAt}
                   />
+
+                  {/* Secondary path */}
                   <button
                     type="button"
                     onClick={onProceed}
-                    className="mt-2 w-full rounded-xl border border-white/15 bg-white/5 py-2 text-sm text-white/90"
+                    className="w-full rounded-xl border border-white/15 bg-white/5 py-2 text-sm text-white/90"
                   >
                     Or Continue via Pi Payment
                   </button>
@@ -651,10 +651,23 @@ const onCheckAnswer = (e) => {
               onClick={() => {
                 const el = document.getElementById('purchase-panel');
                 if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                if (!isFree && !answerOK) {
-                  setShowSkill(true);
-                  setShowPayButton(false);
+
+                if (status !== 'active') return;
+
+                if (isFree) {
+                  claimFreeTicket?.(1);
+                  return;
                 }
+
+                // If the user already passed the skill check, proceed to payment
+                if (answerOK) {
+                  onProceed();
+                  return;
+                }
+
+                // Otherwise open the skill gate
+                setShowSkill(true);
+                setShowPayButton(false);
               }}
               className="ml-3 shrink-0 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 px-5 py-3 text-sm font-semibold text-black"
             >
@@ -665,6 +678,25 @@ const onCheckAnswer = (e) => {
           </div>
         </div>
       </div>
+
+      {/* Terms Modal */}
+      <UiModal open={showTerms} onClose={() => setShowTerms(false)} title={termsContent.title}>
+        <div id="terms-modal">
+          {Array.isArray(termsContent.sections) ? (
+            termsContent.sections.map((s, i) => (
+              <section key={i} className="space-y-1">
+                {s.h && <h4 className="text-white font-semibold">{s.h}</h4>}
+                {s.p && <p className="text-white/80">{s.p}</p>}
+              </section>
+            ))
+          ) : (
+            <p className="text-white/80">No terms found for this competition.</p>
+          )}
+          {termsContent.lastUpdated && (
+            <p className="mt-3 text-xs text-white/60">Last updated: {termsContent.lastUpdated}</p>
+          )}
+        </div>
+      </UiModal>
 
       {/* motion preferences */}
       <style jsx global>{`

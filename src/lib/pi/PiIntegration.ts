@@ -116,8 +116,8 @@ async function CreatePayment(
   const paymentResult = await Pi.createPayment(
     {
       amount,
-      memo: "Donation to Arcadia",
-      metadata: { paymentSource: "Arcadia" },
+      memo: "Payment To OMC",
+      metadata: { paymentSource: "Oh My Competitions" },
     },
     {
       onReadyForServerApproval: async (paymentId: string) => {
