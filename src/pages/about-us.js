@@ -40,7 +40,7 @@ export default function AboutUs() {
               </p>
 
               <p className="text-[13px] sm:text-lg leading-relaxed text-white/80 text-center max-w-2xl mx-auto">
-                What started as one casual Pi referral turned into a full-on giveaway adventure powered by belief, late nights and a lot of Pi.
+                What started as one casual Pi referral turned into a full-on competition adventure powered by belief, late nights and a lot of Pi.
               </p>
 
               {/* What OMC stands for */}
@@ -135,6 +135,22 @@ export default function AboutUs() {
                 </div>
               </section>
 
+              {/* Pi Economy Loop Section */}
+              <section className="space-y-3 sm:space-y-4">
+                <h2 className="text-xl sm:text-2xl font-bold gradient-text">Fuelling the Pi Economy</h2>
+                <p className="text-[13px] sm:text-lg leading-relaxed text-white/90">
+                  At OMC, we're committed to a sustainable and thriving Pi ecosystem. All profits generated from our competitions are **reinvested back into the community**. This forms a continuous loop:
+                </p>
+                <ul className="list-disc list-inside text-white/90 space-y-2 text-[13px] sm:text-lg">
+                  <li>Funding future prizes and bigger rewards 🏆</li>
+                  <li>Developing new features and enhancing the app experience ✨</li>
+                  <li>Supporting and collaborating with other innovative dApps within the Pi Network 🤝</li>
+                </ul>
+                <p className="text-[13px] sm:text-lg leading-relaxed text-white/90">
+                  Our goal is to continually source from and contribute to the Pi ecosystem, ensuring that Pi stays in circulation and its utility on the blockchain grows stronger with every competition.
+                </p>
+              </section>
+
               {/* story sections */}
               <section className="space-y-3 sm:space-y-4">
                 <h2 className="text-xl sm:text-2xl font-bold gradient-text">An Idea That Wouldn’t Let Go</h2>
@@ -173,7 +189,7 @@ export default function AboutUs() {
               <section className="space-y-3 sm:space-y-4">
                 <h2 className="text-xl sm:text-2xl font-bold gradient-text">Oh My Competitions Was Born</h2>
                 <p className="text-[13px] sm:text-lg leading-relaxed text-white/90">
-                  We didn’t want just another app. We wanted a Pi-powered playground games, giveaways and challenges that bring people together not just to win, but to have fun doing it.
+                  We didn’t want just another app. We wanted a Pi-powered playground games, competitions and challenges that bring people together not just to win, but to have fun doing it.
                 </p>
                 <p className="text-[13px] sm:text-lg leading-relaxed text-white/90">
                   That’s how OhMyCompetitions came to life. And it hasn’t stopped growing since.
