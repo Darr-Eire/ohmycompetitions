@@ -50,11 +50,17 @@ function msToShort(ms) {
   return `${m}m`;
 }
 
-function timeLeftLabel(c) {
+function timeUntilEndMs(c) {
   const comp = c.comp ?? c;
   const end = comp?.endsAt ? new Date(comp.endsAt).getTime() : null;
-  if (!end) return '—';
-  return msToShort(end - now());
+  if (!end) return NaN;
+  return end - now();
+}
+
+function timeLeftLabel(c) {
+  const ms = timeUntilEndMs(c);
+  if (!Number.isFinite(ms)) return '—';
+  return msToShort(ms);
 }
 
 function ticketsProgress(c) {
@@ -79,14 +85,11 @@ const slugOf = (c) => {
 const titleOf = (c) => (c.title || (c.comp ?? c)?.title || 'Competition');
 const keyOf = (c) => slugOf(c) || titleOf(c);
 
-
-// replace old helper
+// purchase route helper
 const purchaseHref = (c) => {
   const slug = slugOf(c);
-  // new ticket purchase route:
   return slug ? `/ticket-purchase/${slug}` : '/ticket-purchase';
 };
-
 
 /* Best-effort regional flag emoji from "IE", "US", etc. */
 function flagEmojiFromCC(cc) {
@@ -97,6 +100,67 @@ function flagEmojiFromCC(cc) {
     .split('')
     .map((c) => String.fromCodePoint(base + c.charCodeAt(0)))
     .join('');
+}
+
+/* ------------------------------ Prize helpers (REAL PRIZE, never fee) ------------------------------ */
+function themeOf(c) {
+  const comp = c.comp ?? c;
+  return (c.theme || comp?.theme || '').toLowerCase();
+}
+
+/* Pi prize display like "300 π" */
+function parseNumericLike(v) {
+  if (v == null) return NaN;
+  if (typeof v === 'number') return Number.isFinite(v) ? v : NaN;
+  if (typeof v === 'string') {
+    const stripped = v.replace(/[^\d.,-]/g, '').replace(',', '.').trim();
+    const n = Number(stripped);
+    return Number.isFinite(n) ? n : NaN;
+  }
+  return NaN;
+}
+
+function prizePiDisplay(c) {
+  const raw = c.comp ?? c;
+
+  // Never confuse fee with prize
+  const entryFee = parseNumericLike(raw.entryFee);
+
+  // 1) Explicit Pi prize fields
+  const piFields = ['prizeValuePi', 'prizePi', 'topPrizePi'];
+  for (const key of piFields) {
+    const n = parseNumericLike(raw[key]);
+    if (Number.isFinite(n) && (!Number.isFinite(entryFee) || n !== entryFee) && n > 0) {
+      return `${n.toLocaleString()} π`;
+    }
+  }
+
+  // 2) prizes[] array: use first numeric amount as π
+  if (Array.isArray(raw.prizes) && raw.prizes.length) {
+    for (const p of raw.prizes) {
+      const n = parseNumericLike(p?.amount);
+      if (Number.isFinite(n) && (!Number.isFinite(entryFee) || n !== entryFee) && n > 0) {
+        return `${n.toLocaleString()} π`;
+      }
+    }
+  }
+
+  // 3) generic numeric prizeValue (assume π) if it's not the fee
+  const val = parseNumericLike(raw.prizeValue);
+  if (Number.isFinite(val) && (!Number.isFinite(entryFee) || val !== entryFee) && val > 0) {
+    return `${val.toLocaleString()} π`;
+  }
+
+  // 4) last resort: try to extract a number from strings like "Win 300 Pi!"
+  const textCandidates = [raw.prize, raw.prizeText, raw.prizeLabel, c.prize].filter(Boolean);
+  for (const s of textCandidates) {
+    if (typeof s === 'string') {
+      const n = parseNumericLike(s);
+      if (Number.isFinite(n) && n > 0) return `${n.toLocaleString()} π`;
+    }
+  }
+
+  return '— π';
 }
 
 /* ------------------------------ background ------------------------------ */
@@ -115,9 +179,15 @@ function LiveCard({ data, onGift, onShare }) {
   const comp = data.comp ?? data;
   const status = getStatus(data);
   const { sold, total, pct } = ticketsProgress(data);
-  const timeLeft = timeLeftLabel(data);
+
+  // Show countdown only when ≤ 48 hours remain (cards only)
+  const msLeft = timeUntilEndMs(data);
+  const showCountdown48 = Number.isFinite(msLeft) && msLeft > 0 && msLeft <= 48 * 60 * 60 * 1000;
+  const timeLeft = showCountdown48 ? timeLeftLabel(data) : '';
+
   const countryEmoji = flagEmojiFromCC(comp?.countryCode);
-  const requiresSkill = !!comp?.requiresSkillQuestion; // optional field you may set server-side
+  const requiresSkill = !!comp?.requiresSkillQuestion;
+  const prizeText = prizePiDisplay(data);
 
   return (
     <article
@@ -130,7 +200,7 @@ function LiveCard({ data, onGift, onShare }) {
       <div className="absolute left-0 top-0 z-10">
         {status === 'live' && (
           <span className="m-2 inline-flex items-center gap-1 rounded-md bg-emerald-500/20 px-2 py-1 text-emerald-300 text-[11px] font-bold">
-            <Flame size={14} /> LIVE NOW
+            <Flame size={14} /> LIVE
           </span>
         )}
         {status === 'upcoming' && (
@@ -145,18 +215,65 @@ function LiveCard({ data, onGift, onShare }) {
         )}
       </div>
 
-      {/* image */}
-      <div className="relative aspect-[16/9] w-full overflow-hidden">
-        <img
-          src={data.imageUrl || '/pi.jpeg'}
-          alt={titleOf(data)}
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-          loading="lazy"
-          decoding="async"
-          srcSet={(data.imageUrl && `${data.imageUrl} 800w`) || '/pi.jpeg 800w'}
-          sizes="(max-width:640px) 50vw, 33vw"
-        />
-      </div>
+      {/* media: image or prize banner */}
+      {(() => {
+        const th = themeOf(data);
+        const showPrizeBanner = th === 'daily' || th === 'pi';
+        const theTitle = titleOf(data);
+
+        if (!showPrizeBanner) {
+          return (
+            <div className="relative aspect-[16/9] w-full overflow-hidden">
+              <img
+                src={data.imageUrl || '/pi.jpeg'}
+                alt={theTitle}
+                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                loading="lazy"
+                decoding="async"
+                srcSet={(data.imageUrl && `${data.imageUrl} 800w`) || '/pi.jpeg 800w'}
+                sizes="(max-width:640px) 50vw, 33vw"
+              />
+            </div>
+          );
+        }
+
+        // Prize banner (forced for daily/pi)
+        return (
+          <div className="relative aspect-[16/9] w-full overflow-hidden">
+            {/* gradient background tuned per theme */}
+            <div
+              className={`absolute inset-0 ${
+                th === 'daily'
+                  ? 'bg-gradient-to-br from-indigo-600 via-cyan-500 to-emerald-400'
+                  : 'bg-gradient-to-br from-[#6EE7F9] via-[#22D3EE] to-[#3B82F6]'
+              }`}
+            />
+            {/* subtle grid and glow */}
+            <div className="absolute inset-0 opacity-15 [background-image:radial-gradient(rgba(255,255,255,0.7)_1.5px,transparent_1.5px)] [background-size:22px_22px]" />
+            <div className="absolute -inset-6 blur-3xl opacity-30 bg-white/20" />
+
+            {/* content */}
+            <div className="relative h-full w-full flex items-center justify-center px-4 text-center">
+              <div className="max-w-[85%]">
+                {/* REAL TITLE */}
+                <div className="text-base sm:text-lg font-bold tracking-tight text-black drop-shadow-[0_1px_6px_rgba(255,255,255,0.45)] line-clamp-2">
+                  {theTitle}
+                </div>
+
+                {/* prize big */}
+                <div className="mt-1 text-2xl sm:text-3xl font-black text-black drop-shadow-[0_1px_6px_rgba(255,255,255,0.45)]">
+                  {prizeText}
+                </div>
+
+                {/* fee pill on banner */}
+                <div className="mt-2 inline-flex items-center gap-1 rounded-md bg-white/70 px-2 py-0.5 text-[11px] font-bold text-black">
+                  Entry: {feePi(data)}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* body */}
       <div className="p-3 sm:p-3.5">
@@ -174,7 +291,7 @@ function LiveCard({ data, onGift, onShare }) {
         <div className="mt-2 grid grid-cols-3 gap-2 text-[12px] text-white/75">
           <div className="inline-flex items-center gap-1">
             <Trophy size={14} className="text-yellow-300" />
-            <span className="truncate">{comp?.prize || data.prize || `${toNum(comp?.prizeValue, 0)} π`}</span>
+            <span className="truncate">{prizeText}</span>
           </div>
           <div className="inline-flex items-center gap-1 justify-center">
             <Users size={14} className="text-blue-300" />
@@ -182,7 +299,9 @@ function LiveCard({ data, onGift, onShare }) {
           </div>
           <div className="inline-flex items-center gap-1 justify-end">
             <Clock size={14} className="text-purple-300" />
-            <span className="tabular-nums">{timeLeft}</span>
+            <span className="tabular-nums">
+              {showCountdown48 ? timeLeft : '—'}
+            </span>
           </div>
         </div>
 
@@ -211,24 +330,14 @@ function LiveCard({ data, onGift, onShare }) {
 
         {/* CTA row */}
         <div className="mt-3 flex items-center justify-between">
-      <Link
-  href={purchaseHref(data)}
-  className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-green-400 to-cyan-500 text-black font-extrabold px-3 py-2 text-[13px] hover:brightness-110 active:translate-y-px transition-all"
->
-  Enter Now
-  <ChevronRight size={16} />
-</Link>
+          <Link
+            href={purchaseHref(data)}
+            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-green-400 to-cyan-500 text-black font-extrabold px-3 py-2 text-[13px] hover:brightness-110 active:translate-y-px transition-all"
+          >
+            More Details
+            <ChevronRight size={16} />
+          </Link>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => onShare?.(data)}
-              className="rounded-md bg-white/10 px-2.5 py-2 text-[12px] hover:bg-white/15 active:translate-y-px inline-flex items-center gap-1"
-              aria-label="Share competition"
-              type="button"
-            >
-              <Share2 size={14} /> Share
-            </button>
-          </div>
         </div>
 
         {/* Gift link under CTA */}
@@ -380,6 +489,7 @@ export default function AllCompetitionsPage() {
 
   const liveCount = normalized.filter(n => n.__status === 'live').length;
   const totalPrizePool = useMemo(() => {
+    // Keep your existing logic; if your backend stores fee in prizeValue, consider adding a separate prizePool field.
     return competitions.reduce((sum, c) => sum + (toNum((c.comp ?? c)?.prizeValue, 0)), 0);
   }, [competitions]);
 
@@ -403,9 +513,9 @@ export default function AllCompetitionsPage() {
     } catch {}
   };
 
-
-
-
+  const go = (c) => {
+    window.location.href = purchaseHref(c);
+  };
 
   return (
     <>

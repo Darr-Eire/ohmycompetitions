@@ -6,12 +6,19 @@ import Head from 'next/head';
 import { ChevronLeft, ChevronRight, RefreshCw, Sparkles } from 'lucide-react';
 import DailyCompetitionCard from '@components/DailyCompetitionCard';
 
+/* ------------------------------ Helpers ------------------------------ */
+const purchaseHref = (c) => {
+  const comp = c?.comp ?? c;
+  const slug = comp?.slug || comp?._id || '';
+  return slug ? `/ticket-purchase/${slug}` : '/ticket-purchase';
+};
+
 /* ------------------------------ Tagline Rotator ------------------------------ */
 function TaglineRotator() {
   const taglines = [
     'Fresh prizes, drawn daily. ⏰',
     'Compete. Win. Repeat. 🔥',
-    'Tech, pi & more daily.',
+    'Tech, Pi & more — daily.',
     'Join the action ⚡ Entry from 0.00 π',
   ];
   const [index, setIndex] = useState(0);
@@ -73,7 +80,7 @@ function EmptyState({ onRefresh }) {
     <div className="text-center py-16 rounded-2xl border border-white/10 bg-white/5 mx-4">
       <Sparkles className="mx-auto mb-4" />
       <h3 className="text-xl font-semibold">No daily competitions yet</h3>
-      <p className="text-white/70 mt-2">Check back soon fresh prizes drop every day.</p>
+      <p className="text-white/70 mt-2">Check back soon — fresh prizes drop every day.</p>
       <button
         onClick={onRefresh}
         type="button"
@@ -191,9 +198,9 @@ function FullWidthCarousel({ items, renderItem }) {
         <button
           type="button"
           onClick={() => scrollToIndex(index + 1)}
-          disabled={index === items.length - 1}
+          disabled={items?.length ? index === items.length - 1 : true}
           className={`h-11 w-11 sm:h-12 sm:w-12 rounded-full p-2 border bg-white/10 backdrop-blur border-white/20 hover:bg-white/15 active:scale-95 transition
-            ${items?.length ? (index === items.length - 1 ? 'opacity-50 cursor-not-allowed' : '') : ''}`}
+            ${items?.length ? (index === items.length - 1 ? 'opacity-50 cursor-not-allowed' : '') : 'opacity-50 cursor-not-allowed'}`}
           aria-label="Next"
         >
           <ChevronRight />
@@ -234,7 +241,7 @@ export default function DailyCompetitionsPage() {
   const [error, setError] = useState(null);
   const ticketsToday = useLiveCounter(420); // purely visual
 
-  async function fetchDaily() {
+  const fetchDaily = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -258,11 +265,11 @@ export default function DailyCompetitionsPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
     fetchDaily();
-  }, []);
+  }, [fetchDaily]);
 
   const slides = useMemo(() => {
     return (competitions || []).map((item) => {
@@ -271,32 +278,54 @@ export default function DailyCompetitionsPage() {
       return {
         key: comp.slug || comp._id || item.title,
         comp,
-        title: item.title,
-        prize: item.prize,
+        title: item.title || comp.title,
+        prize: item.prize || comp.prize,
         fee,
-        imageUrl: item.imageUrl,
+        imageUrl: item.imageUrl || comp.imageUrl,
         endsAt: comp.endsAt,
-        href: item.href,
+        href: purchaseHref(comp), // deep-link to purchase
       };
     });
   }, [competitions]);
 
+  /* Ending Soon (<= 60m) ticker */
+  const endingSoon = useMemo(() => {
+    const cutoff = Date.now() + 60 * 60 * 1000;
+    return slides
+      .filter((s) => s.endsAt && new Date(s.endsAt).getTime() < cutoff)
+      .sort((a, b) => new Date(a.endsAt) - new Date(b.endsAt))
+      .slice(0, 4);
+  }, [slides]);
+
   const liveCount = slides.length;
   const minFee = useMemo(() => {
-    const fees = slides.map(s => Number(s.comp?.entryFee ?? 0)).filter(Number.isFinite);
+    const fees = slides.map((s) => Number(s.comp?.entryFee ?? 0)).filter(Number.isFinite);
     return fees.length ? Math.min(...fees) : 0;
   }, [slides]);
 
   const soonestStr = useMemo(() => {
     const soonest =
       slides
-        .map(s => new Date(s.endsAt))
-        .filter(d => Number.isFinite(d.getTime()))
+        .map((s) => new Date(s.endsAt))
+        .filter((d) => Number.isFinite(d.getTime()))
         .sort((a, b) => a - b)[0] || null;
     return soonest
       ? new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(soonest)
       : 'TBA';
   }, [slides]);
+
+  const fmtTimeLeft = (end) => {
+    if (!end) return '—';
+    const ms = new Date(end).getTime() - Date.now();
+    if (!Number.isFinite(ms) || ms <= 0) return '0m';
+    const h = Math.floor(ms / 3_600_000);
+    const m = Math.floor((ms % 3_600_000) / 60_000);
+    return h > 0 ? `${h}h ${m}m` : `${m}m`;
+  };
+
+  const go = (s) => {
+    window.location.href = s?.href || '/';
+  };
 
   if (loading) {
     return (
@@ -339,7 +368,7 @@ export default function DailyCompetitionsPage() {
             ) : (
               <>
                 <p className="text-white/90">
-                  Fresh daily prizes win tech, pi & more.
+                  Fresh daily prizes — win tech, Pi & more.
                 </p>
 
                 {/* Rotating tagline */}
@@ -356,7 +385,7 @@ export default function DailyCompetitionsPage() {
                   Use arrows or swipe to browse.&nbsp;
                 </p>
 
-            <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+                <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
                   <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
                     ⏳ Soonest draw: <b className="text-white">{soonestStr}</b>
                   </span>
@@ -372,6 +401,31 @@ export default function DailyCompetitionsPage() {
           </div>
         </div>
 
+        {/* Ending Soon Ticker (subtle, above carousel) */}
+        {endingSoon.length > 0 && (
+          <div className="sticky top-[calc(44px+env(safe-area-inset-top))] z-30 bg-[#0f1b33]/95 px-3 py-2 border-b border-white/10 text-[12px]">
+            <div className="mx-auto w-full max-w-screen-lg">
+              <div className="flex gap-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {endingSoon.map((s) => (
+                  <button
+                    key={s.key}
+                    onClick={() => go(s)}
+                    className="shrink-0 inline-flex items-center gap-2 px-2 py-1 rounded-md bg-white/5 hover:bg-white/10"
+                    type="button"
+                  >
+                    <span className="rounded-sm bg-pink-500/20 text-pink-300 px-1.5 py-0.5 text-[11px]">
+                      Ends {fmtTimeLeft(s.endsAt)}
+                    </span>
+                    <span className="text-white/80 truncate max-w-[200px]">
+                      {s.title}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* content: full-width, mobile-first carousel */}
         <section className="pb-14">
           {slides.length > 0 ? (
@@ -386,7 +440,7 @@ export default function DailyCompetitionsPage() {
                   fee={s.fee}
                   imageUrl={s.imageUrl}
                   endsAt={s.endsAt}
-                  href={s.href}
+                  href={s.href} // now points to /ticket-purchase/[slug]
                 />
               )}
             />

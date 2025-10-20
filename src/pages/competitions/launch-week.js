@@ -6,13 +6,33 @@ import { motion } from 'framer-motion'
 import { Sparkles, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react'
 import LaunchCompetitionCard from '@components/LaunchCompetitionCard'
 
+/* ------------------------------ Helpers ------------------------------ */
+const purchaseHref = (c) => {
+  const comp = c?.comp ?? c
+  const slug = comp?.slug || comp?._id || ''
+  return slug ? `/ticket-purchase/${slug}` : '/ticket-purchase'
+}
+
+const bySoonestEnd = (a, b) =>
+  new Date((a.comp || a).endsAt || Infinity) - new Date((b.comp || b).endsAt || Infinity)
+
+const toTimeLeft = (end) => {
+  if (!end) return null
+  const ms = new Date(end).getTime() - Date.now()
+  if (isNaN(ms)) return null
+  if (ms <= 0) return '0m'
+  const h = Math.floor(ms / 3_600_000)
+  const m = Math.floor((ms % 3_600_000) / 60_000)
+  return h > 0 ? `${h}h ${m}m` : `${m}m`
+}
+
 /* ------------------------------ Tagline Rotator ------------------------------ */
 function TaglineRotator() {
   const taglines = [
     'Pi-powered launch prizes 🚀',
     'New drops, fresh rewards ⚡',
     'Win tech, Pi & more 💎',
-    'Entry from 0.25 π jump in 🎟️',
+    'Entry from 0.25 π — jump in 🎟️',
   ]
   const [index, setIndex] = useState(0)
   useEffect(() => {
@@ -47,10 +67,6 @@ function useLiveCounter(initial = 420) {
   }, [])
   return count
 }
-
-/* -------------------------------- Utilities ------------------------------- */
-const bySoonestEnd = (a, b) =>
-  new Date((a.comp || a).endsAt || Infinity) - new Date((b.comp || b).endsAt || Infinity)
 
 /* ------------------------------ Small UI bits ------------------------------ */
 function SkeletonSlide() {
@@ -132,7 +148,7 @@ function FullWidthCarousel({ items, renderItem, ariaLabel }) {
 
   return (
     <div className="relative">
-      {/* edge fades from consistent app bg */}
+      {/* edge fades */}
       <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-[#0f1b33] to-transparent z-10" />
       <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[#0f1b33] to-transparent z-10" />
 
@@ -222,7 +238,7 @@ export default function LaunchWeekCompetitionsPage() {
   const [error, setError] = useState(null)
   const ticketsToday = useLiveCounter(420) // purely visual
 
-  async function fetchCompetitions() {
+  const fetchCompetitions = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
@@ -245,11 +261,11 @@ export default function LaunchWeekCompetitionsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     fetchCompetitions()
-  }, [])
+  }, [fetchCompetitions])
 
   const slides = useMemo(() => {
     const sorted = [...competitions].sort(bySoonestEnd)
@@ -263,9 +279,19 @@ export default function LaunchWeekCompetitionsPage() {
         fee: `${(comp.entryFee ?? 0).toFixed(2)} \u03C0`,
         imageUrl: raw.imageUrl || comp.imageUrl,
         endsAt: comp.endsAt,
+        href: purchaseHref(comp), // deep-link to purchase
       }
     })
   }, [competitions])
+
+  /* Ending Soon (<= 60m) for ticker */
+  const endingSoon = useMemo(() => {
+    const cutoff = Date.now() + 60 * 60 * 1000
+    return slides
+      .filter(s => s.endsAt && new Date(s.endsAt).getTime() < cutoff)
+      .sort((a, b) => new Date(a.endsAt) - new Date(b.endsAt))
+      .slice(0, 4)
+  }, [slides])
 
   const heroStats = useMemo(() => {
     if (!slides.length) return { count: 0, minFee: 0, soonest: null }
@@ -282,6 +308,10 @@ export default function LaunchWeekCompetitionsPage() {
   const fmtDate = (d) =>
     !d ? 'TBA' : new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(d)
 
+  const go = (s) => {
+    window.location.href = s?.href || '/'
+  }
+
   if (loading) {
     return (
       <main className="relative min-h-[100svh] text-white overflow-hidden bg-[#0f1b33]">
@@ -297,21 +327,20 @@ export default function LaunchWeekCompetitionsPage() {
   }
 
   return (
-   <main className="app-background min-h-[100svh] text-white bg-[#0f1b33] pt-[calc(10px+env(safe-area-inset-top))] md:pt-[calc(80px+env(safe-area-inset-top))] relative overflow-hidden">
-  <BackgroundFX />
+    <main className="app-background min-h-[100svh] text-white bg-[#0f1b33] pt-[calc(10px+env(safe-area-inset-top))] md:pt-[calc(80px+env(safe-area-inset-top))] relative overflow-hidden">
+      <BackgroundFX />
 
-  {/* Hero */}
-  <section className="px-4 sm:px-6 lg:px-10">
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35 }}
-      className="max-w-5xl mx-auto text-center"
-    >
-      <h1 className="text-2xl font-bold mb-1 bg-gradient-to-r from-[#00ffd5] to-[#0077ff] bg-clip-text text-transparent">
-        Launch Week Competitions
-      </h1>
-
+      {/* Hero */}
+      <section className="px-4 sm:px-6 lg:px-10">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+          className="max-w-5xl mx-auto text-center"
+        >
+          <h1 className="text-2xl font-bold mb-1 bg-gradient-to-r from-[#00ffd5] to-[#0077ff] bg-clip-text text-transparent">
+            Launch Week Competitions
+          </h1>
 
           <TaglineRotator />
 
@@ -325,19 +354,44 @@ export default function LaunchWeekCompetitionsPage() {
             </p>
           </div>
 
-       <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
-                 <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
+          <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+            <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
               ⏳ Soonest draw: <b className="text-white">{fmtDate(heroStats.soonest)}</b>
-          </span>
-                  <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
-                    🎟 Easy entry
-                  </span>
-                  <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
-                    ⚡ New drops weekly
-                  </span>
-                </div>
+            </span>
+            <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
+              🎟 Easy entry
+            </span>
+            <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
+              ⚡ New drops weekly
+            </span>
+          </div>
         </motion.div>
       </section>
+
+      {/* Ending Soon Ticker (subtle, above carousel) */}
+      {endingSoon.length > 0 && (
+        <div className="sticky top-[calc(44px+env(safe-area-inset-top))] z-30 bg-[#0f1b33]/95 px-3 py-2 border-b border-white/10 text-[12px]">
+          <div className="mx-auto w-full max-w-6xl">
+            <div className="flex gap-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {endingSoon.map((s) => (
+                <button
+                  key={s.key}
+                  onClick={() => go(s)}
+                  className="shrink-0 inline-flex items-center gap-2 px-2 py-1 rounded-md bg-white/5 hover:bg-white/10"
+                  type="button"
+                >
+                  <span className="rounded-sm bg-pink-500/20 text-pink-300 px-1.5 py-0.5 text-[11px]">
+                    Ends {toTimeLeft(s.endsAt) ?? '—'}
+                  </span>
+                  <span className="text-white/80 truncate max-w-[200px]">
+                    {s.title}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Content */}
       <section className="pb-14">
@@ -391,7 +445,7 @@ export default function LaunchWeekCompetitionsPage() {
           outline: 2px solid #22d3ee !important;
           outline-offset: 2px;
         }
-        .carousel-card *,
+        .carousel-card * ,
         .carousel-card:hover,
         .carousel-card:active {
           transform: none !important;

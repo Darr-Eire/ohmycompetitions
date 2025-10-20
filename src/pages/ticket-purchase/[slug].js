@@ -1,3 +1,4 @@
+// src/pages/ticket-purchase/[slug].js
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
@@ -9,6 +10,87 @@ import GiftTicketModal from '@components/GiftTicketModal';
 import LaunchCompetitionDetailCard from '@components/LaunchCompetitionDetailCard';
 import { usePiAuth } from '../../context/PiAuthContext';
 
+/* ----------------------- helpers for prize & banner ----------------------- */
+const toNum = (v, d = 0) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : d;
+};
+
+function parseNumericLike(v) {
+  if (v == null) return NaN;
+  if (typeof v === 'number') return Number.isFinite(v) ? v : NaN;
+  if (typeof v === 'string') {
+    const stripped = v.replace(/[^\d.,-]/g, '').replace(',', '.').trim();
+    const n = Number(stripped);
+    return Number.isFinite(n) ? n : NaN;
+  }
+  return NaN;
+}
+
+function themeOf(c) {
+  return (c?.theme || '').toLowerCase();
+}
+
+/** Prize for banner: pull a real π number, never the entry fee. */
+function prizePiDisplay(c) {
+  if (!c) return '— π';
+  const entryFee = parseNumericLike(c.entryFee);
+
+  // prizeBreakdown: prefer first > sum
+  if (c.prizeBreakdown && typeof c.prizeBreakdown === 'object') {
+    const first = parseNumericLike(c.prizeBreakdown.first);
+    if (Number.isFinite(first) && first > 0 && first !== entryFee) {
+      return `${first.toLocaleString()} π`;
+    }
+    let sum = 0;
+    for (const k of Object.keys(c.prizeBreakdown)) {
+      const n = parseNumericLike(c.prizeBreakdown[k]);
+      if (Number.isFinite(n)) sum += n;
+    }
+    if (sum > 0 && sum !== entryFee) return `${sum.toLocaleString()} π`;
+  }
+
+  // prizes[] array: use first numeric amount
+  if (Array.isArray(c.prizes)) {
+    for (const p of c.prizes) {
+      const n = parseNumericLike(p?.amount);
+      if (Number.isFinite(n) && n > 0 && n !== entryFee) {
+        return `${n.toLocaleString()} π`;
+      }
+    }
+  }
+
+  // explicit π fields
+  for (const key of ['prizeValuePi', 'prizePi', 'topPrizePi']) {
+    const n = parseNumericLike(c[key]);
+    if (Number.isFinite(n) && n > 0 && n !== entryFee) return `${n.toLocaleString()} π`;
+  }
+
+  // generic prizeValue (assume π)
+  const val = parseNumericLike(c.prizeValue);
+  if (Number.isFinite(val) && val > 0 && val !== entryFee) return `${val.toLocaleString()} π`;
+
+  // textual firstPrize/prize
+  for (const s of [c.firstPrize, c.prize, c.prizeText, c.prizeLabel]) {
+    if (typeof s === 'string') {
+      const n = parseNumericLike(s);
+      if (Number.isFinite(n) && n > 0) return `${n.toLocaleString()} π`;
+    }
+  }
+
+  return '— π';
+}
+
+function feePi(c) {
+  const fee = c?.entryFee;
+  if (typeof fee === 'number') return `${fee.toFixed(2)} π`;
+  return '0.00 π';
+}
+
+/** The banner that replaces the image on this page. */
+
+
+/* ---------------------------------- page ---------------------------------- */
 export default function TicketPurchasePage() {
   const router = useRouter();
 
@@ -16,14 +98,14 @@ export default function TicketPurchasePage() {
   const slugArr = router.query.slug;
   const slug = Array.isArray(slugArr) ? slugArr[slugArr.length - 1] : slugArr || '';
 
-  // Pi auth (optional; guard if context not ready)
+  // Pi auth (optional)
   let user = null, login = null;
   try {
     const ctx = usePiAuth?.();
     user = ctx?.user || null;
     login = ctx?.login || null;
   } catch {
-    // Non-blocking; card can handle unauthenticated state
+    // ignore
   }
 
   const [loading, setLoading] = useState(false);
@@ -143,7 +225,9 @@ export default function TicketPurchasePage() {
     );
   }
 
-  // Render
+  // IMPORTANT: we do NOT pass an image to the detail card — the banner above replaces it.
+  const imageForCard = undefined;
+
   return (
     <>
       <Head>
@@ -154,16 +238,15 @@ export default function TicketPurchasePage() {
         {comp.imageUrl ? <meta property="og:image" content={comp.imageUrl} /> : null}
       </Head>
 
-      {/* MODIFIED: Adjusted padding to control the "border" and "zoomed-in" feel */}
       <main className="min-h-screen w-full p-0 text-white bg-[#070d19] font-orbitron">
-     
-
-        {/* MODIFIED: Added a div for content padding around the card */}
-        <div className="px-4 sm:px-6 py-4 sm:py-6">
-            <LaunchCompetitionDetailCard            comp={comp}
+        <div className="px-4 sm:px-6 py-4 sm:py-6 space-y-4">
+         
+          {/* Detail card WITHOUT image */}
+          <LaunchCompetitionDetailCard
+            comp={comp}
             title={comp?.title}
-            prize={comp?.firstPrize ?? comp?.prize}
-            imageUrl={comp?.imageUrl || comp?.thumbnail}
+            prize={prizePiDisplay(comp)}
+            imageUrl={imageForCard}       // <- no image rendered by the card
             endsAt={comp?.endsAt}
             startsAt={comp?.startsAt}
             ticketsSold={liveTicketsSold ?? comp?.ticketsSold ?? 0}
@@ -178,7 +261,7 @@ export default function TicketPurchasePage() {
             sharedBonus={sharedBonus}
             user={user}
             login={login}
-            />
+          />
         </div>
       </main>
     </>
@@ -190,7 +273,7 @@ export default function TicketPurchasePage() {
 function autoDescribeCompetition(c) {
   const parts = [
     c?.title,
-    c?.firstPrize ? `1st prize: ${c.firstPrize}` : '',
+    `Prize: ${prizePiDisplay(c)}`,
     isFiniteNum(c?.entryFee) ? `Entry fee: ${c.entryFee} π` : '',
     isFiniteNum(c?.totalTickets) ? `Tickets: ${c.totalTickets}` : '',
   ].filter(Boolean);
@@ -223,20 +306,10 @@ function normalizeFromApi(data) {
     ),
     prizeBreakdown: firstDefined(data?.prizeBreakdown, c?.prizeBreakdown, null),
 
-    imageUrl: firstDefined(
-      data?.imageUrl,
-      c?.imageUrl,
-      c?.thumbnail,
-      data?.thumbnail,
-      '/images/placeholder.jpg'
-    ),
-    thumbnail: firstDefined(
-      data?.thumbnail,
-      c?.thumbnail,
-      data?.imageUrl,
-      c?.imageUrl,
-      '/images/placeholder.jpg'
-    ),
+    // keep available for OG/social, but we don't render in-page
+    imageUrl: firstDefined(data?.imageUrl, c?.imageUrl, c?.thumbnail, data?.thumbnail, null),
+    thumbnail: firstDefined(data?.thumbnail, c?.thumbnail, data?.imageUrl, c?.imageUrl, null),
+
     description: firstDefined(data?.description, c?.description, ''),
     theme: firstDefined(data?.theme, c?.theme, null),
   };
@@ -250,10 +323,6 @@ function toInt(v, d = 0) {
   const n = Number.parseInt(v, 10);
   return Number.isFinite(n) ? n : d;
 }
-function toNum(v, d = 0) {
-  const n = Number(v);
-  return Number.isFinite(n) ? n : d;
-}
 function isFiniteNum(v) {
-  return typeof v === 'number' && Number.isFinite(v); 
+  return typeof v === 'number' && Number.isFinite(v);
 }
