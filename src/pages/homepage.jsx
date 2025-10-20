@@ -461,19 +461,19 @@ const safePrizePool = useMemo(() => {
 
         {/* ====================== Sections ====================== */}
         <main className="space-y-14 sm:space-y-16 lg:space-y-20">
-          <Section
-            title={t('daily_weekly', 'Daily/Weekly')}
-            items={getCompetitionsByCategory('daily')}
-            viewMoreHref="/competitions/daily"
+           <Section
+            title={t('tech_gadgets', 'Tech/Gadgets')}
+            items={getCompetitionsByCategory('tech')}
+            viewMoreHref="/competitions/tech&gadgets"
             cardSize="md"
             cardMaxWidth={320}
             itemMinWidthCSS="min(320px, calc(100vw - 2rem))"
           />
 
           <Section
-            title={t('tech_gadgets', 'Tech/Gadgets')}
-            items={getCompetitionsByCategory('tech')}
-            viewMoreHref="/competitions/tech&gadgets"
+            title={t('daily_weekly', 'Daily/Weekly')}
+            items={getCompetitionsByCategory('daily')}
+            viewMoreHref="/competitions/daily"
             cardSize="md"
             cardMaxWidth={320}
             itemMinWidthCSS="min(320px, calc(100vw - 2rem))"
