@@ -369,7 +369,7 @@ export default function DailyCompetitionCard({ comp = {}, title, prize, fee }) {
         {/* CTA */}
         <div className="mt-3">
           {slug ? (
-            <Link href={`/ticket-purchase/pi/${slug}`} legacyBehavior>
+            <Link href={`/ticket-purchase/${slug}`} legacyBehavior>
               <button
                 disabled={statusLabel !== 'LIVE' || isSoldOut}
                 className={`

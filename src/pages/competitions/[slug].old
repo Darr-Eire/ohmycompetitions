@@ -12,6 +12,8 @@ export default function CompetitionDetailPage() {
   const router = useRouter();
   const { slug } = router.query;
   const { user } = usePiAuth();
+  const slug = comp?.slug ?? comp?.comp?.slug ?? '';
+const purchaseHref = slug ? `/ticket-purchase/${slug}` : null;
 
   const [type, setType] = useState('none'); // 'funnel' | 'competition' | 'none'
   const [comp, setComp] = useState(null);

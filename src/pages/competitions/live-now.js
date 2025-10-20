@@ -1,6 +1,6 @@
 // src/pages/competitions/all.js
 'use client';
-
+import Link from 'next/link';
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
@@ -79,6 +79,15 @@ const slugOf = (c) => {
 const titleOf = (c) => (c.title || (c.comp ?? c)?.title || 'Competition');
 const keyOf = (c) => slugOf(c) || titleOf(c);
 
+
+// replace old helper
+const purchaseHref = (c) => {
+  const slug = slugOf(c);
+  // new ticket purchase route:
+  return slug ? `/ticket-purchase/${slug}` : '/ticket-purchase';
+};
+
+
 /* Best-effort regional flag emoji from "IE", "US", etc. */
 function flagEmojiFromCC(cc) {
   if (!cc || typeof cc !== 'string' || cc.length !== 2) return null;
@@ -144,10 +153,7 @@ function LiveCard({ data, onGift, onShare }) {
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
           loading="lazy"
           decoding="async"
-          srcSet={
-            (data.imageUrl && `${data.imageUrl} 800w`) ||
-            '/pi.jpeg 800w'
-          }
+          srcSet={(data.imageUrl && `${data.imageUrl} 800w`) || '/pi.jpeg 800w'}
           sizes="(max-width:640px) 50vw, 33vw"
         />
       </div>
@@ -205,14 +211,23 @@ function LiveCard({ data, onGift, onShare }) {
 
         {/* CTA row */}
         <div className="mt-3 flex items-center justify-between">
-          <a
-            href={`/competitions/${slugOf(data)}`}
-            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-green-400 to-cyan-500 text-black font-extrabold px-3 py-2 text-[13px] hover:brightness-110 active:translate-y-px transition-all"
-          >
-            Enter Now
-            <ChevronRight size={16} />
-          </a>
+      <Link
+  href={purchaseHref(data)}
+  className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-green-400 to-cyan-500 text-black font-extrabold px-3 py-2 text-[13px] hover:brightness-110 active:translate-y-px transition-all"
+>
+  Enter Now
+  <ChevronRight size={16} />
+</Link>
+
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => onShare?.(data)}
+              className="rounded-md bg-white/10 px-2.5 py-2 text-[12px] hover:bg-white/15 active:translate-y-px inline-flex items-center gap-1"
+              aria-label="Share competition"
+              type="button"
+            >
+              <Share2 size={14} /> Share
+            </button>
           </div>
         </div>
 
@@ -376,7 +391,7 @@ export default function AllCompetitionsPage() {
   };
 
   const shareComp = async (c) => {
-    const url = `${location.origin}/competitions/${slugOf(c)}?ref=${'ref' in window ? window.ref : 'guest'}`;
+    const url = `${location.origin}${purchaseHref(c)}?ref=${'ref' in window ? window.ref : 'guest'}`;
     const data = { title: titleOf(c), text: 'Join me on OMC – Live Pi competitions!', url };
     try {
       if (navigator.share) await navigator.share(data);
@@ -388,9 +403,9 @@ export default function AllCompetitionsPage() {
     } catch {}
   };
 
-  const go = (c) => {
-    location.href = `/competitions/${slugOf(c)}`;
-  };
+
+
+
 
   return (
     <>

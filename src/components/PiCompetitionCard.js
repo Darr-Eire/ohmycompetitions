@@ -1,13 +1,13 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
 import { useEffect, useState, useMemo } from 'react'
 import { usePiAuth } from 'context/PiAuthContext'
 import { useSafeTranslation } from '../hooks/useSafeTranslation'
 import GiftTicketModal from './GiftTicketModal'
 import '@fontsource/orbitron'
-import React from 'react';
+import React from 'react'
+
 export default function PiCompetitionCard({
   comp,
   title,
@@ -15,7 +15,7 @@ export default function PiCompetitionCard({
   fee,
   imageUrl = '/pi.jpeg',
   disableGift = false,
-  className = '',    
+  className = '',
 }) {
   const { t } = useSafeTranslation()
   const { user } = usePiAuth()
@@ -23,10 +23,9 @@ export default function PiCompetitionCard({
   // ✅ State
   const [timeLeft, setTimeLeft] = useState('')
   const [status, setStatus] = useState('')
-
   const [showGiftModal, setShowGiftModal] = useState(false)
   const [showCountdown, setShowCountdown] = useState(false)
-  const [showCountriesModal, setShowCountriesModal] = useState(false) // modal
+  const [showCountriesModal, setShowCountriesModal] = useState(false)
 
   // ✅ Dates
   const startsAt = new Date(comp?.startsAt || comp?.comp?.startsAt || new Date())
@@ -162,33 +161,43 @@ export default function PiCompetitionCard({
   const startsDisplay = Number.isFinite(startsAt.getTime()) ? startsAt.toLocaleString(undefined, fmtOpts) : '—'
   const endsDisplay = Number.isFinite(endsAt.getTime()) ? endsAt.toLocaleString(undefined, fmtOpts) : '—'
 
+  /* ------------------------ CTA href + label ------------------------ */
+  const href = slug
+    ? (statusLabel === t('pre_sale', 'PRE-SALE')
+        ? `/ticket-purchase/${slug}?mode=pre`
+        : `/ticket-purchase/${slug}`)
+    : null
+
+  const ctaLabel = isSoldOut
+    ? t('sold_out', 'Sold Out')
+    : statusLabel === t('pre_sale', 'PRE-SALE')
+    ? t('pre_book_ticket', 'Pre-Book Ticket')
+    : status === t('upcoming', 'UPCOMING') || status === t('coming_soon', 'COMING SOON')
+    ? t('coming_soon', 'Coming Soon')
+    : t('enter_now', 'More Details')
+
   return (
     <>
-      <div className="relative w-full max-w-[19rem] sm:max-w-sm mx-auto p-4 bg-[#0f172a] rounded-xl text-white font-orbitron shadow-xl border-2 border-cyan-400 overflow-hidden">
+      <div className={`relative w-full max-w-[19rem] sm:max-w-sm mx-auto p-4 bg-[#0f172a] rounded-xl text-white font-orbitron shadow-xl border-2 border-cyan-400 overflow-hidden ${className}`}>
         {/* Header */}
-    {/* Header */}
-<div className="flex flex-col items-center justify-center gap-2 text-sm mb-3 z-10 relative">
-  {/* Global competition badge */}
-  <span className="px-3 py-1 rounded-full border border-cyan-400 bg-cyan-600/30 text-white font-semibold text-center">
-    🌍 {t('pioneers_global_draw', 'Pioneers Global Competition')}
-  </span>
-
-  {/* Status directly under it, centered */}
-  <span
-    className={`px-3 py-1 rounded-full font-bold text-xs shadow-md text-center ${
-      status === 'LIVE NOW'
-        ? 'bg-green-400 text-black animate-pulse'
-        : status === 'ENDED'
-        ? 'bg-red-500 text-white'
-        : statusLabel === 'PRE-SALE'
-        ? 'bg-gradient-to-r from-cyan-300 to-blue-400 text-black'
-        : 'bg-gradient-to-r from-orange-400 to-orange-500 text-black'
-    }`}
-  >
-    {statusLabel}
-  </span>
-</div>
-
+        <div className="flex flex-col items-center justify-center gap-2 text-sm mb-3 z-10 relative">
+          <span className="px-3 py-1 rounded-full border border-cyan-400 bg-cyan-600/30 text-white font-semibold text-center">
+            🌍 {t('pioneers_global_draw', 'Pioneers Global Competition')}
+          </span>
+          <span
+            className={`px-3 py-1 rounded-full font-bold text-xs shadow-md text-center ${
+              status === 'LIVE NOW'
+                ? 'bg-green-400 text-black animate-pulse'
+                : status === 'ENDED'
+                ? 'bg-red-500 text-white'
+                : statusLabel === 'PRE-SALE'
+                ? 'bg-gradient-to-r from-cyan-300 to-blue-400 text-black'
+                : 'bg-gradient-to-r from-orange-400 to-orange-500 text-black'
+            }`}
+          >
+            {statusLabel}
+          </span>
+        </div>
 
         {/* Title */}
         <div className="text-center mb-2">
@@ -265,34 +274,17 @@ export default function PiCompetitionCard({
 
         {/* CTA Buttons */}
         <div className="space-y-2 mt-4">
-          {slug ? (
-            <Link href={statusLabel === 'PRE-SALE' ? `/ticket-purchase/pi/${slug}?mode=pre` : `/ticket-purchase/pi/${slug}`}>
-              <button
-                disabled={
-                  status === 'ENDED' ||
-                  isSoldOut ||
-                  (status === 'UPCOMING' && !preCfg?.enabled) ||
-                  (status === 'COMING SOON' && !preCfg?.enabled)
-                }
-                className={`w-full py-2 rounded-md font-bold text-black ${
-                  status === 'ENDED' ||
-                  isSoldOut ||
-                  (status === 'UPCOMING' && !preCfg?.enabled) ||
-                  (status === 'COMING SOON' && !preCfg?.enabled)
-                    ? 'bg-gradient-to-r from-[#00ffd5] to-[#0077ff] opacity-60 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:brightness-110'
-                }`}
-              >
-                {isSoldOut
-                  ? t('sold_out', 'Sold Out')
-                  : status === t('ended', 'ENDED')
-                  ? t('closed', 'Closed')
-                  : statusLabel === t('pre_sale', 'PRE-SALE')
-                  ? t('pre_book_ticket', 'Pre-Book Ticket')
-                  : status === t('upcoming', 'UPCOMING') || status === t('coming_soon', 'COMING SOON')
-                  ? t('coming_soon', 'Coming Soon')
-                  : t('enter_now', 'More Details')}
-              </button>
+          {href ? (
+            <Link
+              href={href}
+              className="block w-full py-2 rounded-md font-bold text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:brightness-110 transition-all text-center"
+              aria-label={ctaLabel}
+              onClick={() => {
+                if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(15)
+                // trackEnter?.({ slug }) // optional analytics
+              }}
+            >
+              {ctaLabel}
             </Link>
           ) : (
             <button className="w-full py-2 bg-gray-500 text-white rounded-md cursor-not-allowed" disabled>
@@ -300,11 +292,12 @@ export default function PiCompetitionCard({
             </button>
           )}
 
-          {isGiftable && !disableGift && user?.username && status !== 'UPCOMING' && (
+          {isGiftable && !disableGift && user?.username && status !== t('upcoming', 'UPCOMING') && (
             <button
               onClick={(e) => {
                 e.preventDefault()
                 setShowGiftModal(true)
+                if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(10)
               }}
               className="w-full py-2 border border-cyan-400 text-cyan-400 rounded-md hover:bg-cyan-400 hover:text-black font-bold"
             >
@@ -379,4 +372,3 @@ export default function PiCompetitionCard({
     </>
   )
 }
-

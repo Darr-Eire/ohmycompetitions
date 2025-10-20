@@ -41,6 +41,8 @@ export default function FreeCompetitionCard({ comp = {}, title, prize }) {
   const dateFmt = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
   const formattedStart = startsAt ? startsAt.toLocaleString(undefined, dateFmt) : t('tba', 'TBA');
   const formattedEnd   = endsAt   ? endsAt.toLocaleString(undefined, dateFmt)   : t('tba', 'TBA');
+const slug = comp?.slug ?? comp?.comp?.slug ?? '';
+const purchaseHref = slug ? `/ticket-purchase/${slug}` : null;
 
   const sold  = Number(comp?.ticketsSold ?? comp?.comp?.ticketsSold ?? 0);
   const total = Number(comp?.totalTickets ?? comp?.comp?.totalTickets ?? 0);
@@ -168,21 +170,35 @@ export default function FreeCompetitionCard({ comp = {}, title, prize }) {
             </div>
 
             {/* CTA */}
-            <div className="mt-6 flex items-center justify-center">
-              <Link
-                href={`/competitions/${comp.slug ?? comp?.comp?.slug ?? ''}`}
-                className={`inline-flex items-center gap-2 rounded-2xl px-6 py-2.5 text-lg font-extrabold shadow-lg hover:brightness-110 active:scale-[0.99] transition
-                  ${isLaunchWeek
-                    ? 'bg-gradient-to-r from-yellow-300 via-orange-400 to-red-500 text-black'
-                    : 'bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black'}
-                `}
-              >
-                {isLaunchWeek ? `🚀 ${t('enter_now', 'Enter Now')}` : t('view_detail', 'View Detail')}
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
-            </div>
+          <div className="mt-6 flex items-center justify-center">
+  {purchaseHref ? (
+    <Link
+      href={purchaseHref}
+      className={`inline-flex items-center gap-2 rounded-2xl px-6 py-2.5 text-lg font-extrabold shadow-lg hover:brightness-110 active:scale-[0.99] transition
+        ${isLaunchWeek
+          ? 'bg-gradient-to-r from-yellow-300 via-orange-400 to-red-500 text-black'
+          : 'bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black'}
+      `}
+      aria-label={isLaunchWeek ? t('enter_now', 'Enter Now') : t('view_detail', 'View Detail')}
+      onClick={() => {
+        if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(15);
+        // trackEnter?.({ slug }) // optional analytics
+      }}
+    >
+      {isLaunchWeek ? `🚀 ${t('enter_now', 'Enter Now')}` : t('view_detail', 'View Detail')}
+      <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+      </svg>
+    </Link>
+  ) : (
+    <button
+      className="inline-flex items-center gap-2 rounded-2xl px-6 py-2.5 text-lg font-extrabold bg-gray-500 text-white cursor-not-allowed"
+      disabled
+    >
+      {t('not_available', 'Not Available')}
+    </button>
+  )}
+</div>
 
             {/* Terms */}
             <div className="mt-4 text-center">
