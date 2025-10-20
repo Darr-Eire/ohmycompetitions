@@ -12,7 +12,7 @@ let assignStage1Room = async (userId) => ({
 
 // Try to load funnel service (non-fatal)
 try {
-  const funnelService = require('lib/funnelService');
+  const funnelService = require('../../../lib/funnelService');
   if (typeof funnelService.ENTRY_FEE_PI !== 'undefined') ENTRY_FEE_PI = funnelService.ENTRY_FEE_PI;
   if (typeof funnelService.assignStage1Room === 'function') assignStage1Room = funnelService.assignStage1Room;
 } catch {
