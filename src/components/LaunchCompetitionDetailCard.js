@@ -588,14 +588,7 @@ export default function LaunchCompetitionDetailCard({
                     endsAt={comp?.endsAt ?? endsAt}
                   />
 
-                  {/* Secondary path */}
-                  <button
-                    type="button"
-                    onClick={onProceed}
-                    className="w-full rounded-xl border border-white/15 bg-white/5 py-2 text-sm text-white/90"
-                  >
-                    Or Continue via Pi Payment
-                  </button>
+              
                 </div>
               )}
             </>

@@ -4,7 +4,9 @@
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
 
-// Assuming these paths are correct for your project
+// These paths assume your tsconfig/webpack aliases:
+// - "@/..." -> src/
+// - "@components/..." -> src/components/
 import LaunchCompetitionDetailCard from '@/components/LaunchCompetitionDetailCard';
 import GiftTicketModal from '@components/GiftTicketModal';
 
@@ -22,7 +24,7 @@ export default function PiTicketPage() {
     async function load() {
       setLoading(true);
 
-      // 1) Try local cache (fast path) — no static arrays!
+      // 1) Try local cache (fast path)
       const local =
         (typeof window !== 'undefined' && window.__OMC_CACHE__?.bySlug?.[slug]) ||
         null;
@@ -30,8 +32,7 @@ export default function PiTicketPage() {
       if (local) {
         const merged = normalizeFromPiItem(local);
         setComp(merged);
-        // prefer explicit description, else centralized (assuming describeCompetition is defined elsewhere or not strictly needed for this example)
-        setDesc(merged.description || merged.title); // Fallback to title if describeCompetition is not defined globally
+        setDesc(merged.description || merged.title);
         setLoading(false);
         return;
       }
@@ -43,8 +44,7 @@ export default function PiTicketPage() {
         const data = await res.json();
         const merged = normalizeFromApi(data);
         setComp(merged);
-        // prefer explicit description, else centralized
-        setDesc(merged.description || merged.title); // Fallback to title if describeCompetition is not defined globally
+        setDesc(merged.description || merged.title);
       } catch (e) {
         console.error(e);
       } finally {
@@ -80,31 +80,16 @@ export default function PiTicketPage() {
     );
   }
 
-  // The hasImage check is still useful here for debugging or other future conditional logic if needed
-  // However, the conditional prize banner here is now redundant as LaunchCompetitionDetailCard handles it.
-  // const hasImage = !!(comp?.imageUrl || comp?.thumbnail); // Converts to boolean
-
   return (
     <main className="min-h-screen bg-[#070d19] text-white px-0 py-0">
       {/* Full-bleed content wrapper */}
       <div className="w-full backdrop-blur-md bg-white/5 border border-cyan-500 rounded-none shadow-lg p-4 sm:p-8">
-
-        {/*
-          // REMOVED: This banner is now handled internally by LaunchCompetitionDetailCard
-          {!hasImage && (
-            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-4 text-center text-2xl font-bold mb-4 rounded-lg shadow-md">
-              Prize: {comp?.firstPrize ?? comp?.prize}
-            </div>
-          )}
-        */}
-
         <LaunchCompetitionDetailCard
           comp={comp}
           title={comp?.title}
           prize={comp?.firstPrize ?? comp?.prize}
           fee={comp?.entryFee}
-          // Pass the image URL, LaunchCompetitionDetailCard will handle if it's null/undefined
-          imageUrl={comp?.imageUrl || comp?.thumbnail}
+          imageUrl={comp?.imageUrl || comp?.thumbnail}   // component will show a PrizeBanner if this is falsy
           endsAt={comp?.endsAt}
           startsAt={comp?.startsAt}
           ticketsSold={ticketsSold}
@@ -113,10 +98,9 @@ export default function PiTicketPage() {
           GiftTicketModal={GiftTicketModal}
           description={desc}
           handlePaymentSuccess={() => {
-            // Optional: refresh state here after a payment if needed.
+            // Optionally refresh or route on success.
+            // router.replace(router.asPath);
           }}
-          // REMOVED: showImageSlot prop is no longer needed as LaunchCompetitionDetailCard handles its own image/banner logic
-          // showImageSlot={hasImage}
         />
       </div>
     </main>
