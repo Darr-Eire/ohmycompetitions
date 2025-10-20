@@ -3,20 +3,27 @@
 
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
-
-// These paths assume your tsconfig/webpack aliases:
-// - "@/..." -> src/
-// - "@components/..." -> src/components/
 import LaunchCompetitionDetailCard from '@/components/LaunchCompetitionDetailCard';
 import GiftTicketModal from '@components/GiftTicketModal';
+import { usePiAuth } from '@/context/PiAuthContext';
 
 export default function PiTicketPage() {
   const router = useRouter();
   const { slug } = router.query;
 
+  // Pi auth (guard if context isn't ready)
+  let user = null, login = null;
+  try {
+    const ctx = usePiAuth?.();
+    user = ctx?.user || null;
+    login = ctx?.login || null;
+  } catch {}
+
   const [loading, setLoading] = useState(true);
   const [comp, setComp] = useState(null);
   const [desc, setDesc] = useState('');
+  const [sharedBonus, setSharedBonus] = useState(false);
+  const [liveTicketsSold, setLiveTicketsSold] = useState(0);
 
   useEffect(() => {
     if (!slug) return;
@@ -33,18 +40,20 @@ export default function PiTicketPage() {
         const merged = normalizeFromPiItem(local);
         setComp(merged);
         setDesc(merged.description || merged.title);
+        setLiveTicketsSold(merged.ticketsSold ?? 0);
         setLoading(false);
         return;
       }
 
       // 2) Fallback to API
       try {
-        const res = await fetch(`/api/competitions/${slug}`);
+        const res = await fetch(`/api/competitions/${slug}`, { cache: 'no-store' });
         if (!res.ok) throw new Error('Competition not found');
         const data = await res.json();
         const merged = normalizeFromApi(data);
         setComp(merged);
         setDesc(merged.description || merged.title);
+        setLiveTicketsSold(merged.ticketsSold ?? 0);
       } catch (e) {
         console.error(e);
       } finally {
@@ -54,6 +63,58 @@ export default function PiTicketPage() {
 
     load();
   }, [slug]);
+
+  // Track share bonus like the other page
+  useEffect(() => {
+    if (!slug) return;
+    setSharedBonus(localStorage.getItem(`${slug}-shared`) === 'true');
+  }, [slug]);
+
+  const claimFreeTicket = () => {
+    if (!slug) return;
+    const key = `${slug}-claimed`;
+    const current = parseInt(localStorage.getItem(key) || '0', 10);
+    localStorage.setItem(key, String(current + 1));
+    alert('✅ Free ticket claimed!');
+  };
+
+  const handleShare = () => {
+    if (!slug) return;
+    if (sharedBonus) {
+      alert('You already received your bonus ticket.');
+      return;
+    }
+    localStorage.setItem(`${slug}-shared`, 'true');
+    setSharedBonus(true);
+    alert('✅ Thanks for sharing! Bonus ticket unlocked.');
+  };
+
+  // After successful payment, refresh displayed counts to mirror other page behavior
+  const handlePaymentSuccess = async (result) => {
+    try {
+      if (result?.ticketQuantity) {
+        setLiveTicketsSold((prev) => prev + Number(result.ticketQuantity || 0));
+      }
+      // re-fetch to get latest state
+      if (slug) {
+        const res = await fetch(`/api/competitions/${slug}`, { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          const merged = normalizeFromApi(data);
+          setComp(merged);
+          setDesc(merged.description || merged.title);
+          setLiveTicketsSold(merged.ticketsSold ?? 0);
+        }
+      }
+      const txt =
+        result?.competitionStatus === 'completed'
+          ? '🎉 Success! Your tickets are confirmed. This competition is now SOLD OUT!'
+          : '🎉 Success! Your tickets are confirmed.';
+      alert(txt);
+    } catch (e) {
+      console.error('Refresh after payment failed:', e);
+    }
+  };
 
   const { status, ticketsSold, totalTickets } = useMemo(() => {
     if (!comp) return { status: 'active', ticketsSold: 0, totalTickets: 0 };
@@ -67,10 +128,10 @@ export default function PiTicketPage() {
 
     return {
       status: st,
-      ticketsSold: comp?.ticketsSold ?? 0,
+      ticketsSold: liveTicketsSold || comp?.ticketsSold || 0,
       totalTickets: comp?.totalTickets ?? 0,
     };
-  }, [comp]);
+  }, [comp, liveTicketsSold]);
 
   if (loading || !comp) {
     return (
@@ -89,7 +150,7 @@ export default function PiTicketPage() {
           title={comp?.title}
           prize={comp?.firstPrize ?? comp?.prize}
           fee={comp?.entryFee}
-          imageUrl={comp?.imageUrl || comp?.thumbnail}   // component will show a PrizeBanner if this is falsy
+          imageUrl={comp?.imageUrl || comp?.thumbnail}   // component shows PrizeBanner if falsy
           endsAt={comp?.endsAt}
           startsAt={comp?.startsAt}
           ticketsSold={ticketsSold}
@@ -97,10 +158,13 @@ export default function PiTicketPage() {
           status={status}
           GiftTicketModal={GiftTicketModal}
           description={desc}
-          handlePaymentSuccess={() => {
-            // Optionally refresh or route on success.
-            // router.replace(router.asPath);
-          }}
+          handlePaymentSuccess={handlePaymentSuccess}
+          // 🔽 these props align behavior w/ the other page so the sticky bar works the same
+          user={user}
+          login={login}
+          claimFreeTicket={claimFreeTicket}
+          handleShare={handleShare}
+          sharedBonus={sharedBonus}
         />
       </div>
     </main>
@@ -110,26 +174,16 @@ export default function PiTicketPage() {
 /* ---------------------------- Normalizers ---------------------------- */
 
 function normalizeFromPiItem(item) {
-  // item shape: { title, prize, imageUrl, thumbnail, comp: {...} }
   const c = item?.comp ?? {};
   return {
-    // identity
     slug: c.slug,
     title: item.title || c.title || '',
-
-    // timing
     startsAt: c.startsAt || null,
     endsAt: c.endsAt || null,
-
-    // tickets
     totalTickets: toInt(c.totalTickets, 0),
     ticketsSold: toInt(c.ticketsSold, 0),
     maxTicketsPerUser: firstDefined(c.maxPerUser, c.maxTicketsPerUser, null),
-
-    // pricing
     entryFee: toNum(firstDefined(c.entryFee, item.piAmount, 0)),
-
-    // winners/prizes
     winners: c.winners ?? 'Multiple',
     firstPrize: firstDefined(
       c.prizeBreakdown?.first,
@@ -137,8 +191,6 @@ function normalizeFromPiItem(item) {
       item.prize
     ),
     prizeBreakdown: c.prizeBreakdown ?? null,
-
-    // media/desc
     imageUrl: item.imageUrl || null,
     thumbnail: item.thumbnail || null,
     description: c.description || item.description || '',
@@ -146,21 +198,16 @@ function normalizeFromPiItem(item) {
 }
 
 function normalizeFromApi(data) {
-  // API may return either flattened or nested comp
   const c = data?.comp ?? {};
   return {
     slug: data.slug || c.slug || '',
     title: data.title || c.title || '',
-
     startsAt: data.startsAt || c.startsAt || null,
     endsAt: data.endsAt || c.endsAt || null,
-
     totalTickets: toInt(firstDefined(data.totalTickets, c.totalTickets, 0), 0),
     ticketsSold: toInt(firstDefined(data.ticketsSold, c.ticketsSold, 0), 0),
     maxTicketsPerUser: firstDefined(data.maxTicketsPerUser, c.maxPerUser, null),
-
     entryFee: toNum(firstDefined(data.entryFee, c.entryFee, 0)),
-
     winners: firstDefined(data.winners, c.winners, 'Multiple'),
     firstPrize: firstDefined(
       data.prizeBreakdown?.first,
@@ -171,7 +218,6 @@ function normalizeFromApi(data) {
       c.prize
     ),
     prizeBreakdown: firstDefined(data.prizeBreakdown, c.prizeBreakdown, null),
-
     imageUrl: firstDefined(data.imageUrl, c.imageUrl, null),
     thumbnail: firstDefined(data.thumbnail, c.thumbnail, null),
     description: firstDefined(data.description, c.description, ''),
