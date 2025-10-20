@@ -3,44 +3,44 @@
 
 import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import Head from 'next/head';
-import { ChevronLeft, ChevronRight, RefreshCw, Sparkles } from 'lucide-react';
-import CompetitionCard from '@components/CompetitionCard';
+import { ChevronRight, RefreshCw, Sparkles, Trophy } from 'lucide-react'; // Added Trophy icon
+import CompetitionCard from '@components/CompetitionCard'; // Assuming these can accept style overrides
 import PiCompetitionCard from '@components/PiCompetitionCard';
-import DailyCompetitionCard from '@components/DailyCompetitionCard';
-import FreeCompetitionCard from '@components/FreeCompetitionCard';
-import LaunchCompetitionCard from '@components/LaunchCompetitionCard';
+// import DailyCompetitionCard from '@components/DailyCompetitionCard'; // Can simplify to CompetitionCard with type
+// import FreeCompetitionCard from '@components/CompetitionCard'; // Using generic card for simplicity
+// import LaunchCompetitionCard from '@components/CompetitionCard'; // Using generic card for simplicity
 
 /* ------------------------------ Tagline Rotator ------------------------------ */
 function TaglineRotator() {
-  const taglines = [
+  const taglines = useMemo(() => [
     'Pi-powered prizes. Tech, Pi & more.',
     'Compete. Win. Repeat. 🔥',
     'Epic rewards — all powered by Pi.',
     'Join the action ⚡ Entry from 0.00 π',
-  ];
+  ], []);
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
     const id = setInterval(() => setIndex((i) => (i + 1) % taglines.length), 3500);
     return () => clearInterval(id);
-  }, []);
+  }, [taglines]);
 
   return (
-    <p className="text-center text-white/80 text-sm sm:text-base mt-1 transition-opacity duration-500 ease-in-out">
+    <p className="text-center text-white/70 text-sm mt-2 font-medium transition-opacity duration-500 ease-in-out">
       {taglines[index]}
     </p>
   );
 }
 
-/* ------------------------------ Subtle Background Motion ------------------------------ */
+/* ------------------------------ Subtle Background Motion (Updated for Web3 vibe) ------------------------------ */
 function BackgroundFX() {
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-      {/* soft blobs tuned for #0f1b33 */}
-      <div className="absolute -top-40 -left-40 h-[420px] w-[420px] rounded-full blur-3xl opacity-20 bg-cyan-400 animate-float-slow" />
-      <div className="absolute -bottom-40 -right-40 h-[420px] w-[420px] rounded-full blur-3xl opacity-15 bg-blue-500 animate-float-slower" />
-      {/* particle grid subtler on dark */}
-      <div className="absolute inset-0 [background-image:radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:18px_18px] opacity-20" />
+      {/* Dynamic, more abstract blobs/gradients */}
+      <div className="absolute -top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full blur-3xl opacity-15 bg-gradient-to-br from-purple-600 to-pink-500 animate-float-slow" />
+      <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] rounded-full blur-3xl opacity-10 bg-gradient-to-tl from-cyan-400 to-blue-500 animate-float-slower" />
+      {/* Particle grid subtle, maybe slightly larger dots */}
+      <div className="absolute inset-0 [background-image:radial-gradient(rgba(255,255,255,0.08)_1.5px,transparent_1.5px)] [background-size:24px_24px] opacity-10" />
     </div>
   );
 }
@@ -57,18 +57,14 @@ function useLiveCounter(initial = 420) {
 }
 
 /* ------------------------------ Skeleton / Empty ------------------------------ */
-function SkeletonSlide() {
+function SkeletonCard({ className = '' }) {
   return (
-    <div className="snap-start basis-full shrink-0">
-      <div className="px-3 sm:px-4">
-        <div className="mx-auto w-full max-w-[min(92vw,820px)] animate-pulse rounded-2xl bg-white/5 border border-white/10 overflow-hidden">
-          <div className="h-48 sm:h-64 bg-white/10" />
-          <div className="p-4 space-y-3">
-            <div className="h-6 w-2/3 bg-white/10 rounded" />
-            <div className="h-4 w-1/2 bg-white/10 rounded" />
-            <div className="h-10 w-full bg-white/10 rounded" />
-          </div>
-        </div>
+    <div className={`mx-auto w-full max-w-[min(92vw,820px)] animate-pulse rounded-xl bg-white/5 border border-white/10 overflow-hidden ${className}`}>
+      <div className="h-36 sm:h-48 bg-white/10" />
+      <div className="p-4 space-y-3">
+        <div className="h-5 w-3/4 bg-white/10 rounded" />
+        <div className="h-3 w-1/2 bg-white/10 rounded" />
+        <div className="h-8 w-full bg-white/10 rounded" />
       </div>
     </div>
   );
@@ -76,23 +72,25 @@ function SkeletonSlide() {
 
 function EmptyState({ onRefresh, label = 'competitions' }) {
   return (
-    <div className="text-center py-16 rounded-2xl border border-white/10 bg-white/5 mx-4">
-      <Sparkles className="mx-auto mb-4" />
+    <div className="text-center py-12 rounded-xl border border-white/10 bg-white/5 mx-4 my-8">
+      <Sparkles className="mx-auto mb-4 text-cyan-400" size={32} />
       <h3 className="text-xl font-semibold">No {label} right now</h3>
-      <p className="text-white/70 mt-2">Check back soon — new prizes drop regularly.</p>
+      <p className="text-white/70 mt-2">New challenges are on the horizon. Stay tuned!</p>
       <button
         onClick={onRefresh}
         type="button"
-        className="mt-6 inline-flex items-center gap-2 rounded-xl bg-cyan-400 text-black font-semibold px-4 py-2 hover:brightness-110 active:translate-y-px"
+        className="mt-6 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold px-4 py-2 hover:brightness-110 active:translate-y-px transition-all duration-200"
       >
-        <RefreshCw size={16} /> Refresh
+        <RefreshCw size={16} /> Refresh Feeds
       </button>
     </div>
   );
 }
 
-/* ------------------------------- Full-width Carousel ------------------------------- */
-function FullWidthCarousel({ items, renderItem, ariaLabel }) {
+/* ------------------------------- Full-width Carousel (Removed from main flow for simplicity/mobile focus) ------------------------------- */
+// This carousel component is kept here for potential future use or for other sections,
+// but it's no longer directly used in the main AllCompetitionsPage layout for the primary list.
+function FullWidthCarousel({ items, renderItem, ariaLabel, className = '' }) {
   const scrollerRef = useRef(null);
   const [index, setIndex] = useState(0);
 
@@ -101,14 +99,16 @@ function FullWidthCarousel({ items, renderItem, ariaLabel }) {
     [items?.length]
   );
 
-  // Pure horizontal scroll
   const scrollToIndex = useCallback(
     (i) => {
       const el = scrollerRef.current;
       if (!el) return;
       const target = clamp(i);
-      const left = target * el.clientWidth;
-      el.scrollTo({ left, behavior: 'smooth' });
+      const slideElement = el.children[0]?.children[target];
+      if (slideElement) {
+        const left = slideElement.offsetLeft;
+        el.scrollTo({ left, behavior: 'smooth' });
+      }
     },
     [clamp]
   );
@@ -116,8 +116,20 @@ function FullWidthCarousel({ items, renderItem, ariaLabel }) {
   const onScroll = useCallback(() => {
     const el = scrollerRef.current;
     if (!el) return;
-    const next = Math.round(el.scrollLeft / el.clientWidth);
-    if (next !== index) setIndex(next);
+    let closestIndex = 0;
+    let minDiff = Infinity;
+
+    for (let i = 0; i < el.children[0].children.length; i++) {
+      const slideElement = el.children[0].children[i];
+      if (slideElement) {
+        const diff = Math.abs(el.scrollLeft - slideElement.offsetLeft);
+        if (diff < minDiff) {
+          minDiff = diff;
+          closestIndex = i;
+        }
+      }
+    }
+    if (closestIndex !== index) setIndex(closestIndex);
   }, [index]);
 
   useEffect(() => {
@@ -127,31 +139,17 @@ function FullWidthCarousel({ items, renderItem, ariaLabel }) {
     return () => el.removeEventListener('scroll', onScroll);
   }, [onScroll]);
 
-  // keyboard
-  useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === 'ArrowRight') scrollToIndex(index + 1);
-      if (e.key === 'ArrowLeft') scrollToIndex(index - 1);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [index, scrollToIndex]);
-
   if (!items?.length) return null;
 
   return (
-    <div className="relative">
-      {/* edge fades now from app bg */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-[#0f1b33]" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-[#0f1b33]" />
-
-      {/* scroller */}
+    <div className={`relative ${className}`}>
+      {/* Scroller container */}
       <div
         ref={scrollerRef}
         className="
           w-full
           snap-x snap-mandatory
-          overflow-x-auto overflow-y-visible
+          overflow-x-auto overflow-y-hidden
           scroll-smooth
           overscroll-x-contain
           [touch-action:pan-x pan-y]
@@ -160,85 +158,47 @@ function FullWidthCarousel({ items, renderItem, ariaLabel }) {
         aria-roledescription="carousel"
         aria-label={ariaLabel}
       >
-        <div className="flex">
+        <div className="flex px-4 sm:px-0">
           {items.map((item, i) => (
             <div
               key={item.key || i}
-              className="snap-start snap-always basis-full shrink-0"
+              className="snap-start snap-always basis-[90%] md:basis-2/3 lg:basis-1/2 xl:basis-1/3 shrink-0 pr-4"
               role="group"
               aria-roledescription="slide"
               aria-label={`${i + 1} of ${items.length}`}
             >
-              <div className="px-3 sm:px-4">
-                <div
-                  className="mx-auto w-full max-w-[min(92vw,820px)] carousel-card competition-card select-none"
-                  style={{ WebkitTapHighlightColor: 'transparent' }}
-                >
+              <div
+                className="w-full h-full carousel-card competition-card select-none"
+                style={{ WebkitTapHighlightColor: 'transparent' }}
+              >
                   {renderItem(item, i)}
-                </div>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Prev / Next */}
-      <div className="absolute inset-y-0 left-1 sm:left-2 flex items-center z-20">
-        <button
-          type="button"
-          onClick={() => scrollToIndex(index - 1)}
-          disabled={index === 0}
-          className={`h-11 w-11 sm:h-12 sm:w-12 rounded-full p-2 border bg-white/10 backdrop-blur border-white/20 hover:bg-white/15 active:scale-95 transition
-            ${index === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-          aria-label="Previous"
-        >
-          <ChevronLeft />
-        </button>
-      </div>
-      <div className="absolute inset-y-0 right-1 sm:right-2 flex items-center z-20">
-        <button
-          type="button"
-          onClick={() => scrollToIndex(index + 1)}
-          disabled={index === items.length - 1}
-          className={`h-11 w-11 sm:h-12 sm:w-12 rounded-full p-2 border bg-white/10 backdrop-blur border-white/20 hover:bg-white/15 active:scale-95 transition
-            ${items?.length ? (index === items.length - 1 ? 'opacity-50 cursor-not-allowed' : '') : ''}`}
-          aria-label="Next"
-        >
-          <ChevronRight />
-        </button>
-      </div>
-
-      {/* dots */}
+      {/* Dots (visible on all screen sizes) */}
       <div className="mt-4 flex items-center justify-center gap-2">
         {items.map((_, i) => (
           <button
             key={i}
             type="button"
             onClick={() => scrollToIndex(i)}
-            className={`h-2.5 rounded-full transition-all ${i === index ? 'w-6 bg-cyan-400' : 'w-2.5 bg-white/40'}`}
+            className={`h-2.5 rounded-full transition-all duration-300 ${i === index ? 'w-6 bg-cyan-400' : 'w-2.5 bg-white/40'}`}
             aria-label={`Go to slide ${i + 1}`}
           />
         ))}
       </div>
-
-      {/* Reduced motion */}
-      <style jsx global>{`
-        @media (prefers-reduced-motion: reduce) {
-          * {
-            scroll-behavior: auto !important;
-            animation: none !important;
-            transition: none !important;
-          }
-        }
-      `}</style>
     </div>
   );
 }
 
 /* ------------------------------ Helpers ------------------------------ */
+// Enhanced renderCompetitionCardByTheme to apply web3-ish styling
 function renderCompetitionCardByTheme(item) {
   const comp = item.comp ?? item;
-  const props = {
+  const commonProps = {
     key: comp?.slug || comp?._id || item.title,
     comp,
     title: item.title,
@@ -247,19 +207,15 @@ function renderCompetitionCardByTheme(item) {
     imageUrl: item.imageUrl,
     endsAt: comp?.endsAt,
     href: item.href,
+    className: "web3-card" // Custom class for styling
   };
 
-  switch ((item.theme || comp?.theme || 'other').toLowerCase()) {
-    case 'launch':
-      return <LaunchCompetitionCard {...props} />;
+  switch ((item.theme || comp?.theme || 'default').toLowerCase()) {
     case 'pi':
-      return <PiCompetitionCard {...props} />;
-    case 'daily':
-      return <DailyCompetitionCard {...props} />;
-    case 'free':
-      return <FreeCompetitionCard {...props} />;
+      return <PiCompetitionCard {...commonProps} type="pi" />; // Pi cards might have special styling
     default:
-      return <CompetitionCard {...props} />;
+      // Use generic CompetitionCard for all other themes, passing the type for internal rendering if needed
+      return <CompetitionCard {...commonProps} type={item.theme || comp?.theme || 'default'} />;
   }
 }
 
@@ -269,6 +225,8 @@ export default function AllCompetitionsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeFilter, setActiveFilter] = useState('All');
+
+  const filtersRef = useRef(null);
 
   useEffect(() => {
     let alive = true;
@@ -306,29 +264,52 @@ export default function AllCompetitionsPage() {
   }, []);
 
   /* ---------- Tabs order ---------- */
-  const desiredOrder = ['All', 'Launch', 'Daily', 'Pi', 'Tech', 'Free'];
-  const desiredOrderLower = desiredOrder.filter(f => f !== 'All').map(f => f.toLowerCase());
+  const desiredOrder = useMemo(() => ['All', 'Featured', 'Launch', 'Daily', 'Pi', 'Tech', 'Free'], []);
 
   const availableFilters = useMemo(() => {
     const themes = new Set(
       competitions.map((c) => (c.theme || c?.comp?.theme)?.toLowerCase()).filter(Boolean)
     );
-    const formatted = Array.from(themes).map((t) => t.charAt(0).toUpperCase() + t.slice(1));
-    const ordered = desiredOrder.filter((f) => formatted.includes(f) || f === 'All');
-    const extras = formatted.filter((f) => !desiredOrder.includes(f));
-    return [...ordered, ...extras];
-  }, [competitions]);
+    const formattedThemes = Array.from(themes).map((t) => t.charAt(0).toUpperCase() + t.slice(1));
 
-  const filtered = useMemo(() => {
-    if (activeFilter === 'All') return competitions;
-    return competitions.filter(
-      (c) => (c.theme || c?.comp?.theme)?.toLowerCase() === activeFilter.toLowerCase()
-    );
-  }, [competitions, activeFilter]);
+    // Ensure 'All' and 'Featured' are always present if comps exist
+    let currentFilters = ['All'];
+    if (competitions.length > 0) {
+      currentFilters.push('Featured');
+    }
 
-  // Normalize slides for stats/hero when a single set is shown
-  const slides = useMemo(() => {
-    return (filtered || []).map((item) => {
+    // Add desired themes if they exist in fetched data
+    for (const d of desiredOrder) {
+      if (d !== 'All' && d !== 'Featured' && formattedThemes.includes(d) && !currentFilters.includes(d)) {
+        currentFilters.push(d);
+      }
+    }
+
+    // Add any other themes not in desiredOrder
+    for (const f of formattedThemes) {
+      if (!currentFilters.includes(f)) {
+        currentFilters.push(f);
+      }
+    }
+
+    return currentFilters;
+  }, [competitions, desiredOrder]);
+
+  useEffect(() => {
+    if (filtersRef.current && activeFilter) {
+      const activeElement = filtersRef.current.querySelector(`[data-filter="${activeFilter}"]`);
+      if (activeElement) {
+        activeElement.scrollIntoView({
+          behavior: 'smooth',
+          inline: 'center',
+          block: 'nearest',
+        });
+      }
+    }
+  }, [activeFilter]);
+
+  const allNormalizedSlides = useMemo(() => {
+    return (competitions || []).map((item) => {
       const comp = item.comp ?? item;
       return {
         key: comp?.slug || comp?._id || item.title,
@@ -339,57 +320,41 @@ export default function AllCompetitionsPage() {
         imageUrl: item.imageUrl,
         endsAt: comp?.endsAt,
         href: item.href,
-        theme: (item.theme || comp?.theme || 'other').toLowerCase(),
+        theme: (item.theme || comp?.theme || 'default').toLowerCase(), // Ensure default theme
       };
     });
-  }, [filtered]);
-
-  const liveCount = slides.length;
-  const minFee = useMemo(() => {
-    const fees = slides.map((s) => Number(s.comp?.entryFee ?? 0)).filter(Number.isFinite);
-    return fees.length ? Math.min(...fees) : 0;
-  }, [slides]);
-
-  const soonestStr = useMemo(() => {
-    const soonest =
-      slides
-        .map((s) => new Date(s.endsAt))
-        .filter((d) => Number.isFinite(d.getTime()))
-        .sort((a, b) => a - b)[0] || null;
-    return soonest
-      ? new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(soonest)
-      : 'TBA';
-  }, [slides]);
-
-  /* ---------- Grouping for "All" view, rendered in desired order ---------- */
-  const grouped = useMemo(() => {
-    return competitions.reduce((acc, item) => {
-      const theme = (item.theme || item?.comp?.theme || 'other').toLowerCase();
-      (acc[theme] ||= []).push(item);
-      return acc;
-    }, /** @type {Record<string, any[]>} */ ({}));
   }, [competitions]);
 
-  const orderedGrouped = useMemo(() => {
-    const entries = Object.entries(grouped);
-    const ordered = desiredOrderLower
-      .filter((t) => grouped[t])
-      .map((t) => [t, grouped[t]]);
-    const extras = entries.filter(([t]) => !desiredOrderLower.includes(t));
-    return [...ordered, ...extras];
-  }, [grouped, desiredOrderLower]);
+  const filteredSlides = useMemo(() => {
+    if (activeFilter === 'All') return allNormalizedSlides;
+    if (activeFilter === 'Featured') {
+      // Example 'Featured' logic: Prioritize 'launch', then 'pi', then simply top 5
+      const featuredCandidates = allNormalizedSlides.filter(s => s.theme === 'launch' || s.theme === 'pi' || s.comp?.isFeatured);
+      if (featuredCandidates.length > 0) return featuredCandidates.slice(0, 5);
+      return allNormalizedSlides.slice(0, 5); // Fallback to top 5 general
+    }
+    return allNormalizedSlides.filter(
+      (s) => s.theme === activeFilter.toLowerCase()
+    );
+  }, [allNormalizedSlides, activeFilter]);
 
-  const themeLabel = (t) => t.charAt(0).toUpperCase() + t.slice(1);
-  const ticketsToday = useLiveCounter(420); // purely visual
+  const liveCount = competitions.length;
+  const ticketsToday = useLiveCounter(420);
+
+  const totalPrizePool = useMemo(() => {
+    // Summing prize values, assuming 'prizeValue' exists or default to 1000 for demo
+    return competitions.reduce((sum, comp) => sum + (comp.prizeValue || 1000), 0);
+  }, [competitions]);
+
 
   if (loading) {
     return (
-      <main className="app-background min-h-[100svh] text-white bg-[#0f1b33] pt-[calc(10px+env(safe-area-inset-top))] md:pt-[calc(80px+env(safe-area-inset-top))] relative">
+      <main className="app-background min-h-[100svh] text-white bg-[#0f1b33] relative">
         <BackgroundFX />
-        <div className="max-w-screen-lg mx-auto px-4 sm:px-0">
+        <div className="max-w-screen-lg mx-auto px-4 pt-[calc(100px+env(safe-area-inset-top))]">
           <div className="text-center py-16">
             <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-cyan-400 mx-auto" />
-            <p className="mt-4 text-cyan-300">Loading competitions…</p>
+            <p className="mt-4 text-cyan-300 font-medium text-lg">Initializing Pi Network data...</p>
           </div>
         </div>
       </main>
@@ -399,188 +364,208 @@ export default function AllCompetitionsPage() {
   return (
     <>
       <Head>
-        <title>Live Competitions | OhMyCompetitions</title>
+        <title>Pi Competitions | OhMyCompetitions</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       </Head>
 
-      <main className="app-background min-h-[100svh] text-white bg-[#0f1b33] pt-[calc(10px+env(safe-area-inset-top))] md:pt-[calc(80px+env(safe-area-inset-top))] relative">
+      <main className="app-background min-h-[100svh] text-white bg-[#0f1b33] relative">
         <BackgroundFX />
 
-        <div className="max-w-screen-lg mx-auto px-4 sm:px-0">
-          {/* Hero */}
-          <h1
-            className="
-              text-2xl font-bold text-center mb-1
-              bg-gradient-to-r from-[#00ffd5] to-[#0077ff]
-              bg-clip-text text-transparent
-            "
-          >
-            Explore Live Competitions
-          </h1>
+        {/* Web3-style Hero Section */}
+        <header className="relative z-10 pt-[calc(30px+env(safe-area-inset-top))] pb-8 sm:pb-12 text-center overflow-hidden">
+          <div className="max-w-xl mx-auto px-4">
+            <h1 className="text-4xl sm:text-5xl font-extrabold mb-3 leading-tight tracking-tight">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff] inline-block animate-pulse-light">
+                Pi Competitions
+              </span>
+            </h1>
+            <p className="text-white/80 text-base sm:text-lg max-w-sm mx-auto mb-6">
+              Dive into community-powered challenges. Secure your wins.
+            </p>
 
-          <div className="text-center max-w-md mx-auto mb-6 mt-3">
             {error ? (
-              <p className="text-red-300">{error}</p>
+              <p className="text-red-300 mt-4">{error}</p>
             ) : (
               <>
-                <p className="text-white/90">
-                  Dive into Pi-powered competitions win tech, Pi and more.
-                </p>
-
-                {/* Rotating short tagline */}
                 <TaglineRotator />
 
-                {/* Live counter */}
-                <p className="text-center text-white/80 text-xs sm:text-sm mt-2">
-                  <span className="text-cyan-300 font-semibold">{ticketsToday.toLocaleString()}</span> tickets sold today ·{' '}
-                  <span className="text-cyan-300 font-semibold">{liveCount}</span> live competitions
-                </p>
+                {/* Web3 Stats Grid */}
+                <div className="grid grid-cols-2 gap-3 mt-8 max-w-md mx-auto">
+                  <div className="web3-stat-card">
+                    <Trophy size={20} className="text-yellow-300" />
+                    <span className="text-xs text-white/70 font-medium">Total Prize Pool</span>
+                    <span className="text-lg font-bold text-cyan-300 mt-1">
+                      {totalPrizePool.toLocaleString()} <span className="text-base text-white/70">π</span>
+                    </span>
+                  </div>
+                  <div className="web3-stat-card">
+                    <Sparkles size={20} className="text-purple-300" />
+                    <span className="text-xs text-white/70 font-medium">Live Competitions</span>
+                    <span className="text-lg font-bold text-blue-400 mt-1">{liveCount}</span>
+                  </div>
+                  <div className="web3-stat-card col-span-2">
+                    <RefreshCw size={20} className="text-orange-300" />
+                    <span className="text-xs text-white/70 font-medium">Tickets Sold Today</span>
+                    <span className="text-lg font-bold text-pink-400 mt-1">{ticketsToday.toLocaleString()}</span>
+                  </div>
+                </div>
 
-                {/* Hint line smaller */}
-                <p className="text-white/70 text-xs sm:text-sm">
-                  Use arrows or swipe to browse.&nbsp;
-                </p>
- <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
-                  <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
-                    ⏳ Soonest draw: <b className="text-white">{soonestStr}</b>
-                  </span>
-                  <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
-                    🎟 Easy entry
-                  </span>
-                  <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
-                    ⚡ New drops weekly
-                  </span>
+                <div className="mt-8">
+                    <a
+                      href="#competitions-list" // Smooth scroll to the content
+                      className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-green-400 to-cyan-500 text-black font-extrabold px-8 py-3 text-lg hover:from-green-500 hover:to-cyan-600 active:scale-98 transition-all duration-200 shadow-lg glow-button"
+                    >
+                      Explore Challenges
+                      <ChevronRight size={20} />
+                    </a>
                 </div>
               </>
             )}
           </div>
+        </header>
 
-          {/* Filters */}
-          {availableFilters.length > 0 && (
-            <div className="flex flex-wrap justify-center gap-3 mb-6">
-              {availableFilters.map((filter) => (
-                <button
-                  key={filter}
-                  onClick={() => setActiveFilter(filter)}
-                  className={`px-4 py-2 rounded-md border text-sm font-bold transition
-                    ${activeFilter === filter
-                      ? 'bg-cyan-400 text-black shadow-lg'
-                      : 'border-cyan-400 text-cyan-300 hover:bg-white/10'}`}
-                >
-                  {filter}
-                </button>
-              ))}
+        {/* Filters - integrated seamlessly below the hero and made sticky */}
+        {availableFilters.length > 0 && (
+          <div className="sticky top-[calc(10px+env(safe-area-inset-top))] sm:top-0 z-20 bg-[#0f1b33] bg-opacity-90 backdrop-blur-sm pt-4 pb-3 border-b border-white/10">
+            <div className="max-w-screen-lg mx-auto px-4">
+              <div
+                ref={filtersRef}
+                className="flex gap-2 sm:gap-3 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              >
+                {availableFilters.map((filter) => (
+                  <button
+                    key={filter}
+                    data-filter={filter}
+                    onClick={() => setActiveFilter(filter)}
+                    className={`snap-center shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition whitespace-nowrap
+                      ${activeFilter === filter
+                        ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md'
+                        : 'text-white/70 hover:text-white hover:bg-white/10 border border-white/20'
+                      }`}
+                  >
+                    {filter}
+                  </button>
+                ))}
+              </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* Content */}
-        <section className="pb-14">
-          {error ? (
-            <EmptyState onRefresh={() => location.reload()} label="competitions" />
-          ) : activeFilter === 'All' ? (
-            // One carousel per theme section in desired order
-            <div className="max-w-screen-lg mx-auto px-0 sm:px-0">
-              {orderedGrouped.length === 0 ? (
-                <EmptyState onRefresh={() => location.reload()} label="competitions" />
-              ) : (
-                orderedGrouped.map(([theme, comps]) => {
-                  // Normalize per theme
-                  const themeSlides = comps.map((item) => {
-                    const comp = item.comp ?? item;
-                    return {
-                      key: comp?.slug || comp?._id || item.title,
-                      comp,
-                      title: item.title,
-                      prize: item.prize,
-                      fee: typeof comp?.entryFee === 'number' ? `${comp.entryFee.toFixed(2)} π` : '0.00 π',
-                      imageUrl: item.imageUrl,
-                      endsAt: comp?.endsAt,
-                      href: item.href,
-                      theme: (item.theme || comp?.theme || theme).toLowerCase(),
-                    };
-                  });
-
-                  return (
-                    <div key={theme} className="max-w-screen-lg mx-auto mt-10">
-                      <h2 className="text-xl font-bold text-cyan-300 mb-3 text-center capitalize">
-                        {themeLabel(theme)} Competitions
-                      </h2>
-
-                      {themeSlides.length === 0 ? (
-                        <EmptyState onRefresh={() => {}} label={`${theme} competitions`} />
-                      ) : (
-                        <FullWidthCarousel
-                          items={themeSlides}
-                          ariaLabel={`${themeLabel(theme)} competitions`}
-                          renderItem={(s) => renderCompetitionCardByTheme(s)}
-                        />
-                      )}
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          ) : (
-            // Single carousel for selected theme
-            <div className="max-w-screen-lg mx-auto px-0 sm:px-0">
-              {slides.length === 0 ? (
-                <EmptyState onRefresh={() => location.reload()} label={`${activeFilter.toLowerCase()} competitions`} />
-              ) : (
-                <FullWidthCarousel
-                  items={slides}
-                  ariaLabel={`${activeFilter} competitions`}
-                  renderItem={(s) => renderCompetitionCardByTheme(s)}
-                />
-              )}
-            </div>
-          )}
+        {/* Main Content Area - Dynamic Grid/List */}
+        <section id="competitions-list" className="pb-14 pt-8">
+          <div className="max-w-screen-lg mx-auto px-4">
+            {error ? (
+              <EmptyState onRefresh={() => location.reload()} label="competitions" />
+            ) : filteredSlides.length === 0 ? (
+              <EmptyState onRefresh={() => location.reload()} label={`${activeFilter.toLowerCase()} competitions`} />
+            ) : (
+              // Use a responsive grid for content, 1 column on mobile, 2 on small-mid, 3 on large
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredSlides.map((s) => (
+                  <div key={s.key}>
+                    {renderCompetitionCardByTheme(s)}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </section>
       </main>
 
-      {/* Global hover glow + no-scale + background animations */}
+      {/* Global Web3 Styles */}
       <style jsx global>{`
-        /* Hover glow/tilt (applies to wrapper we added) */
-        .competition-card {
-          transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+        /* --- Base Background & Scrollbar for a sleek look --- */
+        body {
+          background-color: #0f1b33; /* Matches main app background */
+          color: white;
+        }
+        /* Custom scrollbar for webkit browsers */
+        ::-webkit-scrollbar {
+          width: 8px;
+          height: 8px; /* For horizontal scrollbars */
+        }
+        ::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+          background: rgba(0, 255, 213, 0.3); /* Cyan tint */
+          border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+          background: rgba(0, 255, 213, 0.5);
+        }
+
+        /* --- Web3-inspired Card Styling --- */
+        .web3-card {
+          background: linear-gradient(145deg, rgba(15, 27, 51, 0.8) 0%, rgba(30, 40, 70, 0.8) 100%);
+          backdrop-filter: blur(10px);
+          border: 1px solid transparent;
+          border-image: linear-gradient(145deg, rgba(0, 255, 213, 0.3), rgba(0, 119, 255, 0.3)) 1;
           border-radius: 1rem;
+          overflow: hidden;
+          transition: all 0.3s ease-out;
         }
-        .competition-card:hover {
-          transform: translateY(-4px) scale(1.02);
-          box-shadow: 0 0 18px rgba(0, 255, 213, 0.25), 0 0 28px rgba(0, 119, 255, 0.18);
-        }
-
-        /* Stop click/tap scaling inside carousel */
-        .carousel-card,
-        .carousel-card a,
-        .carousel-card button {
-          -webkit-tap-highlight-color: transparent;
-        }
-        .carousel-card *:focus-visible {
-          outline: 2px solid #22d3ee !important;
-          outline-offset: 2px;
-        }
-        .carousel-card *,
-        .carousel-card:hover,
-        .carousel-card:active {
-          transform: none !important;
-          transition-property: transform !important;
-          transition-duration: 0s !important;
+        .web3-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 10px 30px rgba(0, 255, 213, 0.15), 0 5px 15px rgba(0, 119, 255, 0.1);
+          border-image: linear-gradient(145deg, rgba(0, 255, 213, 0.6), rgba(0, 119, 255, 0.6)) 1;
         }
 
-        /* Background float animations */
+        /* --- Web3-inspired Stat Card Styling --- */
+        .web3-stat-card {
+          background: rgba(255,255,255,0.08); /* Frosted glass effect */
+          backdrop-filter: blur(8px);
+          border: 1px solid rgba(255,255,255,0.15);
+          border-radius: 0.75rem;
+          padding: 1rem;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+          transition: all 0.2s ease-out;
+        }
+        .web3-stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 15px rgba(0,255,213,0.1), 0 2px 8px rgba(0,119,255,0.08);
+        }
+        .web3-stat-card svg { /* Icon styling inside stat card */
+            margin-bottom: 0.5rem;
+        }
+
+        /* --- Custom Animations (More Subtle) --- */
+        @keyframes pulse-light {
+          0%, 100% { opacity: 1; text-shadow: 0 0 5px rgba(0, 255, 213, 0.4); }
+          50% { opacity: 0.9; text-shadow: 0 0 15px rgba(0, 119, 255, 0.6); }
+        }
+        .animate-pulse-light {
+          animation: pulse-light 4s ease-in-out infinite;
+        }
+
+        @keyframes glow-subtle {
+          0% { box-shadow: 0 0 5px rgba(0, 255, 213, 0.3); }
+          50% { box-shadow: 0 0 15px rgba(0, 119, 255, 0.5), 0 0 5px rgba(0, 255, 213, 0.3); }
+          100% { box-shadow: 0 0 5px rgba(0, 255, 213, 0.3); }
+        }
+        .glow-button {
+            animation: glow-subtle 3s infinite ease-in-out;
+        }
+
+        /* --- Background float animations (updated values for Web3 vibe) --- */
         @keyframes float-slow {
-          0% { transform: translateY(0) translateX(0); }
-          50% { transform: translateY(18px) translateX(6px); }
-          100% { transform: translateY(0) translateX(0); }
+          0% { transform: translateY(0) translateX(0) scale(1); }
+          50% { transform: translateY(25px) translateX(10px) scale(1.05); }
+          100% { transform: translateY(0) translateX(0) scale(1); }
         }
         @keyframes float-slower {
-          0% { transform: translateY(0) translateX(0); }
-          50% { transform: translateY(-14px) translateX(-8px); }
-          100% { transform: translateY(0) translateX(0); }
+          0% { transform: translateY(0) translateX(0) scale(1); }
+          50% { transform: translateY(-20px) translateX(-12px) scale(0.95); }
+          100% { transform: translateY(0) translateX(0) scale(1); }
         }
-        .animate-float-slow { animation: float-slow 12s ease-in-out infinite; }
-        .animate-float-slower { animation: float-slower 16s ease-in-out infinite; }
+        .animate-float-slow { animation: float-slow 18s ease-in-out infinite; }
+        .animate-float-slower { animation: float-slower 22s ease-in-out infinite; }
 
         @media (prefers-reduced-motion: reduce) {
           * { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
@@ -588,8 +573,4 @@ export default function AllCompetitionsPage() {
       `}</style>
     </>
   );
-}
-
-function themeLabel(t) {
-  return t.charAt(0).toUpperCase() + t.slice(1);
 }
