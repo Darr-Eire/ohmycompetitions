@@ -199,8 +199,7 @@ function LiveCard({ data, onGift, onShare }) {
           decoding="async"
         />
         {/* Status chip (text only) */}
-        <div className="absolute left-2 top-2">
-          {status === 'live' && (
+        <div className="absolute top-2 left-1/2 -translate-x-1/2">          {status === 'live' && (
             <span className="rounded-md bg-emerald-500/25 px-2 py-0.5 text-emerald-200 text-[11px] font-bold">
               LIVE
             </span>
@@ -225,9 +224,7 @@ function LiveCard({ data, onGift, onShare }) {
           <h3 className="text-[15px] sm:text-[16px] font-semibold leading-snug line-clamp-2">
             {theTitle}
           </h3>
-          <span className="shrink-0 rounded-md bg-cyan-500/15 border border-cyan-400/30 px-2 py-1 text-[11px] font-bold text-cyan-300">
-            {feeText}
-          </span>
+          
         </div>
 
         {/* Stacked details (all real data) */}

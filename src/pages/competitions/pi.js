@@ -46,6 +46,17 @@ function timeUntilStartMs(c) {
 function timeLeftEndLabel(c) { return msToShort(timeUntilEndMs(c)); }
 function timeLeftStartLabel(c) { return msToShort(timeUntilStartMs(c)); }
 
+/* NEW: real date/time formatter */
+function fmtDateTime(value) {
+  if (!value) return 'TBA';
+  const d = new Date(value);
+  if (!Number.isFinite(d.getTime())) return 'TBA';
+  return new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: '2-digit',
+  }).format(d);
+}
+
 function ticketsProgress(c) {
   const comp = c.comp ?? c;
   const sold = toNum(comp?.ticketsSold);
@@ -131,12 +142,7 @@ function PrizeBanner({ title, prizeText }) {
           <div className="text-base sm:text-lg font-bold tracking-tight text-black drop-shadow-[0_1px_8px_rgba(255,255,255,0.55)] line-clamp-2">
             {title}
           </div>
-          <div className="mt-2 text-3xl sm:text-4xl font-black text-black drop-shadow-[0_1px_10px_rgba(255,255,255,0.55)]">
-            {prizeText}
-          </div>
-          <div className="mt-2 inline-flex items-center gap-1 rounded-md bg-white/80 px-2 py-0.5 text-[12px] font-extrabold text-black">
-            Prize Pool · π
-          </div>
+          
         </div>
       </div>
     </div>
@@ -154,14 +160,20 @@ function PiLiveCard({ data }) {
 
   const msLeftEnd = timeUntilEndMs(data);
   const msLeftStart = timeUntilStartMs(data);
-
   const showCountdownEnd   = Number.isFinite(msLeftEnd)   && msLeftEnd   > 0 && msLeftEnd   <= 48 * 3600 * 1000;
   const showCountdownStart = Number.isFinite(msLeftStart) && msLeftStart > 0 && msLeftStart <= 48 * 3600 * 1000;
 
-  const timeLabel =
+  // NEW: compute which absolute date to show + relative hint
+  const comp = data.comp ?? data;
+  const datePrimary =
     status === 'upcoming'
-      ? (showCountdownStart ? timeLeftStartLabel(data) : '—')
-      : (showCountdownEnd   ? timeLeftEndLabel(data)   : (status === 'ended' ? 'Ended' : '—'));
+      ? fmtDateTime(comp?.startsAt)
+      : fmtDateTime(comp?.endsAt);
+
+  const relative =
+    status === 'upcoming'
+      ? (showCountdownStart ? timeLeftStartLabel(data) : null)
+      : (showCountdownEnd   ? timeLeftEndLabel(data)   : (status === 'ended' ? null : null));
 
   return (
     <article
@@ -173,8 +185,7 @@ function PiLiveCard({ data }) {
       {/* Prize banner (always) */}
       <div className="relative">
         <PrizeBanner title={theTitle} prizeText={prizeText} />
-        <div className="absolute left-2 top-2">
-          {status === 'live' && (
+        <div className="absolute top-2 left-1/2 -translate-x-1/2">          {status === 'live' && (
             <span className="rounded-md bg-emerald-500/25 px-2 py-0.5 text-emerald-200 text-[11px] font-bold">LIVE</span>
           )}
           {status === 'upcoming' && (
@@ -189,29 +200,35 @@ function PiLiveCard({ data }) {
       {/* Body: stacked details */}
       <div className="p-3.5 sm:p-4">
         {/* Title + fee chip */}
-        <div className="flex items-start justify-between gap-3">
-          <h3 className="text-[15px] sm:text-[16px] font-semibold leading-snug line-clamp-2">{theTitle}</h3>
-          <span className="shrink-0 rounded-md bg-cyan-500/15 border border-cyan-400/30 px-2 py-1 text-[11px] font-bold text-cyan-300">
-            {feeText}
-          </span>
-        </div>
+       <div className="flex justify-center">
+  <h3 className="text-center text-[15px] sm:text-[16px] font-semibold leading-snug line-clamp-2">
+    {theTitle}
+  </h3>
+</div>
 
-        {/* Stacked details */}
+
+        {/* Stacked details (with real date/time) */}
         <div className="mt-3 space-y-1.5 text-[13px] text-white/85">
           <div className="flex items-baseline justify-between gap-2">
             <span className="text-white/60">Prize</span>
             <span className="font-semibold">{prizeText}</span>
           </div>
+
           <div className="flex items-baseline justify-between gap-2">
             <span className="text-white/60">Tickets</span>
             <span className="font-semibold">
-              {sold}/{total} <span className="text-white/55">• {pct}% sold</span>
+              {sold}/{total} <span className="text-white/55"></span>
             </span>
           </div>
+
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-white/60">{status === 'upcoming' ? 'Starts' : 'Ends'}</span>
-            <span className="font-semibold tabular-nums">{timeLabel}</span>
+            <span className="text-white/60">{status === 'upcoming' ? 'Starts' : (status === 'ended' ? 'Ended' : 'Ends')}</span>
+            <span className="font-semibold tabular-nums text-right">
+              {datePrimary}
+              {relative && <span className="text-white/55 text-[12px] ml-2">({relative})</span>}
+            </span>
           </div>
+
           <div className="flex items-baseline justify-between gap-2">
             <span className="text-white/60">Fee</span>
             <span className="font-semibold">{feeText}</span>
@@ -390,7 +407,8 @@ export default function PiCompetitionsPage() {
 
         {/* header */}
         <header className="relative z-10 pt-[calc(12px+env(safe-area-inset-top))] pb-3 sm:pb-4">
-          <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
+        <div className="w-full text-center">
+
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
               <div>
                 <h1 className="text-[22px] sm:text-[28px] font-extrabold tracking-tight">
@@ -399,7 +417,7 @@ export default function PiCompetitionsPage() {
                   </span>
                 </h1>
                 <p className="text-white/70 text-[13px] sm:text-[14px]">
-                  {t('dive_into_pi_competitions', 'Dive into Pi-powered competitions — win tech, Pi and more.')}
+                  {t('dive_into_pi_competitions', 'Dive into Pi-powered competitions, Pi and more.')}
                 </p>
               </div>
 

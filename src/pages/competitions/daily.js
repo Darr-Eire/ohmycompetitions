@@ -86,6 +86,8 @@ function parseNumericLike(v) {
   }
   return NaN;
 }
+
+/** Displays a prize text (fallback) */
 function prizePiDisplay(c) {
   const raw = c.comp ?? c;
   const entryFee = parseNumericLike(raw.entryFee);
@@ -114,6 +116,41 @@ function prizePiDisplay(c) {
   return 'TBA';
 }
 
+/** Resolves the *real* π prize to show (first prize preferred; otherwise sum; avoids entry fee). */
+function resolveRealPrizeText(c) {
+  const compLike = c.comp ?? c;
+  const entryFeeNum = parseNumericLike(compLike?.entryFee);
+
+  // prizeBreakdown: prefer "first", else sum all numeric values
+  if (compLike?.prizeBreakdown && typeof compLike.prizeBreakdown === 'object') {
+    const first = parseNumericLike(compLike.prizeBreakdown.first);
+    if (Number.isFinite(first) && first > 0 && first !== entryFeeNum) {
+      return `${first.toLocaleString()} π`;
+    }
+    let sum = 0, any = false;
+    for (const val of Object.values(compLike.prizeBreakdown)) {
+      const n = parseNumericLike(val);
+      if (Number.isFinite(n)) { sum += n; any = true; }
+    }
+    if (any && sum > 0 && sum !== entryFeeNum) {
+      return `${sum.toLocaleString()} π`;
+    }
+  }
+
+  // prizes[]: use the first numeric amount
+  if (Array.isArray(compLike?.prizes) && compLike.prizes.length) {
+    for (const p of compLike.prizes) {
+      const n = parseNumericLike(p?.amount ?? p?.value ?? p);
+      if (Number.isFinite(n) && n > 0 && n !== entryFeeNum) {
+        return `${n.toLocaleString()} π`;
+      }
+    }
+  }
+
+  // fallback to generic display (pi fields / prizeValue / text)
+  return prizePiDisplay(c);
+}
+
 /* ------------------------------ background ------------------------------ */
 function BackgroundFX() {
   return (
@@ -136,8 +173,10 @@ function LiveCard({ data, onGift }) {
   const timeLeft = showCountdown48 ? timeLeftLabel(data) : (status === 'ended' ? 'Ended' : '—');
 
   const theTitle = titleOf(data);
-  const prizeText = prizePiDisplay(data);
   const feeText = feePi(data);
+
+  // NEW: real prize text (first prize preferred; else sum; else fallback)
+  const realPrizeText = resolveRealPrizeText(data);
 
   return (
     <article
@@ -155,7 +194,7 @@ function LiveCard({ data, onGift }) {
           loading="lazy"
           decoding="async"
         />
-        <div className="absolute left-2 top-2">
+        <div className="absolute top-2 left-1/2 -translate-x-1/2">
           {status === 'live' && (
             <span className="rounded-md bg-emerald-500/25 px-2 py-0.5 text-emerald-200 text-[11px] font-bold">LIVE</span>
           )}
@@ -170,19 +209,18 @@ function LiveCard({ data, onGift }) {
 
       {/* Body */}
       <div className="p-3.5 sm:p-4">
-        {/* Title + fee */}
-        <div className="flex items-start justify-between gap-3">
-          <h3 className="text-[15px] sm:text-[16px] font-semibold leading-snug line-clamp-2">{theTitle}</h3>
-          <span className="shrink-0 rounded-md bg-cyan-500/15 border border-cyan-400/30 px-2 py-1 text-[11px] font-bold text-cyan-300">
-            {feeText}
-          </span>
+        {/* Title (centered) */}
+        <div className="flex justify-center">
+          <h3 className="text-center text-[15px] sm:text-[16px] font-semibold leading-snug line-clamp-2">
+            {theTitle}
+          </h3>
         </div>
 
         {/* Stacked details */}
         <div className="mt-3 space-y-1.5 text-[13px] text-white/85">
           <div className="flex items-baseline justify-between gap-2">
             <span className="text-white/60">Prize</span>
-            <span className="font-semibold">{prizeText}</span>
+            <span className="font-semibold">{realPrizeText}</span>
           </div>
           <div className="flex items-baseline justify-between gap-2">
             <span className="text-white/60">Fee</span>
