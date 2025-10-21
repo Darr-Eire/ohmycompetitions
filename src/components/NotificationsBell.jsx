@@ -7,7 +7,6 @@ export default function NotificationsBell({ username }) {
   const [items, setItems] = useState([]);
   const [open, setOpen] = useState(false);
   const pollRef = useRef(null);
-  const sheetRef = useRef(null);
   const closeBtnRef = useRef(null);
 
   // ---- poll notifications ---------------------------------------------------
@@ -15,7 +14,9 @@ export default function NotificationsBell({ username }) {
     async function load() {
       if (!username) return;
       try {
-        const res = await fetch(`/api/notifications/list?username=${encodeURIComponent(username)}&limit=20`);
+        const res = await fetch(
+          `/api/notifications/list?username=${encodeURIComponent(username)}&limit=20`
+        );
         if (res.ok) {
           const j = await res.json();
           setItems(Array.isArray(j.items) ? j.items : []);
@@ -31,13 +32,14 @@ export default function NotificationsBell({ username }) {
 
   // ---- lock scroll + focus when open ---------------------------------------
   useEffect(() => {
-    const root = document.documentElement;
-    if (open) {
-      const prev = root.style.overflow;
-      root.style.overflow = 'hidden';
-      setTimeout(() => closeBtnRef.current?.focus(), 0);
-      return () => { root.style.overflow = prev; };
-    }
+    if (!open) return;
+    const prev = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = 'hidden';
+    const t = setTimeout(() => closeBtnRef.current?.focus(), 0);
+    return () => {
+      clearTimeout(t);
+      document.documentElement.style.overflow = prev || '';
+    };
   }, [open]);
 
   // ---- close on Escape ------------------------------------------------------
@@ -48,46 +50,9 @@ export default function NotificationsBell({ username }) {
     return () => document.removeEventListener('keydown', onKey);
   }, [open]);
 
-  // ---- optional: drag-to-close on mobile -----------------------------------
-  useEffect(() => {
-    if (!open) return;
-    const el = sheetRef.current;
-    if (!el) return;
-
-    let startY = 0;
-    let current = 0;
-    const maxPull = 140;
-
-    const onStart = (e) => {
-      startY = (e.touches?.[0]?.clientY ?? e.clientY);
-      current = 0;
-      el.style.transitionProperty = 'none';
-    };
-    const onMove = (e) => {
-      const y = (e.touches?.[0]?.clientY ?? e.clientY);
-      current = Math.max(0, y - startY);
-      const translate = Math.min(current, maxPull);
-      el.style.transform = `translateY(${translate}px)`;
-    };
-    const onEnd = () => {
-      el.style.transitionProperty = '';
-      if (current > 90) setOpen(false);
-      else el.style.transform = '';
-    };
-
-    el.addEventListener('touchstart', onStart, { passive: true });
-    el.addEventListener('touchmove', onMove, { passive: true });
-    el.addEventListener('touchend', onEnd);
-    return () => {
-      el.removeEventListener('touchstart', onStart);
-      el.removeEventListener('touchmove', onMove);
-      el.removeEventListener('touchend', onEnd);
-    };
-  }, [open]);
-
   return (
     <div className="relative inline-block shrink-0">
-      {/* Bell button (does NOT affect sibling layout) */}
+      {/* Bell button (keeps header layout stable) */}
       <button
         onClick={() => setOpen((v) => !v)}
         className="relative h-8 w-8 grid place-items-center rounded-md bg-white/5 border border-cyan-700/40"
@@ -103,83 +68,93 @@ export default function NotificationsBell({ username }) {
         )}
       </button>
 
-      {/* OVERLAY + BOTTOM SHEET (opaque, mobile-first, lowered height) */}
+      {/* FULL-SCREEN POPUP (like T&Cs / slug modals) */}
       {open && (
         <>
-          {/* Opaque backdrop */}
+          {/* Backdrop */}
           <button
-            className="fixed inset-0 z-[9998] bg-black/55"
+            className="fixed inset-0 z-[9998] bg-black/60"
             aria-label="Close notifications"
             onClick={() => setOpen(false)}
           />
 
-          {/* Bottom sheet */}
+          {/* Modal container (full screen on mobile, centered card on desktop) */}
           <div
-            ref={sheetRef}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="notif-title"
-            className="fixed inset-x-0 bottom-0 z-[9999]
-                       w-full max-h-[65vh] sm:max-h-[60vh]  /* lower to avoid top clipping */
-                       rounded-t-2xl bg-slate-900 text-white
-                       border-t border-slate-700 shadow-[0_-10px_30px_rgba(0,0,0,0.35)]
-                       translate-y-0 will-change-transform
-                       motion-safe:transition-transform motion-safe:duration-200"
-            style={{
-              paddingBottom: 'max(env(safe-area-inset-bottom), 16px)', // safe area on iOS
-            }}
+            className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-6"
+            aria-hidden="true"
           >
-            {/* Grip handle */}
-            <div className="pt-2 grid place-items-center">
-              <span className="h-1.5 w-10 rounded-full bg-white/25" />
-            </div>
-
-            {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3">
-              <h2 id="notif-title" className="text-sm font-semibold text-cyan-300">
-                Notifications
-              </h2>
-              <button
-                ref={closeBtnRef}
-                onClick={() => setOpen(false)}
-                className="h-8 w-8 grid place-items-center rounded-lg border border-slate-600 bg-slate-800"
-                aria-label="Close"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Scrollable list (kept within the sheet cap) */}
-            <ul
-              className="px-4 pb-2 space-y-2 overflow-y-auto overscroll-contain"
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="notif-title"
+              className="w-full h-[100dvh] sm:h-auto sm:max-h-[80vh] sm:max-w-lg
+                         bg-slate-900 text-white
+                         rounded-none sm:rounded-2xl
+                         border-t sm:border border-slate-700
+                         shadow-2xl
+                         flex flex-col
+                         motion-safe:transition-all motion-safe:duration-200
+                         data-[state=open]:opacity-100 data-[state=open]:translate-y-0
+                         sm:data-[state=open]:scale-100"
+              data-state="open"
               style={{
-                /* 65vh (sheet cap) - header (~56px) - grip/padding (~28px) - bottom padding (~20px) */
-                maxHeight: 'calc(65vh - 56px - 28px - 20px)',
+                paddingBottom: 'max(env(safe-area-inset-bottom), 0px)',
               }}
             >
-              {items.length === 0 && (
-                <li className="text-sm text-gray-400">No notifications</li>
-              )}
-              {items.map((n) => (
-                <li key={n._id} className="text-sm">
-                  <div className="flex items-start justify-between gap-3 rounded-lg border border-slate-700 p-3 bg-slate-800">
-                    <div className="min-w-0">
-                      <div className="font-medium text-cyan-300 truncate">
-                        {n.title || n.type}
+              {/* Header */}
+              <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 border-b border-slate-700">
+                <h2 id="notif-title" className="text-base font-semibold text-cyan-300">
+                  Notifications
+                </h2>
+                <button
+                  ref={closeBtnRef}
+                  onClick={() => setOpen(false)}
+                  className="h-9 w-9 grid place-items-center rounded-lg border border-slate-600 bg-slate-800 hover:bg-slate-700"
+                  aria-label="Close"
+                  title="Close"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 overflow-auto">
+                <ul className="p-4 pt-3 space-y-3">
+                  {items.length === 0 && (
+                    <li className="text-sm text-gray-400">No notifications</li>
+                  )}
+                  {items.map((n) => (
+                    <li key={n._id} className="text-sm">
+                      <div className="flex items-start justify-between gap-3 rounded-lg border border-slate-700 p-3 bg-slate-800">
+                        <div className="min-w-0">
+                          <div className="font-medium text-cyan-300 truncate">
+                            {n.title || n.type}
+                          </div>
+                          <div className="text-gray-200 whitespace-pre-wrap break-words">
+                            {n.message}
+                          </div>
+                        </div>
+                        {!n.read && (
+                          <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded bg-yellow-500/15 text-yellow-300 border border-yellow-600/50">
+                            NEW
+                          </span>
+                        )}
                       </div>
-                      <div className="text-gray-200 break-words">
-                        {n.message}
-                      </div>
-                    </div>
-                    {!n.read && (
-                      <span className="shrink-0 text-[10px] px-1.5 py-0.5 rounded bg-yellow-500/15 text-yellow-300 border border-yellow-600/50">
-                        NEW
-                      </span>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Footer (optional actions) */}
+              <div className="border-t border-slate-700 px-4 py-3 flex justify-end gap-2">
+                <button
+                  onClick={() => setOpen(false)}
+                  className="h-9 px-3 rounded-lg border border-slate-600 bg-slate-800 hover:bg-slate-700"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
           </div>
         </>
       )}
