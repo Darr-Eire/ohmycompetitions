@@ -3,8 +3,6 @@
 // Purpose: Footer-aware auto-hide mobile nav with active-state + safe-area
 // ============================================================================
 'use client';
-import { FaGamepad } from 'react-icons/fa';
-
 
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -12,26 +10,31 @@ import { useEffect, useMemo, useState } from 'react';
 
 const NAV_HEIGHT = 56; // keep in sync with CSS --nav-h
 
-/* Inline icons (lightweight) */
+/* Inline icons (lightweight, consistent stroke) */
 const IconHome = (props) => (
   <svg className="mobile-nav__icon" viewBox="0 0 24 24" fill="none" {...props}>
     <path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5Z"
       stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
+
 const IconLive = (props) => (
   <svg className="mobile-nav__icon" viewBox="0 0 24 24" fill="none" {...props}>
     <path d="M7 12a5 5 0 0 1 0-7M17 12a5 5 0 0 0 0-7M3 12a9 9 0 0 1 0-13M21 12a9 9 0 0 0 0-13"
       stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
   </svg>
 );
-const IconTrophy = (props) => (
+
+/* New inline gamepad icon (Tabler-like stroke to match your style) */
+const IconGamepad = (props) => (
   <svg className="mobile-nav__icon" viewBox="0 0 24 24" fill="none" {...props}>
-    <path d="M7 7V4h10v3a4 4 0 0 0 4 4h0a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5h0a4 4 0 0 0 4-4Z"
-      stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M9 20h6M10 16v2m4-2v2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    <rect x="3" y="9" width="18" height="8" rx="4" stroke="currentColor" strokeWidth="1.6" />
+    <path d="M9 13h-3m1.5-1.5v3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    <circle cx="16.5" cy="12.5" r="0.9" fill="currentColor" />
+    <circle cx="18.8" cy="14.5" r="0.9" fill="currentColor" />
   </svg>
 );
+
 const IconUser = (props) => (
   <svg className="mobile-nav__icon" viewBox="0 0 24 24" fill="none" {...props}>
     <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.6" />
@@ -48,15 +51,11 @@ export default function MobileNav() {
 
   const items = useMemo(
     () => [
-      { href: '/homepage', label: 'Home', Icon: IconHome, match: (p) => p === '/homepage' },
-      { href: '/competitions/live-now', label: 'Live', Icon: IconLive, match: (p) => p.startsWith('/competitions/live-now') },
-{
-  href: '/try-your-skill',
-  label: 'Mini Game',
-  Icon: FaGamepad,
-  match: (p) => p.startsWith('/try-your-skill'),
-},
-],
+      { href: '/homepage',               label: 'Home',      Icon: IconHome,    match: (p) => p === '/homepage' },
+      { href: '/competitions/live-now',  label: 'Live',      Icon: IconLive,    match: (p) => p.startsWith('/competitions/live-now') },
+      { href: '/try-your-skill',         label: 'Mini Game', Icon: IconGamepad, match: (p) => p.startsWith('/try-your-skill') },
+      { href: '/account',                label: 'Account',   Icon: IconUser,    match: (p) => p.startsWith('/account') },
+    ],
     []
   );
 
