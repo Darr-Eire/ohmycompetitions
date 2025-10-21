@@ -483,18 +483,18 @@ const safePrizePool = useMemo(() => {
   title={t('omc_launch_week', 'OMC Launch Week')}
    items={getCompetitionsByCategory('launch')}
    viewMoreHref="/competitions/launch-week"
-   cardSize="lg"
-   cardMaxWidth={520}                         // a touch bigger
-   itemMinWidthCSS="min(520px, calc(100vw - 2rem))"
+   cardSize="md"
+            cardMaxWidth={320}
+            itemMinWidthCSS="min(320px, calc(100vw - 2rem))"
  />
 
           <Section
             title={t('pi_giveaways', 'Pi Giveaways')}
             items={getCompetitionsByCategory('pi')}
             viewMoreHref="/competitions/pi"
-            cardSize="lg"
-            cardMaxWidth={480}
-            itemMinWidthCSS="min(440px, calc(100vw - 2rem))"
+            cardSize="md"
+            cardMaxWidth={320}
+            itemMinWidthCSS="min(320px, calc(100vw - 2rem))"
           />
 
           {/* ===================== OMC Pi Stages ===================== */}
