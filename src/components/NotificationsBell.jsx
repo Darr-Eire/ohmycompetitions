@@ -1,3 +1,4 @@
+// FILE: src/components/NotificationsBell.jsx
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
@@ -17,7 +18,7 @@ export default function NotificationsBell({ username }) {
         const res = await fetch(`/api/notifications/list?username=${encodeURIComponent(username)}&limit=20`);
         if (res.ok) {
           const j = await res.json();
-          setItems(j.items || []);
+          setItems(Array.isArray(j.items) ? j.items : []);
         }
       } catch {}
     }
@@ -26,15 +27,14 @@ export default function NotificationsBell({ username }) {
     return () => clearInterval(pollRef.current);
   }, [username]);
 
-  const unread = items.filter(i => !i.read).length;
+  const unread = items.filter((i) => !i.read).length;
 
-  // ---- lock scroll when open ------------------------------------------------
+  // ---- lock scroll + focus when open ---------------------------------------
   useEffect(() => {
     const root = document.documentElement;
     if (open) {
       const prev = root.style.overflow;
       root.style.overflow = 'hidden';
-      // focus close for a11y
       setTimeout(() => closeBtnRef.current?.focus(), 0);
       return () => { root.style.overflow = prev; };
     }
@@ -48,7 +48,7 @@ export default function NotificationsBell({ username }) {
     return () => document.removeEventListener('keydown', onKey);
   }, [open]);
 
-  // ---- optional: simple drag-to-close on mobile -----------------------------
+  // ---- optional: drag-to-close on mobile -----------------------------------
   useEffect(() => {
     if (!open) return;
     const el = sheetRef.current;
@@ -56,7 +56,7 @@ export default function NotificationsBell({ username }) {
 
     let startY = 0;
     let current = 0;
-    const maxPull = 120;
+    const maxPull = 140;
 
     const onStart = (e) => {
       startY = (e.touches?.[0]?.clientY ?? e.clientY);
@@ -71,11 +71,8 @@ export default function NotificationsBell({ username }) {
     };
     const onEnd = () => {
       el.style.transitionProperty = '';
-      if (current > 80) {
-        setOpen(false);
-      } else {
-        el.style.transform = '';
-      }
+      if (current > 90) setOpen(false);
+      else el.style.transform = '';
     };
 
     el.addEventListener('touchstart', onStart, { passive: true });
@@ -90,9 +87,9 @@ export default function NotificationsBell({ username }) {
 
   return (
     <div className="relative inline-block shrink-0">
-      {/* Bell button (does NOT affect layout) */}
+      {/* Bell button (does NOT affect sibling layout) */}
       <button
-        onClick={() => setOpen(v => !v)}
+        onClick={() => setOpen((v) => !v)}
         className="relative h-8 w-8 grid place-items-center rounded-md bg-white/5 border border-cyan-700/40"
         aria-haspopup="dialog"
         aria-expanded={open}
@@ -106,12 +103,12 @@ export default function NotificationsBell({ username }) {
         )}
       </button>
 
-      {/* MOBILE-FIRST: bottom sheet (opaque) + backdrop. Also works on desktop nicely. */}
+      {/* OVERLAY + BOTTOM SHEET (opaque, mobile-first, lowered height) */}
       {open && (
         <>
-          {/* Backdrop */}
+          {/* Opaque backdrop */}
           <button
-            className="fixed inset-0 z-[9998] bg-black/55 md:bg-black/60"
+            className="fixed inset-0 z-[9998] bg-black/55"
             aria-label="Close notifications"
             onClick={() => setOpen(false)}
           />
@@ -122,18 +119,17 @@ export default function NotificationsBell({ username }) {
             role="dialog"
             aria-modal="true"
             aria-labelledby="notif-title"
-            className="fixed inset-x-0 bottom-0 z-[9999] 
-                       max-h-[85vh] w-full rounded-t-2xl bg-slate-900 text-white 
+            className="fixed inset-x-0 bottom-0 z-[9999]
+                       w-full max-h-[65vh] sm:max-h-[60vh]  /* lower to avoid top clipping */
+                       rounded-t-2xl bg-slate-900 text-white
                        border-t border-slate-700 shadow-[0_-10px_30px_rgba(0,0,0,0.35)]
                        translate-y-0 will-change-transform
-                       data-[state=closed]:translate-y-full
                        motion-safe:transition-transform motion-safe:duration-200"
             style={{
-              // safe area padding on iOS
-              paddingBottom: 'max(env(safe-area-inset-bottom), 12px)',
+              paddingBottom: 'max(env(safe-area-inset-bottom), 16px)', // safe area on iOS
             }}
           >
-            {/* Grab handle */}
+            {/* Grip handle */}
             <div className="pt-2 grid place-items-center">
               <span className="h-1.5 w-10 rounded-full bg-white/25" />
             </div>
@@ -153,8 +149,14 @@ export default function NotificationsBell({ username }) {
               </button>
             </div>
 
-            {/* List */}
-            <ul className="px-4 pb-3 space-y-2 overflow-y-auto max-h-[60vh]">
+            {/* Scrollable list (kept within the sheet cap) */}
+            <ul
+              className="px-4 pb-2 space-y-2 overflow-y-auto overscroll-contain"
+              style={{
+                /* 65vh (sheet cap) - header (~56px) - grip/padding (~28px) - bottom padding (~20px) */
+                maxHeight: 'calc(65vh - 56px - 28px - 20px)',
+              }}
+            >
               {items.length === 0 && (
                 <li className="text-sm text-gray-400">No notifications</li>
               )}
