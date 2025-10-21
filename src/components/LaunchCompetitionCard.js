@@ -1,7 +1,7 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useState, useMemo } from 'react';
+import { useRouter } from 'next/router';
 
 /* ───────────── Prize helpers ───────────── */
 function formatPi(amount) {
@@ -111,7 +111,6 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
     [comp, prizeBreakdown, prize]
   );
   const winnersCount = useMemo(() => getWinnersCount(comp, tiers), [comp, tiers]);
-  const ordinals = useMemo(() => ['1st', '2nd', '3rd'].slice(0, winnersCount), [winnersCount]);
 
   // safe entry fee label
   const entryFeeLabel = useMemo(() => {
@@ -172,9 +171,11 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
   const hasValidSlug = typeof slug === 'string' && slug.length > 0;
 
   // ✅ Always push to /ticket-purchase/[slug]
-  const competitionHref = useMemo(() => {
-    return hasValidSlug ? `/ticket-purchase/${encodeURIComponent(slug)}` : '#';
-  }, [slug, hasValidSlug]);
+  const router = useRouter();
+  const handleMoreDetails = () => {
+    if (comingSoon || !hasValidSlug) return;
+    router.push(`/ticket-purchase/${encodeURIComponent(slug)}`);
+  };
 
   return (
     <div
@@ -341,9 +342,10 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
 
         {/* CTA */}
         {hasValidSlug ? (
-          <Link href={competitionHref} className="block mt-4 focus:outline-none focus-visible:outline-none">
+          <div className="mt-4">
             <button
               type="button"
+              onClick={handleMoreDetails}
               disabled={comingSoon}
               className={`w-full py-2 rounded-lg font-bold text-center transition-opacity duration-150 ${
                 comingSoon
@@ -354,7 +356,7 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
             >
               {comingSoon ? 'Coming Soon' : 'More Details'}
             </button>
-          </Link>
+          </div>
         ) : (
           <button
             type="button"

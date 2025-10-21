@@ -86,22 +86,6 @@ const IndexPage: NextPageWithLayout = () => {
             </Link>
           </div>
         </div>
-
-        {/* Social Icons */}
-        <div className="flex justify-center gap-5 text-2xl">
-          <Link href="https://twitter.com" target="_blank">
-            <FaXTwitter className="hover:text-cyan-400 transition" />
-          </Link>
-          <Link href="https://facebook.com" target="_blank">
-            <FaFacebookF className="hover:text-cyan-400 transition" />
-          </Link>
-          <Link href="https://discord.com" target="_blank">
-            <FaDiscord className="hover:text-cyan-400 transition" />
-          </Link>
-          <Link href="https://instagram.com" target="_blank">
-            <FaInstagram className="hover:text-cyan-400 transition" />
-          </Link>
-        </div>
       </div>
     </div>
   );
