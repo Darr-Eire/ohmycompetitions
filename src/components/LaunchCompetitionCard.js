@@ -89,8 +89,8 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
     endsAt,
     comingSoon = false,
     prizeBreakdown = {},
-    // NEW: Add a 'type' property to the competition object
-    type = 'standard', // 'standard' or 'funnel'
+    // keep but unused for routing now
+    type = 'standard',
   } = comp;
 
   const [status, setStatus] = useState('UPCOMING');
@@ -171,17 +171,10 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
 
   const hasValidSlug = typeof slug === 'string' && slug.length > 0;
 
-  // Determine the correct href based on competition type
+  // ✅ Always push to /ticket-purchase/[slug]
   const competitionHref = useMemo(() => {
-    if (!hasValidSlug) return '#'; // Fallback for invalid slug
-    // If the competition is explicitly marked as 'funnel', send it to '/funnel/[slug]'
-    if (type === 'funnel') {
-      return `/funnel/${slug}`;
-    }
-    // Otherwise, send it to the standard '/competitions/[slug]' path
-    return `/competitions/${slug}`;
-  }, [slug, type, hasValidSlug]);
-
+    return hasValidSlug ? `/ticket-purchase/${encodeURIComponent(slug)}` : '#';
+  }, [slug, hasValidSlug]);
 
   return (
     <div
@@ -244,7 +237,7 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
           </h4>
 
           <div className="relative grid grid-cols-1 gap-3">
-            {ordinals.map((label) => (
+            {['1st','2nd','3rd'].slice(0, winnersCount).map((label) => (
               <div
                 key={label}
                 className="
@@ -348,7 +341,6 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
 
         {/* CTA */}
         {hasValidSlug ? (
-          // Use the dynamic competitionHref here
           <Link href={competitionHref} className="block mt-4 focus:outline-none focus-visible:outline-none">
             <button
               type="button"
