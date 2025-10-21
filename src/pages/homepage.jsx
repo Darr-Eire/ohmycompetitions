@@ -444,7 +444,7 @@ const safePrizePool = useMemo(() => {
                          shadow-[0_0_18px_rgba(34,211,238,0.15)]
                          hover:shadow-[0_0_26px_rgba(34,211,238,0.28)]
                          transition-shadow"
-              aria-label="Pi Cash Code — Enter Here"
+              aria-label="Pi Cash Code Enter Here"
             >
               <h1 className="text-3xl font-bold font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-500 to-cyan-300">
                 {t('pi_cash_code', 'Pi Cash Code')}
