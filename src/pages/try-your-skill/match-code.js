@@ -140,7 +140,7 @@ const [skillConfirmed, setSkillConfirmed] = useState(false);
     setPayoutStatus('💰 Sending Pi payout...')
 
     try {
-      const response = await fetch('/api/try-your-luck/match-pi-win', {
+      const response = await fetch('/api/try-your-skill/match-pi-win', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -324,7 +324,7 @@ const [skillConfirmed, setSkillConfirmed] = useState(false);
   }
 
   const shareScore = () => {
-    const msg = `I matched ${closestTry}/${PI_DIGITS.length} digits in the π Challenge on @OhMyCompetitions 🔥 Try it: https://ohmycompetitions.vercel.app/try-your-luck/three-fourteen`
+    const msg = `I matched ${closestTry}/${PI_DIGITS.length} digits in the π Challenge on @OhMyCompetitions 🔥 Try it: https://ohmycompetitions.vercel.app/try-your-skill/three-fourteen`
     navigator.clipboard.writeText(msg)
     alert('Score copied to clipboard! Share it on social media!')
   }
@@ -523,7 +523,7 @@ const [skillConfirmed, setSkillConfirmed] = useState(false);
           {showConfetti && <Confetti width={width} height={height} />}
 
           <div className="text-center space-y-2">
-            <Link href="/try-your-luck" className="text-sm text-cyan-300 underline block">
+            <Link href="/try-your-skill" className="text-sm text-cyan-300 underline block">
               Back to Mini Games
             </Link>
             <Link href="/terms-conditions" className="text-xs text-cyan-300 underline block">

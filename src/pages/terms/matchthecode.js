@@ -59,7 +59,7 @@ export default function MatchPiTermsPage() {
         </section>
 
         <div className="mt-8 text-center">
-          <Link href="/try-your-luck/three-fourteen" className="text-cyan-300 underline">
+          <Link href="/try-your-skill/three-fourteen" className="text-cyan-300 underline">
              Back to Match The Pi Code
           </Link>
         </div>

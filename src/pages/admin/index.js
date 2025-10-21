@@ -32,7 +32,7 @@ export default function AdminDashboard() {
       const [
         competitionsRes,
         forumsRes,
-        tryYourLuckRes,
+        tryYourSkillRes,
         voucherStatsRes,
         activityRes,
         referralsRes,
@@ -41,7 +41,7 @@ export default function AdminDashboard() {
         axios.get('/api/admin/competitions').catch(() => ({ data: [] })),
         axios.get('/api/admin/forums').catch(() => ({ data: [] })),
         axios
-          .get('/api/admin/try-your-luck?action=stats')
+          .get('/api/admin/try-your-skill?action=stats')
           .catch(() => ({ data: { userStats: { totalUsers: 0 }, gameStats: [] } })),
         axios
           .get('/api/admin/voucher-stats', { headers: { 'x-admin': 'true' } })
@@ -55,9 +55,9 @@ export default function AdminDashboard() {
       setStats({
         competitions: competitionsRes.data.length || 0,
         threads: forumsRes.data.length || 0,
-        users: tryYourLuckRes.data.userStats?.totalUsers || 0,
+        users: tryYourskillRes.data.userStats?.totalUsers || 0,
         gameResults:
-          tryYourLuckRes.data.gameStats?.reduce((total, game) => total + game.totalPlayed, 0) || 0,
+          tryYoursSkillRes.data.gameStats?.reduce((total, game) => total + game.totalPlayed, 0) || 0,
         vouchersActive: voucherStatsRes.data?.active || 0,
       });
 
@@ -108,9 +108,9 @@ export default function AdminDashboard() {
       statLabel: 'Forum Threads',
     },
     {
-      title: 'Try Your Luck',
+      title: 'Try Your Skill',
       description: 'Monitor games, stats and player activity',
-      href: '/admin/try-your-luck',
+      href: '/admin/try-your-skill',
       icon: '🎯',
       color: 'purple',
       stat: stats.gameResults,
@@ -339,7 +339,7 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <p className="flex justify-between py-1">
-                  <span>Try Your Luck API:</span>
+                  <span>Try Your Skill API:</span>
                   <span className="text-green-400 font-bold">Operational</span>
                 </p>
                 <p className="flex justify-between py-1">

@@ -5,7 +5,7 @@ import axios from 'axios';
 import AdminSidebar from '../../components/AdminSidebar';
 import AdminGuard from '../../components/AdminGuard';
 
-export default function AdminTryYourLuckPage() {
+export default function AdminTryYourSkillPage() {
   const [games, setGames] = useState([]);
   const [stats, setStats] = useState(null);
   const [recentResults, setRecentResults] = useState([]);
@@ -23,10 +23,10 @@ export default function AdminTryYourLuckPage() {
       setLoading(true);
 
       const [gamesRes, statsRes, resultsRes, winnersRes] = await Promise.all([
-        axios.get('/api/admin/try-your-luck'),
-        axios.get('/api/admin/try-your-luck?action=stats'),
-        axios.get('/api/admin/try-your-luck?action=recent-results'),
-        axios.get('/api/admin/try-your-luck?action=top-winners'),
+        axios.get('/api/admin/try-your-skill'),
+        axios.get('/api/admin/try-your-skill?action=stats'),
+        axios.get('/api/admin/try-your-skill?action=recent-results'),
+        axios.get('/api/admin/try-your-skill?action=top-winners'),
       ]);
 
       setGames(gamesRes.data.games || []);
@@ -34,7 +34,7 @@ export default function AdminTryYourLuckPage() {
       setRecentResults(resultsRes.data || []);
       setTopWinners(winnersRes.data || []);
     } catch (err) {
-      console.error('Error loading Try Your Luck data:', err);
+      console.error('Error loading Try Your Skill data:', err);
       setError('Failed to load data');
     } finally {
       setLoading(false);
@@ -44,7 +44,7 @@ export default function AdminTryYourLuckPage() {
   const resetUserAttempts = async (userUid) => {
     if (!userUid || !confirm('Reset this user\'s daily game attempts?')) return;
     try {
-      await axios.post('/api/admin/try-your-luck', {
+      await axios.post('/api/admin/try-your-skill', {
         action: 'reset-user',
         userUid
       });
@@ -59,7 +59,7 @@ export default function AdminTryYourLuckPage() {
   const deleteResult = async (id) => {
     if (!confirm('Delete this game result?')) return;
     try {
-      await axios.delete('/api/admin/try-your-luck', {
+      await axios.delete('/api/admin/try-your-skill', {
         data: { action: 'delete-result', id }
       });
       alert('Result deleted successfully!');
@@ -74,7 +74,7 @@ export default function AdminTryYourLuckPage() {
     if (!confirm('⚠️ DANGER: This will delete ALL game results. Are you sure?')) return;
     if (!confirm('This action cannot be undone. Really delete ALL results?')) return;
     try {
-      await axios.delete('/api/admin/try-your-luck', {
+      await axios.delete('/api/admin/try-your-skill', {
         data: { action: 'clear-all-results' }
       });
       alert('All results cleared successfully!');
@@ -88,7 +88,7 @@ export default function AdminTryYourLuckPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-black text-white p-8">
-        <h1 className="text-3xl font-bold mb-6">Loading Try Your Luck Admin...</h1>
+        <h1 className="text-3xl font-bold mb-6">Loading Try Your Skill Admin...</h1>
       </div>
     );
   }
@@ -108,7 +108,7 @@ export default function AdminTryYourLuckPage() {
         <div className="space-y-6 p-4">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl font-bold text-cyan-400">🎯 Try Your Luck Management</h1>
+              <h1 className="text-2xl font-bold text-cyan-400">🎯 Try Your Skill Management</h1>
               <p className="text-gray-400 mt-1">Monitor games, stats and player activity</p>
             </div>
             <button

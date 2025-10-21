@@ -88,7 +88,7 @@ export default function VaultPro() {
     setPayoutStatus('💰 Sending Pi payout...');
 
     try {
-      const response = await fetch('/api/try-your-luck/hack-vault-win', {
+      const response = await fetch('/api/try-your-skill/hack-vault-win', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -317,7 +317,7 @@ export default function VaultPro() {
           </Link>
         </div>
 
-        <Link href="/try-your-luck" className="text-sm text-cyan-300 underline block text-center mt-2">
+        <Link href="/try-your-skill" className="text-sm text-cyan-300 underline block text-center mt-2">
           Back to Mini Games
         </Link>
       </div>

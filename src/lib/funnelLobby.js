@@ -168,7 +168,7 @@ function assignStage1Room(userId) {
         break;
       }
     }
-    // If still no luck, create a new room
+    
     if (!rooms.length || target.status !== 'open' || target.players.length >= target.capacity) {
       target = createS1Room();
       addPlayerToRoom(target, userId);

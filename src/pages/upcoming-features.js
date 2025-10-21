@@ -59,7 +59,7 @@ export default function FuturePage() {
               <ul className="list-disc list-inside space-y-2 text-white">
                 <li><strong>Quests & Challenges:</strong> Complete daily and weekly missions to earn bonus Pi.</li>
                 <li><strong>Monthly Championships:</strong> Compete for the top of the leaderboard every month!</li>
-                <li><strong>More Try Your Luck Games:</strong> Arcade games to win even more prizes.</li>
+                <li><strong>More Try Your Skill Games:</strong> Arcade games to win even more prizes.</li>
               </ul>
             </section>
 

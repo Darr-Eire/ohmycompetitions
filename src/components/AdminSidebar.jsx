@@ -33,7 +33,7 @@ const adminRoutes = [
   {
     category: 'Games & Activities',
     items: [
-      { name: 'Try Your Luck', href: '/admin/try-your-luck', icon: '🎯', description: 'Game management' },
+      { name: 'Try Your Skill', href: '/admin/try-your-skill', icon: '🎯', description: 'Game management' },
     ]
   },
   {
@@ -80,22 +80,22 @@ export default function AdminSidebar({ children }) {
   useEffect(() => {
     const loadStats = async () => {
       try {
-        const [compsRes, forumsRes, tryLuckRes] = await Promise.all([
+        const [compsRes, forumsRes, trySkillRes] = await Promise.all([
           fetch('/api/admin/competitions').catch(() => ({ ok: false })),
           fetch('/api/admin/forums').catch(() => ({ ok: false })),
-          fetch('/api/admin/try-your-luck?action=stats').catch(() => ({ ok: false }))
+          fetch('/api/admin/try-your-skill?action=stats').catch(() => ({ ok: false }))
         ]);
 
         // Read each response only once to avoid "body stream already read" error
         const compsData = compsRes.ok ? await compsRes.json() : [];
         const forumsData = forumsRes.ok ? await forumsRes.json() : [];
-        const tryLuckData = tryLuckRes.ok ? await tryLuckRes.json() : {};
+        const trySkillData = trySkillRes.ok ? await trySkillRes.json() : {};
 
         const stats = {
           competitions: compsData.length || 0,
           threads: forumsData.length || 0,
-          users: tryLuckData.userStats?.totalUsers || 0,
-          games: tryLuckData.gameStats?.reduce((total, game) => total + (game.totalPlayed || 0), 0) || 0
+          users: trySkillData.userStats?.totalUsers || 0,
+          games: trySkillData.gameStats?.reduce((total, game) => total + (game.totalPlayed || 0), 0) || 0
         };
 
         setAdminStats(stats);
@@ -118,7 +118,7 @@ export default function AdminSidebar({ children }) {
       case '/admin/competitions': return adminStats.competitions;
       case '/admin/forums': return adminStats.threads;
       case '/admin/users': return adminStats.users;
-      case '/admin/try-your-luck': return adminStats.games;
+      case '/admin/try-your-skill': return adminStats.games;
       default: return null;
     }
   };

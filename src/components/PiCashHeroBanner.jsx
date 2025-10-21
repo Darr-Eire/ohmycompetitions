@@ -53,7 +53,7 @@ export default function PiCashHeroBanner() {
       <p className="text-lg mb-6">Time remaining to crack the code and win:</p>
       <h2 className="text-3xl font-bold text-[var(--accent-color)] mb-4">{formatTime(timeLeft)}</h2>
       <button
-        onClick={() => router.push('/try-your-luck/pi-cash-code')}
+        onClick={() => router.push('/try-your-skill/pi-cash-code')}
         className="bg-[var(--primary-solid)] hover:bg-[var(--primary-hover)] text-white px-6 py-2 rounded-full transition"
       >
         Crack the Code →

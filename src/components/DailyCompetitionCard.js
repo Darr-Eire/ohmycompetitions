@@ -175,7 +175,7 @@ function getCustomHighlightMessage(comp) {
     case 'OMC Mega Pi Drop':
       return `🔥 Huge prize pool of ${prettyPrize} up for grabs! Don’t miss out!`
     case 'OMC Pi Mini Jackpot':
-      return `🎉 Try your luck at winning ${prettyPrize}! Every ticket counts!`
+      return `🎉 Try Your Skill at winning ${prettyPrize}! Every ticket counts!`
     case 'Ps5 Bundle Giveaway':
       return `🎮 Enter now to win a ${prettyPrize}! Game on!`
     default:

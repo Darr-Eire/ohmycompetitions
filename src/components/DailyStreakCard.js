@@ -43,7 +43,7 @@ export default function DailyStreakCard({ uid }) {
           </span>
         </li>
         <li>
-          🎮 Try Your Luck Game:{' '}
+          🎮 Try Your Skill Game:{' '}
           <span className={hasPlayedGame ? 'text-green-400' : 'text-yellow-400'}>
             {hasPlayedGame ? 'Completed' : 'Not Yet'}
           </span>

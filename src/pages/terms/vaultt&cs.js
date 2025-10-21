@@ -56,7 +56,7 @@ export default function VaultProTermsPage() {
         </section>
 
         <div className="mt-8 text-center">
-          <Link href="/try-your-luck" className="text-cyan-300 underline">
+          <Link href="/try-your-skill" className="text-cyan-300 underline">
             Back to Hack the Vault
           </Link>
         </div>

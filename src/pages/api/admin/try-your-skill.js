@@ -120,7 +120,7 @@ export default async function handler(req, res) {
 
       return res.status(200).json({ games });
     } catch (err) {
-      console.error('Error loading Try Your Luck data:', err);
+      console.error('Error loading Try Your Skill data:', err);
       return res.status(500).json({ message: 'Server Error' });
     }
   }
@@ -167,7 +167,7 @@ export default async function handler(req, res) {
 
       return res.status(400).json({ message: 'Unknown action' });
     } catch (err) {
-      console.error('Error in Try Your Luck admin action:', err);
+      console.error('Error in Try Your Skill admin action:', err);
       return res.status(500).json({ message: 'Server Error' });
     }
   }
@@ -192,7 +192,7 @@ export default async function handler(req, res) {
 
       return res.status(400).json({ message: 'Unknown delete action' });
     } catch (err) {
-      console.error('Error deleting Try Your Luck data:', err);
+      console.error('Error deleting Try Your Skill data:', err);
       return res.status(500).json({ message: 'Server Error' });
     }
   }

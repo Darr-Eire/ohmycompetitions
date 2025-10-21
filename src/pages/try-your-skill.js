@@ -1,7 +1,7 @@
-// pages/try-your-luck.js
+
 import { useEffect, useMemo, useState } from 'react';
 
-export default function TryYourLuck() {
+export default function TryYourSkill() {
   const [games, setGames] = useState([]);        // ✅ always an array
   const [playedMap, setPlayedMap] = useState({}); // optional
 

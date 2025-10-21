@@ -48,7 +48,7 @@ const faqSections = [
      'All draws use a fair randomization process. We don’t control the outcome — it’s automated and verified. Once the timer ends, winners are chosen transparently and shown publicly.'],
 
     ['What makes OMC different from other Pi apps?', 
-     'We don’t just hand out Pi — we build hype, community and real value. From Try Your Luck games and Pi Cash Code to referral bonuses and high-stakes giveaways, OMC creates an engaging, fair experience for everyone.'],
+     'We don’t just hand out Pi — we build hype, community and real value. From Try Your Skill games and Pi Cash Code to referral bonuses and high-stakes giveaways, OMC creates an engaging, fair experience for everyone.'],
 
     ['Can I win without spending Pi?', 
      'Yes! We offer free daily games, mystery draws and social competitions. Every Pioneer, no matter how much Pi you have, can win something — even instantly.'],
@@ -68,7 +68,7 @@ const faqSections = [
     ['Do I need to install anything?', 
      'No app install is required. Just visit ohmycompetitions.com from any device and sign in using your Pi account — that’s it. Mobile-optimized and ready to go.'],
 
-    ['What are “Try Your Luck” games?', 
+    ['What are “Try Your Skill” games?', 
      'These are free daily mini-games like “Match The Pi Code” and “Hack The Vault.” They’re fun, fast and can reward you instantly with Pi, bonus entries, or even hidden prize drops.'],
 
     ['Can I win more than once?', 
@@ -115,7 +115,7 @@ const faqSections = [
      'If the weekly prize goes unclaimed, it **rolls over and doubles** for the next week. This means bigger and bigger Pi jackpots until someone grabs the code and wins it all.'],
 
     ['How do I become eligible?', 
-     'To be eligible, make sure you’ve entered at least one competition that week or logged in and played any “Try Your Luck” game. That’s it — no extra steps needed.'],
+     'To be eligible, make sure you’ve entered at least one competition that week or logged in and played any “Try Your Skill” game. That’s it — no extra steps needed.'],
 
     ['Can I win more than once?', 
      'Yes! Every week is a new chance. As long as you remain active and engaged, you’re always eligible to be chosen again.'],

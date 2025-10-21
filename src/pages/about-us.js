@@ -84,7 +84,7 @@ export default function AboutUs() {
                         </Link>
                       </li>
                       <li>
-                        <Link href="/try-your-luck" className="text-cyan-300 hover:underline">
+                        <Link href="/try-your-skill" className="text-cyan-300 hover:underline">
                           Play skill-based mini-games
                         </Link>
                       </li>
