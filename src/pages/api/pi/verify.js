@@ -2,11 +2,14 @@
 import axios from 'axios';
 import { MongoClient } from 'mongodb';
 
-/* -------------------------- CORS (Pi sandbox friendly) -------------------------- */
+/* -------------------------- CORS (Pi mainnet) -------------------------- */
 const ALLOWED_ORIGINS = [
-  'https://testnet.ohmycompetitions.com',
-  'https://sandbox.minepi.com',
+  // your production domain(s)
+  'https://ohmycompetitions.com',
+  // Pi Browser asset/CDN origins (mainnet)
   'https://app-cdn.minepi.com',
+  // Keep this just in case Pi Browser changes its asset host again
+  'https://minepi.com',
 ];
 
 function getAllowedOrigin(req) {
@@ -24,17 +27,25 @@ function setCors(res, origin) {
   // If you later need cookies across origins:
   // res.setHeader('Access-Control-Allow-Credentials', 'true');
 }
-/* -------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------- */
 
+/* ----------------------------- ENV & DB ------------------------------- */
 const MONGODB_URI = process.env.MONGODB_URI;
-const MONGODB_DB = process.env.MONGODB_DB || 'ohmycompetitions-testnet';
-const PI_ENV = (process.env.PI_ENV || process.env.NEXT_PUBLIC_PI_ENV || 'sandbox').toLowerCase();
+const MONGODB_DB = process.env.MONGODB_DB || 'ohmycompetitions-mainnet';
+const PI_ENV = (process.env.PI_ENV || process.env.NEXT_PUBLIC_PI_ENV || 'mainnet').toLowerCase();
+
+// Hard assert: this endpoint is mainnet-only
+if (PI_ENV !== 'mainnet') {
+  // Throwing here helps catch misconfigured deployments immediately
+  // (If you want to allow both, remove this and branch on PI_ENV below)
+  console.warn('[verify] WARNING: PI_ENV is not "mainnet" ->', PI_ENV);
+}
 
 if (!MONGODB_URI) {
   throw new Error('[verify] Missing MONGODB_URI');
 }
 
-// cache client across invocations
+// cache client across invocations (serverless friendly)
 let cached = global._omc_mongo;
 if (!cached) cached = global._omc_mongo = { client: null, db: null, connecting: null };
 
@@ -52,6 +63,7 @@ async function getDb() {
   return cached.connecting;
 }
 
+/* ------------------------- Referral helper ---------------------------- */
 async function applyReferralCodeToNewUser(db, newUser, referralCodeRaw) {
   try {
     const code = String(referralCodeRaw || '').trim();
@@ -78,6 +90,7 @@ async function applyReferralCodeToNewUser(db, newUser, referralCodeRaw) {
   }
 }
 
+/* ----------------------------- Handler -------------------------------- */
 export default async function handler(req, res) {
   // CORS for both OPTIONS and POST
   const origin = getAllowedOrigin(req);
@@ -90,6 +103,11 @@ export default async function handler(req, res) {
 
   if (req.method !== 'POST') {
     return res.status(405).json({ success: false, error: 'Method Not Allowed' });
+  }
+
+  // Hard assert environment at runtime (safety)
+  if (PI_ENV !== 'mainnet') {
+    return res.status(400).json({ success: false, error: `Invalid PI_ENV "${PI_ENV}" for /pi/verify. Expected "mainnet".` });
   }
 
   const accessToken = (req.body?.accessToken || '').toString().trim();
@@ -107,7 +125,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1) Verify token with Pi
+    // 1) Verify token with Pi (mainnet)
+    // Note: /v2/me works for mainnet; the environment difference is in the token origin (wallet/mainnet)
     const { data: piUser } = await axios.get('https://api.minepi.com/v2/me', {
       headers: { Authorization: `Bearer ${accessToken}` },
       timeout: 10_000,
@@ -128,18 +147,25 @@ export default async function handler(req, res) {
       });
     }
 
+    // Optional: require certain scopes on mainnet (tighten as needed)
+    // const scopes = piUser?.credentials?.scopes || [];
+    // if (!scopes.includes('username')) { ... }
+
     // 2) DB
     const db = await getDb();
     const Users = db.collection('users');
     const now = new Date();
 
-    // 3) Upsert user (support legacy uid field)
+    // 3) Upsert user (support legacy uid field) + ensure usernameLower
+    const username = String(piUser.username);
+    const usernameLower = username.toLowerCase();
+
     const upsert = await Users.findOneAndUpdate(
       {
         $or: [
           { piUserId: piUser.uid },
           { uid: piUser.uid }, // legacy
-          { username: piUser.username },
+          { username: username },
         ],
       },
       {
@@ -152,11 +178,13 @@ export default async function handler(req, res) {
           country: userData?.country || null,
         },
         $set: {
-          username: piUser.username,
+          username,
+          usernameLower,
           piUserId: piUser.uid,
           uid: piUser.uid,
           roles: Array.isArray(piUser.roles) ? piUser.roles : [],
           lastLogin: now,
+          // keep last known client info if you want (device, locale, etc.)
         },
       },
       { upsert: true, returnDocument: 'after', returnOriginal: false }
@@ -168,7 +196,7 @@ export default async function handler(req, res) {
         $or: [
           { piUserId: piUser.uid },
           { uid: piUser.uid },
-          { username: piUser.username },
+          { username: username },
         ],
       });
     }
@@ -188,6 +216,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ success: false, error: 'User not found after upsert' });
     }
 
+    // 5) Return safe user (omit access tokens if any)
     const { accessToken: _omit, ...safeUser } = user;
     return res.status(200).json({ success: true, user: safeUser });
   } catch (err) {
