@@ -145,7 +145,7 @@ const formatDate = (d) => {
   return new Date(ts).toLocaleString(undefined, {
     month: 'short',
     day: 'numeric',
-  =
+
   });
 };
 

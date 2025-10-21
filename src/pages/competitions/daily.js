@@ -230,7 +230,7 @@ function LiveCard({ data, onGift }) {
             <span className="text-white/60">Tickets</span>
             <span className="font-semibold">
               {total ? `${sold}/${total}` : sold}
-              {Number.isFinite(total) && total > 0 ? <span className="text-white/55"> • {pct}% sold</span> : null}
+              {Number.isFinite(total) && total > 0 ? <span className="text-white/55"></span> : null}
             </span>
           </div>
           <div className="flex items-baseline justify-between gap-2">
@@ -429,11 +429,12 @@ export default function DailyCompetitionsPage() {
           <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
               <div>
-                <h1 className="text-[22px] sm:text-[28px] font-extrabold tracking-tight">
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff]">
-                    Daily/Weekly Competitions
-                  </span>
-                </h1>
+          <h1 className="text-center mx-auto text-[22px] sm:text-[28px] font-extrabold tracking-tight">
+  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff]">
+    Daily/Weekly Competitions
+  </span>
+</h1>
+
                 <p className="text-white/70 text-[13px] sm:text-[14px]">
                   Fresh prizes drawn daily & weekly — easy entry.
                 </p>
