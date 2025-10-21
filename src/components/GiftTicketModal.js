@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { usePiAuth } from 'context/PiAuthContext'
 
 /* ---------- lightweight logger (toggle with ?debugGift=1 or localStorage.debugGift=1) ---------- */
@@ -9,7 +9,7 @@ const DEBUG_GIFT =
   (
     new URLSearchParams(window.location.search).get('debugGift') === '1' ||
     localStorage.getItem('debugGift') === '1'
-  );
+  )
 
 const L = (...a) => { if (DEBUG_GIFT) console.log('%c[OMC][Gift]', 'color:#00e5ff', ...a) }
 const W = (...a) => { if (DEBUG_GIFT) console.warn('%c[OMC][Gift]', 'color:#ffcc00', ...a) }
@@ -33,6 +33,9 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
   const [message, setMessage] = useState('')
   const [messageType, setMessageType] = useState('') // 'success' | 'error' | 'info' | ''
 
+  // Ref for recipient field to ensure focus
+  const recipientRef = useRef(null)
+
   useEffect(() => {
     if (!isOpen) return
     L('Modal opened')
@@ -43,6 +46,17 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
       setSelectedCompetition(competitionId)
     }
   }, [isOpen, preselectedCompetition])
+
+  // Focus recipient input once the modal is visible
+  useEffect(() => {
+    if (!isOpen) return
+    const t = setTimeout(() => {
+      if (recipientRef.current) {
+        try { recipientRef.current.focus() } catch (_) {}
+      }
+    }, 60)
+    return () => clearTimeout(t)
+  }, [isOpen])
 
   const loadCompetitions = async () => {
     const t = 'gift_loadCompetitions'
@@ -227,8 +241,14 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-[#0f172a] border border-cyan-400 rounded-xl max-w-md w-full p-6 text-white shadow-[0_0_30px_#00f0ff88]">
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 pointer-events-auto">
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="bg-[#0f172a] border border-cyan-400 rounded-xl max-w-md w-full p-6 text-white shadow-[0_0_30px_#00f0ff88] pointer-events-auto z-[100]"
+        onMouseDown={(e) => e.stopPropagation()}
+        onClickCapture={(e) => e.stopPropagation()}
+      >
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-cyan-400">🎁 Gift a Ticket</h2>
           <button onClick={handleClose} className="text-gray-400 hover:text-white text-xl">✕</button>
@@ -253,9 +273,21 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
           </div>
 
           <div>
-            <label className="block text-cyan-300 text-sm font-bold mb-2">Recipient Username *</label>
+            <label
+              htmlFor="gift-recipient"
+              className="block text-cyan-300 text-sm font-bold mb-2"
+            >
+              Recipient Username *
+            </label>
             <input
+              id="gift-recipient"
+              ref={recipientRef}
               type="text"
+              inputMode="text"
+              autoComplete="username"
+              autoCorrect="off"
+              spellCheck={false}
+              readOnly={false}
               value={recipientUsername}
               onChange={(e) => setRecipientUsername(e.target.value)}
               className="w-full px-3 py-2 bg-black border border-cyan-400 rounded text-white placeholder-gray-400 focus:border-cyan-300 focus:outline-none"
