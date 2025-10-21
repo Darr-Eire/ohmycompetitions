@@ -1,27 +1,71 @@
-// File: src/pages/_document.js
-// NOTE: This is a server component. Do NOT add 'use client' here.
 import { Html, Head, Main, NextScript } from "next/document";
 
 export default function Document() {
-  // Keep a single Pi SDK loader; everyone else should await window.__readyPi()
+  // IMPORTANT: Keep this tiny loader as the *only* place that injects/initializes the Pi SDK.
   const loader = `
 (function () {
   if (typeof window === "undefined") return;
   var w = window;
+  // If we’ve already set up the singleton, do nothing.
   if (typeof w.__readyPi === "function") return;
 
+  // Create a single readiness promise that everyone can await.
   w.__readyPi = (function () {
     let done = false;
     let cachedPi = null;
-    return function() {
-      if (done) return Promise.resolve(cachedPi);
-      return new Promise(function (resolve) {
-        if (w.Pi) { done = true; cachedPi = w.Pi; resolve(w.Pi); return; }
-        var s = document.createElement("script");
-        s.src = "https://sdk.minepi.com/pi-sdk.js";
-        s.async = true;
-        s.onload = function () { done = true; cachedPi = w.Pi; resolve(w.Pi); };
-        document.head.appendChild(s);
+
+
+    return function __readyPiInternal() {
+      if (done && cachedPi) return Promise.resolve(cachedPi);
+
+      return new Promise(function (resolve, reject) {
+        function initIfPossible() {
+          try {
+            if (w.Pi && typeof w.Pi.init === "function") {
+              // Mainnet by default; set your App ID from env if present.
+              w.Pi.init({
+                version: "2.0",
+                sandbox: false,
+                appId: ${JSON.stringify(process.env.NEXT_PUBLIC_PI_APP_ID || "")}
+              });
+              done = true;
+              cachedPi = w.Pi;
+              resolve(w.Pi);
+              return true;
+            }
+          } catch (e) {
+            reject(e);
+            return true;
+          }
+          return false;
+        }
+
+        // If the SDK is already on the page and can be inited, do it.
+        if (initIfPossible()) return;
+
+        // Otherwise inject the SDK script once.
+        var existing = document.getElementById("pi-sdk-singleton");
+        if (!existing) {
+          var s = document.createElement("script");
+          s.id = "pi-sdk-singleton";
+          s.src = "https://sdk.minepi.com/pi-sdk.js";
+          s.async = true;
+          s.onload = function () {
+            if (!initIfPossible()) reject(new Error("Pi SDK loaded but Pi.init unavailable"));
+          };
+          s.onerror = function () {
+            reject(new Error("Failed to load Pi SDK"));
+          };
+          document.head.appendChild(s);
+        } else {
+          // If it exists but hasn't fired yet, wait for it to load
+          existing.addEventListener("load", function () {
+            if (!initIfPossible()) reject(new Error("Pi SDK loaded but Pi.init unavailable"));
+          });
+          existing.addEventListener("error", function () {
+            reject(new Error("Failed to load Pi SDK"));
+          });
+        }
       });
     };
   })();
@@ -29,27 +73,12 @@ export default function Document() {
   `.trim();
 
   return (
-    <Html lang="en" className="h-full">
-      <Head>
-        {/* Single, canonical viewport with safe-area support */}
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1"
-        />
-        <meta name="theme-color" content="#000814" />
-        <link rel="manifest" href="/manifest.webmanifest" />
-        {/* Optional font preload (safe) */}
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
-        />
-      </Head>
-
-      <body className="h-full bg-[#000814] text-[#E6F5FF]">
+    <Html lang="en">
+      <Head />
+      <body>
         <Main />
         <NextScript />
-        {/* Inject the Pi SDK loader once, after NextScript */}
+        {/* Expose window.__readyPi() and inject the SDK once */}
         <script dangerouslySetInnerHTML={{ __html: loader }} />
       </body>
     </Html>
