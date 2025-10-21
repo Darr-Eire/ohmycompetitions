@@ -25,11 +25,13 @@ export default function NotificationsBell({ username }) {
 
   const unread = items.filter((i) => !i.read).length;
 
-  // close on outside click / escape
+  // close on outside click / escape (desktop dropdown)
   useEffect(() => {
     if (!open) return;
     const onDown = (e) => {
-      if (!e.target.closest?.('[data-bell-root]')) setOpen(false);
+      if (!e.target.closest?.('[data-bell-root]') && !e.target.closest?.('[data-bell-overlay]')) {
+        setOpen(false);
+      }
     };
     const onKey = (e) => e.key === 'Escape' && setOpen(false);
     document.addEventListener('mousedown', onDown);
@@ -58,29 +60,72 @@ export default function NotificationsBell({ username }) {
       </button>
 
       {open && (
-        <div
-          className="absolute right-0 top-full mt-2 w-72 max-h-72 overflow-auto
-                     rounded-lg border border-cyan-700/60 bg-[#0f172a]/95 backdrop-blur p-2
-                     shadow-xl z-50"
-          role="menu"
-          aria-label="Notifications"
-        >
-          <div className="text-xs text-gray-400 mb-1 px-1">Notifications</div>
-          <ul className="space-y-2 pr-1">
-            {items.length === 0 && <li className="text-sm text-gray-400 px-1">No notifications</li>}
-            {items.map((n) => (
-              <li key={n._id} className="text-sm">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <div className="font-medium text-cyan-300 truncate">{n.title || n.type}</div>
-                    <div className="text-gray-300 break-words">{n.message}</div>
+        <>
+          {/* Mobile: right-side drawer (opaque) */}
+          <div
+            data-bell-overlay
+            className="sm:hidden fixed inset-0 z-[9998] bg-black/50"
+            onClick={() => setOpen(false)}
+            aria-hidden="true"
+          />
+          <div
+            className="sm:hidden fixed right-0 top-0 z-[9999] h-[100dvh] w-[88vw] max-w-80
+                       bg-slate-900 text-white shadow-2xl border-l border-cyan-700
+                       flex flex-col"
+            role="dialog"
+            aria-label="Notifications"
+          >
+            <div className="flex items-center justify-between px-3 py-3 border-b border-white/10">
+              <span className="text-sm font-semibold text-cyan-300">Notifications</span>
+              <button
+                onClick={() => setOpen(false)}
+                className="h-7 w-7 grid place-items-center rounded-md bg-slate-800 border border-slate-600"
+                aria-label="Close"
+                title="Close"
+              >
+                ✕
+              </button>
+            </div>
+            <ul className="flex-1 overflow-y-auto p-3 space-y-2">
+              {items.length === 0 && <li className="text-sm text-gray-400">No notifications</li>}
+              {items.map((n) => (
+                <li key={n._id} className="text-sm">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="font-medium text-cyan-300 truncate">{n.title || n.type}</div>
+                      <div className="text-gray-200 break-words">{n.message}</div>
+                    </div>
+                    {!n.read && <span className="shrink-0 text-[10px] text-yellow-400">new</span>}
                   </div>
-                  {!n.read && <span className="shrink-0 text-[10px] text-yellow-400">new</span>}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Desktop: right-aligned dropdown (opaque) */}
+          <div
+            className="hidden sm:block absolute right-0 top-full mt-2 z-[9999] w-80
+                       rounded-lg border border-cyan-700 bg-slate-900 text-white p-2 shadow-xl"
+            role="menu"
+            aria-label="Notifications"
+          >
+            <div className="text-xs text-gray-400 mb-1 px-1">Notifications</div>
+            <ul className="space-y-2 max-h-72 overflow-auto pr-1">
+              {items.length === 0 && <li className="text-sm text-gray-400 px-1">No notifications</li>}
+              {items.map((n) => (
+                <li key={n._id} className="text-sm">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="font-medium text-cyan-300 truncate">{n.title || n.type}</div>
+                      <div className="text-gray-200 break-words">{n.message}</div>
+                    </div>
+                    {!n.read && <span className="shrink-0 text-[10px] text-yellow-400">new</span>}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </>
       )}
     </div>
   );
