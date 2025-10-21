@@ -1,3 +1,4 @@
+// File: src/pages/your-detail-component.jsx (or the original file path you use)
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -10,25 +11,18 @@ import UiModal from 'components/UiModal';
 import { COMPETITION_TERMS, DEFAULT_TERMS } from 'data/competition-terms';
 
 /* ----------------------------- helpers ----------------------------- */
-function normalizePrizeBreakdown(raw) {
+function normalizePrizeBreakdown(raw) { /* unchanged */ 
   if (!raw) return {};
   if (typeof raw === 'object' && !Array.isArray(raw)) {
     const out = {};
-    const map = {
-      '1st': '1st', 'first': '1st', 'first prize': '1st', 'grand': '1st', 'grand prize': '1st',
-      '2nd': '2nd', 'second': '2nd', 'second prize': '2nd',
-      '3rd': '3rd', 'third': '3rd', 'third prize': '3rd',
-    };
+    const map = { '1st':'1st','first':'1st','first prize':'1st','grand':'1st','grand prize':'1st','2nd':'2nd','second':'2nd','second prize':'2nd','3rd':'3rd','third':'3rd','third prize':'3rd' };
     for (const [k, v] of Object.entries(raw)) {
       const m = map[String(k).toLowerCase()];
       if (m && out[m] == null) out[m] = v;
     }
     if (out['1st'] || out['2nd'] || out['3rd']) return out;
-
-    const sorted = Object.values(raw)
-      .map(v => ({ v, n: Number(String(v).replace(/[^\d.-]/g, '')) }))
-      .sort((a, b) => (b.n || -Infinity) - (a.n || -Infinity))
-      .slice(0, 3);
+    const sorted = Object.values(raw).map(v => ({ v, n: Number(String(v).replace(/[^\d.-]/g, '')) }))
+      .sort((a, b) => (b.n || -Infinity) - (a.n || -Infinity)).slice(0, 3);
     const ord = ['1st', '2nd', '3rd'];
     sorted.forEach((e, i) => { if (e?.v != null) out[ord[i]] = e.v; });
     return out;
@@ -41,34 +35,19 @@ function normalizePrizeBreakdown(raw) {
   }
   return {};
 }
-
-function buildPrizeBreakdownFromComp(input, prizeFallback) {
+function buildPrizeBreakdownFromComp(input, prizeFallback) { /* unchanged */ 
   const c = input?.comp ?? input ?? {};
-  const explicit = {
-    '1st': c.firstPrize ?? c.prize1,
-    '2nd': c.secondPrize ?? c.prize2,
-    '3rd': c.thirdPrize ?? c.prize3,
-  };
+  const explicit = { '1st': c.firstPrize ?? c.prize1, '2nd': c.secondPrize ?? c.prize2, '3rd': c.thirdPrize ?? c.prize3 };
   if (explicit['1st'] || explicit['2nd'] || explicit['3rd']) return explicit;
-
-  const tiers = {
-    ...normalizePrizeBreakdown(c.prizeBreakdown),
-    ...normalizePrizeBreakdown(c.prizes),
-  };
-
-  if (!tiers['1st'] && (prizeFallback ?? c.prize ?? c.prizeLabel)) {
-    tiers['1st'] = prizeFallback ?? c.prize ?? c.prizeLabel;
-  }
+  const tiers = { ...normalizePrizeBreakdown(c.prizeBreakdown), ...normalizePrizeBreakdown(c.prizes) };
+  if (!tiers['1st'] && (prizeFallback ?? c.prize ?? c.prizeLabel)) tiers['1st'] = prizeFallback ?? c.prize ?? c.prizeLabel;
   return tiers;
 }
-
-function getWinnersCount(comp, tiers) {
+function getWinnersCount(comp, tiers) { /* unchanged */ 
   const c = comp?.comp ?? comp ?? {};
   const direct = c.winners ?? c.totalWinners ?? c.numberOfWinners ?? c.numWinners;
-
   const n = Number(direct);
   if (Number.isFinite(n) && n > 0) return Math.min(3, Math.max(1, Math.floor(n)));
-
   if (typeof direct === 'string') {
     if (/single|one/i.test(direct)) return 1;
     if (/two|2/i.test(direct)) return 2;
@@ -78,16 +57,12 @@ function getWinnersCount(comp, tiers) {
       return Math.min(3, count || 3);
     }
   }
-
   const count = Object.values(tiers || {}).filter(Boolean).length;
   return Math.min(3, count || 1);
 }
-
-function formatPrize(v, theme) {
+function formatPrize(v, theme) { /* unchanged */ 
   if (v === null || v === undefined) return null;
-
   const isTechOrGadgets = ['tech', 'gadgets', 'premium'].includes(String(theme || '').toLowerCase());
-
   if (typeof v === 'string') {
     let s = v.trim();
     if (!s) return null;
@@ -97,54 +72,44 @@ function formatPrize(v, theme) {
     }
     return /\bπ\b|[$€£]/.test(s) ? s : `${s} π`;
   }
-
   const n = Number(v);
   if (!Number.isFinite(n)) return null;
   const formatted = n >= 1000 ? Math.round(n).toLocaleString('en-US') : n.toFixed(2);
   return isTechOrGadgets ? `${formatted}` : `${formatted} π`;
 }
-
-function primaryPrizeFrom({ comp, prize, tiers, theme }) {
+function primaryPrizeFrom({ comp, prize, tiers, theme }) { /* unchanged */ 
   const p = tiers?.['1st'] ?? prize ?? comp?.prize ?? comp?.prizeLabel ?? comp?.firstPrize;
   return formatPrize(p ?? 'TBA', theme);
 }
-
-/* --- local flexible answer checker (digits/words, minor punctuation) --- */
-function normalizeText(x) {
+function normalizeText(x) { /* unchanged */ 
   if (x == null) return '';
-  return String(x)
-    .trim()
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}.\- ]+/gu, '')
-    .replace(/\s+/g, ' ');
+  return String(x).trim().toLowerCase().replace(/[^\p{L}\p{N}.\- ]+/gu, '').replace(/\s+/g, ' ');
 }
-function asAnswerList(q) {
+function asAnswerList(q) { /* unchanged */ 
   const raw = q?.acceptableAnswers ?? q?.answers ?? q?.answer ?? q?.correct ?? null;
   if (Array.isArray(raw)) return raw.filter(Boolean);
   if (raw == null) return [];
   return [raw];
 }
-function isProbablyNumber(str) {
+function isProbablyNumber(str) { /* unchanged */ 
   const s = String(str).replace(/,/g, '').trim();
   const n = Number(s);
   return Number.isFinite(n);
 }
-function numbersEqualLoose(a, b, eps = 1e-6) {
+function numbersEqualLoose(a, b, eps = 1e-6) { /* unchanged */ 
   const na = Number(String(a).replace(/,/g, '').trim());
   const nb = Number(String(b).replace(/,/g, '').trim());
   if (!Number.isFinite(na) || !Number.isFinite(nb)) return false;
   return Math.abs(na - nb) <= eps;
 }
-function isAnswerCorrectFlexible(q, userInput) {
+function isAnswerCorrectFlexible(q, userInput) { /* unchanged */ 
   const answers = asAnswerList(q);
   if (!answers.length) return false;
-
   const userLooksNumeric = isProbablyNumber(userInput);
   const anyExpectedNumeric = answers.some(isProbablyNumber);
   if (userLooksNumeric || anyExpectedNumeric) {
     if (answers.some(ans => numbersEqualLoose(ans, userInput))) return true;
   }
-
   const u = normalizeText(userInput);
   return answers.some(ans => normalizeText(ans) === u);
 }
@@ -172,7 +137,6 @@ function PrizeBanner({ value, theme, className = '' }) {
     </div>
   );
 }
-
 function Pill({ children, tone = 'cyan' }) {
   const tones = {
     cyan: 'from-cyan-400 to-blue-500',
@@ -187,7 +151,6 @@ function Pill({ children, tone = 'cyan' }) {
     </span>
   );
 }
-
 function Stat({ label, value }) {
   return (
     <div className="rounded-xl border border-white/10 bg-white/5 p-3">
@@ -208,9 +171,7 @@ export default function LaunchCompetitionDetailCard({
   startsAt,
   ticketsSold,
   totalTickets,
-  status, // cosmetic only now
-
-  // PURCHASE-FLOW props (optional; context will be used if present)
+  status,
   user:  userProp,
   login: loginProp,
   claimFreeTicket,
@@ -219,17 +180,14 @@ export default function LaunchCompetitionDetailCard({
   GiftTicketModal,
   handlePaymentSuccess,
   description,
-
   initialQuestion,
 }) {
-  /* ---------- Auth ---------- */
   const ctx = (typeof usePiAuth === 'function' ? usePiAuth() : {}) || {};
   const effectiveUser = userProp ?? ctx.user ?? null;
   const loginFn       = loginProp ?? ctx.login ?? (() => {});
   const userId =
     effectiveUser?.id ?? effectiveUser?.uid ?? effectiveUser?.userId ?? effectiveUser?.pi_user_id ?? effectiveUser?.username ?? null;
 
-  /* ---------- Derived ---------- */
   const theme = comp?.theme || comp?.comp?.theme;
   const displayTitle = title ?? comp?.title ?? comp?.comp?.title ?? 'Competition';
 
@@ -250,15 +208,14 @@ export default function LaunchCompetitionDetailCard({
   const available = Math.max(0, (totalTickets ?? 0) - (ticketsSold ?? 0));
   const soldPct = totalTickets > 0 ? Math.min(100, Math.floor(((ticketsSold ?? 0) / totalTickets) * 100)) : 0;
 
-  // Countdown (cosmetic)
-  const [now, setNow] = useState(Date.now());
-  const msLeft = useMemo(() => (endsAt ? Math.max(0, new Date(endsAt).getTime() - now) : null), [endsAt, now]);
+  const [nowTs, setNowTs] = useState(Date.now());
+  const msLeft = useMemo(() => (endsAt ? Math.max(0, new Date(endsAt).getTime() - nowTs) : null), [endsAt, nowTs]);
   const isLast24h = msLeft !== null && msLeft <= 24 * 60 * 60 * 1000;
 
   useEffect(() => {
     if (!endsAt) return;
     const tick = isLast24h ? 1000 : 60000;
-    const id = setInterval(() => setNow(Date.now()), tick);
+    const id = setInterval(() => setNowTs(Date.now()), tick);
     return () => clearInterval(id);
   }, [endsAt, isLast24h]);
 
@@ -266,17 +223,14 @@ export default function LaunchCompetitionDetailCard({
   const entryNum = typeof rawEntry === 'string' ? parseFloat(rawEntry) : Number(rawEntry) || 0;
   const isFree = entryNum <= 0;
 
-  /* ---------- Prize tiers ---------- */
   const tiers = useMemo(() => buildPrizeBreakdownFromComp(comp, prize), [comp, prize]);
   const winnersCount = useMemo(() => getWinnersCount(comp, tiers), [comp, tiers]);
   const ordinals = useMemo(() => ['1st', '2nd', '3rd'].slice(0, winnersCount), [winnersCount]);
 
-  /* ---------- Terms content (modal) ---------- */
   const slug = comp?.slug || comp?.comp?.slug;
   const termsContent = (slug && COMPETITION_TERMS[slug]) || DEFAULT_TERMS;
   const [showTerms, setShowTerms] = useState(false);
 
-  /* ---------- Skill gate & payment ---------- */
   const [qty, setQty] = useState(1);
   const [showSkill, setShowSkill] = useState(false);
   const [skillAnswer, setSkillAnswer] = useState('');
@@ -291,14 +245,11 @@ export default function LaunchCompetitionDetailCard({
 
   const onCheckAnswer = (e) => {
     e?.preventDefault?.();
-
     let ok = isAnswerCorrectFlexible(question, skillAnswer);
     if (!ok && typeof checkAnswer === 'function') {
       try { ok = checkAnswer(question, skillAnswer); } catch {}
     }
-
     setAnswerOK(ok);
-
     if (ok) {
       setAnswerError('');
       setShowSkill(false);
@@ -331,20 +282,15 @@ export default function LaunchCompetitionDetailCard({
     }
   };
 
-  /* ===================== RENDER ===================== */
   return (
     <div className="relative">
-      {/* subtle glow */}
-      <div className="pointer-events-none absolute -inset-2 rounded-3xl blur-2xl opacity-40
-                      bg-[radial-gradient(circle_at_20%_10%,rgba(34,211,238,0.25),transparent_40%),radial-gradient(circle_at_80%_90%,rgba(59,130,246,0.25),transparent_35%)]" />
+      <div className="pointer-events-none absolute -inset-2 rounded-3xl blur-2xl opacity-40 bg-[radial-gradient(circle_at_20%_10%,rgba(34,211,238,0.25),transparent_40%),radial-gradient(circle_at_80%_90%,rgba(59,130,246,0.25),transparent_35%)]" />
 
       <div className="relative grid gap-6 lg:grid-cols-[1fr_420px]">
-        {/* ============ LEFT: HERO & DETAILS ============ */}
+        {/* LEFT */}
         <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur p-5 sm:p-6">
-          {/* title + status (cosmetic) */}
           <div className="flex items-start justify-between gap-3">
-            <h1 className="font-orbitron text-2xl sm:text-3xl font-extrabold tracking-wide
-                           bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-blue-400 to-cyan-300">
+            <h1 className="font-orbitron text-2xl sm:text-3xl font-extrabold tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-blue-400 to-cyan-300">
               {displayTitle}
             </h1>
             {status === 'active' && <Pill tone="green">Live</Pill>}
@@ -352,27 +298,14 @@ export default function LaunchCompetitionDetailCard({
             {status === 'ended' && <Pill tone="red">Closed</Pill>}
           </div>
 
-          {/* image OR prize banner */}
           <div className="mt-4 relative rounded-xl overflow-hidden border border-white/10">
             {imageUrl ? (
-              <img
-                src={imageUrl}
-                alt={displayTitle}
-                className="h-48 w-full object-cover"
-                loading="lazy"
-              />
+              <img src={imageUrl} alt={displayTitle} className="h-48 w-full object-cover" loading="lazy" />
             ) : (
-              <PrizeBanner
-                value={primaryPrizeFrom({ comp, prize, tiers, theme })}
-                theme={theme}
-              />
+              <PrizeBanner value={primaryPrizeFrom({ comp, prize, tiers, theme })} theme={theme} />
             )}
           </div>
 
-          {/* description */}
-          <p className="mt-4 text-sm text-white/80 leading-relaxed">{effectiveDescription}</p>
-
-          {/* small stats row */}
           <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
             <Stat label="Starts" value={formattedStart} />
             <Stat label="Ends" value={formattedEnd} />
@@ -380,35 +313,26 @@ export default function LaunchCompetitionDetailCard({
             <Stat label="Tickets" value={`${ticketsSold ?? 0} / ${totalTickets ?? 0}`} />
           </div>
 
-          {/* progress */}
           <div className="mt-4">
             <div className="flex items-center justify-between text-[11px] text-cyan-300 mb-1">
-              <span>Progress</span>
-              <span>{soldPct}%</span>
+              <span>Progress</span><span>{soldPct}%</span>
             </div>
             <div className="h-2 w-full rounded-full bg-white/10 overflow-hidden border border-white/10">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-cyan-300 to-blue-400 transition-[width] duration-700"
-                style={{ width: `${soldPct}%` }}
-              />
+              <div className="h-full rounded-full bg-gradient-to-r from-cyan-300 to-blue-400 transition-[width] duration-700" style={{ width: `${soldPct}%` }} />
             </div>
           </div>
 
-          {/* prizes */}
           <div className="mt-6">
             <div className={`grid gap-3 ${winnersCount === 1 ? 'sm:grid-cols-1' : winnersCount === 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-3'}`}>
               {ordinals.map((k) => (
                 <div key={k} className="rounded-xl border border-cyan-300/40 bg-cyan-300/10 p-3 text-center">
                   <div className="text-[11px] uppercase tracking-wide text-cyan-200">{k} Prize</div>
-                  <div className="mt-1 text-lg font-extrabold text-cyan-300">
-                    {formatPrize(tiers[k] ?? 'TBA', theme)}
-                  </div>
+                  <div className="mt-1 text-lg font-extrabold text-cyan-300">{formatPrize(tiers[k] ?? 'TBA', theme)}</div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* terms modal trigger */}
           <div className="mt-6 text-center">
             <button
               type="button"
@@ -421,13 +345,11 @@ export default function LaunchCompetitionDetailCard({
           </div>
         </section>
 
-        {/* ============ RIGHT: PURCHASE PANEL ============ */}
+        {/* RIGHT: PURCHASE PANEL */}
         <aside
           id="purchase-panel"
-          // --- MODIFIED LINE BELOW ---
-          className="rounded-2xl border border-cyan-400/40 bg-[#0b1220]/90 p-5 sm:p-6 shadow-[0_0_24px_rgba(34,211,238,0.16)] lg:pb-0 pb-20"
+          className="rounded-2xl border border-cyan-400/40 bg-[#0b1220]/90 p-5 sm:p-6 shadow-[0_0_24px_rgba(34,211,238,0.16)]"
         >
-          {/* countdown (cosmetic) */}
           {endsAt && (
             <div className={`mb-3 text-center text-sm ${isLast24h ? 'text-amber-300' : 'text-cyan-300'}`} aria-live="polite">
               {(() => {
@@ -447,7 +369,6 @@ export default function LaunchCompetitionDetailCard({
             </div>
           )}
 
-          {/* totals */}
           <div className="rounded-xl border border-white/10 bg-white/5 p-3">
             <div className="flex items-center justify-between text-sm">
               <span className="text-white/80">Entry Fee</span>
@@ -463,29 +384,24 @@ export default function LaunchCompetitionDetailCard({
                       disabled={qty <= 1}
                       className="rounded-lg bg-white/10 px-2 py-1 text-white/90 disabled:opacity-50"
                       aria-label="Decrease quantity"
-                    >
-                      −
-                    </button>
+                    >−</button>
                     <span className="w-6 text-center font-semibold">{qty}</span>
                     <button
                       onClick={() => setQty(q => Math.min(available || Infinity, q + 1))}
                       disabled={available > 0 ? qty >= available : false}
                       className="rounded-lg bg-white/10 px-2 py-1 text-white/90 disabled:opacity-50"
                       aria-label="Increase quantity"
-                    >
-                      +
-                    </button>
+                    >+</button>
                   </div>
                 </div>
                 <div className="mt-2 flex items-center justify-between text-sm">
                   <span className="text-white/80">Total</span>
-                  <span className="font-bold text-cyan-300">{totalPrice.toFixed(2)} π</span>
+                  <span className="font-bold text-cyan-300">{(entryNum * qty).toFixed(2)} π</span>
                 </div>
               </>
             )}
           </div>
 
-          {/* stock note */}
           {!isFree && available > 0 && available <= Math.ceil((totalTickets ?? 0) * 0.25) && (
             <div className="mt-2 text-center text-xs text-amber-300">Hurry — only {available} tickets left</div>
           )}
@@ -493,7 +409,6 @@ export default function LaunchCompetitionDetailCard({
             <div className="mt-2 text-center text-xs text-red-300">Sold out</div>
           )}
 
-          {/* login (no longer gated by status) */}
           {!effectiveUser && (
             <button
               onClick={loginFn}
@@ -503,7 +418,6 @@ export default function LaunchCompetitionDetailCard({
             </button>
           )}
 
-          {/* free flow (no longer gated by status) */}
           {isFree && (
             <div className="mt-4 space-y-3">
               <button
@@ -523,7 +437,6 @@ export default function LaunchCompetitionDetailCard({
             </div>
           )}
 
-          {/* paid flow (no longer gated by status) */}
           {!isFree && effectiveUser && (
             <>
               {!showSkill && !showPayButton && (
@@ -547,10 +460,7 @@ export default function LaunchCompetitionDetailCard({
                   />
                   {answerError && <div className="text-xs text-red-400">{answerError}</div>}
                   <div className="flex gap-2 pt-1">
-                    <button
-                      type="submit"
-                      className="flex-1 rounded-lg bg-cyan-400 py-2 text-sm font-semibold text-black"
-                    >
+                    <button type="submit" className="flex-1 rounded-lg bg-cyan-400 py-2 text-sm font-semibold text-black">
                       Check Answer
                     </button>
                     <button
@@ -566,7 +476,6 @@ export default function LaunchCompetitionDetailCard({
 
               {!showSkill && showPayButton && (
                 <div className="mt-4 space-y-2">
-                  {/* Primary action after passing the skill check */}
                   <button
                     type="button"
                     onClick={onProceed}
@@ -575,7 +484,6 @@ export default function LaunchCompetitionDetailCard({
                     Pay with π
                   </button>
 
-                  {/* Optional existing integration button */}
                   <BuyTicketButton
                     competitionSlug={comp?.slug}
                     entryFee={entryNum}
@@ -590,78 +498,12 @@ export default function LaunchCompetitionDetailCard({
             </>
           )}
 
-          {/* gift (optional) */}
           {GiftTicketModal && effectiveUser?.username && (
             <GiftTicketModalTrigger comp={comp} GiftTicketModal={GiftTicketModal} />
           )}
 
-          {/* footer note */}
-          <p className="mt-6 text-center text-xs text-cyan-300/90">
-            Good luck, Pioneer! Make your move.
-          </p>
+          <p className="mt-6 text-center text-xs text-cyan-300/90">Good luck, Pioneer! Make your move.</p>
         </aside>
-      </div>
-
-      {/* Sticky purchase bar (mobile) — always functional */}
-      <div className="lg:hidden fixed inset-x-0 bottom-0 z-40">
-        <div className="mx-3 mb-3 rounded-xl border border-white/10 bg-[#0b1220]/95 backdrop-blur">
-          <div className="flex items-center justify-between px-4 py-3">
-            <div className="min-w-0">
-              <div className="text-xs text-white/70">Entry</div>
-              <div className="text-base font-semibold text-white truncate">
-                {isFree ? 'Free' : `${entryNum.toFixed(2)} π`}
-              </div>
-            </div>
-
-            {!isFree && (
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setQty(q => Math.max(1, q - 1))}
-                  disabled={qty <= 1}
-                  className="h-10 w-10 grid place-items-center rounded-lg bg-white/10 text-white/90 disabled:opacity-50"
-                  aria-label="Decrease quantity"
-                >−</button>
-                <span className="w-6 text-center font-semibold">{qty}</span>
-                <button
-                  onClick={() => setQty(q => q + 1)}
-                  className="h-10 w-10 grid place-items-center rounded-lg bg-white/10 text-white/90"
-                  aria-label="Increase quantity"
-                >+</button>
-              </div>
-            )}
-
-            <button
-              onClick={() => {
-                const el = document.getElementById('purchase-panel');
-                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-                // If the user isn't logged in and it's a paid comp, ask them to log in first
-                if (!isFree && !effectiveUser) {
-                  loginFn?.();
-                  return;
-                }
-
-                if (isFree) {
-                  claimFreeTicket?.(1);
-                  return;
-                }
-
-                // If the user already passed the skill check, proceed to payment
-                if (answerOK) {
-                  onProceed();
-                  return;
-                }
-
-                // Otherwise open the skill gate
-                setShowSkill(true);
-                setShowPayButton(false);
-              }}
-              className="ml-3 shrink-0 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 px-5 py-3 text-sm font-semibold text-black"
-            >
-              {isFree ? 'Claim Free' : `Pay ${Math.max(0, entryNum * qty).toFixed(2)} π`}
-            </button>
-          </div>
-        </div>
       </div>
 
       {/* Terms Modal */}
@@ -683,13 +525,10 @@ export default function LaunchCompetitionDetailCard({
         </div>
       </UiModal>
 
-      {/* motion preferences */}
       <style jsx global>{`
         @media (prefers-reduced-motion: reduce) {
           .motion-safe\\:animate-spin,
-          .motion-safe\\:animate-pulse {
-            animation: none !important;
-          }
+          .motion-safe\\:animate-pulse { animation: none !important; }
           * { scroll-behavior: auto !important; }
         }
       `}</style>
@@ -697,13 +536,13 @@ export default function LaunchCompetitionDetailCard({
   );
 }
 
-/* ---------- small helper for optional gift modal ---------- */
+/* ---------- gift modal trigger ---------- */
 function GiftTicketModalTrigger({ comp, GiftTicketModal }) {
-  const [open, setOpen] = useState(false); // Corrected: setOpen is now available
+  const [open, setOpen] = useState(false);
   return (
     <>
       <button
-        onClick={() => setOpen(true)} // This will now correctly open the modal
+        onClick={() => setOpen(true)}
         className="mt-3 w-full rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 py-3 font-semibold text-black"
       >
         🎁 Gift a Ticket

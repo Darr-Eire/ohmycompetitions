@@ -1,475 +1,564 @@
 // src/pages/competitions/launch-week.js
-'use client'
+'use client';
 
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
-import { motion } from 'framer-motion'
-import { Sparkles, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react'
-import LaunchCompetitionCard from '@components/LaunchCompetitionCard'
+import Link from 'next/link';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import Head from 'next/head';
+import dynamic from 'next/dynamic';
+import { RefreshCw, Sparkles, Trophy } from 'lucide-react';
 
-/* ------------------------------ Helpers ------------------------------ */
+const GiftTicketModal = dynamic(() => import('@components/GiftTicketModal'), { ssr: false });
+
+const REFRESH_MS = 20000; // 20s soft live refresh
+
+/* ------------------------------ utils ------------------------------ */
+const toNum = (v, d = 0) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : d;
+};
+
+const now = () => new Date().getTime();
+
+function getStatus(c) {
+  const comp = c.comp ?? c;
+  const start = comp?.startsAt ? new Date(comp.startsAt).getTime() : null;
+  const end = comp?.endsAt ? new Date(comp.endsAt).getTime() : null;
+  const ts = now();
+  if (start && ts < start) return 'upcoming';
+  if (end && ts > end) return 'ended';
+  return 'live';
+}
+
+function msToShort(ms) {
+  if (ms <= 0) return '0m';
+  const s = Math.floor(ms / 1000);
+  const d = Math.floor(s / 86400);
+  const h = Math.floor((s % 86400) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  if (d > 0) return `${d}d ${h}h`;
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
+
+function timeUntilEndMs(c) {
+  const comp = c.comp ?? c;
+  const end = comp?.endsAt ? new Date(comp.endsAt).getTime() : null;
+  if (!end) return NaN;
+  return end - now();
+}
+
+function timeLeftLabel(c) {
+  const ms = timeUntilEndMs(c);
+  if (!Number.isFinite(ms)) return '—';
+  return msToShort(ms);
+}
+
+function ticketsProgress(c) {
+  const comp = c.comp ?? c;
+  const sold = toNum(comp?.ticketsSold);
+  const total = Math.max(toNum(comp?.totalTickets), sold || 0);
+  const pct = total > 0 ? Math.min(100, Math.round((sold / total) * 100)) : 0;
+  return { sold, total, pct };
+}
+
+function feePi(c) {
+  const comp = c.comp ?? c;
+  const fee = comp?.entryFee;
+  if (fee == null) return '—';
+  const n = Number.parseFloat(fee);
+  if (!Number.isFinite(n)) return String(fee);
+  if (n <= 0) return 'Free';
+  return (n % 1 === 0 ? n.toFixed(0) : n.toFixed(2)) + ' π';
+}
+
+const slugOf = (c) => {
+  const comp = c.comp ?? c;
+  return comp?.slug || comp?._id || '';
+};
+const titleOf = (c) => (c.title || (c.comp ?? c)?.title || 'Competition');
+const keyOf = (c) => slugOf(c) || titleOf(c);
+
 const purchaseHref = (c) => {
-  const comp = c?.comp ?? c
-  const slug = comp?.slug || comp?._id || ''
-  return slug ? `/ticket-purchase/${slug}` : '/ticket-purchase'
+  const slug = slugOf(c);
+  return slug ? `/ticket-purchase/${slug}` : '/ticket-purchase';
+};
+
+/* ------------------------------ Prize helpers (REAL PRIZE, never fee) ------------------------------ */
+function parseNumericLike(v) {
+  if (v == null) return NaN;
+  if (typeof v === 'number') return Number.isFinite(v) ? v : NaN;
+  if (typeof v === 'string') {
+    const stripped = v.replace(/[^\d.,-]/g, '').replace(',', '.').trim();
+    const n = Number(stripped);
+    return Number.isFinite(n) ? n : NaN;
+  }
+  return NaN;
 }
 
-const bySoonestEnd = (a, b) =>
-  new Date((a.comp || a).endsAt || Infinity) - new Date((b.comp || b).endsAt || Infinity)
+function prizePiDisplay(c) {
+  const raw = c.comp ?? c;
 
-const toTimeLeft = (end) => {
-  if (!end) return null
-  const ms = new Date(end).getTime() - Date.now()
-  if (isNaN(ms)) return null
-  if (ms <= 0) return '0m'
-  const h = Math.floor(ms / 3_600_000)
-  const m = Math.floor((ms % 3_600_000) / 60_000)
-  return h > 0 ? `${h}h ${m}m` : `${m}m`
+  // Never confuse fee with prize
+  const entryFee = parseNumericLike(raw.entryFee);
+
+  // 1) Explicit Pi prize fields
+  const piFields = ['prizeValuePi', 'prizePi', 'topPrizePi'];
+  for (const key of piFields) {
+    const n = parseNumericLike(raw[key]);
+    if (Number.isFinite(n) && (!Number.isFinite(entryFee) || n !== entryFee) && n > 0) {
+      return `${n.toLocaleString()} π`;
+    }
+  }
+
+  // 2) prizes[] array
+  if (Array.isArray(raw.prizes) && raw.prizes.length) {
+    for (const p of raw.prizes) {
+      const n = parseNumericLike(p?.amount ?? p?.value ?? p);
+      if (Number.isFinite(n) && (!Number.isFinite(entryFee) || n !== entryFee) && n > 0) {
+        return `${n.toLocaleString()} π`;
+      }
+    }
+  }
+
+  // 3) generic numeric prizeValue (assume π)
+  const val = parseNumericLike(raw.prizeValue);
+  if (Number.isFinite(val) && (!Number.isFinite(entryFee) || val !== entryFee) && val > 0) {
+    return `${val.toLocaleString()} π`;
+  }
+
+  // 4) textual fallbacks
+  const textCandidates = [raw.topPrize, raw.prizeLabel, raw.prizeText, raw.prize, c.prize].filter(Boolean);
+  if (textCandidates.length) return String(textCandidates[0]);
+
+  return 'TBA';
 }
 
-/* ------------------------------ Tagline Rotator ------------------------------ */
-function TaglineRotator() {
-  const taglines = [
-    'Pi-powered launch prizes 🚀',
-    'New drops, fresh rewards ⚡',
-    'Win tech, Pi & more 💎',
-    'Entry from 0.25 π — jump in 🎟️',
-  ]
-  const [index, setIndex] = useState(0)
-  useEffect(() => {
-    const id = setInterval(() => setIndex(i => (i + 1) % taglines.length), 3500)
-    return () => clearInterval(id)
-  }, [])
-  return (
-    <p className="text-center text-white/80 text-sm sm:text-base mt-1 transition-opacity duration-500 ease-in-out">
-      {taglines[index]}
-    </p>
-  )
-}
-
-/* ------------------------------ Subtle Background Motion ------------------------------ */
+/* ------------------------------ background ------------------------------ */
 function BackgroundFX() {
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-      <div className="absolute -top-40 -left-40 h-[420px] w-[420px] rounded-full blur-3xl opacity-20 bg-cyan-400 animate-float-slow" />
-      <div className="absolute -bottom-40 -right-40 h-[420px] w-[420px] rounded-full blur-3xl opacity-15 bg-blue-500 animate-float-slower" />
-      <div className="absolute inset-0 [background-image:radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:18px_18px] opacity-20" />
+      <div className="absolute -top-1/3 left-1/2 -translate-x-1/2 w-[1100px] h-[1100px] rounded-full blur-3xl opacity-10 bg-gradient-to-br from-cyan-500/40 to-blue-600/40" />
+      <div className="absolute bottom-1/3 right-1/3 w-[700px] h-[700px] rounded-full blur-3xl opacity-10 bg-gradient-to-tl from-purple-500/40 to-pink-500/40" />
+      <div className="absolute inset-0 [background-image:radial-gradient(rgba(255,255,255,0.07)_1.5px,transparent_1.5px)] [background-size:22px_22px] opacity-10" />
     </div>
-  )
+  );
 }
 
-/* ------------------------------ Live Counter (frontend trickle) ------------------------------ */
-function useLiveCounter(initial = 420) {
-  const [count, setCount] = useState(initial)
-  useEffect(() => {
-    const tick = () => setCount(c => c + Math.floor(1 + Math.random() * 5))
-    const id = setInterval(tick, 2000 + Math.random() * 2000)
-    return () => clearInterval(id)
-  }, [])
-  return count
-}
+/* ------------------------------ card (stacked details, no icons) ------------------------------ */
+function LiveCard({ data, onGift }) {
+  const comp = data.comp ?? data;
+  const status = getStatus(data);
+  const { sold, total, pct } = ticketsProgress(data);
 
-/* ------------------------------ Small UI bits ------------------------------ */
-function SkeletonSlide() {
+  // countdown
+  const msLeft = timeUntilEndMs(data);
+  const showCountdown48 = Number.isFinite(msLeft) && msLeft > 0 && msLeft <= 48 * 60 * 60 * 1000;
+  const timeLeft = showCountdown48 ? timeLeftLabel(data) : (status === 'ended' ? 'Ended' : '—');
+
+  const theTitle = titleOf(data);
+  const prizeText = prizePiDisplay(data);
+  const feeText = feePi(data);
+
   return (
-    <div className="snap-start min-w-full px-4">
-      <div className="max-w-5xl mx-auto animate-pulse rounded-2xl bg-white/5 border border-white/10 overflow-hidden">
-        <div className="h-48 sm:h-72 bg-white/10" />
-        <div className="p-4 sm:p-6 space-y-3">
-          <div className="h-6 w-2/3 bg-white/10 rounded" />
-          <div className="h-4 w-1/2 bg-white/10 rounded" />
-          <div className="h-10 w-full bg-white/10 rounded" />
+    <article
+      className="
+        group relative rounded-2xl border border-white/10 bg-white/5
+        overflow-hidden transition-all duration-200 hover:bg-white/10
+      "
+    >
+      {/* Media */}
+      <div className="relative aspect-[4/3] w-full overflow-hidden">
+        <img
+          src={data.imageUrl || comp.imageUrl || '/pi.jpeg'}
+          alt={theTitle}
+          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+          loading="lazy"
+          decoding="async"
+        />
+        <div className="absolute left-2 top-2">
+          {status === 'live' && (
+            <span className="rounded-md bg-emerald-500/25 px-2 py-0.5 text-emerald-200 text-[11px] font-bold">
+              LIVE
+            </span>
+          )}
+          {status === 'upcoming' && (
+            <span className="rounded-md bg-yellow-500/25 px-2 py-0.5 text-yellow-100 text-[11px] font-bold">
+              UPCOMING
+            </span>
+          )}
+          {status === 'ended' && (
+            <span className="rounded-md bg-white/25 px-2 py-0.5 text-white/90 text-[11px] font-bold">
+              FINISHED
+            </span>
+          )}
         </div>
       </div>
-    </div>
-  )
+
+      {/* Body: stacked details */}
+      <div className="p-3.5 sm:p-4">
+        {/* Title + fee */}
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="text-[15px] sm:text-[16px] font-semibold leading-snug line-clamp-2">
+            {theTitle}
+          </h3>
+          <span className="shrink-0 rounded-md bg-cyan-500/15 border border-cyan-400/30 px-2 py-1 text-[11px] font-bold text-cyan-300">
+            {feeText}
+          </span>
+        </div>
+
+        {/* Details (no icons) */}
+        <div className="mt-3 space-y-1.5 text-[13px] text-white/85">
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="text-white/60">Prize</span>
+            <span className="font-semibold">{prizeText}</span>
+          </div>
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="text-white/60">Fee</span>
+            <span className="font-semibold">{feeText}</span>
+          </div>
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="text-white/60">Tickets</span>
+            <span className="font-semibold">
+              {total ? `${sold}/${total}` : sold}
+              {Number.isFinite(total) && total > 0 ? (
+                <span className="text-white/55"> • {pct}% sold</span>
+              ) : null}
+            </span>
+          </div>
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="text-white/60">Ends</span>
+            <span className="font-semibold tabular-nums">{timeLeft}</span>
+          </div>
+        </div>
+
+        {/* Progress */}
+        <div className="mt-3">
+          <div className="h-2 w-full rounded-full bg-white/10 overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-cyan-400 to-blue-500"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+        </div>
+
+        {/* CTA */}
+        <div className="mt-3">
+          <Link
+            href={purchaseHref(data)}
+            className="
+              block w-full text-center rounded-lg
+              bg-gradient-to-r from-green-400 to-cyan-500
+              text-black font-extrabold px-3 py-2 text-[13px]
+              hover:brightness-110 active:translate-y-px transition-all
+            "
+          >
+            More Details
+          </Link>
+        </div>
+
+        {/* Gift */}
+        <div className="mt-2 text-center">
+          <button onClick={() => onGift(data)} className="text-[12px] underline text-cyan-300">
+            Gift a ticket
+          </button>
+        </div>
+      </div>
+    </article>
+  );
 }
 
-function EmptyState({ onRefresh }) {
+/* ------------------------------ empty/skeleton ------------------------------ */
+function EmptyState({ onRefresh, label = 'competitions' }) {
   return (
-    <div className="text-center py-16 rounded-2xl border border-white/10 bg-white/5">
-      <Sparkles className="mx-auto mb-4" />
-      <h3 className="text-xl font-semibold">No launch-week competitions yet</h3>
-      <p className="text-white/70 mt-2">Check back soon, we’re gearing up more prizes.</p>
+    <div className="text-center py-12 rounded-2xl border border-white/10 bg-white/5 mx-4 my-8">
+      <Sparkles className="mx-auto mb-4 text-cyan-400" size={32} />
+      <h3 className="text-lg font-semibold">No {label} right now</h3>
+      <p className="text-white/70 mt-2">New challenges are on the horizon. Stay tuned!</p>
       <button
         onClick={onRefresh}
-        className="mt-6 inline-flex items-center gap-2 rounded-xl bg-cyan-400 text-black font-semibold px-4 py-2 hover:brightness-110 active:translate-y-px"
+        type="button"
+        className="mt-6 inline-flex items-center gap-2 rounded-xl bg-cyan-400 text-black font-semibold px-4 py-2 hover:brightness-110 active:translate-y-px transition-all"
       >
         <RefreshCw size={16} /> Refresh
       </button>
     </div>
-  )
+  );
 }
 
-/* ------------------------------- Full-width Carousel ------------------------------- */
-function FullWidthCarousel({ items, renderItem, ariaLabel }) {
-  const scrollerRef = useRef(null)
-  const [index, setIndex] = useState(0)
-
-  const clamp = useCallback(
-    (i) => Math.max(0, Math.min(i, (items?.length || 1) - 1)),
-    [items?.length]
-  )
-
-  const scrollToIndex = useCallback(
-    (i) => {
-      const el = scrollerRef.current
-      if (!el) return
-      const target = clamp(i)
-      const left = target * el.clientWidth
-      el.scrollTo({ left, behavior: 'smooth' })
-    },
-    [clamp]
-  )
-
-  const onScroll = useCallback(() => {
-    const el = scrollerRef.current
-    if (!el) return
-    const next = Math.round(el.scrollLeft / el.clientWidth)
-    if (next !== index) setIndex(next)
-  }, [index])
-
-  useEffect(() => {
-    const el = scrollerRef.current
-    if (!el) return
-    el.addEventListener('scroll', onScroll, { passive: true })
-    return () => el.removeEventListener('scroll', onScroll)
-  }, [onScroll])
-
-  useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === 'ArrowRight') scrollToIndex(index + 1)
-      if (e.key === 'ArrowLeft') scrollToIndex(index - 1)
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [index, scrollToIndex])
-
-  if (!items?.length) return null
-
+function SkeletonCard() {
   return (
-    <div className="relative">
-      {/* edge fades */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-[#0f1b33] to-transparent z-10" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[#0f1b33] to-transparent z-10" />
-
-      {/* scroller */}
-      <div
-        ref={scrollerRef}
-        className="
-          w-full
-          snap-x snap-mandatory
-          overflow-x-auto overflow-y-visible
-          scroll-smooth
-          overscroll-x-contain
-          [touch-action:pan-x pan-y]
-          [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden
-        "
-        aria-roledescription="carousel"
-        aria-label={ariaLabel}
-      >
-        <div className="flex">
-          {items.map((item, i) => (
-            <div
-              key={item.key || i}
-              className="snap-start snap-always basis-full shrink-0"
-              role="group"
-              aria-roledescription="slide"
-              aria-label={`${i + 1} of ${items.length}`}
-            >
-              <div className="px-4">
-                <div
-                  className="mx-auto w-full max-w-[min(92vw,820px)] carousel-card competition-card select-none"
-                  style={{ WebkitTapHighlightColor: 'transparent' }}
-                >
-                  {renderItem(item, i)}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Prev / Next */}
-      <div className="absolute inset-y-0 left-2 sm:left-4 flex items-center z-20">
-        <button
-          type="button"
-          onClick={() => scrollToIndex(index - 1)}
-          disabled={index === 0}
-          className={`h-11 w-11 sm:h-12 sm:w-12 rounded-full p-2 border bg-white/10 backdrop-blur border-white/20 hover:bg-white/15 active:scale-95 transition
-            ${index === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-          aria-label="Previous"
-        >
-          <ChevronLeft />
-        </button>
-      </div>
-      <div className="absolute inset-y-0 right-2 sm:right-4 flex items-center z-20">
-        <button
-          type="button"
-          onClick={() => scrollToIndex(index + 1)}
-          disabled={index === items.length - 1}
-          className={`h-11 w-11 sm:h-12 sm:w-12 rounded-full p-2 border bg-white/10 backdrop-blur border-white/20 hover:bg-white/15 active:scale-95 transition
-            ${items?.length ? (index === items.length - 1 ? 'opacity-50 cursor-not-allowed' : '') : ''}`}
-          aria-label="Next"
-        >
-          <ChevronRight />
-        </button>
-      </div>
-
-      {/* dots */}
-      <div className="mt-4 flex items-center justify-center gap-2">
-        {items.map((_, i) => (
-          <button
-            key={i}
-            type="button"
-            onClick={() => scrollToIndex(i)}
-            className={`h-2.5 rounded-full transition-all ${i === index ? 'w-6 bg-cyan-400' : 'w-2.5 bg-white/40'}`}
-            aria-label={`Go to slide ${i + 1}`}
-          />
-        ))}
+    <div className="animate-pulse rounded-2xl bg-white/5 border border-white/10 overflow-hidden">
+      <div className="aspect-[4/3] bg-white/10" />
+      <div className="p-3 space-y-2">
+        <div className="h-4 w-3/4 bg-white/10 rounded" />
+        <div className="h-3 w-1/2 bg-white/10 rounded" />
+        <div className="h-2 w-full bg-white/10 rounded" />
       </div>
     </div>
-  )
+  );
 }
 
-/* ---------------------------------- Page ---------------------------------- */
+/* ------------------------------ page ------------------------------ */
 export default function LaunchWeekCompetitionsPage() {
-  const [competitions, setCompetitions] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const ticketsToday = useLiveCounter(420) // purely visual
+  const [competitions, setCompetitions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [activeFilter, setActiveFilter] = useState('Live'); // same tabs
+  const [tick, setTick] = useState(0);
 
-  const fetchCompetitions = useCallback(async () => {
-    setLoading(true)
-    setError(null)
+  // Gift modal state
+  const [giftOpen, setGiftOpen] = useState(false);
+  const [giftComp, setGiftComp] = useState(null);
+
+  const fetchData = useCallback(async () => {
     try {
-      const res = await fetch('/api/competitions/all')
-      if (!res.ok) {
-        const text = await res.text()
-        throw new Error(`HTTP ${res.status} – ${text}`)
-      }
-      const payload = await res.json()
-      let arr = []
-      if (Array.isArray(payload)) arr = payload
-      else if (Array.isArray(payload.data)) arr = payload.data
-      else if (Array.isArray(payload.competitions)) arr = payload.competitions
+      setError(null);
+      const res = await fetch('/api/competitions/all', {
+        method: 'GET',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'cache-control': 'no-cache' },
+      });
+      if (!res.ok) throw new Error(`Failed to fetch competitions (${res.status})`);
+      const json = await res.json();
 
-      const launchOnly = arr.filter((c) => (c.theme || c?.comp?.theme || '').toLowerCase() === 'launch')
-      setCompetitions(launchOnly)
-    } catch (err) {
-      console.error('❌ fetch error:', err)
-      setError(`Failed to load competitions: ${err.message}`)
+      let arr = [];
+      if (Array.isArray(json)) arr = json;
+      else if (Array.isArray(json?.data)) arr = json.data;
+      else if (Array.isArray(json?.competitions)) arr = json.competitions;
+
+      // Only LAUNCH theme
+      const launchOnly = arr.filter((c) => (c.theme || c?.comp?.theme || '').toLowerCase() === 'launch');
+      setCompetitions(launchOnly);
+    } catch (e) {
+      console.error(e);
+      setError('Failed to load competitions. Please try again.');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    fetchCompetitions()
-  }, [fetchCompetitions])
+    fetchData();
+    const id = setInterval(() => setTick((t) => t + 1), REFRESH_MS);
+    return () => clearInterval(id);
+  }, [fetchData]);
 
-  const slides = useMemo(() => {
-    const sorted = [...competitions].sort(bySoonestEnd)
-    return sorted.map((raw) => {
-      const comp = raw.comp ?? raw
-      return {
-        key: comp.slug || comp._id || comp.title || Math.random().toString(36).slice(2),
-        comp,
-        title: raw.title || comp.title,
-        prize: raw.prize || comp.prize,
-        fee: `${(comp.entryFee ?? 0).toFixed(2)} \u03C0`,
-        imageUrl: raw.imageUrl || comp.imageUrl,
-        endsAt: comp.endsAt,
-        href: purchaseHref(comp), // deep-link to purchase
-      }
-    })
-  }, [competitions])
+  useEffect(() => {
+    if (tick > 0) fetchData();
+  }, [tick, fetchData]);
 
-  /* Ending Soon (<= 60m) for ticker */
+  // Normalized & sort helpers
+  const normalized = useMemo(() => {
+    return competitions.map((item) => {
+      const comp = item.comp ?? item;
+      const status = getStatus(item);
+      const end = comp?.endsAt ? new Date(comp.endsAt).getTime() : Number.POSITIVE_INFINITY;
+      const start = comp?.startsAt ? new Date(comp.startsAt).getTime() : 0;
+      const score =
+        status === 'live'
+          ? end
+          : status === 'upcoming'
+          ? start
+          : end;
+      return { ...item, __status: status, __score: score, __end: end };
+    });
+  }, [competitions]);
+
+  // Ending soon list (< 60 min & live)
   const endingSoon = useMemo(() => {
-    const cutoff = Date.now() + 60 * 60 * 1000
-    return slides
-      .filter(s => s.endsAt && new Date(s.endsAt).getTime() < cutoff)
-      .sort((a, b) => new Date(a.endsAt) - new Date(b.endsAt))
-      .slice(0, 4)
-  }, [slides])
+    const cutoff = now() + 60 * 60 * 1000;
+    return normalized
+      .filter((n) => n.__status === 'live' && n.__end < cutoff)
+      .sort((a, b) => a.__end - b.__end);
+  }, [normalized]);
 
-  const heroStats = useMemo(() => {
-    if (!slides.length) return { count: 0, minFee: 0, soonest: null }
-    const fees = slides.map((s) => Number(s.comp?.entryFee ?? 0)).filter(Number.isFinite)
-    const minFee = fees.length ? Math.min(...fees) : 0
-    const soonest =
-      slides
-        .map((s) => new Date(s.endsAt))
-        .filter((d) => Number.isFinite(d.getTime()))
-        .sort((a, b) => a - b)[0] || null
-    return { count: slides.length, minFee, soonest }
-  }, [slides])
+  const filtered = useMemo(() => {
+    if (activeFilter === 'Live') return normalized.filter(n => n.__status === 'live').sort((a, b) => a.__score - b.__score);
+    if (activeFilter === 'Ending Soon') {
+      return normalized
+        .filter(n => n.__status === 'live')
+        .sort((a, b) => a.__end - b.__end)
+        .slice(0, 24);
+    }
+    if (activeFilter === 'All') {
+      return normalized
+        .slice()
+        .sort((a, b) => {
+          const rank = { live: 0, upcoming: 1, ended: 2 };
+          const r = rank[a.__status] - rank[b.__status];
+          return r !== 0 ? r : a.__score - b.__score;
+        });
+    }
+    return normalized;
+  }, [normalized, activeFilter]);
 
-  const fmtDate = (d) =>
-    !d ? 'TBA' : new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(d)
+  const liveCount = normalized.filter(n => n.__status === 'live').length;
+  const totalPrizePool = useMemo(() => {
+    return competitions.reduce((sum, c) => sum + (toNum((c.comp ?? c)?.prizeValue, 0)), 0);
+  }, [competitions]);
 
-  const go = (s) => {
-    window.location.href = s?.href || '/'
-  }
+  const openGift = (c) => {
+    setGiftComp(c.comp ?? c);
+    setGiftOpen(true);
+    if (navigator.vibrate) navigator.vibrate(15);
+  };
 
-  if (loading) {
-    return (
-      <main className="relative min-h-[100svh] text-white overflow-hidden bg-[#0f1b33]">
-        <BackgroundFX />
-        <section className="px-4 py-16">
-          <div className="max-w-5xl mx-auto text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-cyan-400 mx-auto" />
-            <p className="mt-4 text-cyan-300">Loading launch-week competitions…</p>
-          </div>
-        </section>
-      </main>
-    )
-  }
+  const go = (c) => {
+    window.location.href = purchaseHref(c);
+  };
 
   return (
-    <main className="app-background min-h-[100svh] text-white bg-[#0f1b33] pt-[calc(10px+env(safe-area-inset-top))] md:pt-[calc(80px+env(safe-area-inset-top))] relative overflow-hidden">
-      <BackgroundFX />
+    <>
+      <Head>
+        <title>Launch Week Competitions | OhMyCompetitions</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+      </Head>
 
-      {/* Hero */}
-      <section className="px-4 sm:px-6 lg:px-10">
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35 }}
-          className="max-w-5xl mx-auto text-center"
-        >
-          <h1 className="text-2xl font-bold mb-1 bg-gradient-to-r from-[#00ffd5] to-[#0077ff] bg-clip-text text-transparent">
-            Launch Week Competitions
-          </h1>
+      <main className="relative min-h-[100svh] text-white bg-[#0f1b33]">
+        <BackgroundFX />
 
-          <TaglineRotator />
+        {/* Slim header */}
+        <header className="relative z-10 pt-[calc(12px+env(safe-area-inset-top))] pb-3 sm:pb-4">
+          <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+              <div>
+                <h1 className="text-[22px] sm:text-[28px] font-extrabold tracking-tight">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff]">
+                    Launch Week Competitions
+                  </span>
+                </h1>
+                <p className="text-white/70 text-[13px] sm:text-[14px]">
+                  Pi-powered prizes. Fresh drops. Easy entry.
+                </p>
+              </div>
 
-          <div className="text-center max-w-2xl mx-auto mb-2 mt-3">
-            <p className="text-white/80 text-xs sm:text-sm">
-              <span className="text-cyan-300 font-semibold">{ticketsToday.toLocaleString()}</span> tickets sold today ·{' '}
-              <span className="text-cyan-300 font-semibold">{heroStats.count}</span> live competitions
-            </p>
-            <p className="text-white/70 text-xs sm:text-sm">
-              Use arrows or swipe to browse.&nbsp;
-            </p>
-          </div>
-
-          <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
-            <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
-              ⏳ Soonest draw: <b className="text-white">{fmtDate(heroStats.soonest)}</b>
-            </span>
-            <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
-              🎟 Easy entry
-            </span>
-            <span className="text-[11px] sm:text-xs px-2 py-1 rounded-lg bg-white/10 border border-white/10 text-white/80">
-              ⚡ New drops weekly
-            </span>
-          </div>
-        </motion.div>
-      </section>
-
-      {/* Ending Soon Ticker (subtle, above carousel) */}
-      {endingSoon.length > 0 && (
-        <div className="sticky top-[calc(44px+env(safe-area-inset-top))] z-30 bg-[#0f1b33]/95 px-3 py-2 border-b border-white/10 text-[12px]">
-          <div className="mx-auto w-full max-w-6xl">
-            <div className="flex gap-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {endingSoon.map((s) => (
+              {/* compact stats */}
+              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                <div className="web3-stat-card !px-3 !py-2">
+                  <Trophy size={18} className="text-yellow-300" />
+                  <span className="text-[10px] text-white/70">Total Pool</span>
+                  <span className="text-[14px] font-bold text-cyan-300">{totalPrizePool.toLocaleString()} π</span>
+                </div>
+                <div className="web3-stat-card !px-3 !py-2">
+                  <Sparkles size={18} className="text-purple-300" />
+                  <span className="text-[10px] text-white/70">Live Now</span>
+                  <span className="text-[14px] font-bold text-blue-400">{liveCount}</span>
+                </div>
                 <button
-                  key={s.key}
-                  onClick={() => go(s)}
-                  className="shrink-0 inline-flex items-center gap-2 px-2 py-1 rounded-md bg-white/5 hover:bg-white/10"
+                  onClick={() => location.reload()}
+                  className="web3-stat-card !px-3 !py-2 active:translate-y-px"
+                  title="Refresh"
                   type="button"
                 >
-                  <span className="rounded-sm bg-pink-500/20 text-pink-300 px-1.5 py-0.5 text-[11px]">
-                    Ends {toTimeLeft(s.endsAt) ?? '—'}
-                  </span>
-                  <span className="text-white/80 truncate max-w-[200px]">
-                    {s.title}
-                  </span>
+                  <RefreshCw size={18} className="text-orange-300" />
+                  <span className="text-[10px] text-white/70">Updated</span>
+                  <span className="text-[12px] font-bold text-pink-300">~{Math.round(REFRESH_MS/1000)}s</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Ending Soon Ticker */}
+        {endingSoon.length > 0 && (
+          <div className="sticky top-[calc(44px+env(safe-area-inset-top))] z-30 bg-[#0f1b33]/95 px-3 py-2 border-b border-white/10 text-[12px]">
+            <div className="mx-auto w-full max-w-[min(94vw,1400px)]">
+              <div className="flex gap-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {endingSoon.slice(0, 4).map((c) => (
+                  <button
+                    key={keyOf(c)}
+                    onClick={() => go(c)}
+                    className="shrink-0 inline-flex items-center gap-2 px-2 py-1 rounded-md bg-white/5 hover:bg-white/10"
+                    type="button"
+                  >
+                    <span className="rounded-sm bg-pink-500/20 text-pink-300 px-1.5 py-0.5 text-[11px]">
+                      Ends {timeLeftLabel(c)}
+                    </span>
+                    <span className="text-white/80 truncate max-w-[200px]">
+                      {titleOf(c)}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* sticky filters (same tabs, launch-only dataset) */}
+        <div className="sticky top-[calc(6px+env(safe-area-inset-top))] z-20 bg-[#0f1b33]/95 backdrop-blur-sm border-y border-white/10">
+          <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
+            <div className="flex gap-2 overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {['Live', 'Ending Soon', 'All'].map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setActiveFilter(f)}
+                  className={`shrink-0 rounded-full px-3.5 py-1.5 text-[13px] font-semibold transition
+                    ${activeFilter === f
+                      ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md'
+                      : 'text-white/70 hover:text-white hover:bg-white/10 border border-white/20'}`}
+                >
+                  {f}
                 </button>
               ))}
             </div>
           </div>
         </div>
+
+        {/* grid */}
+        <section className="py-6 sm:py-8">
+          <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
+            {loading ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3.5 sm:gap-4">
+                {Array.from({ length: 10 }).map((_, i) => <SkeletonCard key={i} />)}
+              </div>
+            ) : error ? (
+              <EmptyState onRefresh={() => location.reload()} label="launch competitions" />
+            ) : filtered.length === 0 ? (
+              <EmptyState onRefresh={() => location.reload()} label={activeFilter.toLowerCase()} />
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3.5 sm:gap-4">
+                {filtered.map((item) => (
+                  <LiveCard
+                    key={keyOf(item)}
+                    data={item}
+                    onGift={(c) => {
+                      setGiftComp(c.comp ?? c);
+                      setGiftOpen(true);
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      </main>
+
+      {/* Gift modal */}
+      {giftOpen && giftComp && (
+        <GiftTicketModal
+          isOpen={giftOpen}
+          onClose={() => setGiftOpen(false)}
+          comp={giftComp}
+        />
       )}
 
-      {/* Content */}
-      <section className="pb-14">
-        <div className="w-screen">
-          {error && (
-            <div className="mx-4 sm:mx-auto sm:max-w-3xl mb-6 p-4 bg-red-600/15 border border-red-600/40 rounded-2xl text-red-200">
-              {error}
-            </div>
-          )}
-
-          {slides.length > 0 ? (
-            <FullWidthCarousel
-              items={slides}
-              ariaLabel="Launch competitions"
-              renderItem={(s) => (
-                <LaunchCompetitionCard
-                  comp={s.comp}
-                  title={s.title}
-                  prize={s.prize}
-                  fee={s.fee}
-                  imageUrl={s.imageUrl}
-                  endsAt={s.endsAt}
-                />
-              )}
-            />
-          ) : (
-            <div className="px-4 sm:px-6 lg:px-10 max-w-6xl mx-auto">
-              <EmptyState onRefresh={fetchCompetitions} />
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Hover glow + background animations */}
+      {/* compact global styles */}
       <style jsx global>{`
-        .competition-card {
-          transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
-          border-radius: 1rem;
-        }
-        .competition-card:hover {
-          transform: translateY(-4px) scale(1.02);
-          box-shadow: 0 0 18px rgba(0, 255, 213, 0.25), 0 0 28px rgba(0, 119, 255, 0.18);
-        }
+        body { background-color: #0f1b33; color: white; }
 
-        .carousel-card,
-        .carousel-card a,
-        .carousel-card button {
-          -webkit-tap-highlight-color: transparent;
+        .web3-stat-card {
+          background: rgba(255,255,255,0.08);
+          backdrop-filter: blur(8px);
+          border: 1px solid rgba(255,255,255,0.15);
+          border-radius: 0.75rem;
+          padding: 0.75rem;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
-        .carousel-card *:focus-visible {
-          outline: 2px solid #22d3ee !important;
-          outline-offset: 2px;
-        }
-        .carousel-card * ,
-        .carousel-card:hover,
-        .carousel-card:active {
-          transform: none !important;
-          transition-property: transform !important;
-          transition-duration: 0s !important;
-        }
-
-        @keyframes float-slow {
-          0% { transform: translateY(0) translateX(0); }
-          50% { transform: translateY(18px) translateX(6px); }
-          100% { transform: translateY(0) translateX(0); }
-        }
-        @keyframes float-slower {
-          0% { transform: translateY(0) translateX(0); }
-          50% { transform: translateY(-14px) translateX(-8px); }
-          100% { transform: translateY(0) translateX(0); }
-        }
-        .animate-float-slow { animation: float-slow 12s ease-in-out infinite; }
-        .animate-float-slower { animation: float-slower 16s ease-in-out infinite; }
-
-        @media (prefers-reduced-motion: reduce) {
-          * { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
-        }
+        .web3-stat-card svg { margin-bottom: 0.25rem; }
       `}</style>
-    </main>
-  )
+    </>
+  );
 }

@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-
 import GiftTicketModal from '@components/GiftTicketModal';
 import LaunchCompetitionDetailCard from '@components/LaunchCompetitionDetailCard';
 import { usePiAuth } from '../../context/PiAuthContext';

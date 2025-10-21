@@ -83,7 +83,7 @@ export default function FunnelStagesRow({
   return (
     <section className="w-full">
       {/* Header */}
-      <div className="mb-3 sm:mb-4">
+      <div className="mb-3 sm:mb-3">
         <h2 className="text-lg sm:text-xl font-extrabold bg-gradient-to-r from-cyan-300 to-blue-400 bg-clip-text text-transparent">
           {headline}
         </h2>

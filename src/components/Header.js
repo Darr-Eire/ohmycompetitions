@@ -1,3 +1,4 @@
+// File: src/components/Header.jsx
 'use client';
 
 import Link from 'next/link';
@@ -6,7 +7,6 @@ import { useRouter } from 'next/router';
 import { usePiAuth } from '../context/PiAuthContext';
 import { useSafeTranslation } from '../hooks/useSafeTranslation';
 import NotificationsBell from './NotificationsBell';
-// ⛔ Removed LanguageSwitcher import
 
 export default function Header() {
   const { user, login, logout, loading, sdkReady, error } = usePiAuth();
@@ -21,16 +21,14 @@ export default function Header() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const sidebarRef = useRef(null);
 
-  /* ───────────────────────────── Shared button styles ───────────────────────────── */
+  // Buttons match app + mobile nav
   const BTN_BASE =
     'inline-flex items-center justify-center rounded-md text-sm font-bold px-3 py-2 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-black/40 active:scale-[0.99]';
-
   const BTN_GRADIENT =
     'bg-gradient-to-r from-[#00ffd5] via-[#00ccff] to-[#0077ff] text-black shadow-[0_0_14px_rgba(0,255,255,0.25)] hover:shadow-[0_0_18px_rgba(0,255,255,0.35)]';
-
   const BTN_DISABLED = 'opacity-60 cursor-not-allowed shadow-none hover:shadow-none';
 
-  /* ───────────────────────────── Sidebar interactions ───────────────────────────── */
+  // Close sidebar on outside click / Esc
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (sidebarRef.current && !sidebarRef.current.contains(e.target)) setMenuOpen(false);
@@ -38,7 +36,6 @@ export default function Header() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === 'Escape') {
@@ -50,6 +47,7 @@ export default function Header() {
     return () => document.removeEventListener('keydown', onKey);
   }, [isLoggingIn]);
 
+  // Lock body scroll when overlays open
   useEffect(() => {
     document.body.style.overflow = menuOpen || showLoginModal ? 'hidden' : '';
     return () => {
@@ -59,7 +57,7 @@ export default function Header() {
 
   const safeT = (key, fallback = key) => (!mounted || !ready ? fallback : t(key));
 
-  /* ───────────────────────────── Nav data (tuples) ───────────────────────────── */
+  // Nav data
   const competitionCategories = [
     [safeT('live_now', 'Live Now'), '/competitions/live-now'],
     [safeT('launch_week', 'Launch Week'), '/competitions/launch-week'],
@@ -69,7 +67,6 @@ export default function Header() {
     [safeT('pi_stages', 'Pi Stages'), '/stages', safeT('coming_soon', 'Coming Soon')],
     [safeT('pi_cash_code', 'Pi Cash Code'), '/pi-cash-code', safeT('coming_soon', 'Coming Soon')],
   ];
-
   const navItems = [[safeT('home', 'Home'), '/homepage']];
   const miniGames = [[safeT('try_your_luck', 'Try Your Luck'), '/try-your-luck', safeT('coming_soon', 'Coming Soon')]];
   const navExtras = [
@@ -79,19 +76,16 @@ export default function Header() {
     [safeT('about_us', 'About Us'), '/about-us'],
     [safeT('partners_sponsors', 'Partners & Sponsors'), '/partners'],
   ];
-
   const finalNavItems = useMemo(() => {
     const arr = [...navItems];
     if (user) arr.splice(1, 0, [safeT('my_account', 'My Account'), '/account']);
     return arr;
   }, [user, mounted, ready]);
 
-  /* ───────────────────────────── Helpers ───────────────────────────── */
+  // Helpers
   const normalize = (p = '') => (p || '/').replace(/[#?].*$/, '').replace(/\/+$/, '') || '/';
-
   const linkBase =
     'block rounded px-3 py-2 text-sm font-medium transition-all duration-200 relative overflow-hidden group';
-
   const getLinkClass = (href) => {
     const active =
       normalize(router.asPath) === normalize(href) ||
@@ -102,7 +96,6 @@ export default function Header() {
         : 'text-white hover:text-cyan-300'
     }`;
   };
-
   const Section = ({ title, children }) => (
     <div>
       {title && (
@@ -113,14 +106,11 @@ export default function Header() {
       {children}
     </div>
   );
-
   const DISABLED_ROUTES = new Set(['/pi-cash-code', '/stages']);
-
   const Item = ({ tuple }) => {
     const [label, href, note] = tuple;
     const isComingSoon = !!note?.toLowerCase().includes('coming soon');
     const isDisabled = DISABLED_ROUTES.has(href) || isComingSoon;
-
     if (isDisabled) {
       return (
         <div
@@ -137,7 +127,6 @@ export default function Header() {
         </div>
       );
     }
-
     return (
       <Link href={href} className={getLinkClass(href)} onClick={() => setMenuOpen(false)}>
         <span className="relative z-10 flex items-center gap-2">
@@ -153,84 +142,91 @@ export default function Header() {
     );
   };
 
-  /* ───────────────────────────── Render ───────────────────────────── */
   return (
     <>
-      {/* Top Header */}
+      {/* Glass header bar with safe-area top; matches mobile nav look */}
       <header
         className="
           fixed top-0 left-0 right-0 z-50
-          px-3 py-2
-          border-b border-cyan-700
-          backdrop-blur-md bg-[#0f172a]
-          shadow-md
+          px-3 py-2 pt-[calc(env(safe-area-inset-top)+8px)]
+          bg-[rgba(7,20,38,0.72)] backdrop-blur-xl
+          border-b border-white/10
+          shadow-[0_-1px_0_0_rgba(255,255,255,0.04)_inset,0_8px_24px_rgba(0,0,0,0.25)]
         "
+        style={{ WebkitBackdropFilter: 'blur(20px)' }}
       >
-        {/* 3-column grid keeps center perfectly centered on mobile */}
-        <div className="grid grid-cols-3 items-center">
-          {/* Left: menu button */}
-          <div className="justify-self-start">
-            <button
-              onClick={() => setMenuOpen(true)}
-              className={`${BTN_BASE} ${BTN_GRADIENT} px-2 py-1`}
-              aria-label={safeT('open_menu', 'Open menu')}
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 8h16M4 16h16" />
-              </svg>
-            </button>
-          </div>
+        <div className="container">
+          {/* 3-col grid keeps title centered */}
+          <div className="grid grid-cols-3 items-center">
+            {/* Left: Menu button (gradient pill) */}
+            <div className="justify-self-start">
+              <button
+                onClick={() => setMenuOpen(true)}
+                className={`${BTN_BASE} ${BTN_GRADIENT} px-2 py-1 rounded-lg`}
+                aria-label={safeT('open_menu', 'Open menu')}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 8h16M4 16h16" />
+                </svg>
+              </button>
+            </div>
 
-          {/* Middle: Title + Welcome (always perfectly centered) */}
-          <div className="justify-self-center text-center leading-tight">
-     <Link href="/homepage" className="block">
-  <span
-    className="
-      text-lg sm:text-xl font-bold font-orbitron 
-      bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent 
-      drop-shadow 
-      whitespace-nowrap tracking-wide
-    "
-  >
-    Oh My Competitions
-  </span>
-</Link>
-
-            {user ? (
-              <div className="text-cyan-300 text-[12px] sm:text-sm font-orbitron mt-0.5">
-                {(t?.('welcome', 'Welcome') || 'Welcome')}{' '}
-                <span className="text-cyan-300">{user.username}</span>
+            {/* Middle: Title + Welcome (sizes stable via clamp + reserved space) */}
+            <div className="justify-self-center text-center leading-tight">
+              <Link href="/homepage" className="block">
+                <span
+                  className="
+                    font-bold font-orbitron
+                    bg-gradient-to-r from-cyan-400 to-blue-600 bg-clip-text text-transparent
+                    drop-shadow whitespace-nowrap tracking-wide
+                    text-[clamp(20px,4.8vw,28px)]
+                    leading-[1.1]
+                  "
+                >
+                  Oh My Competitions
+                </span>
+              </Link>
+              <div
+                className="
+                  mt-0.5 font-orbitron text-cyan-300
+                  text-[clamp(12px,3.4vw,14px)]
+                  leading-snug min-h-[1.25rem]
+                "
+                aria-live="polite"
+              >
+                {user ? (
+                  <>
+                    {(t?.('welcome', 'Welcome') || 'Welcome')}{' '}
+                    <span className="text-cyan-300">{user.username}</span>
+                  </>
+                ) : (
+                  <span className="opacity-0 select-none">placeholder</span>
+                )}
               </div>
-            ) : (
-              // Keep height stable when logged out so the header doesn’t jump
-              <div className="text-[11px] sm:text-xs mt-0.5 opacity-0 select-none" aria-hidden="true">
-                placeholder
-              </div>
-            )}
+            </div>
+
+            {/* Right: Auth button (gradient pill) */}
+            <div className="justify-self-end flex items-center gap-2">
+              {!user ? (
+                <button
+                  onClick={() => setShowLoginModal(true)}
+                  className={`${BTN_BASE} ${BTN_GRADIENT} text-xs rounded-lg`}
+                  aria-haspopup="dialog"
+                  aria-expanded={showLoginModal ? 'true' : 'false'}
+                >
+                  {safeT('login', 'Login')}
+                </button>
+              ) : (
+                <button onClick={logout} className={`${BTN_BASE} ${BTN_GRADIENT} text-xs rounded-lg`}>
+                  {safeT('logout', 'Logout')}
+                </button>
+              )}
+            </div>
           </div>
-
-       {/* Right: auth only (bell moved into sidebar header) */}
-<div className="justify-self-end flex items-center gap-2">
-  {!user ? (
-    <button
-      onClick={() => setShowLoginModal(true)}
-      className={`${BTN_BASE} ${BTN_GRADIENT} text-xs`}
-      aria-haspopup="dialog"
-      aria-expanded={showLoginModal ? 'true' : 'false'}
-    >
-      {safeT('login', 'Login')}
-    </button>
-  ) : (
-    <button onClick={logout} className={`${BTN_BASE} ${BTN_GRADIENT} text-xs`}>
-      {safeT('logout', 'Logout')}
-    </button>
-  )}
-</div>
-
         </div>
       </header>
 
-      {/* Overlay for Menu */}
+      {/* Dim overlay */}
       {menuOpen && (
         <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
@@ -242,39 +238,31 @@ export default function Header() {
       {/* Sidebar */}
       <aside
         ref={sidebarRef}
-        className={`fixed top-0 left-0 z-50 h-full w-72 bg-gradient-to-b from-[#0f172a] to-[#1a2a3a] border-r border-cyan-700 shadow-[0_0_25px_rgba(0,255,255,0.15)] transform transition-transform duration-300 ease-out overflow-y-auto custom-scroll ${
+        className={`fixed top-0 left-0 z-50 h-full w-72 bg-gradient-to-b from-[#0f172a] to-[#1a2a3a] border-r border-white/10 shadow-[0_0_25px_rgba(0,255,255,0.15)] transform transition-transform duration-300 ease-out overflow-y-auto custom-scroll ${
           menuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
         role="dialog"
         aria-modal="true"
         aria-label="Site navigation"
       >
- <div className="flex items-center justify-between px-4 py-3 border-b border-cyan-700">
-  <span className="text-cyan-300 font-orbitron text-lg">
-    {safeT('menu', 'Menu')}
-  </span>
-
-  {/* Right cluster: Bell + Close */}
-  <div className="flex items-center gap-2">
-    {user && (
-      <div className="h-8 w-8 grid place-items-center rounded-md bg-white/5 border border-cyan-700/40">
-        {/* If NotificationsBell supports className, pass size; else keep wrapper */}
-        <NotificationsBell username={user.username} />
-      </div>
-    )}
-
-    <button
-      onClick={() => setMenuOpen(false)}
-      className={`${BTN_BASE} ${BTN_GRADIENT} h-8 px-2`}
-      aria-label={safeT('close_menu', 'Close menu')}
-      title={safeT('close_menu', 'Close menu')}
-    >
-      ✕
-    </button>
-  </div>
-</div>
-
-
+        <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-white/[0.02] backdrop-blur">
+          <span className="text-cyan-300 font-orbitron text-lg">{safeT('menu', 'Menu')}</span>
+          <div className="flex items-center gap-2">
+            {user && (
+              <div className="h-8 w-8 grid place-items-center rounded-md bg-white/5 border border-cyan-700/40">
+                <NotificationsBell username={user.username} />
+              </div>
+            )}
+            <button
+              onClick={() => setMenuOpen(false)}
+              className={`${BTN_BASE} ${BTN_GRADIENT} h-8 px-2 rounded-md`}
+              aria-label={safeT('close_menu', 'Close menu')}
+              title={safeT('close_menu', 'Close menu')}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
 
         <nav className="p-4 space-y-6">
           <div>
@@ -314,7 +302,7 @@ export default function Header() {
         </nav>
       </aside>
 
-      {/* Auth Choice Modal */}
+      {/* Auth Modal */}
       {showLoginModal && (
         <>
           <div
@@ -338,7 +326,6 @@ export default function Header() {
                 <span className="text-xs text-cyan-500">(Oh My Competitions)</span>
               </h2>
 
-              {/* Sign Up */}
               <div className="flex flex-col gap-1">
                 <Link
                   href="/signup"
@@ -356,7 +343,6 @@ export default function Header() {
                 </p>
               </div>
 
-              {/* Login with Pi */}
               <div className="flex flex-col gap-1">
                 <button
                   onClick={async () => {
@@ -432,22 +418,11 @@ export default function Header() {
 
       {/* Scrollbar Styles */}
       <style jsx>{`
-        .custom-scroll::-webkit-scrollbar {
-          width: 6px;
-        }
-        .custom-scroll::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scroll::-webkit-scrollbar-thumb {
-          background: rgba(0, 255, 255, 0.4);
-          border-radius: 10px;
-        }
-        .custom-scroll::-webkit-scrollbar-thumb:hover {
-          background: rgba(0, 255, 255, 0.6);
-        }
-        .neon-glow {
-          box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
-        }
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(0, 255, 255, 0.4); border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(0, 255, 255, 0.6); }
+        .neon-glow { box-shadow: 0 0 20px rgba(0, 255, 255, 0.3); }
       `}</style>
     </>
   );

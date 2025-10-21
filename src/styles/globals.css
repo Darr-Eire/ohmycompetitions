@@ -108,3 +108,242 @@ html,body{ height:100%; }
 html.pibrowser .backdrop-blur,
 html.pibrowser .backdrop-blur-sm{ backdrop-filter:none!important; }
 html.pibrowser .overlay{ background:rgba(0,0,0,.5)!important; }
+:root { --nav-h: 56px; } /* change once, applies everywhere */
+
+/* ================================
+   Update: styles/globals.css
+   (append or replace the existing mobile-nav rules)
+================================ */
+
+/* Vars already in your file:
+   --primary-gradient, --accent-color, --border-radius, --nav-h, etc. */
+
+:root{
+  --nav-h: 56px;
+  --nav-active: #22d3ee;
+  --nav-inactive: rgba(255,255,255,.85);
+  --nav-bg: rgba(7,20,38,.72);
+  --nav-border: rgba(255,255,255,.10);
+}
+
+/* Bar container: glass + soft border, higher blur to match header buttons */
+.mobile-nav {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+  height: calc(var(--nav-h) + env(safe-area-inset-bottom));
+  background: var(--nav-bg);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  border-top: 1px solid var(--nav-border);
+  transform: translateZ(0);
+}
+
+/* Inner row */
+.mobile-nav__row {
+  height: var(--nav-h);
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 14px;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Button-like tabs */
+.mobile-nav__link {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px;
+  font-size: 12px; line-height: 1; font-weight: 500;
+  color: var(--nav-inactive);
+  border-radius: calc(var(--border-radius) * .9);
+  padding: 8px 6px;
+  background: linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); /* glass */
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow: 0 0 0 rgba(0,0,0,0);
+  transition: transform .15s ease, box-shadow .2s ease, background .2s ease, color .2s ease, border-color .2s ease;
+}
+.mobile-nav__link:hover {
+  border-color: rgba(255,255,255,0.18);
+  transform: translateY(-1px);
+}
+.mobile-nav__link:active { transform: translateY(0); }
+
+/* Active = gradient pill + subtle glow, matches your buttons */
+.mobile-nav__link.is-active,
+.mobile-nav__link[aria-current="page"] {
+  color: #fff;
+  background: var(--primary-gradient);
+  border-color: rgba(255,255,255,0.22);
+  box-shadow: 0 0 16px color-mix(in oklab, var(--accent-color) 30%, transparent);
+}
+
+/* Icons inherit color */
+.mobile-nav__icon { width: 20px; height: 20px; }
+
+/* Focus ring for a11y */
+.mobile-nav__link:focus-visible {
+  outline: 2px solid var(--nav-active); outline-offset: 2px;
+}
+
+/* Page spacer so content never hides under nav */
+.with-mobile-nav {
+  padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom));
+}
+
+/* Hide on md+ */
+@media (min-width: 768px) { .mobile-nav { display: none; } }
+
+/* Add to globals.css (optional) */
+.app-title { font-weight:700; letter-spacing:-0.01em; }
+.app-subtitle { line-height:1.15; }
+@media (min-width:0px){
+  .app-title{ font-size:clamp(20px,4.8vw,28px) }
+  .app-subtitle{ font-size:clamp(12px,3.4vw,14px); min-height:1.25rem }
+}
+/* ============================================================================
+   FILE: styles/globals.css  (append below your existing content)
+   Purpose: OMC tokens + consistent UI utilities (glass, gradient, buttons, etc.)
+============================================================================= */
+
+/* ======= Tokens (extend your existing ones safely) ======= */
+:root {
+  --omc-radius: 14px;
+  --omc-radius-sm: 10px;
+  --omc-radius-lg: 18px;
+
+  --omc-bg: #000814;
+  --omc-surface: #071426;
+  --omc-surface-2: #0e223d;
+  --omc-text: #E6F5FF;
+  --omc-text-dim: rgba(230,245,255,0.78);
+
+  --omc-cyan: #22d3ee;
+  --omc-primary-0: #0077ff;
+  --omc-primary-1: #00ccff;
+  --omc-primary-2: #00ffd5;
+
+  --omc-primary-gradient: linear-gradient(135deg, var(--omc-primary-2), var(--omc-primary-1), var(--omc-primary-0));
+  --omc-glass: linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+  --omc-border: rgba(255,255,255,0.10);
+  --omc-border-strong: rgba(255,255,255,0.18);
+
+  --omc-shadow-soft: 0 8px 24px rgba(0,0,0,.25);
+  --omc-glow: 0 0 18px rgba(0, 255, 255, .35);
+
+  --nav-h: 56px;
+  --nav-active: #22d3ee;
+  --nav-inactive: rgba(255,255,255,.85);
+}
+
+/* ======= Component utilities via Tailwind layers ======= */
+@layer components {
+  /* Glass cards/panels */
+  .omc-card {
+    @apply rounded-[var(--omc-radius)] border backdrop-blur;
+    background: var(--omc-glass);
+    border-color: var(--omc-border);
+    box-shadow: var(--omc-shadow-soft);
+  }
+
+  /* Headings */
+ 
+
+
+  /* Buttons */
+  .omc-btn {
+    @apply inline-flex items-center justify-center font-bold text-sm transition-all duration-200 focus:outline-none focus-visible:ring-2 active:scale-[0.99];
+    @apply px-3 py-2 rounded-[var(--omc-radius-sm)];
+  }
+  .omc-btn-primary {
+    background: var(--omc-primary-gradient);
+    color: black;
+    box-shadow: 0 0 14px rgba(0,255,255,0.25);
+  }
+  .omc-btn-primary:hover { box-shadow: var(--omc-glow); }
+
+  .omc-btn-ghost {
+    background: var(--omc-glass);
+    color: var(--omc-text);
+    border: 1px solid var(--omc-border);
+  }
+  .omc-btn-ghost:hover { border-color: var(--omc-border-strong); }
+
+  .omc-btn-outline {
+    background: transparent;
+    color: var(--omc-text);
+    border: 1px solid var(--omc-border-strong);
+  }
+
+  .omc-btn-lg { @apply px-4 py-3 text-base rounded-[var(--omc-radius)]; }
+  .omc-btn-sm { @apply px-2 py-1 text-xs rounded-[10px]; }
+
+  /* Inputs */
+  .omc-field { @apply flex flex-col gap-1; }
+  .omc-label { @apply text-xs tracking-wide text-[color:var(--omc-text)] text-opacity-70; }
+  .omc-input, .omc-select, .omc-textarea {
+    @apply w-full px-3 py-2 rounded-[12px] outline-none transition;
+    color: var(--omc-text);
+    background: var(--omc-glass);
+    border: 1px solid var(--omc-border);
+  }
+  .omc-input:focus, .omc-select:focus, .omc-textarea:focus {
+    border-color: var(--omc-border-strong);
+    box-shadow: 0 0 0 2px rgba(34,211,238,.25);
+  }
+  .omc-help { @apply text-[11px] text-[color:var(--omc-text)] text-opacity-60; }
+  .omc-error { @apply text-[11px] text-red-300; }
+
+  /* Badges */
+  .omc-badge {
+    @apply inline-flex items-center gap-2 text-[11px] px-2 py-1 rounded-[999px] border;
+    border-color: var(--omc-border);
+    background: var(--omc-glass);
+    color: var(--omc-text);
+  }
+  .omc-badge--accent { background: var(--omc-primary-gradient); color: #00111a; border-color: transparent; }
+
+  /* Links */
+  .omc-link { @apply relative transition text-[color:var(--omc-text)]; }
+  .omc-link:hover { color: var(--omc-cyan); text-shadow: 0 0 8px rgba(34,211,238,.35); }
+}
+
+/* ======= Mobile bottom nav (kept consistent with buttons) ======= */
+.mobile-nav {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+  height: calc(var(--nav-h) + env(safe-area-inset-bottom));
+  background: rgba(7,20,38,.72);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  border-top: 1px solid var(--omc-border);
+  box-shadow: var(--omc-shadow-soft);
+}
+.mobile-nav__row {
+  height: var(--nav-h);
+  display:flex; align-items:center; gap:10px;
+  padding: 0 14px;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.mobile-nav__link {
+  color: var(--nav-inactive);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:4px; font-size:12px; line-height:1; min-height:44px; padding:8px 0;
+  border-radius: calc(var(--omc-radius) * .9);
+  background: var(--omc-glass);
+  border: 1px solid var(--omc-border);
+  transition: transform .15s ease, box-shadow .2s ease, background .2s ease, color .2s ease, border-color .2s ease;
+}
+.mobile-nav__link:hover { border-color: var(--omc-border-strong); transform: translateY(-1px); }
+.mobile-nav__link[aria-current="page"], .mobile-nav__link.is-active {
+  color: #00111a; background: var(--omc-primary-gradient); border-color: transparent; box-shadow: var(--omc-glow);
+}
+.mobile-nav__icon { width:20px; height:20px; }
+.with-mobile-nav { padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom)); }
+@media (min-width: 768px) { .mobile-nav { display:none; } }
+/* File: src/styles/globals.css  (append) */
+/* Smooth hide/show when footer appears */
+.mobile-nav {
+  transition: transform .25s ease, opacity .2s ease;
+  will-change: transform, opacity;
+}
+.mobile-nav--hidden {
+  transform: translateY(calc(100% + env(safe-area-inset-bottom)));
+  opacity: 0;
+  pointer-events: none;
+}

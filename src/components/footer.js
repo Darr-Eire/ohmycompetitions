@@ -1,3 +1,4 @@
+// src/components/Footer.jsx
 'use client'
 
 import Link from 'next/link'
@@ -9,14 +10,18 @@ export default function Footer() {
   const { t } = useSafeTranslation();
 
   return (
-    <footer className="text-cyan-300 text-xs py-6 px-4 bg-[#0f172a] border-t border-cyan-700">
+    <footer
+      id="site-footer"                // ← required for MobileNav observer
+      role="contentinfo"
+      className="text-cyan-300 text-xs py-6 px-4 bg-[#0f172a] border-t border-cyan-700"
+      aria-label="Site footer"
+    >
       {/* Back to Home */}
-<div className="flex justify-center mb-3">
-  <Link href="/homepage" className="btn-gradient px-3 py-1 rounded-md cursor-pointer text-sm">
-    {t('back_to_home', 'Back to Home')}
-  </Link>
-</div>
-
+      <div className="flex justify-center mb-3">
+        <Link href="/homepage" className="btn-gradient px-3 py-1 rounded-md cursor-pointer text-sm">
+          {t('back_to_home', 'Back to Home')}
+        </Link>
+      </div>
 
       {/* Social Icons */}
       <div className="flex justify-center items-center gap-3 mb-3">
@@ -35,7 +40,7 @@ export default function Footer() {
       </div>
 
       {/* Quick Links */}
-      <div className="flex justify-center flex-wrap gap-4 text-cyan-300 mb-2 text-xs">
+      <div className="flex justify-center flex-wrap gap-4 text-cyan-300 mb-2 text-md">
         <Link href="/terms-conditions">{t('terms', 'Terms')}</Link>
         <Link href="/privacy-policy">{t('privacy', 'Privacy')}</Link>
         <Link href="/help-support">{t('support', 'Support')}</Link>

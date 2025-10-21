@@ -1,21 +1,10 @@
 // src/pages/competitions/all.js
 'use client';
 import Link from 'next/link';
-import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
-import {
-  ChevronRight,
-  RefreshCw,
-  Sparkles,
-  Trophy,
-  Clock,
-  Flame,
-  Ticket,
-  Users,
-  Share2,
-  HelpCircle,
-} from 'lucide-react';
+import { RefreshCw, Sparkles, Trophy } from 'lucide-react';
 
 const GiftTicketModal = dynamic(() => import('@components/GiftTicketModal'), { ssr: false });
 
@@ -74,8 +63,11 @@ function ticketsProgress(c) {
 function feePi(c) {
   const comp = c.comp ?? c;
   const fee = comp?.entryFee;
-  if (typeof fee === 'number') return `${fee.toFixed(2)} π`;
-  return '0.00 π';
+  if (fee == null) return '—';
+  const n = Number.parseFloat(fee);
+  if (!Number.isFinite(n)) return String(fee);
+  if (n <= 0) return 'Free';
+  return (n % 1 === 0 ? n.toFixed(0) : n.toFixed(2)) + ' π';
 }
 
 const slugOf = (c) => {
@@ -85,30 +77,12 @@ const slugOf = (c) => {
 const titleOf = (c) => (c.title || (c.comp ?? c)?.title || 'Competition');
 const keyOf = (c) => slugOf(c) || titleOf(c);
 
-// purchase route helper
 const purchaseHref = (c) => {
   const slug = slugOf(c);
   return slug ? `/ticket-purchase/${slug}` : '/ticket-purchase';
 };
 
-/* Best-effort regional flag emoji from "IE", "US", etc. */
-function flagEmojiFromCC(cc) {
-  if (!cc || typeof cc !== 'string' || cc.length !== 2) return null;
-  const base = 127397;
-  return cc
-    .toUpperCase()
-    .split('')
-    .map((c) => String.fromCodePoint(base + c.charCodeAt(0)))
-    .join('');
-}
-
 /* ------------------------------ Prize helpers (REAL PRIZE, never fee) ------------------------------ */
-function themeOf(c) {
-  const comp = c.comp ?? c;
-  return (c.theme || comp?.theme || '').toLowerCase();
-}
-
-/* Pi prize display like "300 π" */
 function parseNumericLike(v) {
   if (v == null) return NaN;
   if (typeof v === 'number') return Number.isFinite(v) ? v : NaN;
@@ -138,7 +112,7 @@ function prizePiDisplay(c) {
   // 2) prizes[] array: use first numeric amount as π
   if (Array.isArray(raw.prizes) && raw.prizes.length) {
     for (const p of raw.prizes) {
-      const n = parseNumericLike(p?.amount);
+      const n = parseNumericLike(p?.amount ?? p?.value ?? p);
       if (Number.isFinite(n) && (!Number.isFinite(entryFee) || n !== entryFee) && n > 0) {
         return `${n.toLocaleString()} π`;
       }
@@ -151,17 +125,30 @@ function prizePiDisplay(c) {
     return `${val.toLocaleString()} π`;
   }
 
-  // 4) last resort: try to extract a number from strings like "Win 300 Pi!"
-  const textCandidates = [raw.prize, raw.prizeText, raw.prizeLabel, c.prize].filter(Boolean);
-  for (const s of textCandidates) {
-    if (typeof s === 'string') {
-      const n = parseNumericLike(s);
-      if (Number.isFinite(n) && n > 0) return `${n.toLocaleString()} π`;
-    }
-  }
+  // 4) last resort: text fallbacks
+  const textCandidates = [
+    raw.topPrize,
+    raw.prizeLabel,
+    raw.prizeText,
+    raw.prize,
+    c.prize,
+  ].filter(Boolean);
+  if (textCandidates.length) return String(textCandidates[0]);
 
-  return '— π';
+  return 'TBA';
 }
+
+const formatDate = (d) => {
+  if (!d) return '—';
+  const ts = typeof d === 'number' ? d : new Date(d).getTime();
+  if (!Number.isFinite(ts)) return '—';
+  return new Date(ts).toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
 
 /* ------------------------------ background ------------------------------ */
 function BackgroundFX() {
@@ -174,179 +161,132 @@ function BackgroundFX() {
   );
 }
 
-/* ------------------------------ dense card ------------------------------ */
+/* ------------------------------ card (stacked details, no icons) ------------------------------ */
 function LiveCard({ data, onGift, onShare }) {
   const comp = data.comp ?? data;
   const status = getStatus(data);
   const { sold, total, pct } = ticketsProgress(data);
 
-  // Show countdown only when ≤ 48 hours remain (cards only)
-  const msLeft = timeUntilEndMs(data);
-  const showCountdown48 = Number.isFinite(msLeft) && msLeft > 0 && msLeft <= 48 * 60 * 60 * 1000;
-  const timeLeft = showCountdown48 ? timeLeftLabel(data) : '';
+  // Dates
+  const startTs = comp?.startsAt ? new Date(comp.startsAt).getTime() : null;
+  const endTs = comp?.endsAt ? new Date(comp.endsAt).getTime() : null;
 
-  const countryEmoji = flagEmojiFromCC(comp?.countryCode);
-  const requiresSkill = !!comp?.requiresSkillQuestion;
+  // Show countdown only when ≤ 48h
+  const msLeft = Number.isFinite(endTs) ? endTs - now() : NaN;
+  const showCountdown48 = Number.isFinite(msLeft) && msLeft > 0 && msLeft <= 48 * 60 * 60 * 1000;
+  const timeLeft = showCountdown48 ? msToShort(msLeft) : (status === 'ended' ? 'Ended' : formatDate(endTs));
+
+  const theTitle = titleOf(data);
   const prizeText = prizePiDisplay(data);
+
+  // Fee as "Free" or "x π"
+  const feeText = feePi(data);
 
   return (
     <article
       className="
-        group relative rounded-xl border border-white/10 bg-white/5 hover:bg-white/[0.08]
-        transition-all duration-200 overflow-hidden
+        group relative rounded-2xl border border-white/10 bg-white/5
+        overflow-hidden transition-all duration-200 hover:bg-white/10
       "
     >
-      {/* status ribbon */}
-      <div className="absolute left-0 top-0 z-10">
-        {status === 'live' && (
-          <span className="m-2 inline-flex items-center gap-1 rounded-md bg-emerald-500/20 px-2 py-1 text-emerald-300 text-[11px] font-bold">
-            <Flame size={14} /> LIVE
-          </span>
-        )}
-        {status === 'upcoming' && (
-          <span className="m-2 inline-flex items-center gap-1 rounded-md bg-yellow-500/20 px-2 py-1 text-yellow-300 text-[11px] font-bold">
-            <Clock size={14} /> UPCOMING
-          </span>
-        )}
-        {status === 'ended' && (
-          <span className="m-2 inline-flex items-center gap-1 rounded-md bg-white/15 px-2 py-1 text-white/70 text-[11px] font-bold">
-            Finished
-          </span>
-        )}
+      {/* Media (slightly taller for breathing room) */}
+      <div className="relative aspect-[4/3] w-full overflow-hidden">
+        <img
+          src={data.imageUrl || '/pi.jpeg'}
+          alt={theTitle}
+          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+          loading="lazy"
+          decoding="async"
+        />
+        {/* Status chip (text only) */}
+        <div className="absolute left-2 top-2">
+          {status === 'live' && (
+            <span className="rounded-md bg-emerald-500/25 px-2 py-0.5 text-emerald-200 text-[11px] font-bold">
+              LIVE
+            </span>
+          )}
+          {status === 'upcoming' && (
+            <span className="rounded-md bg-yellow-500/25 px-2 py-0.5 text-yellow-100 text-[11px] font-bold">
+              UPCOMING
+            </span>
+          )}
+          {status === 'ended' && (
+            <span className="rounded-md bg-white/25 px-2 py-0.5 text-white/90 text-[11px] font-bold">
+              FINISHED
+            </span>
+          )}
+        </div>
       </div>
 
-      {/* media: image or prize banner */}
-      {(() => {
-        const th = themeOf(data);
-        const showPrizeBanner = th === 'daily' || th === 'pi';
-        const theTitle = titleOf(data);
-
-        if (!showPrizeBanner) {
-          return (
-            <div className="relative aspect-[16/9] w-full overflow-hidden">
-              <img
-                src={data.imageUrl || '/pi.jpeg'}
-                alt={theTitle}
-                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                loading="lazy"
-                decoding="async"
-                srcSet={(data.imageUrl && `${data.imageUrl} 800w`) || '/pi.jpeg 800w'}
-                sizes="(max-width:640px) 50vw, 33vw"
-              />
-            </div>
-          );
-        }
-
-        // Prize banner (forced for daily/pi)
-        return (
-          <div className="relative aspect-[16/9] w-full overflow-hidden">
-            {/* gradient background tuned per theme */}
-            <div
-              className={`absolute inset-0 ${
-                th === 'daily'
-                  ? 'bg-gradient-to-br from-indigo-600 via-cyan-500 to-emerald-400'
-                  : 'bg-gradient-to-br from-[#6EE7F9] via-[#22D3EE] to-[#3B82F6]'
-              }`}
-            />
-            {/* subtle grid and glow */}
-            <div className="absolute inset-0 opacity-15 [background-image:radial-gradient(rgba(255,255,255,0.7)_1.5px,transparent_1.5px)] [background-size:22px_22px]" />
-            <div className="absolute -inset-6 blur-3xl opacity-30 bg-white/20" />
-
-            {/* content */}
-            <div className="relative h-full w-full flex items-center justify-center px-4 text-center">
-              <div className="max-w-[85%]">
-                {/* REAL TITLE */}
-                <div className="text-base sm:text-lg font-bold tracking-tight text-black drop-shadow-[0_1px_6px_rgba(255,255,255,0.45)] line-clamp-2">
-                  {theTitle}
-                </div>
-
-                {/* prize big */}
-                <div className="mt-1 text-2xl sm:text-3xl font-black text-black drop-shadow-[0_1px_6px_rgba(255,255,255,0.45)]">
-                  {prizeText}
-                </div>
-
-                {/* fee pill on banner */}
-                <div className="mt-2 inline-flex items-center gap-1 rounded-md bg-white/70 px-2 py-0.5 text-[11px] font-bold text-black">
-                  Entry: {feePi(data)}
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      })()}
-
-      {/* body */}
-      <div className="p-3 sm:p-3.5">
+      {/* Body: everything stacked under the image */}
+      <div className="p-3.5 sm:p-4">
+        {/* Title + fee chip */}
         <div className="flex items-start justify-between gap-3">
-          <h3 className="text-[15px] font-semibold leading-snug line-clamp-2">
-            {countryEmoji && <span className="mr-1">{countryEmoji}</span>}
-            {titleOf(data)}
+          <h3 className="text-[15px] sm:text-[16px] font-semibold leading-snug line-clamp-2">
+            {theTitle}
           </h3>
-          <div className="shrink-0 rounded-md bg-cyan-500/15 border border-cyan-400/30 px-2 py-1 text-[11px] font-bold text-cyan-300">
-            {feePi(data)}
-          </div>
+          <span className="shrink-0 rounded-md bg-cyan-500/15 border border-cyan-400/30 px-2 py-1 text-[11px] font-bold text-cyan-300">
+            {feeText}
+          </span>
         </div>
 
-        {/* meta row */}
-        <div className="mt-2 grid grid-cols-3 gap-2 text-[12px] text-white/75">
-          <div className="inline-flex items-center gap-1">
-            <Trophy size={14} className="text-yellow-300" />
-            <span className="truncate">{prizeText}</span>
+        {/* Stacked details (all real data) */}
+        <div className="mt-3 space-y-1.5 text-[13px] text-white">
+        
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="text-white/60">Fee</span>
+            <span className="font-semibold">{feeText}</span>
           </div>
-          <div className="inline-flex items-center gap-1 justify-center">
-            <Users size={14} className="text-blue-300" />
-            <span>{sold}/{total}</span>
-          </div>
-          <div className="inline-flex items-center gap-1 justify-end">
-            <Clock size={14} className="text-purple-300" />
-            <span className="tabular-nums">
-              {showCountdown48 ? timeLeft : '—'}
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="text-white/60">Tickets</span>
+            <span className="font-semibold">
+              {total ? `${sold}/${total}` : sold}
+             
             </span>
           </div>
+          {status === 'upcoming' && (
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="text-white/60">Starts</span>
+              <span className="font-semibold">{formatDate(startTs)}</span>
+            </div>
+          )}
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="text-white/60">Ends</span>
+            <span className="font-semibold tabular-nums">{timeLeft}</span>
+          </div>
         </div>
 
-        {/* progress */}
-        <div className="mt-2">
+        {/* Progress */}
+        <div className="mt-3">
           <div className="h-2 w-full rounded-full bg-white/10 overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-cyan-400 to-blue-500"
               style={{ width: `${pct}%` }}
             />
           </div>
-          <div className="mt-1 flex items-center justify-between text-[11px] text-white/60">
-            <span className="inline-flex items-center gap-1">
-              <Ticket size={12} /> {pct}% sold
-            </span>
-            {requiresSkill && (
-              <span className="inline-flex items-center gap-1">
-                <HelpCircle size={12} /> Skill Q
-              </span>
-            )}
-            {status === 'live' && pct >= 80 && (
-              <span className="text-pink-300 font-medium">Almost full</span>
-            )}
-          </div>
         </div>
 
-        {/* CTA row */}
-        <div className="mt-3 flex items-center justify-between">
+        {/* CTA button */}
+        <div className="mt-3">
           <Link
             href={purchaseHref(data)}
-            className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-green-400 to-cyan-500 text-black font-extrabold px-3 py-2 text-[13px] hover:brightness-110 active:translate-y-px transition-all"
+            className="
+              block w-full text-center rounded-lg
+              bg-gradient-to-r from-green-400 to-cyan-500
+              text-black font-extrabold px-3 py-2 text-[13px]
+              hover:brightness-110 active:translate-y-px transition-all
+            "
           >
             More Details
-            <ChevronRight size={16} />
           </Link>
-
         </div>
 
-        {/* Gift link under CTA */}
-        <p className="mt-2 text-[11px] text-white/60">
-          Want a friend to join?{' '}
-          <button onClick={() => onGift(data)} className="underline text-cyan-300">
+        {/* Gift link */}
+        <div className="mt-2 text-center">
+          <button onClick={() => onGift(data)} className="text-[12px] underline text-cyan-300">
             Gift a ticket
           </button>
-        </p>
+        </div>
       </div>
     </article>
   );
@@ -372,8 +312,8 @@ function EmptyState({ onRefresh, label = 'competitions' }) {
 
 function SkeletonCard() {
   return (
-    <div className="animate-pulse rounded-xl bg-white/5 border border-white/10 overflow-hidden">
-      <div className="aspect-[16/9] bg-white/10" />
+    <div className="animate-pulse rounded-2xl bg-white/5 border border-white/10 overflow-hidden">
+      <div className="aspect-[4/3] bg-white/10" />
       <div className="p-3 space-y-2">
         <div className="h-4 w-3/4 bg-white/10 rounded" />
         <div className="h-3 w-1/2 bg-white/10 rounded" />
@@ -395,7 +335,6 @@ export default function AllCompetitionsPage() {
   const [giftOpen, setGiftOpen] = useState(false);
   const [giftComp, setGiftComp] = useState(null);
 
-  // fetch + soft auto refresh
   const fetchData = useCallback(async () => {
     try {
       setError(null);
@@ -435,7 +374,7 @@ export default function AllCompetitionsPage() {
     return Array.from(set);
   }, [competitions]);
 
-  // Normalized w/ sort helpers
+  // Normalized & sort helpers
   const normalized = useMemo(() => {
     return competitions.map((item) => {
       const comp = item.comp ?? item;
@@ -448,7 +387,7 @@ export default function AllCompetitionsPage() {
           : status === 'upcoming'
           ? start
           : end;
-      return { ...item, __status: status, __score: score, __end: end };
+      return { ...item, __status: status, __score: score, __end: end, theme: (item.theme || item?.comp?.theme || '').toLowerCase() };
     });
   }, [competitions]);
 
@@ -479,7 +418,7 @@ export default function AllCompetitionsPage() {
     }
     const theme = activeFilter.toLowerCase();
     return normalized
-      .filter((n) => (n.theme || n?.comp?.theme || '').toLowerCase() === theme)
+      .filter((n) => n.theme === theme)
       .sort((a, b) => {
         const rank = { live: 0, upcoming: 1, ended: 2 };
         const r = rank[a.__status] - rank[b.__status];
@@ -489,28 +428,14 @@ export default function AllCompetitionsPage() {
 
   const liveCount = normalized.filter(n => n.__status === 'live').length;
   const totalPrizePool = useMemo(() => {
-    // Keep your existing logic; if your backend stores fee in prizeValue, consider adding a separate prizePool field.
+    // If your backend mixes fee into prizeValue, consider adding a separate prizePool field server-side.
     return competitions.reduce((sum, c) => sum + (toNum((c.comp ?? c)?.prizeValue, 0)), 0);
   }, [competitions]);
 
-  // actions (gift/share)
   const openGift = (c) => {
     setGiftComp(c.comp ?? c);
     setGiftOpen(true);
     if (navigator.vibrate) navigator.vibrate(15);
-  };
-
-  const shareComp = async (c) => {
-    const url = `${location.origin}${purchaseHref(c)}?ref=${'ref' in window ? window.ref : 'guest'}`;
-    const data = { title: titleOf(c), text: 'Join me on OMC – Live Pi competitions!', url };
-    try {
-      if (navigator.share) await navigator.share(data);
-      else {
-        await navigator.clipboard.writeText(url);
-        alert('Link copied');
-      }
-      if (navigator.vibrate) navigator.vibrate(15);
-    } catch {}
   };
 
   const go = (c) => {
@@ -529,10 +454,10 @@ export default function AllCompetitionsPage() {
 
         {/* Slim header */}
         <header className="relative z-10 pt-[calc(12px+env(safe-area-inset-top))] pb-3 sm:pb-4">
-          <div className="mx-auto w-full max-w-[min(92vw,1400px)] px-2 sm:px-4">
+          <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
               <div>
-                <h1 className="text-[24px] sm:text-[28px] font-extrabold tracking-tight">
+                <h1 className="text-[22px] sm:text-[28px] font-extrabold tracking-tight">
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff]">
                     Live Competitions
                   </span>
@@ -569,10 +494,10 @@ export default function AllCompetitionsPage() {
           </div>
         </header>
 
-        {/* Ending Soon Ticker (subtle, above grid) */}
+        {/* Ending Soon Ticker */}
         {endingSoon.length > 0 && (
           <div className="sticky top-[calc(44px+env(safe-area-inset-top))] z-30 bg-[#0f1b33]/95 px-3 py-2 border-b border-white/10 text-[12px]">
-            <div className="mx-auto w-full max-w-[min(92vw,1400px)]">
+            <div className="mx-auto w-full max-w-[min(94vw,1400px)]">
               <div className="flex gap-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {endingSoon.slice(0, 4).map((c) => (
                   <button
@@ -596,7 +521,7 @@ export default function AllCompetitionsPage() {
 
         {/* sticky filters */}
         <div className="sticky top-[calc(6px+env(safe-area-inset-top))] z-20 bg-[#0f1b33]/95 backdrop-blur-sm border-y border-white/10">
-          <div className="mx-auto w-full max-w-[min(92vw,1400px)] px-2 sm:px-4">
+          <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
             <div className="flex gap-2 overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {['Live', 'Ending Soon', 'All', ...filters.filter(f => !['Live','Ending Soon','All'].includes(f))].map((f) => (
                 <button
@@ -605,8 +530,7 @@ export default function AllCompetitionsPage() {
                   className={`shrink-0 rounded-full px-3.5 py-1.5 text-[13px] font-semibold transition
                     ${activeFilter === f
                       ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md'
-                      : 'text-white/70 hover:text-white hover:bg-white/10 border border-white/20'}
-                  `}
+                      : 'text-white/70 hover:text-white hover:bg-white/10 border border-white/20'}`}
                 >
                   {f}
                 </button>
@@ -617,9 +541,9 @@ export default function AllCompetitionsPage() {
 
         {/* grid */}
         <section className="py-6 sm:py-8">
-          <div className="mx-auto w-full max-w-[min(92vw,1400px)] px-2 sm:px-4">
+          <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
             {loading ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3.5 sm:gap-4">
                 {Array.from({ length: 10 }).map((_, i) => <SkeletonCard key={i} />)}
               </div>
             ) : error ? (
@@ -627,13 +551,16 @@ export default function AllCompetitionsPage() {
             ) : filtered.length === 0 ? (
               <EmptyState onRefresh={() => location.reload()} label={activeFilter.toLowerCase()} />
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3.5 sm:gap-4">
                 {filtered.map((item) => (
                   <LiveCard
                     key={keyOf(item)}
                     data={item}
-                    onGift={openGift}
-                    onShare={shareComp}
+                    onGift={(c) => {
+                      setGiftComp(c.comp ?? c);
+                      setGiftOpen(true);
+                    }}
+                    onShare={() => {}}
                   />
                 ))}
               </div>
