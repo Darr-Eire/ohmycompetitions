@@ -1,4 +1,4 @@
-// components/LaunchCompetitionCard.jsx (or wherever you keep it)
+// components/LaunchCompetitionCard.jsx
 'use client';
 
 import Link from 'next/link';
@@ -90,7 +90,7 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize, classNa
     endsAt,
     comingSoon = false,
     prizeBreakdown = {},
-    type = 'standard', // unused for routing now
+    type = 'standard',
   } = comp;
 
   const [status, setStatus] = useState('UPCOMING');
@@ -121,6 +121,7 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize, classNa
     if (!endsAt || comingSoon) {
       setStatus('COMING SOON');
       setShowCountdown(false);
+      setTimeLeft('');
       return;
     }
     const interval = setInterval(() => {
@@ -131,16 +132,19 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize, classNa
       if (start && now < start) {
         setStatus('UPCOMING');
         setShowCountdown(false);
+        setTimeLeft('');
         return;
       }
       const diff = end - now;
       if (diff <= 0) {
         setStatus('ENDED');
         setShowCountdown(false);
+        setTimeLeft('');
         clearInterval(interval);
         return;
       }
       setStatus('LIVE NOW');
+      // only show the ticking countdown in the last 24h
       setShowCountdown(diff <= 24 * 60 * 60 * 1000);
 
       const d = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -180,7 +184,7 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize, classNa
         </h3>
       </div>
 
-      {/* Status */}
+      {/* Status pill */}
       <div className="px-4 pt-2">
         <div
           className={`text-center text-[11px] font-bold py-1 rounded-md ${
@@ -197,7 +201,7 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize, classNa
         </div>
       </div>
 
-      {/* Winners Banner */}
+      {/* Winners banner */}
       <div className="text-center text-[11px] bg-cyan-500 text-black font-semibold py-1 mt-2 mx-4 rounded-md">
         {winnersCount === 3 ? '1st • 2nd • 3rd Prizes' : winnersCount === 2 ? '1st • 2nd Prizes' : 'Single Winner'}
       </div>
@@ -207,10 +211,19 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize, classNa
         Join us this Launch Week and be part of Pi history
       </p>
 
-      {/* Countdown */}
-      {showCountdown && (
-        <div className="text-center mt-2 text-cyan-300 text-sm font-bold">{timeLeft}</div>
-      )}
+      {/* ── Fixed-height countdown slot to keep card heights identical ── */}
+      <div className="mt-2 min-h-[28px] sm:min-h-[32px] flex items-center justify-center">
+        {showCountdown ? (
+          <div className="text-cyan-300 text-sm font-bold font-mono tabular-nums tracking-wide">
+            {timeLeft}
+          </div>
+        ) : (
+          // Invisible placeholder reserves the same space & approx width
+          <div className="invisible text-cyan-300 text-sm font-bold font-mono tabular-nums tracking-wide">
+            00D 00H 00M 00S
+          </div>
+        )}
+      </div>
 
       {/* Body */}
       <div className="p-4 text-sm space-y-3">
@@ -230,7 +243,7 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize, classNa
                 <span className="text-[12px] uppercase tracking-wide text-cyan-300 font-semibold">
                   {label} Prize
                 </span>
-                <span className="font-extrabold text-cyan-300 text-lg tabular-nums tracking-wide animate-pulse">
+                <span className="font-extrabold text-cyan-300 text-lg tabular-nums tracking-wide">
                   {formatPi((getPrizeTiers({ comp, prizeBreakdownProp: prizeBreakdown, prizeProp: prize }))[label])}
                 </span>
               </div>

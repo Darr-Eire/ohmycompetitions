@@ -203,7 +203,7 @@ export default function AdminForumsPage() {
             <button className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 p-4 rounded-lg transition">
               <div className="text-lg mb-2">📊</div>
               <div className="font-semibold">Analytics</div>
-              <div className="text-sm text-blue-300">View detailed stats</div>
+              <div className="text-sm text-blue-300">view deatilsed stats</div>
             </button>
           </div>
         </div>

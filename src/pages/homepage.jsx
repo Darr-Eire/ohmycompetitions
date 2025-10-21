@@ -1,4 +1,3 @@
-// file: src/pages/homepage.jsx
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
@@ -7,7 +6,6 @@ import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { useSafeTranslation } from '../hooks/useSafeTranslation';
 import DailyCompetitionCard from '@components/DailyCompetitionCard';
-import FreeCompetitionCard from '@components/FreeCompetitionCard';
 import PiCompetitionCard from '@components/PiCompetitionCard';
 import CompetitionCard from '@components/CompetitionCard';
 import MiniPrizeCarousel from '@components/MiniPrizeCarousel';
@@ -15,7 +13,7 @@ import LaunchCompetitionCard from '@components/LaunchCompetitionCard';
 import FunnelStagesRow from '@components/FunnelStagesRow';
 import { useFunnelStages } from 'hooks/useFunnelStages';
 import Layout from '@components/Layout';
-
+import FreeShowcaseSection from '@components/FreeShowcaseSection';
 
 /* ------------------------- helpers ------------------------- */
 const toNumber = (v, fallback = 0) => {
@@ -68,7 +66,6 @@ function HorizontalCarousel({
   const recalc = () => {
     const el = listRef.current;
     if (!el) return;
-    // (kept for potential future arrows)
     void el;
   };
 
@@ -121,7 +118,6 @@ function HorizontalCarousel({
           -mx-4 px-4
         "
       >
-        {/* edges kept transparent to blend with FX */}
         <div className="pointer-events-none absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-black/0 to-black/0" />
         <div className="pointer-events-none absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-black/0 to-black/0" />
 
@@ -187,7 +183,6 @@ function Marquee({ text, speed = 60, className = '' }) {
         </span>
       </div>
 
-      {/* transparent edges */}
       <div className="pointer-events-none absolute left-0 top-0 h-full w-10 bg-gradient-to-r from-black/0 to-black/0" />
       <div className="pointer-events-none absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-black/0 to-black/0" />
 
@@ -204,23 +199,58 @@ function Marquee({ text, speed = 60, className = '' }) {
   );
 }
 
+function TopWinnersCarousel({ t }) {
+  
+  const winners = [  ];
+
+  return (
+    <section className="space-y-5">
+      <div className="text-center space-y-2">
+        <h2 className="w-full text-lg sm:text-xl font-extrabold text-cyan-300 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl font-orbitron
+                           shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70
+                           backdrop-blur-md border border-cyan-400 inline-block max-w-sm mx-auto">
+          {t('top_winners', 'Top Winners')}
+        </h2>
+        <p className="text-sm text-cyan-200 italic">{t('see_our_champions', 'See our recent champions!')}</p>
+      </div>
+
+      <HorizontalCarousel
+        items={winners.map(winner => ({ comp: { slug: `winner-${winner.id}` }, ...winner }))} 
+        ariaLabel={t('top_winners_carousel', 'Top Winners Carousel')}
+        itemMinWidthCSS="min(280px, calc(100vw - 2rem))"
+        cardMaxWidth={300}
+        renderItem={(item) => (
+          <div className="rounded-xl border border-white/10 bg-white/[0.04] p-4 text-center">
+            <div className="relative h-32 w-full rounded-lg overflow-hidden mb-3">
+              <Image src={item.imageUrl} alt={item.prize} layout="fill" objectFit="cover" />
+            </div>
+            <h3 className="font-bold text-lg text-cyan-200">{item.prize}</h3>
+            <p className="text-white/80 text-sm mt-1">{t('won_by', 'Won by')}: {item.name}</p>
+          </div>
+        )}
+      />
+    </section>
+  );
+}
+// ===========================================
+
+
 function HomePage() {
   const { t } = useSafeTranslation();
 
   /* ================= Funnel (live) ================= */
   const { stages, prizePoolPi } = useFunnelStages();
 
-  // ✅ Compute safe prize pool from live hook value (no SSR reference errors)
-const safePrizePool = useMemo(() => {
-  const raw = prizePoolPi;
-  if (raw == null) return 2200;
-  const n = Number(
-    typeof raw === 'string'
-      ? raw.replace(/[^\d.,-]/g, '').replace(',', '.')
-      : raw
-  );
-  return Number.isFinite(n) && n > 0 ? n : 2200;
-}, [prizePoolPi]);
+  const safePrizePool = useMemo(() => {
+    const raw = prizePoolPi;
+    if (raw == null) return 2200;
+    const n = Number(
+      typeof raw === 'string'
+        ? raw.replace(/[^\d.,-]/g, '').replace(',', '.')
+        : raw
+    );
+    return Number.isFinite(n) ? n : 2200;
+  }, [prizePoolPi]);
 
   const handleEnterStage1 = () => {
     const s1 = Array.isArray(stages) ? stages.find(s => Number(s?.stage) === 1) : null;
@@ -391,8 +421,8 @@ const safePrizePool = useMemo(() => {
                            border border-cyan-400/50 text-cyan-100 hover:bg-white/5 transition-colors"
               >
                 {t('omc_view_status', 'View status')}
-              </a>
-
+              </a
+>
               <details className="ml-auto text-xs text-cyan-200/80">
                 <summary className="cursor-pointer select-none">{t('omc_error_details', 'Details')}</summary>
                 <pre className="mt-2 max-h-32 overflow-auto rounded bg-black/30 p-2 text-[11px] leading-snug">
@@ -461,8 +491,8 @@ const safePrizePool = useMemo(() => {
 
         {/* ====================== Sections ====================== */}
         <main className="space-y-14 sm:space-y-16 lg:space-y-20">
-           <Section
-            title={t('tech_gadgets', 'Tech/Gadgets')}
+          <Section
+            title={t('tech_gadgets', 'Tech & Gadgets')}
             items={getCompetitionsByCategory('tech')}
             viewMoreHref="/competitions/tech&gadgets"
             cardSize="md"
@@ -471,7 +501,7 @@ const safePrizePool = useMemo(() => {
           />
 
           <Section
-            title={t('daily_weekly', 'Daily/Weekly')}
+            title={t('daily_weekly', 'Daily & Weekly')}
             items={getCompetitionsByCategory('daily')}
             viewMoreHref="/competitions/daily"
             cardSize="md"
@@ -479,14 +509,14 @@ const safePrizePool = useMemo(() => {
             itemMinWidthCSS="min(320px, calc(100vw - 2rem))"
           />
 
-       <Section
-  title={t('omc_launch_week', 'OMC Launch Week')}
-   items={getCompetitionsByCategory('launch')}
-   viewMoreHref="/competitions/launch-week"
-   cardSize="md"
+          <Section
+            title={t('omc_launch_week', 'OMC Launch Week')}
+            items={getCompetitionsByCategory('launch')}
+            viewMoreHref="/competitions/launch-week"
+            cardSize="md"
             cardMaxWidth={320}
             itemMinWidthCSS="min(320px, calc(100vw - 2rem))"
- />
+          />
 
           <Section
             title={t('pi_giveaways', 'Pi Giveaways')}
@@ -498,110 +528,105 @@ const safePrizePool = useMemo(() => {
           />
 
           {/* ===================== OMC Pi Stages ===================== */}
-         <section
-  role="region"
-  aria-labelledby="omc-stages-title"
-  class="space-y-6 sm:space-y-7 relative z-10"
->
-  {/* Optional: Background glow or particle effect container */}
-  <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-    <div class="absolute inset-0 bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] opacity-80"></div>
-    {/* You could add SVG or CSS for subtle animations/particles here */}
-  </div>
+          <section
+            role="region"
+            aria-labelledby="omc-stages-title"
+            className="space-y-6 sm:space-y-7 relative z-10"
+          >
+            <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+              <div className="absolute inset-0 bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] opacity-80"></div>
+            </div>
 
-  <div class="text-center space-y-3 px-3 relative z-10">
-    <h2
-      id="omc-stages-title"
-      class="w-full text-lg sm:text-xl font-extrabold text-cyan-300 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl font-orbitron
-             shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70
-             backdrop-blur-md border border-cyan-400 inline-block max-w-sm mx-auto"
-    >
-      {t('omc_pi_stages_competitions', 'OMC Pi Stages Competitions')}
-    </h2>
+            <div className="text-center space-y-3 px-3 relative z-10">
+              <h2
+                id="omc-stages-title"
+                className="w-full text-lg sm:text-xl font-extrabold text-cyan-300 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl font-orbitron
+                           shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70
+                           backdrop-blur-md border border-cyan-400 inline-block max-w-sm mx-auto"
+              >
+                {t('omc_pi_stages_competitions', 'OMC Pi Stages Competitions')}
+              </h2>
 
-    <div
-      class="max-w-5xl mx-auto text-base text-cyan-300/90
-               flex flex-col items-center justify-center gap-y-2 flex-wrap leading-relaxed mt-1.5 sm:mt-2.5"
-      aria-describedby="omc-stages-desc"
-    >
-      <span id="omc-stages-desc" class="sr-only">
-        {t('stages_summary', 'Play through five stages: qualify in Stage 1, advance in Stages 2–4 and win in Stage 5.')}
-      </span>
+              <div
+                className="max-w-5xl mx-auto text-base text-cyan-300/90
+                           flex flex-col items-center justify-center gap-y-2 flex-wrap leading-relaxed mt-1.5 sm:mt-2.5"
+                aria-describedby="omc-stages-desc"
+              >
+                <span id="omc-stages-desc" className="sr-only">
+                  {t('stages_summary', 'Play through five stages: qualify in Stage 1, advance in Stages 2–4 and win in Stage 5.')}
+                </span>
 
-      <p class="text-white font-medium mb-4 text-center">
-        Play through five stages: qualify, advance and win the prize pool!
-      </p>
+                <p className="text-white font-medium mb-4 text-center">
+                  Play through five stages: qualify, advance and win the prize pool!
+                </p>
 
-   <div class="space-y-4 mt-4 w-full max-w-sm mx-auto"> {/* Added mx-auto here */}
-  {/* Stage 1 Card */}
-  <div class="p-4 rounded-2xl bg-[#1e293b]/80 border border-cyan-400 shadow-[0_0_20px_#00fff044] hover:shadow-[0_0_35px_#00fff066] transition-all duration-300 transform hover:-translate-y-1">
-    {/* Centered content inside card: icon above text */}
-    <div class="flex flex-col items-center gap-y-2">
-      <i class="fas fa-rocket text-cyan-300 text-2xl"></i>
-      <div class="text-center">
-        <h3 class="font-bold text-white text-lg">STAGE 1 - QUALIFY</h3>
-        <p class="text-sm text-cyan-200/85">25 ENTER. TOP 5 ADVANCE.</p>
-      </div>
-    </div>
-  </div>
+                <div className="space-y-4 mt-4 w-full max-w-sm mx-auto">
+                  {/* Stage 1 Card */}
+                  <div className="p-4 rounded-2xl bg-[#1e293b]/80 border border-cyan-400 shadow-[0_0_20px_#00fff044] hover:shadow-[0_0_35px_#00fff066] transition-all duration-300 transform hover:-translate-y-1">
+                    <div className="flex flex-col items-center gap-y-2">
+                      <i className="fas fa-rocket text-cyan-300 text-2xl"></i>
+                      <div className="text-center">
+                        <h3 className="font-bold text-white text-lg">STAGE 1 - QUALIFY</h3>
+                        <p className="text-sm text-cyan-200/85">25 ENTER. TOP 5 ADVANCE.</p>
+                      </div>
+                    </div>
+                  </div>
 
-  {/* Stages 2-4 Card */}
-  <div class="p-4 rounded-2xl bg-[#1e293b]/80 border border-cyan-400 shadow-[0_0_20px_#00fff044] hover:shadow-[0_0_35px_#00fff066] transition-all duration-300 transform hover:-translate-y-1">
-    {/* Centered content inside card: icon above text */}
-    <div class="flex flex-col items-center gap-y-2">
-      <i class="fas fa-sync-alt text-cyan-300 text-2xl"></i> {/* Icon for Advance */}
-      <div class="text-center">
-        <h3 class="font-bold text-white text-lg">STAGES 2-4 - ADVANCE</h3>
-        <p class="text-sm text-cyan-200/85">EACH ROOM: 25 PLAYERS. TOP 5 MOVE ON</p>
-      </div>
-    </div>
-  </div>
+                  {/* Stages 2-4 Card */}
+                  <div className="p-4 rounded-2xl bg-[#1e293b]/80 border border-cyan-400 shadow-[0_0_20px_#00fff044] hover:shadow-[0_0_35px_#00fff066] transition-all duration-300 transform hover:-translate-y-1">
+                    <div className="flex flex-col items-center gap-y-2">
+                      <i className="fas fa-sync-alt text-cyan-300 text-2xl"></i>
+                      <div className="text-center">
+                        <h3 className="font-bold text-white text-lg">STAGES 2-4 - ADVANCE</h3>
+                        <p className="text-sm text-cyan-200/85">EACH ROOM: 25 PLAYERS. TOP 5 MOVE ON</p>
+                      </div>
+                    </div>
+                  </div>
 
-  {/* Stage 5 Card */}
-  <div class="p-4 rounded-2xl bg-[#1e293b]/80 border border-cyan-400 shadow-[0_0_20px_#00fff044] hover:shadow-[0_0_35px_#00fff066] transition-all duration-300 transform hover:-translate-y-1">
-    {/* Centered content inside card: icon above text */}
-    <div class="flex flex-col items-center gap-y-2">
-      <i class="fas fa-trophy text-cyan-300 text-2xl"></i> {/* Icon for Win */}
-      <div class="text-center">
-        <h3 class="font-bold text-white text-lg">STAGE 5 - WIN</h3>
-        <p class="text-sm text-cyan-200/85">FINALS ROOM—COMPETE FOR PRIZE POOL</p>
-      </div>
-    </div>
-  </div>
-</div>
+                  {/* Stage 5 Card */}
+                  <div className="p-4 rounded-2xl bg-[#1e293b]/80 border border-cyan-400 shadow-[0_0_20px_#00fff044] hover:shadow-[0_0_35px_#00fff066] transition-all duration-300 transform hover:-translate-y-1">
+                    <div className="flex flex-col items-center gap-y-2">
+                      <i className="fas fa-trophy text-cyan-300 text-2xl"></i>
+                      <div className="text-center">
+                        <h3 className="font-bold text-white text-lg">STAGE 5 - WIN</h3>
+                        <p className="text-sm text-cyan-200/85">FINALS ROOM—COMPETE FOR PRIZE POOL</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-      <span class="text-cyan-300 font-semibold text-center mt-6 text-lg" aria-live="polite">
-        {t('stage_5_prize_pool', 'Stage 5 Prize Pool')}:{' '}
-        <span class="text-white text-xl" aria-label={t('prize_pool_value', 'Prize pool value')}>
-          {safePrizePool.toLocaleString()}{'\u2009'}π
-        </span>
-      </span>
-    </div>
-  </div>
+                <span className="text-cyan-300 font-semibold text-center mt-6 text-lg" aria-live="polite">
+                  {t('stage_5_prize_pool', 'Stage 5 Prize Pool')}:{" "}
+                  <span className="text-white text-xl" aria-label={t('prize_pool_value', 'Prize pool value')}>
+                    {safePrizePool.toLocaleString()}{'\u2009'}π
+                  </span>
+                </span>
+              </div>
+            </div>
 
-  <div class="px-3 relative z-10">
-    <div class="max-w-6xl mx-auto">
-      <div class="p-[1px] rounded-2xl bg-gradient-to-r from-cyan-500/40 via-blue-500/35 to-cyan-500/40">
-        <div class="rounded-2xl bg-[#0f172a]/80 backdrop-blur border border-white/10 shadow-[0_0_24px_rgba(34,211,238,0.16)] px-3 sm:px-4 py-4 sm:py-5">
-          <div class="mt-4 text-center">
-            <button
-              type="button"
-              onClick={handleEnterStage1}
-              class="inline-flex items-center justify-center rounded-xl px-7 py-3 text-lg font-semibold
+            <div className="px-3 relative z-10">
+              <div className="max-w-6xl mx-auto">
+                <div className="p-[1px] rounded-2xl bg-gradient-to-r from-cyan-500/40 via-blue-500/35 to-cyan-500/40">
+                  <div className="rounded-2xl bg-[#0f172a]/80 backdrop-blur border border-white/10 shadow-[0_0_24px_rgba(34,211,238,0.16)] px-3 sm:px-4 py-4 sm:py-5">
+                    <div className="mt-4 text-center">
+                      <button
+                        type="button"
+                        onClick={handleEnterStage1}
+                        className="inline-flex items-center justify-center rounded-xl px-7 py-3 text-lg font-semibold
                                    bg-cyan-400 text-[#0a1024] shadow-[0_0_25px_#00fff088] transition-all duration-300 hover:bg-cyan-300 hover:shadow-[0_0_40px_#00fff0aa] transform hover:scale-105"
-              aria-label={t('enter_stage_1_aria', 'Enter Stage 1 qualifiers')}
-            >
-              {t('enter_stage_1', 'ENTER STAGE 1')}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+                        aria-label={t('enter_stage_1_aria', 'Enter Stage 1 qualifiers')}
+                      >
+                        {t('enter_stage_1', 'ENTER STAGE 1')}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
 
-          <FreeSection t={t} items={getCompetitionsByCategory('free')} />
-          <TopWinnersCarousel t={t} />
+          <FreeShowcaseSection />
+          <TopWinnersCarousel t={t} /> {/* Now correctly referenced */}
           <VisionBlock t={t} />
         </main>
       </div>
@@ -638,7 +663,6 @@ function Section({
     'earbuds','drone','camera','wearable','smartwatch','router','gpu','cpu'
   ];
 
-  const isFree  = lowerCat === 'free'  || wordIncludes(lowerTitle, ['free','gratis']);
   const isPi    = lowerCat === 'pi'    || wordIncludes(lowerTitle, ['pi','π']);
   const isTech  = lowerCat === 'tech'  || wordIncludes(lowerTitle, TECH_KEYWORDS);
   const isDaily = lowerCat === 'daily' || wordIncludes(lowerTitle, ['daily','weekly']);
@@ -664,7 +688,7 @@ function Section({
         ariaLabel={`${title} carousel`}
         itemMinWidthCSS={resolvedItemMinWidth}
         cardMaxWidth={resolvedCardMaxWidth}
-        renderItem={(item, i) => renderCard(item, i, { isFree, isPi, cardSize: resolvedCardSize })}
+        renderItem={(item, i) => renderCard(item, i, { isPi, cardSize: resolvedCardSize })}
         centerFirstSlide
       />
 
@@ -683,7 +707,7 @@ function Section({
 }
 
 /* ---------------- card resolver ---------------- */
-function renderCard(item, i, { isFree, isPi, cardSize = 'md' }) {
+function renderCard(item, i, { isPi, cardSize = 'md' }) {
   const key = item?.comp?.slug || `item-${i}`;
   if (!item?.comp) return null;
 
@@ -713,8 +737,6 @@ function renderCard(item, i, { isFree, isPi, cardSize = 'md' }) {
     );
   }
 
-  if (isFree) return <FreeCompetitionCard key={key} {...item} />;
-
   if (isPi) {
     const maxW = cardSize === 'md' ? 320 : 480; // keep in sync with Section config
     return (
@@ -738,6 +760,7 @@ function renderCard(item, i, { isFree, isPi, cardSize = 'md' }) {
     />
   );
 }
+
 
 /* ---------------- misc sections ---------------- */
 function VisionBlock({ t }) {
@@ -806,94 +829,6 @@ function ComingSoonColumn({ title, items = [], t }) {
         ))}
       </div>
     </div>
-  );
-}
-
-function TopWinnersCarousel({ t }) {
-  const winners = []; // populate when you have real winners
-  const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    if (winners.length === 0) return;
-    const id = setInterval(() => setIndex((p) => (p + 1) % winners.length), 5000);
-    return () => clearInterval(id);
-  }, [winners.length]);
-
-  if (winners.length === 0) {
-    return (
-      <div className="max-w-md mx-auto bg-[#0a1024]/90 border border-cyan-500 backdrop-blur-lg rounded-xl shadow-[0_0_40px_#00fff055] p-6 text-white text-center font-orbitron space-y-3">
-        <h2 className="text-2xl font-bold text-cyan-300">{t('top_winners', 'Top Winners')}</h2>
-        <p className="text-white/80 italic">
-          {t(
-            'be_first_to_make_history',
-            'Be the first to make history no winners yet, but your name could be the one they remember'
-          )}
-        </p>
-      </div>
-    );
-  }
-
-  const current = winners[index];
-
-  return (
-    <div className="max-w-md mx-auto bg-[#0a1024]/90 border border-cyan-500 backdrop-blur-lg rounded-xl shadow-[0_0_40px_#00fff055] p-6 text-white text-center font-orbitron space-y-4">
-      <h2 className="text-2xl font-bold text-cyan-300">{t('top_winners', 'Top Winners')}</h2>
-
-      <div className="flex justify-center">
-        <Image
-          src={current.image || '/images/default-avatar.png'}
-          alt={current.name || t('winner', 'Winner')}
-          width={120}
-          height={120}
-          className="rounded-full border-4 border-cyan-400 shadow-lg"
-        />
-      </div>
-
-      <h3 className="text-xl font-semibold">{current.name || t('anonymous', 'Anonymous')}</h3>
-      <p className="text-cyan-200">{current.prize || t('surprise_prize', 'Surprise Prize')}</p>
-      <p className="text-sm text-white/70">{current.date || t('tba', 'TBA')}</p>
-    </div>
-  );
-}
-
-/* ---------- FREE SECTION: centered card, NO carousel ---------- */
-function FreeSection({ t, items = [] }) {
-  const fallback = {
-    comp: {
-      slug: 'pi-to-the-moon',
-      startsAt: '',
-      endsAt: '',
-      ticketsSold: 0,
-      totalTickets: 5000,
-      comingSoon: true,
-      status: 'active',
-    },
-    title: 'Pi To The Moon',
-    prize: '7,500 π',
-  };
-
-  const cardData = Array.isArray(items) && items.length ? items[0] : fallback;
-
-  return (
-    <section className="space-y-6">
-      <div className="text-center">
-        <h2 className="w-full text-base font-bold text-center text-cyan-300 px-4 py-3 rounded-xl font-orbitron shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur-md border border-cyan-400">
-          {t('omc_free_competitions', 'OMC Free Competitions')}
-        </h2>
-      </div>
-
-      <div className="w-full bg-white/5 backdrop-blur-lg px-4 sm:px-6 py-8 border border-cyan-300 rounded-3xl shadow-[0_0_60px_#00ffd577] neon-outline">
-        <div className="max-w-[520px] mx-auto">
-          <FreeCompetitionCard
-            comp={cardData.comp}
-            title={cardData.title}
-            prize={cardData.prize}
-            hideEntryButton={false}
-            buttonLabel={t('enter_now', 'More Details')}
-          />
-        </div>
-      </div>
-    </section>
   );
 }
 

@@ -41,8 +41,8 @@ export default function FreeCompetitionCard({ comp = {}, title, prize }) {
   const dateFmt = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
   const formattedStart = startsAt ? startsAt.toLocaleString(undefined, dateFmt) : t('tba', 'TBA');
   const formattedEnd   = endsAt   ? endsAt.toLocaleString(undefined, dateFmt)   : t('tba', 'TBA');
-const slug = comp?.slug ?? comp?.comp?.slug ?? '';
-const purchaseHref = slug ? `/ticket-purchase/${slug}` : null;
+  const slug = comp?.slug ?? comp?.comp?.slug ?? '';
+  const purchaseHref = slug ? `/ticket-purchase/${slug}` : null;
 
   const sold  = Number(comp?.ticketsSold ?? comp?.comp?.ticketsSold ?? 0);
   const total = Number(comp?.totalTickets ?? comp?.comp?.totalTickets ?? 0);
@@ -82,23 +82,24 @@ const purchaseHref = slug ? `/ticket-purchase/${slug}` : null;
     (comp?.comp?.slug?.includes?.('launch-week'));
 
   return (
-    <div className="flex justify-center py-8">
+    <div className="flex justify-center py-4 px-2 sm:py-8 sm:px-4"> {/* Adjusted padding */}
       {/* Outer glow & animated border frame */}
-      <div className="relative w-full max-w-xl">
+      <div className="relative w-full max-w-sm sm:max-w-xl"> {/* Smaller max-width for mobile */}
         <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-cyan-400/15 via-blue-500/10 to-fuchsia-500/15 blur-xl" />
         <div className="relative rounded-3xl p-[1.5px] bg-[linear-gradient(135deg,rgba(0,255,213,0.6),rgba(0,119,255,0.5))] [mask-composite:exclude]">
           {/* Card body */}
           <section
-            className={`rounded-3xl backdrop-blur-xl border text-white font-orbitron p-5 sm:p-6
+            // Adjusted padding
+            className={`rounded-3xl backdrop-blur-xl border text-white font-orbitron p-4 sm:p-6
               ${isLaunchWeek
                 ? 'bg-gradient-to-br from-yellow-400 via-orange-400 to-red-500 border-yellow-300 shadow-[0_0_30px_rgba(255,200,0,0.8)]'
                 : 'bg-[#0b1220]/95 border-white/10'}
             `}
           >
             {/* Top row: Title + status + dates */}
-            <div className="flex flex-col items-center gap-3">
+            <div className="flex flex-col items-center gap-2 sm:gap-3"> {/* Adjusted gap */}
               <h2
-                className={`text-2xl sm:text-[28px] font-extrabold tracking-wide text-center drop-shadow
+                className={`text-xl sm:text-[28px] font-extrabold tracking-wide text-center drop-shadow
                   ${isLaunchWeek
                     ? 'text-black'
                     : 'bg-gradient-to-r from-cyan-300 via-sky-300 to-blue-300 bg-clip-text text-transparent'}
@@ -107,17 +108,19 @@ const purchaseHref = slug ? `/ticket-purchase/${slug}` : null;
                 {title}
               </h2>
 
-              <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
+              <div className="flex flex-wrap items-center justify-center gap-1.5 text-xs sm:text-sm"> {/* Adjusted gap and font size */}
                 {/* Show BOTH Start and Draw, pulled from real data */}
-                <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-cyan-200">
+                <span className="rounded-full border border-white/15 bg-white/5 px-2.5 py-0.5 text-cyan-200"> {/* Adjusted padding */}
                   🟢 {t('start', 'Start')}: <span className="text-white">{formattedStart}</span>
                 </span>
-                <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-cyan-200">
+                <span className="rounded-full border border-white/15 bg-white/5 px-2.5 py-0.5 text-cyan-200"> {/* Adjusted padding */}
                   🎯 {t('draw', 'Draw')}: <span className="text-white">{formattedEnd}</span>
                 </span>
 
                 <span
-                  className={`rounded-full px-3 py-1 font-bold ${
+                  // Adjusted padding
+                  className={`rounded-full px-2.5 py-0.5 font-bold
+                    ${
                     statusLabel === t('open', 'Open')
                       ? 'bg-emerald-400 text-black'
                       : statusLabel === t('closed', 'Closed')
@@ -129,7 +132,7 @@ const purchaseHref = slug ? `/ticket-purchase/${slug}` : null;
                 </span>
 
                 {timeLeft && (
-                  <span className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-cyan-200">
+                  <span className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-2.5 py-0.5 text-cyan-200"> {/* Adjusted padding */}
                     ⏳ {timeLeft}
                   </span>
                 )}
@@ -137,7 +140,7 @@ const purchaseHref = slug ? `/ticket-purchase/${slug}` : null;
             </div>
 
             {/* Stats / details */}
-            <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3"> {/* Adjusted margin and grid layout for mobile */}
               <StatChip label={t('prize', 'Prize')} value={prize} highlight />
               <StatChip label={t('entry_fee', 'Entry Fee')} value={t('free', 'FREE')} strong />
               <StatChip label={t('winners', 'Winners')} value={t('multiple', 'Multiple')} />
@@ -147,15 +150,16 @@ const purchaseHref = slug ? `/ticket-purchase/${slug}` : null;
             </div>
 
             {/* Progress */}
-            <div className="mt-5">
-              <div className="flex items-center justify-between text-[11px] text-white/70 mb-1">
+            <div className="mt-4"> {/* Adjusted margin */}
+              <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-white/70 mb-1"> {/* Adjusted font size */}
                 <span>{t('tickets', 'Tickets')}</span>
                 <span>
                   {sold.toLocaleString()} / {total.toLocaleString()} ({percent}%)
                 </span>
               </div>
+              {/* Adjusted height */}
               <div
-                className="h-2 w-full rounded-full bg-white/10 overflow-hidden"
+                className="h-1.5 sm:h-2 w-full rounded-full bg-white/10 overflow-hidden"
                 role="progressbar"
                 aria-valuenow={percent}
                 aria-valuemin={0}
@@ -170,39 +174,39 @@ const purchaseHref = slug ? `/ticket-purchase/${slug}` : null;
             </div>
 
             {/* CTA */}
-          <div className="mt-6 flex items-center justify-center">
-  {purchaseHref ? (
-    <Link
-      href={purchaseHref}
-      className={`inline-flex items-center gap-2 rounded-2xl px-6 py-2.5 text-lg font-extrabold shadow-lg hover:brightness-110 active:scale-[0.99] transition
-        ${isLaunchWeek
-          ? 'bg-gradient-to-r from-yellow-300 via-orange-400 to-red-500 text-black'
-          : 'bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black'}
-      `}
-      aria-label={isLaunchWeek ? t('enter_now', 'Enter Now') : t('view_detail', 'View Detail')}
-      onClick={() => {
-        if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(15);
-        // trackEnter?.({ slug }) // optional analytics
-      }}
-    >
-      {isLaunchWeek ? `🚀 ${t('enter_now', 'Enter Now')}` : t('view_detail', 'View Detail')}
-      <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-      </svg>
-    </Link>
-  ) : (
-    <button
-      className="inline-flex items-center gap-2 rounded-2xl px-6 py-2.5 text-lg font-extrabold bg-gray-500 text-white cursor-not-allowed"
-      disabled
-    >
-      {t('not_available', 'Not Available')}
-    </button>
-  )}
-</div>
+            <div className="mt-5 flex items-center justify-center"> {/* Adjusted margin */}
+              {purchaseHref ? (
+                <Link
+                  href={purchaseHref}
+                  className={`inline-flex items-center gap-2 rounded-2xl px-5 py-2 text-base sm:text-lg font-extrabold shadow-lg hover:brightness-110 active:scale-[0.99] transition
+                    ${isLaunchWeek
+                      ? 'bg-gradient-to-r from-yellow-300 via-orange-400 to-red-500 text-black'
+                      : 'bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black'}
+                  `}
+                  aria-label={isLaunchWeek ? t('enter_now', 'Enter Now') : t('view_detail', 'View Deatils')}
+                  onClick={() => {
+                    if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(15);
+                    // trackEnter?.({ slug }) // optional analytics
+                  }}
+                >
+                  {isLaunchWeek ? `🚀 ${t('enter_now', 'Enter Now')}` : t('view_detail', 'View Deatils')}
+                  <svg className="h-4 w-4 sm:h-5 sm:w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"> {/* Adjusted icon size */}
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              ) : (
+                <button
+                  className="inline-flex items-center gap-2 rounded-2xl px-5 py-2 text-base sm:text-lg font-extrabold bg-gray-500 text-white cursor-not-allowed"
+                  disabled
+                >
+                  {t('not_available', 'Not Available')}
+                </button>
+              )}
+            </div>
 
             {/* Terms */}
-            <div className="mt-4 text-center">
-              <Link href="/terms-conditions" className="text-sm text-cyan-300 underline hover:text-cyan-200">
+            <div className="mt-3 text-center"> {/* Adjusted margin */}
+              <Link href="/terms-conditions" className="text-xs sm:text-sm text-cyan-300 underline hover:text-cyan-200"> {/* Adjusted font size */}
                 {t('view_full_terms', 'View Full Terms & Conditions')}
               </Link>
             </div>
@@ -216,11 +220,13 @@ const purchaseHref = slug ? `/ticket-purchase/${slug}` : null;
 function StatChip({ label, value, highlight = false, strong = false }) {
   return (
     <div
-      className={`rounded-xl border px-3 py-2 text-[12px] ${
+      // Adjusted padding and font sizes
+      className={`rounded-lg border px-2 py-1.5 text-[11px] sm:text-[12px]
+        ${
         highlight ? 'border-amber-300/30 bg-amber-300/10' : 'border-white/10 bg-white/5'
       }`}
     >
-      <div className={`uppercase tracking-wide ${highlight ? 'text-amber-200' : 'text-cyan-300'} text-[11px]`}>
+      <div className={`uppercase tracking-wide ${highlight ? 'text-amber-200' : 'text-cyan-300'} text-[10px] sm:text-[11px]`}> {/* Adjusted font size */}
         {label}
       </div>
       <div className={`mt-0.5 ${strong ? 'text-white font-bold' : 'text-white/90'}`}>{value}</div>
