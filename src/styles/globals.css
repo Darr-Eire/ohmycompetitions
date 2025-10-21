@@ -347,3 +347,19 @@ html.pibrowser .overlay{ background:rgba(0,0,0,.5)!important; }
   opacity: 0;
   pointer-events: none;
 }
+/* --- OMC Gift Modal Safety Guards --- */
+#modal-root, #gift-modal-root, #gift-modal-root * { pointer-events: auto !important; }
+#gift-modal-root input, #gift-modal-root textarea, #gift-modal-root select {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+#gift-modal-root .modal-backdrop { z-index: 9999 !important; }
+#gift-modal-root .modal-panel { z-index: 10000 !important; }
+
+#modal-root, #gift-modal-root, #gift-modal-root * { pointer-events: auto !important; }
+#gift-modal-root input, #gift-modal-root textarea, #gift-modal-root select {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+#gift-modal-root .modal-backdrop { z-index: 9999 !important; }
+#gift-modal-root .modal-panel { z-index: 10000 !important; }
