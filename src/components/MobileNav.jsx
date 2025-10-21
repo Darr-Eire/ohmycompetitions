@@ -3,6 +3,8 @@
 // Purpose: Footer-aware auto-hide mobile nav with active-state + safe-area
 // ============================================================================
 'use client';
+import { FaGamepad } from 'react-icons/fa';
+
 
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -48,9 +50,13 @@ export default function MobileNav() {
     () => [
       { href: '/homepage', label: 'Home', Icon: IconHome, match: (p) => p === '/homepage' },
       { href: '/competitions/live-now', label: 'Live', Icon: IconLive, match: (p) => p.startsWith('/competitions/live-now') },
-      { href: '/competitions/results', label: 'Results', Icon: IconTrophy, match: (p) => p.startsWith('/competitions/results') },
-      { href: '/account', label: 'Account', Icon: IconUser, match: (p) => p.startsWith('/account') },
-    ],
+{
+  href: '/try-your-skill',
+  label: 'Mini Game',
+  Icon: FaGamepad,
+  match: (p) => p.startsWith('/try-your-skill'),
+},
+],
     []
   );
 

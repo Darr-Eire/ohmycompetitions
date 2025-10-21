@@ -64,8 +64,7 @@ export default function Header() {
     [safeT('tech_gadgets', 'Tech/Gadgets'), '/competitions/tech&gadgets'],
     [safeT('daily_weekly', 'Daily/Weekly'), '/competitions/daily'],
     [safeT('pi_giveaways', 'Pi Giveaways'), '/competitions/pi'],
-    [safeT('pi_stages', 'Pi Stages'), '/stages', safeT('coming_soon', 'Coming Soon')],
-    [safeT('pi_cash_code', 'Pi Cash Code'), '/pi-cash-code', safeT('coming_soon', 'Coming Soon')],
+    
   ];
   const navItems = [[safeT('home', 'Home'), '/homepage']];
   const miniGames = [[safeT('try_your_skill', 'Try Your Skill'), '/try-your-skill', safeT('coming_soon', 'Coming Soon')]];
