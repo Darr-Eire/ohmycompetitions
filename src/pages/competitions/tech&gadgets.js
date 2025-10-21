@@ -204,11 +204,12 @@ function LiveCard({ data, onGift, onShare }) {
       {/* Body: everything stacked under the image */}
       <div className="p-3.5 sm:p-4">
         {/* Title + fee chip */}
-        <div className="flex items-start justify-between gap-3">
-          <h3 className="text-[15px] sm:text-[16px] font-semibold leading-snug line-clamp-2">
-            {theTitle}
-          </h3>
-        </div>
+      <div className="flex items-start justify-center">
+  <h3 className="text-center mx-auto text-[15px] sm:text-[16px] font-semibold leading-snug line-clamp-2">
+    {theTitle}
+  </h3>
+</div>
+
 
         {/* Stacked details (all real data) */}
         <div className="mt-3 space-y-1.5 text-[13px] text-white">
@@ -434,9 +435,10 @@ export default function TechGadgetsCompetitionsPage() {
                   </span>
                 </h1>
 
-                <p className="text-white/70 text-[13px] sm:text-[14px]">
-                  Hand-picked phones, consoles, and gear easy entry.
-                </p>
+                <p className="text-center mx-auto text-white/70 text-[13px] sm:text-[14px]">
+  Hand-picked phones, consoles and more easy entry.
+</p>
+
               </div>
 
               {/* compact stats */}
@@ -492,24 +494,25 @@ export default function TechGadgetsCompetitionsPage() {
         )}
 
         {/* sticky filters */}
-        <div className="sticky top-[calc(6px+env(safe-area-inset-top))] z-20 bg-[#0f1b33]/95 backdrop-blur-sm border-y border-white/10">
-          <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
-            <div className="flex gap-2 overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {['Live', 'Ending Soon', 'All'].map((f) => (
-                <button
-                  key={f}
-                  onClick={() => setActiveFilter(f)}
-                  className={`shrink-0 rounded-full px-3.5 py-1.5 text-[13px] font-semibold transition
-                    ${activeFilter === f
-                      ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md'
-                      : 'text-white/70 hover:text-white hover:bg-white/10 border border-white/20'}`}
-                >
-                  {f}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
+       <div className="sticky top-[calc(6px+env(safe-area-inset-top))] z-20 bg-[#0f1b33]/95 backdrop-blur-sm border-y border-white/10">
+  <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
+    <div className="flex justify-center items-center gap-2 overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {['Live', 'Ending Soon', 'All'].map((f) => (
+        <button
+          key={f}
+          onClick={() => setActiveFilter(f)}
+          className={`shrink-0 rounded-full px-3.5 py-1.5 text-[13px] font-semibold transition
+            ${activeFilter === f
+              ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md'
+              : 'text-white/70 hover:text-white hover:bg-white/10 border border-white/20'}`}
+        >
+          {f}
+        </button>
+      ))}
+    </div>
+  </div>
+</div>
+
 
         {/* grid */}
         <section className="py-6 sm:py-8">
