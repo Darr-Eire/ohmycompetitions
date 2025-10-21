@@ -244,26 +244,6 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize, classNa
           <span className="text-white font-semibold">{entryFeeLabel}</span>
         </div>
 
-        <p className="flex justify-between">
-          <span className="text-cyan-300">Max Per User:</span>
-          <span>
-            {comp?.comp?.maxTicketsPerUser
-              ? comp.comp.maxTicketsPerUser.toLocaleString()
-              : comp?.maxTicketsPerUser
-              ? comp.maxTicketsPerUser.toLocaleString()
-              : 'TBA'}
-          </span>
-        </p>
-
-        <p className="flex justify-between">
-          <span className="text-cyan-300">Winners:</span>
-          <span>
-            {Number.isFinite(Number(comp?.winners ?? comp?.comp?.winners))
-              ? `${Math.min(3, Math.max(1, Number(comp?.winners ?? comp?.comp?.winners)))}`
-              : (comp?.winners ?? comp?.comp?.winners ?? `${winnersCount}`)}
-          </span>
-        </p>
-
         <div className="flex justify-between">
           <span className="text-cyan-300">Draw Date</span>
           <span>{endsAt ? new Date(endsAt).toLocaleDateString() : 'TBA'}</span>
