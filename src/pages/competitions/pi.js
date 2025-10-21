@@ -46,15 +46,12 @@ function timeUntilStartMs(c) {
 function timeLeftEndLabel(c) { return msToShort(timeUntilEndMs(c)); }
 function timeLeftStartLabel(c) { return msToShort(timeUntilStartMs(c)); }
 
-/* NEW: real date/time formatter */
+/* Small absolute date formatter (month + day) */
 function fmtDateTime(value) {
   if (!value) return 'TBA';
   const d = new Date(value);
   if (!Number.isFinite(d.getTime())) return 'TBA';
-  return new Intl.DateTimeFormat(undefined, {
-    month: 'short',
-    day: '2-digit',
-  }).format(d);
+  return new Intl.DateTimeFormat(undefined, { month: 'short', day: '2-digit' }).format(d);
 }
 
 function ticketsProgress(c) {
@@ -76,7 +73,7 @@ const purchaseHref = (c) => {
   return slug ? `/ticket-purchase/${slug}` : '/ticket-purchase';
 };
 
-/* prize helpers (REAL Pi prize, never the entry fee) */
+
 function parseNumericLike(v) {
   if (v == null) return NaN;
   if (typeof v === 'number') return Number.isFinite(v) ? v : NaN;
@@ -87,31 +84,54 @@ function parseNumericLike(v) {
   }
   return NaN;
 }
+
 function prizePiDisplay(c) {
   const raw = c.comp ?? c;
   const entryFee = parseNumericLike(raw.entryFee);
 
-  for (const key of ['prizeValuePi', 'prizePi', 'topPrizePi']) {
+  // Prefer explicit breakdown if present
+  if (raw.prizeBreakdown && typeof raw.prizeBreakdown === 'object') {
+    const first = parseNumericLike(raw.prizeBreakdown.first);
+    if (Number.isFinite(first) && first > 0 && first !== entryFee) return `${first.toLocaleString()} π`;
+    let sum = 0;
+    for (const k of Object.keys(raw.prizeBreakdown)) {
+      const n = parseNumericLike(raw.prizeBreakdown[k]);
+      if (Number.isFinite(n)) sum += n;
+    }
+    if (sum > 0 && sum !== entryFee) return `${sum.toLocaleString()} π`;
+  }
+
+  // Common Pi fields
+  for (const key of ['prizeValuePi', 'prizePi', 'topPrizePi', 'totalPrizePi']) {
     const n = parseNumericLike(raw[key]);
     if (Number.isFinite(n) && n > 0 && n !== entryFee) return `${n.toLocaleString()} π`;
   }
+
+  // Generic numeric "pool" fields (assume π)
+  for (const key of ['prizePool', 'totalPrize', 'grandPrize', 'topPrize']) {
+    const n = parseNumericLike(raw[key]);
+    if (Number.isFinite(n) && n > 0 && n !== entryFee) return `${n.toLocaleString()} π`;
+  }
+
+  // prizes array (first numeric)
   if (Array.isArray(raw.prizes)) {
     for (const p of raw.prizes) {
-      const n = parseNumericLike(p?.amount);
+      const n = parseNumericLike(p?.amount ?? p?.value ?? p);
       if (Number.isFinite(n) && n > 0 && n !== entryFee) return `${n.toLocaleString()} π`;
     }
   }
+
+  // numeric prizeValue (assume π)
   const val = parseNumericLike(raw.prizeValue);
   if (Number.isFinite(val) && val > 0 && val !== entryFee) return `${val.toLocaleString()} π`;
 
-  for (const s of [raw.firstPrize, raw.prize, raw.prizeText, raw.prizeLabel]) {
-    if (typeof s === 'string') {
-      const n = parseNumericLike(s);
-      if (Number.isFinite(n) && n > 0) return `${n.toLocaleString()} π`;
-    }
-  }
-  return '— π';
+  // textual fallbacks
+  const textCandidates = [raw.firstPrize, raw.prize, raw.prizeText, raw.prizeLabel, c.prize].filter(Boolean);
+  if (textCandidates.length) return String(textCandidates[0]);
+
+  return 'TBA';
 }
+
 function feePi(c) {
   const comp = c.comp ?? c;
   const fee = comp?.entryFee;
@@ -124,14 +144,14 @@ function feePi(c) {
 function BackgroundFX() {
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-      <div className="absolute -top-40 -left-40 h-[420px] w-[420px] rounded-full blur-3xl opacity-20 bg-cyan-400 animate-float-slow" />
-      <div className="absolute -bottom-40 -right-40 h-[420px] w-[420px] rounded-full blur-3xl opacity-15 bg-blue-500 animate-float-slower" />
-      <div className="absolute inset-0 [background-image:radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:18px_18px] opacity-20" />
+      <div className="absolute -top-1/3 left-1/2 -translate-x-1/2 w-[1100px] h-[1100px] rounded-full blur-3xl opacity-10 bg-gradient-to-br from-cyan-500/40 to-blue-600/40" />
+      <div className="absolute bottom-1/3 right-1/3 w-[700px] h-[700px] rounded-full blur-3xl opacity-10 bg-gradient-to-tl from-purple-500/40 to-pink-500/40" />
+      <div className="absolute inset-0 [background-image:radial-gradient(rgba(255,255,255,0.07)_1.5px,transparent_1.5px)] [background-size:22px_22px] opacity-10" />
     </div>
   );
 }
 
-/* ------------------------------ PRIZE BANNER ONLY (no images) ------------------------------ */
+/* ------------------------------ PRIZE BANNER ------------------------------ */
 function PrizeBanner({ title, prizeText }) {
   return (
     <div className="relative aspect-[4/3] w-full overflow-hidden">
@@ -142,15 +162,18 @@ function PrizeBanner({ title, prizeText }) {
           <div className="text-base sm:text-lg font-bold tracking-tight text-black drop-shadow-[0_1px_8px_rgba(255,255,255,0.55)] line-clamp-2">
             {title}
           </div>
-          
+          {prizeText && (
+            <div className="mt-2 text-sm font-extrabold text-black/80">{prizeText}</div>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-/* ------------------------------ card (stacked details) ------------------------------ */
+/* ------------------------------ card (Tech layout) ------------------------------ */
 function PiLiveCard({ data }) {
+  const comp = data.comp ?? data;
   const status = getStatus(data);
   const { sold, total, pct } = ticketsProgress(data);
 
@@ -163,51 +186,53 @@ function PiLiveCard({ data }) {
   const showCountdownEnd   = Number.isFinite(msLeftEnd)   && msLeftEnd   > 0 && msLeftEnd   <= 48 * 3600 * 1000;
   const showCountdownStart = Number.isFinite(msLeftStart) && msLeftStart > 0 && msLeftStart <= 48 * 3600 * 1000;
 
-  // NEW: compute which absolute date to show + relative hint
-  const comp = data.comp ?? data;
-  const datePrimary =
-    status === 'upcoming'
-      ? fmtDateTime(comp?.startsAt)
-      : fmtDateTime(comp?.endsAt);
+  const datePrimary = status === 'upcoming' ? fmtDateTime(comp?.startsAt) : fmtDateTime(comp?.endsAt);
+  const relative    = status === 'upcoming'
+    ? (showCountdownStart ? timeLeftStartLabel(data) : null)
+    : (showCountdownEnd   ? timeLeftEndLabel(data)   : (status === 'ended' ? null : null));
 
-  const relative =
-    status === 'upcoming'
-      ? (showCountdownStart ? timeLeftStartLabel(data) : null)
-      : (showCountdownEnd   ? timeLeftEndLabel(data)   : (status === 'ended' ? null : null));
+  const img = data.imageUrl || comp.imageUrl;
 
   return (
-    <article
-      className="
-        group relative rounded-2xl border border-white/10 bg-white/5
-        overflow-hidden transition-all duration-200 hover:bg-white/10
-      "
-    >
-      {/* Prize banner (always) */}
-      <div className="relative">
-        <PrizeBanner title={theTitle} prizeText={prizeText} />
-        <div className="absolute top-2 left-1/2 -translate-x-1/2">          {status === 'live' && (
-            <span className="rounded-md bg-emerald-500/25 px-2 py-0.5 text-emerald-200 text-[11px] font-bold">LIVE</span>
-          )}
-          {status === 'upcoming' && (
-            <span className="rounded-md bg-yellow-500/25 px-2 py-0.5 text-yellow-100 text-[11px] font-bold">COMING SOON</span>
-          )}
-          {status === 'ended' && (
-            <span className="rounded-md bg-white/25 px-2 py-0.5 text-white/90 text-[11px] font-bold">FINISHED</span>
-          )}
-        </div>
+    <article className="group relative rounded-2xl border border-white/10 bg-white/5 overflow-hidden transition-all duration-200 hover:bg-white/10">
+      {/* Media: image if present, banner otherwise */}
+      <div className="relative aspect-[4/3] w-full overflow-hidden">
+        {img ? (
+          <img
+            src={img}
+            alt={theTitle}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+            loading="lazy"
+            decoding="async"
+          />
+        ) : (
+          <PrizeBanner title={theTitle} prizeText={prizeText} />
+        )}
       </div>
 
-      {/* Body: stacked details */}
+      {/* Status chip BELOW media (same line, centered) */}
+      <div className="px-3.5 sm:px-4 pt-2 flex justify-center">
+        {status === 'live' && (
+          <span className="whitespace-nowrap rounded-md bg-emerald-500/25 px-2 py-0.5 text-emerald-200 text-[11px] font-bold">LIVE</span>
+        )}
+        {status === 'upcoming' && (
+          <span className="whitespace-nowrap rounded-md bg-yellow-500/25 px-2 py-0.5 text-yellow-100 text-[11px] font-bold">COMING SOON</span>
+        )}
+        {status === 'ended' && (
+          <span className="whitespace-nowrap rounded-md bg-white/25 px-2 py-0.5 text-white/90 text-[11px] font-bold">FINISHED</span>
+        )}
+      </div>
+
+      {/* Body */}
       <div className="p-3.5 sm:p-4">
-        {/* Title + fee chip */}
-       <div className="flex justify-center">
-  <h3 className="text-center text-[15px] sm:text-[16px] font-semibold leading-snug line-clamp-2">
-    {theTitle}
-  </h3>
-</div>
+        {/* Title centered */}
+        <div className="flex items-start justify-center">
+          <h3 className="text-center mx-auto text-[15px] sm:text-[16px] font-semibold leading-snug line-clamp-2">
+            {theTitle}
+          </h3>
+        </div>
 
-
-        {/* Stacked details (with real date/time) */}
+        {/* Stacked details (REAL prize, etc.) */}
         <div className="mt-3 space-y-1.5 text-[13px] text-white/85">
           <div className="flex items-baseline justify-between gap-2">
             <span className="text-white/60">Prize</span>
@@ -215,9 +240,15 @@ function PiLiveCard({ data }) {
           </div>
 
           <div className="flex items-baseline justify-between gap-2">
+            <span className="text-white/60">Fee</span>
+            <span className="font-semibold">{feeText}</span>
+          </div>
+
+          <div className="flex items-baseline justify-between gap-2">
             <span className="text-white/60">Tickets</span>
             <span className="font-semibold">
-              {sold}/{total} <span className="text-white/55"></span>
+              {total ? `${sold}/${total}` : sold}
+              {Number.isFinite(total) && total > 0 ? <span className="text-white/55"></span> : null}
             </span>
           </div>
 
@@ -227,11 +258,6 @@ function PiLiveCard({ data }) {
               {datePrimary}
               {relative && <span className="text-white/55 text-[12px] ml-2">({relative})</span>}
             </span>
-          </div>
-
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="text-white/60">Fee</span>
-            <span className="font-semibold">{feeText}</span>
           </div>
         </div>
 
@@ -246,12 +272,7 @@ function PiLiveCard({ data }) {
         <div className="mt-3">
           <a
             href={purchaseHref(data)}
-            className="
-              block w-full text-center rounded-lg
-              bg-gradient-to-r from-green-400 to-cyan-500
-              text-black font-extrabold px-3 py-2 text-[13px]
-              hover:brightness-110 active:translate-y-px transition-all
-            "
+            className="block w-full text-center rounded-lg bg-gradient-to-r from-green-400 to-cyan-500 text-black font-extrabold px-3 py-2 text-[13px] hover:brightness-110 active:translate-y-px transition-all"
           >
             More Details
           </a>
@@ -405,19 +426,18 @@ export default function PiCompetitionsPage() {
       <main className="relative min-h-[100svh] text-white bg-[#0f1b33]">
         <BackgroundFX />
 
-        {/* header */}
+        {/* header (centered like Tech page) */}
         <header className="relative z-10 pt-[calc(12px+env(safe-area-inset-top))] pb-3 sm:pb-4">
-        <div className="w-full text-center">
-
+          <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
               <div>
-                <h1 className="text-[22px] sm:text-[28px] font-extrabold tracking-tight">
+                <h1 className="text-center mx-auto text-[22px] sm:text-[28px] font-extrabold tracking-tight">
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff]">
                     {t('pi_competitions', 'Pi Competitions')}
                   </span>
                 </h1>
-                <p className="text-white/70 text-[13px] sm:text-[14px]">
-                  {t('dive_into_pi_competitions', 'Dive into Pi-powered competitions, Pi and more.')}
+                <p className="text-center mx-auto text-white/70 text-[13px] sm:text-[14px]">
+                  {t('dive_into_pi_competitions', 'Dive into Pi-powered competitions win Pi, tech and more.')}
                 </p>
               </div>
 
@@ -450,10 +470,10 @@ export default function PiCompetitionsPage() {
           </div>
         </header>
 
-        {/* sticky filters (default Coming Soon) */}
+        {/* sticky filters (centered like Tech page) */}
         <div className="sticky top-[calc(6px+env(safe-area-inset-top))] z-20 bg-[#0f1b33]/95 backdrop-blur-sm border-y border-white/10">
           <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
-            <div className="flex gap-2 overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex justify-center items-center gap-2 overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {['Coming Soon', 'Live', 'Ending Soon', 'All'].map((f) => (
                 <button
                   key={f}
@@ -470,7 +490,7 @@ export default function PiCompetitionsPage() {
           </div>
         </div>
 
-        {/* Ticker: Starts soon when Coming Soon tab, otherwise Ends soon */}
+        {/* Starts/Ends soon ticker */}
         {((activeFilter === 'Coming Soon' ? startingSoon : endingSoon).length > 0) && (
           <div className="sticky top-[calc(44px+env(safe-area-inset-top))] z-30 bg-[#0f1b33]/95 px-3 py-2 border-b border-white/10 text-[12px]">
             <div className="mx-auto w-full max-w-[min(94vw,1400px)]">
@@ -481,9 +501,8 @@ export default function PiCompetitionsPage() {
                     href={purchaseHref(c)}
                     className="shrink-0 inline-flex items-center gap-2 px-2 py-1 rounded-md bg-white/5 hover:bg-white/10"
                   >
-                    <span className="rounded-sm bg-pink-500/20 text-pink-300 px-1.5 py-0.5 text-[11px]">
-                      {activeFilter === 'Coming Soon' ? 'Starts' : 'Ends'}{' '}
-                      {activeFilter === 'Coming Soon' ? timeLeftStartLabel(c) : timeLeftEndLabel(c)}
+                    <span className="rounded-sm bg-pink-500/20 text-pink-300 px-1.5 py-0.5 text-[11px] whitespace-nowrap">
+                      {activeFilter === 'Coming Soon' ? 'Starts' : 'Ends'} {activeFilter === 'Coming Soon' ? timeLeftStartLabel(c) : timeLeftEndLabel(c)}
                     </span>
                     <span className="text-white/80 truncate max-w-[200px]">{titleOf(c)}</span>
                   </a>
@@ -517,18 +536,7 @@ export default function PiCompetitionsPage() {
 
       {/* compact global styles */}
       <style jsx global>{`
-        @keyframes float-slow {
-          0% { transform: translateY(0) translateX(0); }
-          50% { transform: translateY(18px) translateX(6px); }
-          100% { transform: translateY(0) translateX(0); }
-        }
-        @keyframes float-slower {
-          0% { transform: translateY(0) translateX(0); }
-          50% { transform: translateY(-14px) translateX(-8px); }
-          100% { transform: translateY(0) translateX(0); }
-        }
-        .animate-float-slow { animation: float-slow 12s ease-in-out infinite; }
-        .animate-float-slower { animation: float-slower 16s ease-in-out infinite; }
+        body { background-color: #0f1b33; color: white; }
 
         .web3-stat-card {
           background: rgba(255,255,255,0.08);
@@ -543,10 +551,6 @@ export default function PiCompetitionsPage() {
           box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
         .web3-stat-card svg { margin-bottom: 0.25rem; }
-
-        @media (prefers-reduced-motion: reduce) {
-          * { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
-        }
       `}</style>
     </>
   );

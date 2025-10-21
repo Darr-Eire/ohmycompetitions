@@ -115,6 +115,16 @@ function prizePiDisplay(c) {
   if (textCandidates.length) return String(textCandidates[0]);
   return 'TBA';
 }
+// Add this to src/pages/competitions/daily.js (near the other utils)
+function formatDate(d) {
+  if (!d) return '—';
+  const ts = typeof d === 'number' ? d : new Date(d).getTime();
+  if (!Number.isFinite(ts)) return '—';
+  return new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+  }).format(ts);
+}
 
 /** Resolves the *real* π prize to show (first prize preferred; otherwise sum; avoids entry fee). */
 function resolveRealPrizeText(c) {
@@ -452,7 +462,7 @@ export default function DailyCompetitionsPage() {
 </h1>
 
                 <p className="text-white/70 text-[13px] sm:text-[14px]">
-                  Fresh prizes drawn daily & weekly — easy entry.
+                  Fresh prizes drawn daily &  entry.
                 </p>
               </div>
 
