@@ -171,7 +171,7 @@ export default function TermsConditions() {
                   For help, support, or questions, email{' '}
                   <span className="text-cyan-300">ohmycompetitions@gmail.com</span> or message us via Pi usernames:{' '}
                   <span className="text-cyan-300">darreire2020</span> and{' '}
-                  <span className="text-cyan-300">Lyndz2020</span>.
+                  <span className="text-cyan-300"></span>.
                 </>
               ]
             }
