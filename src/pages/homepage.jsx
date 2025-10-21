@@ -498,98 +498,107 @@ const safePrizePool = useMemo(() => {
           />
 
           {/* ===================== OMC Pi Stages ===================== */}
-          <section
-            role="region"
-            aria-labelledby="omc-stages-title"
-            className="space-y-6 sm:space-y-7"
-          >
-          <div className="text-center space-y-3 px-3">
-  <h2
-    id="omc-stages-title"
-    className="w-full text-lg sm:text-xl font-extrabold text-cyan-300 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl font-orbitron
+         <section
+  role="region"
+  aria-labelledby="omc-stages-title"
+  class="space-y-6 sm:space-y-7 relative z-10"
+>
+  {/* Optional: Background glow or particle effect container */}
+  <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+    <div class="absolute inset-0 bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] opacity-80"></div>
+    {/* You could add SVG or CSS for subtle animations/particles here */}
+  </div>
+
+  <div class="text-center space-y-3 px-3 relative z-10">
+    <h2
+      id="omc-stages-title"
+      class="w-full text-lg sm:text-xl font-extrabold text-cyan-300 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl font-orbitron
              shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70
-             backdrop-blur-md border border-cyan-400"
-  >
-    {t('omc_pi_stages_competitions', 'OMC Pi Stages Competitions')}
-  </h2>
+             backdrop-blur-md border border-cyan-400 inline-block max-w-sm mx-auto"
+    >
+      {t('omc_pi_stages_competitions', 'OMC Pi Stages Competitions')}
+    </h2>
 
-  <div
-    className="max-w-5xl mx-auto text-[0.85rem] sm:text-sm text-cyan-300/90 italic
-               flex items-start justify-center gap-x-6 gap-y-2 flex-wrap leading-relaxed mt-1.5 sm:mt-2.5"
-    aria-describedby="omc-stages-desc"
-  >
-    <span id="omc-stages-desc" className="sr-only">
-      {t('stages_summary', 'Play through five stages: qualify in Stage 1, advance in Stages 2–4, and win in Stage 5.')}
-    </span>
-
-    <span className="text-center">
-      {t('qualify', 'Qualify')}{' '}
-      <span className="text-white font-semibold">({t('stage_1', 'Stage 1')})</span>
-      <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
-        {t('s1_desc', '25 enter. Top 5 earn an Advance Ticket.')}
+    <div
+      class="max-w-5xl mx-auto text-base text-cyan-300/90
+               flex flex-col items-center justify-center gap-y-2 flex-wrap leading-relaxed mt-1.5 sm:mt-2.5"
+      aria-describedby="omc-stages-desc"
+    >
+      <span id="omc-stages-desc" class="sr-only">
+        {t('stages_summary', 'Play through five stages: qualify in Stage 1, advance in Stages 2–4 and win in Stage 5.')}
       </span>
-    </span>
 
-    <span className="text-center">
-      {t('advance', 'Advance')}{' '}
-      <span className="text-white font-semibold">({t('stages_2_4', 'Stages 2–4')})</span>
-      <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
-        {t('s2_4_desc', 'Each room has 25 players; the top 5 move on using their Advance Ticket.')}
-      </span>
-    </span>
+      <p class="text-white font-medium mb-4 text-center">
+        Play through five stages: qualify, advance and win the prize pool!
+      </p>
 
-    <span className="text-center">
-      {t('win', 'Win')}{' '}
-      <span className="text-white font-semibold">({t('stage_5', 'Stage 5')})</span>
-      <span className="block mt-1 text-[0.75rem] not-italic text-cyan-200/85">
-        {t('s5_desc', 'Finals room—compete for your share of the prize pool.')}
-      </span>
-    </span>
+   <div class="space-y-4 mt-4 w-full max-w-sm mx-auto"> {/* Added mx-auto here */}
+  {/* Stage 1 Card */}
+  <div class="p-4 rounded-2xl bg-[#1e293b]/80 border border-cyan-400 shadow-[0_0_20px_#00fff044] hover:shadow-[0_0_35px_#00fff066] transition-all duration-300 transform hover:-translate-y-1">
+    {/* Centered content inside card: icon above text */}
+    <div class="flex flex-col items-center gap-y-2">
+      <i class="fas fa-rocket text-cyan-300 text-2xl"></i>
+      <div class="text-center">
+        <h3 class="font-bold text-white text-lg">STAGE 1 - QUALIFY</h3>
+        <p class="text-sm text-cyan-200/85">25 ENTER. TOP 5 ADVANCE.</p>
+      </div>
+    </div>
+  </div>
 
-    <span className="text-cyan-300 font-semibold text-center" aria-live="polite">
-      {t('stage_5_prize_pool', 'Stage 5 Prize Pool')}:{' '}
-      <span className="text-white" aria-label={t('prize_pool_value', 'Prize pool value')}>
-        {safePrizePool.toLocaleString()}{'\u2009'}π
-      </span>
-    </span>
+  {/* Stages 2-4 Card */}
+  <div class="p-4 rounded-2xl bg-[#1e293b]/80 border border-cyan-400 shadow-[0_0_20px_#00fff044] hover:shadow-[0_0_35px_#00fff066] transition-all duration-300 transform hover:-translate-y-1">
+    {/* Centered content inside card: icon above text */}
+    <div class="flex flex-col items-center gap-y-2">
+      <i class="fas fa-sync-alt text-cyan-300 text-2xl"></i> {/* Icon for Advance */}
+      <div class="text-center">
+        <h3 class="font-bold text-white text-lg">STAGES 2-4 - ADVANCE</h3>
+        <p class="text-sm text-cyan-200/85">EACH ROOM: 25 PLAYERS. TOP 5 MOVE ON</p>
+      </div>
+    </div>
+  </div>
+
+  {/* Stage 5 Card */}
+  <div class="p-4 rounded-2xl bg-[#1e293b]/80 border border-cyan-400 shadow-[0_0_20px_#00fff044] hover:shadow-[0_0_35px_#00fff066] transition-all duration-300 transform hover:-translate-y-1">
+    {/* Centered content inside card: icon above text */}
+    <div class="flex flex-col items-center gap-y-2">
+      <i class="fas fa-trophy text-cyan-300 text-2xl"></i> {/* Icon for Win */}
+      <div class="text-center">
+        <h3 class="font-bold text-white text-lg">STAGE 5 - WIN</h3>
+        <p class="text-sm text-cyan-200/85">FINALS ROOM—COMPETE FOR PRIZE POOL</p>
+      </div>
+    </div>
   </div>
 </div>
 
+      <span class="text-cyan-300 font-semibold text-center mt-6 text-lg" aria-live="polite">
+        {t('stage_5_prize_pool', 'Stage 5 Prize Pool')}:{' '}
+        <span class="text-white text-xl" aria-label={t('prize_pool_value', 'Prize pool value')}>
+          {safePrizePool.toLocaleString()}{'\u2009'}π
+        </span>
+      </span>
+    </div>
+  </div>
 
-            <div className="px-3">
-              <div className="max-w-6xl mx-auto">
-                <div className="p-[1px] rounded-2xl bg-gradient-to-r from-cyan-500/40 via-blue-500/35 to-cyan-500/40">
-                  <div className="rounded-2xl bg-[#0f172a]/80 backdrop-blur border border-white/10 shadow-[0_0_24px_rgba(34,211,238,0.16)] px-3 sm:px-4 py-4 sm:py-5">
-                    <div className="-mx-3 sm:mx-0">
-                      <div className="overflow-x-auto overscroll-x-contain px-3 sm:px-0 sm:overflow-visible scrollbar-thin scrollbar-thumb-cyan-500/40">
-                        <div className="min-w-0 mx-auto w-full max-w-[520px] sm:max-w-none">
-                          <FunnelStagesRow
-                            stages={stages}
-                            prizePoolPi={safePrizePool}
-                            onEnterStage1={handleEnterStage1}
-                            className="w-full sm:w-auto shadow-[0_0_25px_rgba(0,255,255,0.15)]"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 text-center">
-                      <button
-                        type="button"
-                        onClick={handleEnterStage1}
-                        className="inline-flex items-center justify-center rounded-xl px-5 py-2 text-sm font-semibold
-                                   bg-cyan-400 text-[#0a1024] shadow transition-colors hover:bg-cyan-300"
-                        aria-label={t('enter_stage_1_aria', 'Enter Stage 1 qualifiers')}
-                      >
-                        {t('enter_stage_1', 'Enter Stage 1')}
-                      </button>
-                    </div>
-
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
+  <div class="px-3 relative z-10">
+    <div class="max-w-6xl mx-auto">
+      <div class="p-[1px] rounded-2xl bg-gradient-to-r from-cyan-500/40 via-blue-500/35 to-cyan-500/40">
+        <div class="rounded-2xl bg-[#0f172a]/80 backdrop-blur border border-white/10 shadow-[0_0_24px_rgba(34,211,238,0.16)] px-3 sm:px-4 py-4 sm:py-5">
+          <div class="mt-4 text-center">
+            <button
+              type="button"
+              onClick={handleEnterStage1}
+              class="inline-flex items-center justify-center rounded-xl px-7 py-3 text-lg font-semibold
+                                   bg-cyan-400 text-[#0a1024] shadow-[0_0_25px_#00fff088] transition-all duration-300 hover:bg-cyan-300 hover:shadow-[0_0_40px_#00fff0aa] transform hover:scale-105"
+              aria-label={t('enter_stage_1_aria', 'Enter Stage 1 qualifiers')}
+            >
+              {t('enter_stage_1', 'ENTER STAGE 1')}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
           <FreeSection t={t} items={getCompetitionsByCategory('free')} />
           <TopWinnersCarousel t={t} />

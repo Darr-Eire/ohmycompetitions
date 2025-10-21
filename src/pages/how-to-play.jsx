@@ -63,7 +63,7 @@ export default function HowToPlay() {
                 title="Track Entries"
                 items={[
                   'Go to My Account → My Tickets.',
-                  'See tickets, draw dates, and status in one place.',
+                  'See tickets, draw dates and status in one place.',
                   'Check history and winnings anytime.',
                 ]}
               />
@@ -71,9 +71,9 @@ export default function HowToPlay() {
               <Step
                 title="Pi Cash Code"
                 items={[
-                  'Each day a secret code appears for a limited time. See it, keep it safe, and enter if picked to unlock the Pi Cash Code.',
+                  'Each day a secret code appears for a limited time. See it, keep it safe and enter if picked to unlock the Pi Cash Code.',
                   'New code every day, active for exactly 31 hours 4 minutes.',
-                  'Codes drop across site, Discord, and socials stay sharp.',
+                  'Codes drop across site, Discord and socials stay sharp.',
                 ]}
               />
 
@@ -106,7 +106,7 @@ export default function HowToPlay() {
                 Fair Play & Transparency
               </h3>
               <ul className="list-disc list-inside space-y-1.5 sm:space-y-2 text-white/90 text-[13px] sm:text-base">
-                <li>Every draw is timestamped, logged, and verifiable.</li>
+                <li>Every draw is timestamped, logged and verifiable.</li>
                 <li>No bots. No manipulation. One account = one chance per draw.</li>
                 <li>All transactions run through the official Pi SDK.</li>
               </ul>
@@ -135,7 +135,7 @@ export default function HowToPlay() {
                 🌍 Stay Connected
               </h3>
               <p className="text-white/80 text-[13px] sm:text-sm mb-3">
-                Follow for surprise codes, announcements, and exclusive giveaways
+                Follow for surprise codes, announcements and exclusive giveaways
               </p>
               <div className="flex justify-center gap-3 sm:gap-4">
                 <Social href="https://x.com/OhMyComps" title="Twitter / X">
