@@ -122,6 +122,17 @@ function prizePiDisplay(c) {
   return 'TBA';
 }
 
+/* Small date formatter used in the card */
+function formatDate(d) {
+  if (!d) return '—';
+  const ts = typeof d === 'number' ? d : new Date(d).getTime();
+  if (!Number.isFinite(ts)) return '—';
+  return new Date(ts).toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
 /* ------------------------------ background ------------------------------ */
 function BackgroundFX() {
   return (
@@ -417,11 +428,11 @@ export default function TechGadgetsCompetitionsPage() {
           <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
               <div>
-              <h1 className="text-center mx-auto text-[22px] sm:text-[28px] font-extrabold tracking-tight">
-  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff]">
-    Tech & Gadgets Competitions
-  </span>
-</h1>
+                <h1 className="text-center mx-auto text-[22px] sm:text-[28px] font-extrabold tracking-tight">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff]">
+                    Tech & Gadgets Competitions
+                  </span>
+                </h1>
 
                 <p className="text-white/70 text-[13px] sm:text-[14px]">
                   Hand-picked phones, consoles, and gear easy entry.

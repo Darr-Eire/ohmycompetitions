@@ -162,8 +162,7 @@ function BackgroundFX() {
   );
 }
 
-/* ------------------------------ card (stacked details, no icons) ------------------------------ */
-/* ------------------------------ card (stacked details, no icons) ------------------------------ */
+
 function LiveCard({ data, onGift, onShare }) {
   const comp = data.comp ?? data;
   const status = getStatus(data);
