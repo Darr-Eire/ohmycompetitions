@@ -1,7 +1,8 @@
+// components/LaunchCompetitionCard.jsx (or wherever you keep it)
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState, useMemo } from 'react';
-import { useRouter } from 'next/router';
 
 /* ───────────── Prize helpers ───────────── */
 function formatPi(amount) {
@@ -79,7 +80,7 @@ function getWinnersCount(comp, tiers) {
 }
 
 /* ───────────── Component ───────────── */
-export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
+export default function LaunchCompetitionCard({ comp = {}, title, prize, className = '' }) {
   const {
     slug = '',
     entryFee = 0,
@@ -89,8 +90,7 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
     endsAt,
     comingSoon = false,
     prizeBreakdown = {},
-    // keep but unused for routing now
-    type = 'standard',
+    type = 'standard', // unused for routing now
   } = comp;
 
   const [status, setStatus] = useState('UPCOMING');
@@ -112,7 +112,6 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
   );
   const winnersCount = useMemo(() => getWinnersCount(comp, tiers), [comp, tiers]);
 
-  // safe entry fee label
   const entryFeeLabel = useMemo(() => {
     const n = Number(entryFee);
     return !comingSoon && Number.isFinite(n) ? `${n.toFixed(2)} π` : 'TBA';
@@ -124,7 +123,6 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
       setShowCountdown(false);
       return;
     }
-
     const interval = setInterval(() => {
       const now = Date.now();
       const start = startsAt ? new Date(startsAt).getTime() : 0;
@@ -135,7 +133,6 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
         setShowCountdown(false);
         return;
       }
-
       const diff = end - now;
       if (diff <= 0) {
         setStatus('ENDED');
@@ -143,7 +140,6 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
         clearInterval(interval);
         return;
       }
-
       setStatus('LIVE NOW');
       setShowCountdown(diff <= 24 * 60 * 60 * 1000);
 
@@ -159,39 +155,27 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
       if (d === 0 && h === 0) time += `${s}S`;
       setTimeLeft(time.trim());
     }, 1000);
-
     return () => clearInterval(interval);
   }, [endsAt, startsAt, comingSoon]);
 
-  const banner =
-    winnersCount === 3 ? '1st • 2nd • 3rd Prizes'
-    : winnersCount === 2 ? '1st • 2nd Prizes'
-    : 'Single Winner';
-
   const hasValidSlug = typeof slug === 'string' && slug.length > 0;
-
-  // ✅ Always push to /ticket-purchase/[slug]
-  const router = useRouter();
-  const handleMoreDetails = () => {
-    if (comingSoon || !hasValidSlug) return;
-    router.push(`/ticket-purchase/${encodeURIComponent(slug)}`);
-  };
+  const competitionHref = hasValidSlug ? `/ticket-purchase/${encodeURIComponent(slug)}` : '#';
 
   return (
     <div
-      className="
-        flex flex-col w-full max-w-xs mx-auto
+      className={`
+        flex flex-col w-full mx-auto
         bg-[#0f172a] border border-cyan-600 rounded-2xl shadow-lg
         text-white font-orbitron overflow-hidden
         select-none transition-colors duration-200
         hover:shadow-[0_0_24px_rgba(0,255,213,0.18)]
-        focus:outline-none focus-visible:outline-none
-      "
+        ${className}
+      `}
       style={{ WebkitTapHighlightColor: 'transparent' }}
     >
       {/* Header / Title */}
       <div className="px-4 pt-4 text-center">
-        <h3 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-cyan-300 to-blue-500 text-transparent bg-clip-text drop-shadow-md">
+        <h3 className="text-[18px] sm:text-[20px] font-bold bg-gradient-to-r from-cyan-300 to-blue-500 text-transparent bg-clip-text drop-shadow-md">
           {title}
         </h3>
       </div>
@@ -199,7 +183,7 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
       {/* Status */}
       <div className="px-4 pt-2">
         <div
-          className={`text-center text-xs font-bold py-1 rounded-md ${
+          className={`text-center text-[11px] font-bold py-1 rounded-md ${
             status === 'LIVE NOW'
               ? 'bg-green-400 text-black'
               : status === 'COMING SOON'
@@ -214,8 +198,8 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
       </div>
 
       {/* Winners Banner */}
-      <div className="text-center text-xs bg-cyan-500 text-black font-semibold py-1 mt-2 mx-4 rounded-md">
-        {banner}
+      <div className="text-center text-[11px] bg-cyan-500 text-black font-semibold py-1 mt-2 mx-4 rounded-md">
+        {winnersCount === 3 ? '1st • 2nd • 3rd Prizes' : winnersCount === 2 ? '1st • 2nd Prizes' : 'Single Winner'}
       </div>
 
       {/* Subline */}
@@ -241,16 +225,13 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
             {['1st','2nd','3rd'].slice(0, winnersCount).map((label) => (
               <div
                 key={label}
-                className="
-                  flex items-center justify-between rounded-lg
-                  border border-cyan-300/40 bg-[#0b1220]/80 px-4 py-2
-                "
+                className="flex items-center justify-between rounded-lg border border-cyan-300/40 bg-[#0b1220]/80 px-4 py-2"
               >
                 <span className="text-[12px] uppercase tracking-wide text-cyan-300 font-semibold">
                   {label} Prize
                 </span>
                 <span className="font-extrabold text-cyan-300 text-lg tabular-nums tracking-wide animate-pulse">
-                  {formatPi(tiers[label])}
+                  {formatPi((getPrizeTiers({ comp, prizeBreakdownProp: prizeBreakdown, prizeProp: prize }))[label])}
                 </span>
               </div>
             ))}
@@ -342,10 +323,9 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
 
         {/* CTA */}
         {hasValidSlug ? (
-          <div className="mt-4">
+          <Link href={competitionHref} className="block mt-4 focus:outline-none focus-visible:outline-none">
             <button
               type="button"
-              onClick={handleMoreDetails}
               disabled={comingSoon}
               className={`w-full py-2 rounded-lg font-bold text-center transition-opacity duration-150 ${
                 comingSoon
@@ -356,7 +336,7 @@ export default function LaunchCompetitionCard({ comp = {}, title, prize }) {
             >
               {comingSoon ? 'Coming Soon' : 'More Details'}
             </button>
-          </div>
+          </Link>
         ) : (
           <button
             type="button"
