@@ -14,6 +14,11 @@ const L = (...a) => { if (DEBUG_GIFT) console.log('%c[OMC][Gift]', 'color:#00e5f
 const W = (...a) => { if (DEBUG_GIFT) console.warn('%c[OMC][Gift]', 'color:#ffcc00', ...a) }
 const E = (...a) => { if (DEBUG_GIFT) console.error('%c[OMC][Gift]', 'color:#ff5a5a', ...a) }
 
+/* ---- tiny helpers for diagnosing swallowed events ---- */
+const eat = (e) => { e.stopPropagation(); }
+const logKey = (e) => { if (DEBUG_GIFT) console.log('[Gift][key]', e.type, e.key) }
+const logFocus = (e) => { if (DEBUG_GIFT) console.log('[Gift][focus]', e.type, e.target?.id) }
+
 export default function GiftTicketModal({ isOpen, onClose, preselectedCompetition = null }) {
   const auth = usePiAuth() || {}
   const user = auth.user
@@ -40,12 +45,12 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
     }
   }, [isOpen, preselectedCompetition])
 
+  // Focus retries (covers mobile layout/paint delays)
   useEffect(() => {
     if (!isOpen) return
-    const t = setTimeout(() => {
-      try { recipientRef.current?.focus() } catch {}
-    }, 50)
-    return () => clearTimeout(t)
+    const t1 = setTimeout(() => { try { recipientRef.current?.focus() } catch {} }, 50)
+    const t2 = setTimeout(() => { try { recipientRef.current?.focus() } catch {} }, 300)
+    return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [isOpen])
 
   const loadCompetitions = async () => {
@@ -140,7 +145,7 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
               setMessageType('success')
               setRecipientUsername(''); setQuantity(1)
               if (!preselectedCompetition) setSelectedCompetition('')
-              setTimeout(() => { onClose(); setMessage('') }, 1200)
+              setTimeout(() => { onClose?.(); setMessage('') }, 1200)
             } else {
               setMessage(result?.error || result?.message || 'Failed to send gift')
               setMessageType('error')
@@ -178,7 +183,7 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
     >
       {/* BACKDROP */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-[1px] pointer-events-auto"
+        className="absolute inset-0 bg-black/60 backdrop-blur-[1px] pointer-events-auto z-[9999]"
         onClick={handleClose}
       />
 
@@ -186,10 +191,12 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
       <div
         role="dialog"
         aria-modal="true"
-        className="relative z-[1] mx-auto my-8 max-w-md w-[92%] sm:w-full
+        className="relative z-[10000] mx-auto my-8 max-w-md w-[92%] sm:w-full
                    bg-[#0f172a] border border-cyan-400 rounded-xl p-6 text-white
                    shadow-[0_0_30px_#00f0ff88] pointer-events-auto"
         onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-cyan-400">🎁 Gift a Ticket</h2>
@@ -235,9 +242,20 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
               autoCorrect="off"
               spellCheck={false}
               readOnly={false}
+              // ensure nothing eats clicks/keys on mobile
+              onClick={eat}
+              onMouseDown={eat}
+              onPointerDown={eat}
+              onTouchStart={eat}
+              onFocus={logFocus}
+              onBlur={logFocus}
+              onKeyDown={logKey}
+              onKeyUp={logKey}
+              tabIndex={0}
+              style={{ position: 'relative', zIndex: 10001, pointerEvents: 'auto' }}
+              className="relative z-[10001] w-full px-3 py-2 bg-black border border-cyan-400 rounded text-white placeholder-gray-400 focus:border-cyan-300 focus:outline-none"
               value={recipientUsername}
               onChange={(e) => setRecipientUsername(e.target.value)}
-              className="w-full px-3 py-2 bg-black border border-cyan-400 rounded text-white placeholder-gray-400 focus:border-cyan-300 focus:outline-none"
               placeholder="Enter Pi username"
               required
             />
@@ -254,11 +272,18 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
               min="1"
               max="50"
               value={quantity}
+              onClick={eat}
+              onMouseDown={eat}
+              onPointerDown={eat}
+              onTouchStart={eat}
+              onKeyDown={logKey}
+              onKeyUp={logKey}
               onChange={(e) => {
                 const n = Math.max(1, Math.min(50, parseInt(e.target.value || '1', 10)))
                 setQuantity(n)
               }}
-              className="w-full px-3 py-2 bg-black border border-cyan-400 rounded text-white focus:border-cyan-300 focus:outline-none"
+              style={{ position: 'relative', zIndex: 10001, pointerEvents: 'auto' }}
+              className="relative z-[10001] w-full px-3 py-2 bg-black border border-cyan-400 rounded text-white focus:border-cyan-300 focus:outline-none"
               required
             />
           </div>
