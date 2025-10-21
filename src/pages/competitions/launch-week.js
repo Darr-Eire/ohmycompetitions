@@ -39,6 +39,14 @@ function msToShort(ms) {
   if (h > 0) return `${h}h ${m}m`;
   return `${m}m`;
 }
+// Nicely format a timestamp or date-like value
+function formatDate(input, opts = {}) {
+  if (input == null || Number.isNaN(input)) return 'TBA';
+  const d = typeof input === 'number' ? new Date(input) : new Date(String(input));
+  if (Number.isNaN(d.getTime())) return 'TBA';
+  const defaults = { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+  return d.toLocaleString(undefined, { ...defaults, ...opts });
+}
 
 function timeUntilEndMs(c) {
   const comp = c.comp ?? c;
