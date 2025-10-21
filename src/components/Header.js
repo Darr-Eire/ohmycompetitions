@@ -244,27 +244,21 @@ export default function Header() {
         aria-modal="true"
         aria-label="Site navigation"
       >
-     <div className="flex items-center gap-2">
-  {user && (
-    <div className="relative">
-      <div className="h-8 w-8 grid place-items-center rounded-md bg-white/5 border border-cyan-700/40">
-        {/* Button lives inside NotificationsBell, or pass a render prop */}
-        <NotificationsBell
-          username={user.username}
-          menuClassName="absolute right-0 top-full mt-2 z-50 w-72 rounded-lg border border-white/10 bg-neutral-900/95 backdrop-blur p-2 shadow-xl"
-        />
-      </div>
-    </div>
-  )}
+     <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-white/[0.02] backdrop-blur">
+  <span className="text-cyan-300 font-orbitron text-lg">{safeT('menu', 'Menu')}</span>
 
-  <button
-    onClick={() => setMenuOpen(false)}
-    className={`${BTN_BASE} ${BTN_GRADIENT} h-8 px-2 rounded-md`}
-    aria-label={safeT('close_menu', 'Close menu')}
-    title={safeT('close_menu', 'Close menu')}
-  >
-    ✕
-  </button>
+  <div className="flex items-center gap-2">
+    {user && <NotificationsBell username={user.username} />}
+
+    <button
+      onClick={() => setMenuOpen(false)}
+      className={`${BTN_BASE} ${BTN_GRADIENT} h-8 px-2 rounded-md`}
+      aria-label={safeT('close_menu', 'Close menu')}
+      title={safeT('close_menu', 'Close menu')}
+    >
+      ✕
+    </button>
+  </div>
 </div>
 
 
