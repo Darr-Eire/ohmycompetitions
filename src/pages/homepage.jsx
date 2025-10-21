@@ -450,7 +450,7 @@ const safePrizePool = useMemo(() => {
                 {t('pi_cash_code', 'Pi Cash Code')}
               </h1>
               <p className="mt-2 text-cyan-300/90 text-sm italic">
-                {t('if_you_can_dream', 'If you can dream you can win')}
+                {t('if_you_can_dream', 'If you can dream it, you can win it')}
               </p>
               <p className="mt-2 text-cyan-100 text-sm font-semibold underline underline-offset-4">
                 {t('enter_here', 'Enter Here')}
