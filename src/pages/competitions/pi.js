@@ -61,6 +61,7 @@ function ticketsProgress(c) {
   const pct = total > 0 ? Math.min(100, Math.round((sold / total) * 100)) : 0;
   return { sold, total, pct };
 }
+const REFRESH_MS = 20000; // 20s soft live refresh
 
 const slugOf = (c) => {
   const comp = c.comp ?? c;
@@ -427,48 +428,48 @@ export default function PiCompetitionsPage() {
         <BackgroundFX />
 
         {/* header (centered like Tech page) */}
-        <header className="relative z-10 pt-[calc(12px+env(safe-area-inset-top))] pb-3 sm:pb-4">
-          <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-              <div>
-                <h1 className="text-center mx-auto text-[22px] sm:text-[28px] font-extrabold tracking-tight">
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff]">
-                    {t('pi_competitions', 'Pi Competitions')}
-                  </span>
-                </h1>
-                <p className="text-center mx-auto text-white/70 text-[13px] sm:text-[14px]">
-                  {t('dive_into_pi_competitions', 'Dive into Pi-powered competitions win Pi, tech and more.')}
-                </p>
-              </div>
-
-              {/* compact stats */}
-              <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                <div className="web3-stat-card !px-3 !py-2">
-                  <Trophy size={18} className="text-yellow-300" />
-                  <span className="text-[10px] text-white/70">{t('total_prize_pool', 'Total prize pool')}</span>
-                  <span className="text-[14px] font-bold text-cyan-300">
-                    {totalPrizePool ? `${totalPrizePool.toLocaleString()} π` : '—'}
-                  </span>
-                </div>
-                <div className="web3-stat-card !px-3 !py-2">
-                  <span className="text-[18px]">🔴</span>
-                  <span className="text-[10px] text-white/70">{t('live_now', 'Live Now')}</span>
-                  <span className="text-[14px] font-bold text-blue-400">{liveCount}</span>
-                </div>
-                <button
-                  onClick={() => location.reload()}
-                  className="web3-stat-card !px-3 !py-2 active:translate-y-px"
-                  title="Refresh"
-                  type="button"
-                >
-                  <RefreshCw size={18} className="text-orange-300" />
-                  <span className="text-[10px] text-white/70">Updated</span>
-                  <span className="text-[12px] font-bold text-pink-300">~20s</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </header>
+     <header className="relative z-10 pt-[calc(12px+env(safe-area-inset-top))] pb-3 sm:pb-4">
+               <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
+                 <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+                   <div>
+                     <h1 className="text-center mx-auto text-[22px] sm:text-[28px] font-extrabold tracking-tight">
+                       <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff]">
+                         Pi Competitions
+                       </span>
+                     </h1>
+     
+                     <p className="text-center mx-auto text-white/70 text-[13px] sm:text-[14px]">
+       Hand-picked Compeitions, Win Pi and more with easy entry.
+     </p>
+     
+                   </div>
+     
+                   {/* compact stats */}
+                   <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                     <div className="web3-stat-card !px-3 !py-2">
+                       <Trophy size={18} className="text-yellow-300" />
+                       <span className="text-[10px] text-white/70">Total Pool</span>
+                       <span className="text-[14px] font-bold text-cyan-300">{totalPrizePool.toLocaleString()} π</span>
+                     </div>
+                     <div className="web3-stat-card !px-3 !py-2">
+                       <Sparkles size={18} className="text-purple-300" />
+                       <span className="text-[10px] text-white/70">Live Now</span>
+                       <span className="text-[14px] font-bold text-blue-400">{liveCount}</span>
+                     </div>
+                     <button
+                       onClick={() => location.reload()}
+                       className="web3-stat-card !px-3 !py-2 active:translate-y-px"
+                       title="Refresh"
+                       type="button"
+                     >
+                       <RefreshCw size={18} className="text-orange-300" />
+                       <span className="text-[10px] text-white/70">Updated</span>
+                       <span className="text-[12px] font-bold text-pink-300">~{Math.round(REFRESH_MS/1000)}s</span>
+                     </button>
+                   </div>
+                 </div>
+               </div>
+             </header>
 
         {/* sticky filters (centered like Tech page) */}
         <div className="sticky top-[calc(6px+env(safe-area-inset-top))] z-20 bg-[#0f1b33]/95 backdrop-blur-sm border-y border-white/10">

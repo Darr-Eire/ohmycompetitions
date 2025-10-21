@@ -115,7 +115,8 @@ function prizePiDisplay(c) {
   if (textCandidates.length) return String(textCandidates[0]);
   return 'TBA';
 }
-// Add this to src/pages/competitions/daily.js (near the other utils)
+
+/** Small date formatter used in the card */
 function formatDate(d) {
   if (!d) return '—';
   const ts = typeof d === 'number' ? d : new Date(d).getTime();
@@ -131,7 +132,7 @@ function resolveRealPrizeText(c) {
   const compLike = c.comp ?? c;
   const entryFeeNum = parseNumericLike(compLike?.entryFee);
 
-  // prizeBreakdown: prefer "first", else sum all numeric values
+  // prizeBreakdown: prefer "first", else sum
   if (compLike?.prizeBreakdown && typeof compLike.prizeBreakdown === 'object') {
     const first = parseNumericLike(compLike.prizeBreakdown.first);
     if (Number.isFinite(first) && first > 0 && first !== entryFeeNum) {
@@ -142,22 +143,18 @@ function resolveRealPrizeText(c) {
       const n = parseNumericLike(val);
       if (Number.isFinite(n)) { sum += n; any = true; }
     }
-    if (any && sum > 0 && sum !== entryFeeNum) {
-      return `${sum.toLocaleString()} π`;
-    }
+    if (any && sum > 0 && sum !== entryFeeNum) return `${sum.toLocaleString()} π`;
   }
 
-  // prizes[]: use the first numeric amount
+  // prizes[]: first numeric
   if (Array.isArray(compLike?.prizes) && compLike.prizes.length) {
     for (const p of compLike.prizes) {
       const n = parseNumericLike(p?.amount ?? p?.value ?? p);
-      if (Number.isFinite(n) && n > 0 && n !== entryFeeNum) {
-        return `${n.toLocaleString()} π`;
-      }
+      if (Number.isFinite(n) && n > 0 && n !== entryFeeNum) return `${n.toLocaleString()} π`;
     }
   }
 
-  // fallback to generic display (pi fields / prizeValue / text)
+  // fallback
   return prizePiDisplay(c);
 }
 
@@ -172,8 +169,30 @@ function BackgroundFX() {
   );
 }
 
+/* ------------------------------ banner fallback (no image) ------------------------------ */
+function BannerFallback({ title, prizeText }) {
+  return (
+    <div className="relative aspect-[4/3] w-full overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-[#6EE7F9] via-[#22D3EE] to-[#3B82F6]" />
+      <div className="absolute inset-0 opacity-15 [background-image:radial-gradient(rgba(255,255,255,0.7)_1.5px,transparent_1.5px)] [background-size:22px_22px]" />
+      <div className="relative h-full w-full flex items-center justify-center px-4 text-center">
+        <div className="max-w-[85%] space-y-2">
+          <div className="text-base sm:text-lg font-bold tracking-tight text-black drop-shadow-[0_1px_8px_rgba(255,255,255,0.55)] line-clamp-2">
+            {title}
+          </div>
+          {prizeText ? (
+            <div className="inline-block rounded-md bg-white/80 px-2 py-1 text-[12px] font-extrabold text-black">
+              {prizeText}
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
 
-function LiveCard({ data, onGift, onShare }) {
+/* ------------------------------ card (stacked details, tech layout) ------------------------------ */
+function LiveCard({ data, onGift }) {
   const comp = data.comp ?? data;
   const status = getStatus(data);
   const { sold, total, pct } = ticketsProgress(data);
@@ -188,56 +207,56 @@ function LiveCard({ data, onGift, onShare }) {
   const timeLeft = showCountdown48 ? msToShort(msLeft) : (status === 'ended' ? 'Ended' : formatDate(endTs));
 
   const theTitle = titleOf(data);
-  const prizeText = prizePiDisplay(data);
   const feeText = feePi(data);
 
-  return (
-    <article
-      className="
-        group relative rounded-2xl border border-white/10 bg-white/5
-        overflow-hidden transition-all duration-200 hover:bg-white/10
-      "
-    >
-      {/* Media (slightly taller for breathing room) */}
-      <div className="relative aspect-[4/3] w-full overflow-hidden">
-        <img
-          src={data.imageUrl || '/pi.jpeg'}
-          alt={theTitle}
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-          loading="lazy"
-          decoding="async"
-        />
-      </div>
+  const imgUrl = data.imageUrl || comp.imageUrl || '';
 
-      {/* Status chip BELOW the image */}
+  return (
+    <article className="group relative rounded-2xl border border-white/10 bg-white/5 overflow-hidden transition-all duration-200 hover:bg-white/10">
+      {/* Media or Banner fallback */}
+      {imgUrl ? (
+        <div className="relative aspect-[4/3] w-full overflow-hidden">
+          <img
+            src={imgUrl}
+            alt={theTitle}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+      ) : (
+        <BannerFallback title={theTitle} prizeText={resolveRealPrizeText(data)} />
+      )}
+
+      {/* Status chip BELOW the media */}
       <div className="px-3.5 sm:px-4 pt-2 flex justify-center">
         {status === 'live' && (
-          <span className="rounded-md bg-emerald-500/25 px-2 py-0.5 text-emerald-200 text-[11px] font-bold">
+          <span className="whitespace-nowrap rounded-md bg-emerald-500/25 px-2 py-0.5 text-emerald-200 text-[11px] font-bold">
             LIVE
           </span>
         )}
         {status === 'upcoming' && (
-          <span className="rounded-md bg-yellow-500/25 px-2 py-0.5 text-yellow-100 text-[11px] font-bold">
+          <span className="whitespace-nowrap rounded-md bg-yellow-500/25 px-2 py-0.5 text-yellow-100 text-[11px] font-bold">
             UPCOMING
           </span>
         )}
         {status === 'ended' && (
-          <span className="rounded-md bg-white/25 px-2 py-0.5 text-white/90 text-[11px] font-bold">
+          <span className="whitespace-nowrap rounded-md bg-white/25 px-2 py-0.5 text-white/90 text-[11px] font-bold">
             FINISHED
           </span>
         )}
       </div>
 
-      {/* Body: everything stacked under the image */}
+      {/* Body */}
       <div className="p-3.5 sm:p-4">
-        {/* Title + fee chip */}
-        <div className="flex items-start justify-between gap-3">
-          <h3 className="text-[15px] sm:text-[16px] font-semibold leading-snug line-clamp-2">
+        {/* Title centered */}
+        <div className="flex items-start justify-center">
+          <h3 className="text-center mx-auto text-[15px] sm:text-[16px] font-semibold leading-snug line-clamp-2">
             {theTitle}
           </h3>
         </div>
 
-        {/* Stacked details (all real data) */}
+        {/* Stacked details (tech layout) */}
         <div className="mt-3 space-y-1.5 text-[13px] text-white">
           <div className="flex items-baseline justify-between gap-2">
             <span className="text-white/60">Fee</span>
@@ -264,14 +283,11 @@ function LiveCard({ data, onGift, onShare }) {
         {/* Progress */}
         <div className="mt-3">
           <div className="h-2 w-full rounded-full bg-white/10 overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-cyan-400 to-blue-500"
-              style={{ width: `${pct}%` }}
-            />
+            <div className="h-full bg-gradient-to-r from-cyan-400 to-blue-500" style={{ width: `${pct}%` }} />
           </div>
         </div>
 
-        {/* CTA button */}
+        {/* CTA */}
         <div className="mt-3">
           <Link
             href={purchaseHref(data)}
@@ -286,7 +302,7 @@ function LiveCard({ data, onGift, onShare }) {
           </Link>
         </div>
 
-        {/* Gift link */}
+        {/* Gift */}
         <div className="mt-2 text-center">
           <button onClick={() => onGift(data)} className="text-[12px] underline text-cyan-300">
             Gift a ticket
@@ -296,7 +312,6 @@ function LiveCard({ data, onGift, onShare }) {
     </article>
   );
 }
-
 
 /* ------------------------------ empty/skeleton ------------------------------ */
 function EmptyState({ onRefresh, label = 'competitions' }) {
@@ -337,8 +352,10 @@ export default function DailyCompetitionsPage() {
   const [tick, setTick] = useState(0);
 
   // Gift modal state
-  const [giftOpen, setGiftOpen] = useState(false);
-  const [giftComp, setGiftComp] = useState(null);
+// Gift modal state
+const [giftOpen, setGiftOpen] = useState(false);
+const [giftComp, setGiftComp] = useState(null);
+
 
   const fetchData = useCallback(async () => {
     try {
@@ -355,7 +372,7 @@ export default function DailyCompetitionsPage() {
       else if (Array.isArray(json?.data)) arr = json.data;
       else if (Array.isArray(json?.competitions)) arr = json.competitions;
 
-      // Filter: theme = "daily" or "weekly" (case-insensitive)
+      // Filter: theme = "daily" or "weekly"
       const dailyOnly = arr.filter((c) => {
         const theme = (c.theme || c?.comp?.theme || '').toLowerCase();
         return theme === 'daily' || theme === 'weekly';
@@ -387,17 +404,12 @@ export default function DailyCompetitionsPage() {
       const status = getStatus(item);
       const end = comp?.endsAt ? new Date(comp.endsAt).getTime() : Number.POSITIVE_INFINITY;
       const start = comp?.startsAt ? new Date(comp.startsAt).getTime() : 0;
-      const score =
-        status === 'live'
-          ? end
-          : status === 'upcoming'
-          ? start
-          : end;
+      const score = status === 'live' ? end : status === 'upcoming' ? start : end;
       return { ...item, __status: status, __score: score, __end: end };
     });
   }, [competitions]);
 
-  // Ending soon list (< 60 min & live)
+  // Ending soon (< 60 min & live)
   const endingSoon = useMemo(() => {
     const cutoff = now() + 60 * 60 * 1000;
     return normalized
@@ -430,12 +442,6 @@ export default function DailyCompetitionsPage() {
     return competitions.reduce((sum, c) => sum + (toNum((c.comp ?? c)?.prizeValue, 0)), 0);
   }, [competitions]);
 
-  const openGift = (c) => {
-    setGiftComp(c.comp ?? c);
-    setGiftOpen(true);
-    if (navigator.vibrate) navigator.vibrate(15);
-  };
-
   const go = (c) => {
     window.location.href = purchaseHref(c);
   };
@@ -450,48 +456,49 @@ export default function DailyCompetitionsPage() {
       <main className="relative min-h-[100svh] text-white bg-[#0f1b33]">
         <BackgroundFX />
 
-        {/* Slim header */}
-        <header className="relative z-10 pt-[calc(12px+env(safe-area-inset-top))] pb-3 sm:pb-4">
-          <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-              <div>
-          <h1 className="text-center mx-auto text-[22px] sm:text-[28px] font-extrabold tracking-tight">
-  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff]">
-    Daily/Weekly Competitions
-  </span>
-</h1>
-
-                <p className="text-white/70 text-[13px] sm:text-[14px]">
-                  Fresh prizes drawn daily &  entry.
-                </p>
-              </div>
-
-              {/* compact stats */}
-              <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                <div className="web3-stat-card !px-3 !py-2">
-                  <Trophy size={18} className="text-yellow-300" />
-                  <span className="text-[10px] text-white/70">Total Pool</span>
-                  <span className="text-[14px] font-bold text-cyan-300">{totalPrizePool.toLocaleString()} π</span>
-                </div>
-                <div className="web3-stat-card !px-3 !py-2">
-                  <Sparkles size={18} className="text-purple-300" />
-                  <span className="text-[10px] text-white/70">Live Now</span>
-                  <span className="text-[14px] font-bold text-blue-400">{liveCount}</span>
-                </div>
-                <button
-                  onClick={() => location.reload()}
-                  className="web3-stat-card !px-3 !py-2 active:translate-y-px"
-                  title="Refresh"
-                  type="button"
-                >
-                  <RefreshCw size={18} className="text-orange-300" />
-                  <span className="text-[10px] text-white/70">Updated</span>
-                  <span className="text-[12px] font-bold text-pink-300">~{Math.round(REFRESH_MS/1000)}s</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </header>
+        {/* Header (centered like tech page) */}
+     <header className="relative z-10 pt-[calc(12px+env(safe-area-inset-top))] pb-3 sm:pb-4">
+               <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
+                 <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+                   <div>
+                     <h1 className="text-center mx-auto text-[22px] sm:text-[28px] font-extrabold tracking-tight">
+                       <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff]">
+                         Daily & Weekly Competitions
+                       </span>
+                     </h1>
+     
+                     <p className="text-center mx-auto text-white/70 text-[13px] sm:text-[14px]">
+       Hand-picked competitions, Pi, random prizes and more.
+     </p>
+     
+                   </div>
+     
+                   {/* compact stats */}
+                   <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                     <div className="web3-stat-card !px-3 !py-2">
+                       <Trophy size={18} className="text-yellow-300" />
+                       <span className="text-[10px] text-white/70">Total Pool</span>
+                       <span className="text-[14px] font-bold text-cyan-300">{totalPrizePool.toLocaleString()} π</span>
+                     </div>
+                     <div className="web3-stat-card !px-3 !py-2">
+                       <Sparkles size={18} className="text-purple-300" />
+                       <span className="text-[10px] text-white/70">Live Now</span>
+                       <span className="text-[14px] font-bold text-blue-400">{liveCount}</span>
+                     </div>
+                     <button
+                       onClick={() => location.reload()}
+                       className="web3-stat-card !px-3 !py-2 active:translate-y-px"
+                       title="Refresh"
+                       type="button"
+                     >
+                       <RefreshCw size={18} className="text-orange-300" />
+                       <span className="text-[10px] text-white/70">Updated</span>
+                       <span className="text-[12px] font-bold text-pink-300">~{Math.round(REFRESH_MS/1000)}s</span>
+                     </button>
+                   </div>
+                 </div>
+               </div>
+             </header>
 
         {/* Ending Soon Ticker */}
         {endingSoon.length > 0 && (
@@ -518,10 +525,10 @@ export default function DailyCompetitionsPage() {
           </div>
         )}
 
-        {/* sticky filters */}
+        {/* Filters (centered like tech page) */}
         <div className="sticky top-[calc(6px+env(safe-area-inset-top))] z-20 bg-[#0f1b33]/95 backdrop-blur-sm border-y border-white/10">
           <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
-            <div className="flex gap-2 overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex justify-center items-center gap-2 overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {['Live', 'Ending Soon', 'All'].map((f) => (
                 <button
                   key={f}
@@ -538,7 +545,7 @@ export default function DailyCompetitionsPage() {
           </div>
         </div>
 
-        {/* grid */}
+        {/* Grid */}
         <section className="py-6 sm:py-8">
           <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
             {loading ? (
@@ -556,7 +563,8 @@ export default function DailyCompetitionsPage() {
                     key={keyOf(item)}
                     data={item}
                     onGift={(c) => {
-                      setGiftComp(c.comp ?? c);
+                      // open modal
+                      setGiftComp((c?.comp ?? c) || c);
                       setGiftOpen(true);
                     }}
                   />

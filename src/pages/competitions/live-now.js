@@ -448,46 +448,48 @@ export default function AllCompetitionsPage() {
         <BackgroundFX />
 
         {/* Slim header */}
-        <header className="relative z-10 pt-[calc(12px+env(safe-area-inset-top))] pb-3 sm:pb-4">
-          <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-              <div>
-               <h1 className="text-center mx-auto text-[22px] sm:text-[28px] font-extrabold tracking-tight">
-  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff]">
-                    Live Competitions
-                  </span>
-                </h1>
-                <p className="text-white/70 text-[13px] sm:text-[14px]">
-                  Real-time feed. Ending soon first. Europe/Dublin time.
-                </p>
-              </div>
-
-              {/* compact stats */}
-              <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                <div className="web3-stat-card !px-3 !py-2">
-                  <Trophy size={18} className="text-yellow-300" />
-                  <span className="text-[10px] text-white/70">Total Pool</span>
-                  <span className="text-[14px] font-bold text-cyan-300">{totalPrizePool.toLocaleString()} π</span>
+      <header className="relative z-10 pt-[calc(12px+env(safe-area-inset-top))] pb-3 sm:pb-4">
+                <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
+                  <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+                    <div>
+                      <h1 className="text-center mx-auto text-[22px] sm:text-[28px] font-extrabold tracking-tight">
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff]">
+                          Live Competitions
+                        </span>
+                      </h1>
+      
+                      <p className="text-center mx-auto text-white/70 text-[13px] sm:text-[14px]">
+        Hand-picked tech, consoles and Pi compeitions with easy entry.
+      </p>
+      
+                    </div>
+      
+                    {/* compact stats */}
+                    <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                      <div className="web3-stat-card !px-3 !py-2">
+                        <Trophy size={18} className="text-yellow-300" />
+                        <span className="text-[10px] text-white/70">Total Pool</span>
+                        <span className="text-[14px] font-bold text-cyan-300">{totalPrizePool.toLocaleString()} π</span>
+                      </div>
+                      <div className="web3-stat-card !px-3 !py-2">
+                        <Sparkles size={18} className="text-purple-300" />
+                        <span className="text-[10px] text-white/70">Live Now</span>
+                        <span className="text-[14px] font-bold text-blue-400">{liveCount}</span>
+                      </div>
+                      <button
+                        onClick={() => location.reload()}
+                        className="web3-stat-card !px-3 !py-2 active:translate-y-px"
+                        title="Refresh"
+                        type="button"
+                      >
+                        <RefreshCw size={18} className="text-orange-300" />
+                        <span className="text-[10px] text-white/70">Updated</span>
+                        <span className="text-[12px] font-bold text-pink-300">~{Math.round(REFRESH_MS/1000)}s</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div className="web3-stat-card !px-3 !py-2">
-                  <Sparkles size={18} className="text-purple-300" />
-                  <span className="text-[10px] text-white/70">Live Now</span>
-                  <span className="text-[14px] font-bold text-blue-400">{liveCount}</span>
-                </div>
-                <button
-                  onClick={() => location.reload()}
-                  className="web3-stat-card !px-3 !py-2 active:translate-y-px"
-                  title="Refresh"
-                  type="button"
-                >
-                  <RefreshCw size={18} className="text-orange-300" />
-                  <span className="text-[10px] text-white/70">Updated</span>
-                  <span className="text-[12px] font-bold text-pink-300">~{Math.round(REFRESH_MS/1000)}s</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </header>
+              </header>
 
         {/* Ending Soon Ticker */}
         {endingSoon.length > 0 && (
