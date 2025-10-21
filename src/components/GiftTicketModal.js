@@ -10,15 +10,9 @@ const DEBUG_GIFT =
     new URLSearchParams(window.location.search).get('debugGift') === '1' ||
     localStorage.getItem('debugGift') === '1'
   )
-
 const L = (...a) => { if (DEBUG_GIFT) console.log('%c[OMC][Gift]', 'color:#00e5ff', ...a) }
 const W = (...a) => { if (DEBUG_GIFT) console.warn('%c[OMC][Gift]', 'color:#ffcc00', ...a) }
 const E = (...a) => { if (DEBUG_GIFT) console.error('%c[OMC][Gift]', 'color:#ff5a5a', ...a) }
-const group = (label, fn) => {
-  if (!DEBUG_GIFT) { try { fn() } catch (_) {} return }
-  console.groupCollapsed('%c[OMC][Gift] ' + label, 'color:#00e5ff')
-  try { fn() } finally { console.groupEnd() }
-}
 
 export default function GiftTicketModal({ isOpen, onClose, preselectedCompetition = null }) {
   const auth = usePiAuth() || {}
@@ -33,8 +27,8 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
   const [message, setMessage] = useState('')
   const [messageType, setMessageType] = useState('') // 'success' | 'error' | 'info' | ''
 
-  // Ref for recipient field to ensure focus
   const recipientRef = useRef(null)
+  const qtyRef = useRef(null)
 
   useEffect(() => {
     if (!isOpen) return
@@ -42,83 +36,49 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
     loadCompetitions()
     if (preselectedCompetition) {
       const competitionId = preselectedCompetition._id || preselectedCompetition.id
-      L('Setting preselected competition:', competitionId, preselectedCompetition)
       setSelectedCompetition(competitionId)
     }
   }, [isOpen, preselectedCompetition])
 
-  // Focus recipient input once the modal is visible
   useEffect(() => {
     if (!isOpen) return
     const t = setTimeout(() => {
-      if (recipientRef.current) {
-        try { recipientRef.current.focus() } catch (_) {}
-      }
-    }, 60)
+      try { recipientRef.current?.focus() } catch {}
+    }, 50)
     return () => clearTimeout(t)
   }, [isOpen])
 
   const loadCompetitions = async () => {
-    const t = 'gift_loadCompetitions'
-    if (DEBUG_GIFT) console.time(t)
     try {
       const response = await fetch('/api/competitions/all', { headers: { 'x-client-trace': 'gift-modal' } })
       const data = await response.json()
-      group(`Competitions response ${response.status}`, () => {
-        L('ok?', response.ok, 'content-type:', response.headers.get('content-type'))
-        L('payload keys:', Object.keys(data || {}))
-      })
       if (data.success) {
-        const activeCompetitions = (data.data || []).filter((comp) => comp.comp?.status === 'active')
-        L('Loaded competitions (active):', activeCompetitions.map((c)=>({id:c._id, title:c.title, fee:c.comp?.entryFee})))
+        const activeCompetitions = (data.data || []).filter((c) => c.comp?.status === 'active')
         setCompetitions(activeCompetitions)
       } else {
-        W('Failed to load competitions payload:', data)
-        setMessage('Failed to load competitions')
-        setMessageType('error')
+        setMessage('Failed to load competitions'); setMessageType('error')
       }
     } catch (error) {
       E('Error loading competitions:', error)
-      setMessage('Failed to load competitions')
-      setMessageType('error')
-    } finally {
-      if (DEBUG_GIFT) console.timeEnd(t)
+      setMessage('Failed to load competitions'); setMessageType('error')
     }
   }
 
   const validateRecipient = async (username) => {
-    const t = 'gift_validateRecipient'
-    if (DEBUG_GIFT) console.time(t)
     try {
-      const url = `/api/user/lookup?username=${encodeURIComponent(username)}`
-      L('Validating recipient via', url)
-      const response = await fetch(url, { headers: { 'x-client-trace': 'gift-modal' } })
+      const response = await fetch(`/api/user/lookup?username=${encodeURIComponent(username)}`, { headers: { 'x-client-trace': 'gift-modal' } })
       const data = await response.json().catch(()=> ({}))
-      L('Recipient check status:', response.status, 'found:', data?.found, 'user:', data?.user?.username)
       return response.ok && data.found ? { valid: true, user: data } : { valid: false, error: 'User not found' }
-    } catch (error) {
-      E('Recipient check error:', error)
+    } catch {
       return { valid: false, error: 'Error checking user' }
-    } finally {
-      if (DEBUG_GIFT) console.timeEnd(t)
     }
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (!user?.username) { setMessage('You must be logged in to gift tickets'); setMessageType('error'); return }
 
-    group('Preflight', () => {
-      L('navigator.onLine:', typeof navigator !== 'undefined' ? navigator.onLine : 'n/a')
-      L('user:', user?.username || null)
-      L('selectedCompetition:', selectedCompetition)
-      L('recipientUsername:', recipientUsername)
-      L('quantity (raw):', quantity)
-    })
-
-    if (!user?.username) {
-      setMessage('You must be logged in to gift tickets'); setMessageType('error'); return
-    }
-    const qty = Math.max(1, parseInt(String(quantity), 10) || 0)
+    const qty = Math.max(1, Number.isFinite(+quantity) ? parseInt(String(quantity), 10) : 0)
     if (!selectedCompetition || !recipientUsername.trim() || qty < 1) {
       setMessage('Please fill in all fields'); setMessageType('error'); return
     }
@@ -126,9 +86,7 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
       setMessage('You cannot gift a ticket to yourself'); setMessageType('error'); return
     }
 
-    // Pi SDK availability check
-    if (typeof window === 'undefined' || !window.Pi || !window.Pi.createPayment) {
-      E('Pi SDK not available. window.Pi:', !!(typeof window !== 'undefined' && window.Pi))
+    if (typeof window === 'undefined' || !window.Pi?.createPayment) {
       setMessage('Pi SDK not loaded. Please open in Pi Browser.'); setMessageType('error'); return
     }
 
@@ -137,25 +95,14 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
 
     try {
       const recipientCheck = await validateRecipient(recipientUsername.trim())
-      if (!recipientCheck.valid) {
-        setMessage(recipientCheck.error); setMessageType('error'); setLoading(false); return
-      }
+      if (!recipientCheck.valid) { setMessage(recipientCheck.error); setMessageType('error'); setLoading(false); return }
 
       const selectedComp = competitions.find((c) => c._id === selectedCompetition)
-      if (!selectedComp) { W('Selected competition not found in state') }
       const entryFee = Number(selectedComp?.comp?.entryFee || 0)
       const amountToPay = qty * entryFee
 
-      group('Payment preflight', () => {
-        L('entryFee:', entryFee, 'qty:', qty, 'amountToPay:', amountToPay)
-        L('memo:', `Gifting ${qty} ticket(s) to ${recipientUsername} for ${selectedComp?.title}`)
-      })
-
-      // Note: we don't log token contents—just whether it exists
       const headerToken =
-        ctxToken ||
-        (typeof window !== 'undefined' && localStorage.getItem('omc_token')) || ''
-      L('Auth token present?', !!headerToken, 'len:', headerToken ? headerToken.length : 0)
+        ctxToken || (typeof window !== 'undefined' && localStorage.getItem('omc_token')) || ''
 
       window.Pi.createPayment({
         amount: amountToPay,
@@ -168,20 +115,15 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
           quantity: qty,
         },
       }, {
-        onReadyForServerApproval: (paymentId) => {
-          L('onReadyForServerApproval paymentId:', paymentId)
-        },
+        onReadyForServerApproval: (paymentId) => { L('Ready for approval', paymentId) },
         onReadyForServerCompletion: async (paymentId, txId) => {
-          const t2 = 'gift_complete_call'
-          if (DEBUG_GIFT) console.time(t2)
           try {
-            L('onReadyForServerCompletion', { paymentId, txId })
             const res = await fetch('/api/tickets/gift', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
                 'x-client-trace': 'gift-modal',
-                ...(headerToken ? { Authorization: `Bearer ${headerToken}` } : {})
+                ...(headerToken ? { Authorization: `Bearer ${headerToken}` } : {}),
               },
               body: JSON.stringify({
                 fromUsername: user.username,
@@ -189,19 +131,14 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
                 competitionId: selectedCompetition,
                 quantity: qty,
                 paymentId,
-                transaction: { identifier: paymentId }
-              })
+                transaction: { identifier: paymentId, txId },
+              }),
             })
             const result = await res.json().catch(()=> ({}))
-            group(`Gift API response ${res.status}`, () => {
-              L('ok?', res.ok, 'result:', result)
-              L('x-request-id:', res.headers.get('x-request-id'))
-            })
             if (res.ok && (result.success || result.ok)) {
               setMessage(`🎁 Successfully gifted ${qty} ticket(s) to ${recipientUsername}!`)
               setMessageType('success')
-              setRecipientUsername('')
-              setQuantity(1)
+              setRecipientUsername(''); setQuantity(1)
               if (!preselectedCompetition) setSelectedCompetition('')
               setTimeout(() => { onClose(); setMessage('') }, 1200)
             } else {
@@ -212,46 +149,58 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
             E('Gift completion error:', err)
             setMessage('Failed to send gift'); setMessageType('error')
           } finally {
-            if (DEBUG_GIFT) console.timeEnd(t2)
             setLoading(false)
           }
         },
-        onCancel: () => {
-          L('Payment cancelled by user')
-          setLoading(false); setMessage('Payment cancelled'); setMessageType('info')
-        },
-        onError: (err) => {
-          E('Payment error:', err)
-          setLoading(false); setMessage('Payment error: ' + (err?.message || 'Unknown')); setMessageType('error')
-        }
+        onCancel: () => { setLoading(false); setMessage('Payment cancelled'); setMessageType('info') },
+        onError: (err) => { E('Payment error:', err); setLoading(false); setMessage('Payment error: ' + (err?.message || 'Unknown')); setMessageType('error') },
       })
     } catch (error) {
       E('Gift flow unhandled error:', error)
-      setMessage('Failed to send gift'); setMessageType('error'); setLoading(false)
+      setMessage('Failed to send gift'); setMessageType('error')
+      setLoading(false)
     }
   }
 
   const handleClose = () => {
-    L('Modal closed')
     setMessage(''); setRecipientUsername(''); setQuantity(1)
     if (!preselectedCompetition) setSelectedCompetition('')
-    onClose()
+    onClose?.()
   }
 
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 pointer-events-auto">
+    <div
+      id="gift-modal-root"
+      className="fixed inset-0 z-[9999]"
+      aria-hidden={!isOpen}
+    >
+      {/* BACKDROP */}
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-[1px] pointer-events-auto"
+        onClick={handleClose}
+      />
+
+      {/* CONTENT */}
       <div
         role="dialog"
         aria-modal="true"
-        className="bg-[#0f172a] border border-cyan-400 rounded-xl max-w-md w-full p-6 text-white shadow-[0_0_30px_#00f0ff88] pointer-events-auto z-[100]"
-        onMouseDown={(e) => e.stopPropagation()}
-        onClickCapture={(e) => e.stopPropagation()}
+        className="relative z-[1] mx-auto my-8 max-w-md w-[92%] sm:w-full
+                   bg-[#0f172a] border border-cyan-400 rounded-xl p-6 text-white
+                   shadow-[0_0_30px_#00f0ff88] pointer-events-auto"
+        onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-cyan-400">🎁 Gift a Ticket</h2>
-          <button onClick={handleClose} className="text-gray-400 hover:text-white text-xl">✕</button>
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={handleClose}
+            className="text-gray-400 hover:text-white text-xl"
+          >
+            ✕
+          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -260,9 +209,10 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
             <select
               value={selectedCompetition}
               onChange={(e) => setSelectedCompetition(e.target.value)}
-              disabled={preselectedCompetition}
+              disabled={!!preselectedCompetition}
               className="w-full px-3 py-2 bg-black border border-cyan-400 rounded text-white focus:border-cyan-300 focus:outline-none disabled:opacity-50"
-              required>
+              required
+            >
               <option value="">Select a competition</option>
               {competitions.map((comp) => (
                 <option key={comp.comp?.slug || comp._id} value={comp._id}>
@@ -273,10 +223,7 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
           </div>
 
           <div>
-            <label
-              htmlFor="gift-recipient"
-              className="block text-cyan-300 text-sm font-bold mb-2"
-            >
+            <label htmlFor="gift-recipient" className="block text-cyan-300 text-sm font-bold mb-2">
               Recipient Username *
             </label>
             <input
@@ -297,13 +244,20 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
           </div>
 
           <div>
-            <label className="block text-cyan-300 text-sm font-bold mb-2">Number of Tickets *</label>
+            <label htmlFor="gift-qty" className="block text-cyan-300 text-sm font-bold mb-2">
+              Number of Tickets *
+            </label>
             <input
+              id="gift-qty"
+              ref={qtyRef}
               type="number"
               min="1"
               max="50"
               value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
+              onChange={(e) => {
+                const n = Math.max(1, Math.min(50, parseInt(e.target.value || '1', 10)))
+                setQuantity(n)
+              }}
               className="w-full px-3 py-2 bg-black border border-cyan-400 rounded text-white focus:border-cyan-300 focus:outline-none"
               required
             />
@@ -320,13 +274,18 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
           )}
 
           <div className="flex gap-3 pt-4">
-            <button type="button" onClick={handleClose} className="flex-1 py-2 bg-gray-600 hover:bg-gray-700 rounded font-bold transition">
+            <button
+              type="button"
+              onClick={handleClose}
+              className="flex-1 py-2 bg-gray-600 hover:bg-gray-700 rounded font-bold transition"
+            >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading || !user?.username}
-              className="flex-1 py-2 bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-500 disabled:cursor-not-allowed text-black font-bold rounded transition">
+              className="flex-1 py-2 bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-500 disabled:cursor-not-allowed text-black font-bold rounded transition"
+            >
               {loading ? 'Sending...' : 'Send Gift 🎁'}
             </button>
           </div>

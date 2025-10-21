@@ -123,7 +123,7 @@ export default function CashCodeCard({ data, competition, mode = 'default', comp
           <div
             className={`font-mono ${
               compact ? 'text-lg tracking-[0.15em]' : 'text-2xl tracking-[0.18em]'
-            } text-cyan-100`}
+            } text-cyan-500`}
           >
             {mode === 'result' || status === 'Ended'
               ? (code || 'XXXX-XXXX')
