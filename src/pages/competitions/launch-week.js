@@ -145,15 +145,20 @@ function BackgroundFX() {
 }
 
 /* ------------------------------ card (stacked details, no icons) ------------------------------ */
-function LiveCard({ data, onGift }) {
+/* ------------------------------ card (stacked details, no icons) ------------------------------ */
+function LiveCard({ data, onGift, onShare }) {
   const comp = data.comp ?? data;
   const status = getStatus(data);
   const { sold, total, pct } = ticketsProgress(data);
 
-  // countdown
-  const msLeft = timeUntilEndMs(data);
+  // Dates
+  const startTs = comp?.startsAt ? new Date(comp.startsAt).getTime() : null;
+  const endTs = comp?.endsAt ? new Date(comp.endsAt).getTime() : null;
+
+  // Show countdown only when ≤ 48h
+  const msLeft = Number.isFinite(endTs) ? endTs - now() : NaN;
   const showCountdown48 = Number.isFinite(msLeft) && msLeft > 0 && msLeft <= 48 * 60 * 60 * 1000;
-  const timeLeft = showCountdown48 ? timeLeftLabel(data) : (status === 'ended' ? 'Ended' : '—');
+  const timeLeft = showCountdown48 ? msToShort(msLeft) : (status === 'ended' ? 'Ended' : formatDate(endTs));
 
   const theTitle = titleOf(data);
   const prizeText = prizePiDisplay(data);
@@ -166,49 +171,47 @@ function LiveCard({ data, onGift }) {
         overflow-hidden transition-all duration-200 hover:bg-white/10
       "
     >
-      {/* Media */}
+      {/* Media (slightly taller for breathing room) */}
       <div className="relative aspect-[4/3] w-full overflow-hidden">
         <img
-          src={data.imageUrl || comp.imageUrl || '/pi.jpeg'}
+          src={data.imageUrl || '/pi.jpeg'}
           alt={theTitle}
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
           loading="lazy"
           decoding="async"
         />
-        <div className="absolute top-2 left-1/2 -translate-x-1/2">          {status === 'live' && (
-            <span className="rounded-md bg-emerald-500/25 px-2 py-0.5 text-emerald-200 text-[11px] font-bold">
-              LIVE
-            </span>
-          )}
-          {status === 'upcoming' && (
-            <span className="rounded-md bg-yellow-500/25 px-2 py-0.5 text-yellow-100 text-[11px] font-bold">
-              UPCOMING
-            </span>
-          )}
-          {status === 'ended' && (
-            <span className="rounded-md bg-white/25 px-2 py-0.5 text-white/90 text-[11px] font-bold">
-              FINISHED
-            </span>
-          )}
-        </div>
       </div>
 
-      {/* Body: stacked details */}
+      {/* Status chip BELOW the image */}
+      <div className="px-3.5 sm:px-4 pt-2 flex justify-center">
+        {status === 'live' && (
+          <span className="rounded-md bg-emerald-500/25 px-2 py-0.5 text-emerald-200 text-[11px] font-bold">
+            LIVE
+          </span>
+        )}
+        {status === 'upcoming' && (
+          <span className="rounded-md bg-yellow-500/25 px-2 py-0.5 text-yellow-100 text-[11px] font-bold">
+            UPCOMING
+          </span>
+        )}
+        {status === 'ended' && (
+          <span className="rounded-md bg-white/25 px-2 py-0.5 text-white/90 text-[11px] font-bold">
+            FINISHED
+          </span>
+        )}
+      </div>
+
+      {/* Body: everything stacked under the image */}
       <div className="p-3.5 sm:p-4">
-        {/* Title + fee */}
+        {/* Title + fee chip */}
         <div className="flex items-start justify-between gap-3">
           <h3 className="text-[15px] sm:text-[16px] font-semibold leading-snug line-clamp-2">
             {theTitle}
           </h3>
-          
         </div>
 
-        {/* Details (no icons) */}
-        <div className="mt-3 space-y-1.5 text-[13px] text-white/85">
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="text-white/60">Prize</span>
-            <span className="font-semibold">{prizeText}</span>
-          </div>
+        {/* Stacked details (all real data) */}
+        <div className="mt-3 space-y-1.5 text-[13px] text-white">
           <div className="flex items-baseline justify-between gap-2">
             <span className="text-white/60">Fee</span>
             <span className="font-semibold">{feeText}</span>
@@ -217,11 +220,14 @@ function LiveCard({ data, onGift }) {
             <span className="text-white/60">Tickets</span>
             <span className="font-semibold">
               {total ? `${sold}/${total}` : sold}
-              {Number.isFinite(total) && total > 0 ? (
-                <span className="text-white/55"> • {pct}% sold</span>
-              ) : null}
             </span>
           </div>
+          {status === 'upcoming' && (
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="text-white/60">Starts</span>
+              <span className="font-semibold">{formatDate(startTs)}</span>
+            </div>
+          )}
           <div className="flex items-baseline justify-between gap-2">
             <span className="text-white/60">Ends</span>
             <span className="font-semibold tabular-nums">{timeLeft}</span>
@@ -238,7 +244,7 @@ function LiveCard({ data, onGift }) {
           </div>
         </div>
 
-        {/* CTA */}
+        {/* CTA button */}
         <div className="mt-3">
           <Link
             href={purchaseHref(data)}
@@ -253,7 +259,7 @@ function LiveCard({ data, onGift }) {
           </Link>
         </div>
 
-        {/* Gift */}
+        {/* Gift link */}
         <div className="mt-2 text-center">
           <button onClick={() => onGift(data)} className="text-[12px] underline text-cyan-300">
             Gift a ticket
@@ -263,6 +269,7 @@ function LiveCard({ data, onGift }) {
     </article>
   );
 }
+
 
 /* ------------------------------ empty/skeleton ------------------------------ */
 function EmptyState({ onRefresh, label = 'competitions' }) {

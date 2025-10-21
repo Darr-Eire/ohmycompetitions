@@ -161,6 +161,7 @@ function BackgroundFX() {
 }
 
 /* ------------------------------ card (stacked details, no icons) ------------------------------ */
+/* ------------------------------ card (stacked details, no icons) ------------------------------ */
 function LiveCard({ data, onGift, onShare }) {
   const comp = data.comp ?? data;
   const status = getStatus(data);
@@ -177,8 +178,6 @@ function LiveCard({ data, onGift, onShare }) {
 
   const theTitle = titleOf(data);
   const prizeText = prizePiDisplay(data);
-
-  // Fee as "Free" or "x π"
   const feeText = feePi(data);
 
   return (
@@ -197,23 +196,25 @@ function LiveCard({ data, onGift, onShare }) {
           loading="lazy"
           decoding="async"
         />
-        {/* Status chip (text only) */}
-        <div className="absolute top-2 left-1/2 -translate-x-1/2">          {status === 'live' && (
-            <span className="rounded-md bg-emerald-500/25 px-2 py-0.5 text-emerald-200 text-[11px] font-bold">
-              LIVE
-            </span>
-          )}
-          {status === 'upcoming' && (
-            <span className="rounded-md bg-yellow-500/25 px-2 py-0.5 text-yellow-100 text-[11px] font-bold">
-              UPCOMING
-            </span>
-          )}
-          {status === 'ended' && (
-            <span className="rounded-md bg-white/25 px-2 py-0.5 text-white/90 text-[11px] font-bold">
-              FINISHED
-            </span>
-          )}
-        </div>
+      </div>
+
+      {/* Status chip BELOW the image */}
+      <div className="px-3.5 sm:px-4 pt-2 flex justify-center">
+        {status === 'live' && (
+          <span className="rounded-md bg-emerald-500/25 px-2 py-0.5 text-emerald-200 text-[11px] font-bold">
+            LIVE
+          </span>
+        )}
+        {status === 'upcoming' && (
+          <span className="rounded-md bg-yellow-500/25 px-2 py-0.5 text-yellow-100 text-[11px] font-bold">
+            UPCOMING
+          </span>
+        )}
+        {status === 'ended' && (
+          <span className="rounded-md bg-white/25 px-2 py-0.5 text-white/90 text-[11px] font-bold">
+            FINISHED
+          </span>
+        )}
       </div>
 
       {/* Body: everything stacked under the image */}
@@ -223,12 +224,10 @@ function LiveCard({ data, onGift, onShare }) {
           <h3 className="text-[15px] sm:text-[16px] font-semibold leading-snug line-clamp-2">
             {theTitle}
           </h3>
-          
         </div>
 
         {/* Stacked details (all real data) */}
         <div className="mt-3 space-y-1.5 text-[13px] text-white">
-        
           <div className="flex items-baseline justify-between gap-2">
             <span className="text-white/60">Fee</span>
             <span className="font-semibold">{feeText}</span>
@@ -237,7 +236,6 @@ function LiveCard({ data, onGift, onShare }) {
             <span className="text-white/60">Tickets</span>
             <span className="font-semibold">
               {total ? `${sold}/${total}` : sold}
-             
             </span>
           </div>
           {status === 'upcoming' && (
@@ -287,6 +285,7 @@ function LiveCard({ data, onGift, onShare }) {
     </article>
   );
 }
+
 
 /* ------------------------------ empty/skeleton ------------------------------ */
 function EmptyState({ onRefresh, label = 'competitions' }) {
@@ -453,8 +452,8 @@ export default function AllCompetitionsPage() {
           <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
               <div>
-                <h1 className="text-[22px] sm:text-[28px] font-extrabold tracking-tight">
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff]">
+               <h1 className="text-center mx-auto text-[22px] sm:text-[28px] font-extrabold tracking-tight">
+  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff]">
                     Live Competitions
                   </span>
                 </h1>
