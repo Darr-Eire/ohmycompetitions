@@ -1,4 +1,6 @@
-"use client";
+// FILE: src/pages/pi-cash-code.jsx (or your current file path)
+// "use client" stays at the top if this lives under /pages or /app where needed
+'use client';
 
 import React, { useEffect, useMemo, useState, useId } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,12 +12,12 @@ import {
   Trophy,
   Rocket,
   Sparkles,
-  RefreshCcw, // Changed Loader2 to RefreshCcw for icon-only refresh
+  RefreshCcw,
   Info,
   ExternalLink,
   User,
-  Minus, // Added Minus icon for quantity
-  Plus, // Added Plus icon for quantity
+  Minus,
+  Plus,
 } from "lucide-react";
 import { usePiAuth } from "../context/PiAuthContext";
 import LiveActivityFeed from "../components/LiveActivityFeed";
@@ -153,7 +155,6 @@ function CountdownRing({
       <foreignObject x={stroke} y={stroke} width={size - stroke * 2} height={size - stroke * 2}>
         <div className="flex h-full w-full flex-col items-center justify-center text-center leading-tight">
           <div className="text-[10px] tracking-widest text-cyan-300/80 sm:text-xs">{label}</div>
-          {/* Changed time display for better mobile stacking */}
           <div className="mt-1 flex flex-col items-center gap-y-0.5 text-[11px] font-bold text-white sm:text-sm">
             <div className="flex gap-1">
               <span className="tabular-nums">{d}</span> <span className="opacity-80">Days</span>
@@ -441,7 +442,7 @@ export default function PiCashCodePage() {
       <section className="mx-auto mt-3 w-full max-w-5xl px-3 sm:mt-5 sm:px-4">
         <div className="relative overflow-hidden rounded-2xl border border-cyan-500/50 bg-white/5 p-4 shadow-[0_0_40px_#22d3ee33] sm:rounded-3xl sm:p-6">
           <div className="flex flex-col items-center justify-center text-center sm:grid sm:grid-cols-2 sm:gap-6">
-            {/* Countdown + primary info (order for mobile-first) */}
+            {/* Countdown + primary info */}
             <div className="flex flex-col items-center justify-center gap-3.5 sm:gap-5 order-1">
               <CountdownRing
                 size={132}
@@ -456,7 +457,6 @@ export default function PiCashCodePage() {
                 }
               `}</style>
 
-              {/* Info ribbon */}
               {!isPiBrowser && (
                 <div className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-cyan-400/50 bg-cyan-500/10 px-2.5 py-1.5 text-[11px] text-cyan-100 sm:text-xs">
                   <Info size={14} /> Best experience in Pi Browser.
@@ -464,7 +464,7 @@ export default function PiCashCodePage() {
               )}
             </div>
 
-            {/* Code + stats (order for mobile-first) */}
+            {/* Code + stats */}
             <div className="flex flex-col items-center justify-center text-center order-2 mt-6 sm:mt-0">
               <motion.h1
                 initial={{ opacity: 0, y: 8 }}
@@ -495,7 +495,7 @@ export default function PiCashCodePage() {
                 )}
               </div>
 
-              {/* Stats - mobile-first vertical stack */}
+              {/* Stats */}
               <div className="grid w-full grid-cols-1 gap-2 mt-4 sm:grid-cols-3 sm:gap-3 sm:mt-6">
                 <Stat label="Prize Pool" value={`${data?.prizePool?.toLocaleString?.() ?? "—"} π`} />
                 <Stat label="Tickets Sold" value={data?.ticketsSold ?? "—"} />
@@ -505,8 +505,8 @@ export default function PiCashCodePage() {
             </div>
           </div>
 
-          {/* Inline CTA (desktop only) */}
-          <div className="mt-4 hidden sm:flex items-stretch gap-3">
+          {/* Buy tickets (now mobile + desktop) */}
+          <div className="mt-4 flex flex-col sm:flex-row items-stretch gap-3">
             {!authUser ? (
               <button
                 onClick={loginWithPi}
@@ -517,26 +517,40 @@ export default function PiCashCodePage() {
             ) : (
               <>
                 {/* Quantity selector */}
-                <div className="flex flex-1 items-center justify-between gap-3 rounded-xl border border-cyan-500/60 bg-black/30 px-3 py-2.5">
+                <div className="flex items-center justify-between gap-3 rounded-xl border border-cyan-500/60 bg-black/30 px-3 py-2.5">
                   <span className="text-sm text-cyan-200">Tickets</span>
                   <div className="flex items-center gap-2">
-                    <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="h-10 w-10 rounded-lg bg-cyan-300/90 text-black font-extrabold text-xl leading-none"><Minus size={20} /></button>
+                    <button
+                      onClick={() => setQty((q) => Math.max(1, q - 1))}
+                      className="h-10 w-10 rounded-lg bg-cyan-300/90 text-black font-extrabold text-xl leading-none"
+                      aria-label="Decrease tickets"
+                    >
+                      <Minus size={20} />
+                    </button>
                     <input
                       inputMode="numeric"
                       type="number"
                       className="h-10 w-20 rounded-lg bg-white/10 text-center font-bold outline-none [appearance:textfield]"
                       value={qty}
                       min={1}
-                      onChange={(e) => setQty(Math.max(1, parseInt(e.target.value || "1", 10)))}
+                      onChange={(e) =>
+                        setQty(Math.max(1, parseInt(e.target.value || "1", 10)))
+                      }
                     />
-                    <button onClick={() => setQty((q) => q + 1)} className="h-10 w-10 rounded-lg bg-cyan-300/90 text-black font-extrabold text-xl leading-none"><Plus size={20} /></button>
+                    <button
+                      onClick={() => setQty((q) => q + 1)}
+                      className="h-10 w-10 rounded-lg bg-cyan-300/90 text-black font-extrabold text-xl leading-none"
+                      aria-label="Increase tickets"
+                    >
+                      <Plus size={20} />
+                    </button>
                   </div>
                 </div>
 
                 {/* Purchase button */}
                 <button
                   onClick={() => setShowSkill(true)}
-                  className="group inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-5 py-3 font-extrabold text-black text-base shadow-[0_8px_24px_#22d3ee55] hover:brightness-110"
+                  className="group inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-5 py-3 font-extrabold text-black text-base shadow-[0_8px_24px_#22d3ee55] hover:brightness-110"
                 >
                   <Sparkles className="h-5 w-5" /> Purchase {qty} ticket{qty > 1 ? "s" : ""} · {totalPrice} π
                 </button>
@@ -546,7 +560,7 @@ export default function PiCashCodePage() {
         </div>
       </section>
 
-      {/* Info blocks - mobile-first vertical stack */}
+      {/* Info blocks */}
       <section className="mx-auto w-full max-w-5xl px-3 py-5 sm:px-4 sm:py-8">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
           <div className="rounded-2xl border border-cyan-500/40 bg-white/5 p-3 sm:p-5">
@@ -564,8 +578,8 @@ export default function PiCashCodePage() {
         </div>
       </section>
 
-      {/* Live widgets - mobile-first vertical stack */}
-      <section className="mx-auto w-full max-w-5xl px-3 pb-24 sm:px-4 sm:pb-14">
+      {/* Live widgets */}
+      <section className="mx-auto w-full max-w-5xl px-3 pb-14 sm:px-4 sm:pb-14">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5">
           <div className="rounded-2xl border border-cyan-500/50 bg-white/5 p-3 sm:p-4">
             <h4 className="mb-2 text-center text-[12px] font-bold tracking-widest text-cyan-300 sm:text-sm">LIVE ACTIVITY</h4>
@@ -577,41 +591,12 @@ export default function PiCashCodePage() {
           </div>
         </div>
         <p className="mt-3 text-center text-[11px] text-cyan-300/70 sm:mt-5 sm:text-xs">
-          By entering you agree to our rules. {" "}
+          By entering you agree to our rules.{" "}
           <a className="inline-flex items-center gap-1 underline" href="/terms-conditions" target="_blank" rel="noopener noreferrer">
             View Terms &amp; Conditions <ExternalLink size={14} />
           </a>
         </p>
       </section>
-
-      {/* Sticky mobile purchase bar */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-cyan-500/30 bg-[#050a17]/80 backdrop-blur px-3 py-2.5 sm:hidden" style={{paddingBottom: "max(env(safe-area-inset-bottom), 10px)"}}>
-        <div className="mx-auto flex w-full max-w-5xl items-center gap-2">
-          {!authUser ? (
-            <button onClick={loginWithPi} className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-4 py-2.5 font-extrabold text-black text-sm shadow-[0_8px_24px_#22d3ee55] hover:brightness-110">
-              <User className="h-4 w-4" /> Login with Pi to enter
-            </button>
-          ) : (
-            <>
-              <div className="flex items-center gap-2 rounded-xl border border-cyan-500/60 bg-black/30 px-2 py-1.5">
-                <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="h-8 w-8 flex items-center justify-center rounded-lg bg-cyan-300/90 text-black font-extrabold text-lg leading-none"><Minus size={18} /></button>
-                <input
-                  inputMode="numeric"
-                  type="number"
-                  className="h-8 w-14 rounded-lg bg-white/10 text-center font-bold outline-none [appearance:textfield]"
-                  value={qty}
-                  min={1}
-                  onChange={(e) => setQty(Math.max(1, parseInt(e.target.value || "1", 10)))}
-                />
-                <button onClick={() => setQty((q) => q + 1)} className="h-8 w-8 flex items-center justify-center rounded-lg bg-cyan-300/90 text-black font-extrabold text-lg leading-none"><Plus size={18} /></button>
-              </div>
-              <button onClick={() => setShowSkill(true)} className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-4 py-2.5 font-extrabold text-black text-sm shadow-[0_8px_24px_#22d3ee55] hover:brightness-110">
-                <Sparkles className="h-4 w-4" /> {totalPrice} π
-              </button>
-            </>
-          )}
-        </div>
-      </div>
 
       {/* Skill modal */}
       <AnimatePresence>
