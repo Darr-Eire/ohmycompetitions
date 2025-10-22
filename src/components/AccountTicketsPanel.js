@@ -81,8 +81,8 @@ function Pill({ active, onClick, children }) {
   return (
     <button
       onClick={onClick}
-      className={`px-3 py-1 rounded-full text-xs border transition
-        ${active ? 'bg-cyan-400 text-black border-cyan-400' : 'border-white/15 text-white/80 hover:bg-white/5'}`}
+      className={`px-3 py-1 rounded-full text-xs border transition ${active ? 'bg-cyan-400 text-black border-cyan-400' : 'border-white/15 text-white/80 hover:bg-white/5'}`}
+      type="button"
     >
       {children}
     </button>
@@ -114,10 +114,7 @@ function groupByCompetition(items) {
     });
     const sample = tickets[tickets.length - 1];
     const totalQuantity = tickets.reduce((s, it) => s + (Number(it.quantity) || 1), 0);
-    const allTicketNumbers = tickets.flatMap((it) =>
-      Array.isArray(it.ticketNumbers) ? it.ticketNumbers : []
-    );
-    // dedupe ids but preserve order
+    const allTicketNumbers = tickets.flatMap((it) => Array.isArray(it.ticketNumbers) ? it.ticketNumbers : []);
     const seen = new Set();
     const dedupIds = allTicketNumbers.filter((id) => (seen.has(id) ? false : (seen.add(id), true)));
     return { key, tickets, sample, totalQuantity, allTicketNumbers: dedupIds };
@@ -128,16 +125,9 @@ function groupByCompetition(items) {
 function PrizeTile({ value, theme }) {
   const meta = THEME_META[theme] || THEME_META.tech;
   return (
-    <div
-      className={`relative w-full rounded-xl border ${meta.borderSoft} bg-gradient-to-b from-white/5 to-transparent p-3 grid place-items-center text-center`}
-      role="img"
-      aria-label={`Prize Pool: ${value || 'N/A'}`}
-    >
+    <div className={`relative w-full rounded-xl border ${meta.borderSoft} bg-gradient-to-b from-white/5 to-transparent p-3 grid place-items-center text-center`} role="img" aria-label={`Prize Pool: ${value || 'N/A'}`}>
       <div className="text-[10px] uppercase tracking-widest text-white/70">Prize Pool</div>
-      <div
-        className={`mt-1 text-xl font-extrabold ${meta.accent} leading-tight max-w-[14rem] truncate`}
-        title={value || 'N/A'}
-      >
+      <div className={`mt-1 text-xl font-extrabold ${meta.accent} leading-tight max-w-[14rem] truncate`} title={value || 'N/A'}>
         {value || 'N/A'}
       </div>
       <div className="mt-1 text-[10px] text-white/60 tracking-widest uppercase">Up for Grabs</div>
@@ -177,6 +167,9 @@ function TicketCard({ ticket, theme, compact = false }) {
     <PrizeTile value={ticket.prize} theme={theme} />
   );
 
+  // Expandable IDs to avoid inner vertical scroll traps
+  const [showIds, setShowIds] = useState(false);
+
   return (
     <div className={`w-[16rem] ${compact ? 'w-48' : ''} shrink-0 rounded-2xl border border-white/15 bg-white/5 backdrop-blur p-3 text-white`}>
       <div className="flex items-center justify-between">
@@ -188,7 +181,7 @@ function TicketCard({ ticket, theme, compact = false }) {
         </span>
       </div>
 
-      <div className="mt-1 text-sm font-bold truncate">{ticket.competitionTitle}</div>
+      <div className="mt-1 text-sm font-bold truncate" title={ticket.competitionTitle}>{ticket.competitionTitle}</div>
       <div className={`text-[11px] ${statusColor}`}>• {statusLabel}</div>
 
       <div className="mt-2">{media}</div>
@@ -200,17 +193,28 @@ function TicketCard({ ticket, theme, compact = false }) {
       </div>
 
       {!compact && ticket.ticketNumbers?.length > 0 && (
-        <div className="mt-2 text-[10px] text-white/70 max-h-20 overflow-y-auto">
-          <span className="text-white/60">Ticket IDs:</span> {ticket.ticketNumbers.join(', ')}
+        <div className="mt-2 text-[10px] text-white/70">
+          <button
+            type="button"
+            className="underline text-cyan-300"
+            onClick={() => setShowIds((s) => !s)}
+          >
+            {showIds ? 'Hide ticket IDs' : 'Show ticket IDs'} ({ticket.ticketNumbers.length})
+          </button>
+          {showIds && (
+            <div className="mt-1 break-words">
+              {ticket.ticketNumbers.join(', ')}
+            </div>
+          )}
         </div>
       )}
+
       {!compact && ticket.gifted && ticket.giftedBy && (
         <div className="mt-2 text-[10px] text-yellow-200/90 bg-yellow-400/10 border border-yellow-400/30 px-2 py-1 rounded">
           🎁 From {ticket.giftedBy}
         </div>
       )}
-      
-      {/* Skill Question Section */}
+
       {!compact && ticket.ticketId && (
         <div className="mt-3">
           <TicketSkillQuestion ticketId={ticket.ticketId} showAnswer={true} />
@@ -227,47 +231,37 @@ function CompetitionDeck({ theme, group }) {
   const [showExpanded, setShowExpanded] = useState(false);
   const items = group.tickets;
 
-  // layout for compact cards
-  const CARD_W = 192;      // Tailwind w-48
-  const CARD_H = 230;      // approx card height
-  const OFFSET  = 56;      // step to the right
+  const CARD_W = 192;
+  const CARD_H = 230;
+  const OFFSET  = 56;
 
   const width  = CARD_W + Math.max(0, items.length - 1) * OFFSET;
   const height = CARD_H;
 
-  // click a compact card → focus + expand
   function onSelect(i) {
     setSelected(i);
     setShowExpanded(true);
   }
 
-  // click outside deck → collapse to stack
   useEffect(() => {
-    function onDocClick(e) {
+    function onDocDown(e) {
       const el = wrapperRef.current;
       if (!el) return;
       if (!el.contains(e.target)) setShowExpanded(false);
     }
-    function onEsc(e) {
-      if (e.key === 'Escape') setShowExpanded(false);
-    }
-    document.addEventListener('mousedown', onDocClick);
-    document.addEventListener('keydown', onEsc);
+    document.addEventListener('mousedown', onDocDown, { passive: true });
+    document.addEventListener('touchstart', onDocDown, { passive: true });
     return () => {
-      document.removeEventListener('mousedown', onDocClick);
-      document.removeEventListener('keydown', onEsc);
+      document.removeEventListener('mousedown', onDocDown);
+      document.removeEventListener('touchstart', onDocDown);
     };
   }, []);
 
   return (
     <div ref={wrapperRef} className="min-w-[18rem]">
-      {/* Scrollable container for flicking through wide stacks */}
-      <div className="overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory
-                      [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-        <div
-          className="relative overflow-visible"
-          style={{ width: `${width}px`, height: `${height}px` }}
-        >
+      {/* Horizontal scroller: only X scroll; allow page Y scroll to remain fluid */}
+      <div className="overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <div className="relative overflow-visible" style={{ width: `${width}px`, height: `${height}px` }}>
           {items.map((t, i) => {
             const z = i === selected ? 50 : 10 + i;
             const isSelected = i === selected;
@@ -288,27 +282,21 @@ function CompetitionDeck({ theme, group }) {
         </div>
       </div>
 
-      {/* Quantity chip for the whole deck */}
-      <div
-        className="inline-block -mt-1 mb-2 rounded-full bg-cyan-400 text-black text-xs font-bold px-2 py-1 shadow"
-        title={`${group.totalQuantity} total tickets across ${items.length} purchase${items.length>1?'s':''}`}
-      >
+      <div className="inline-block -mt-1 mb-2 rounded-full bg-cyan-400 text-black text-xs font-bold px-2 py-1 shadow" title={`${group.totalQuantity} total tickets across ${items.length} purchase${items.length>1?'s':''}`}>
         ×{group.totalQuantity}
       </div>
 
-      {/* Expanded details (click outside to collapse) */}
       {showExpanded && (
         <div className="mt-2 space-y-2">
           <TicketCard ticket={items[selected]} theme={theme} compact={false} />
 
-          {/* ALL IDs across this competition */}
           {group.allTicketNumbers.length > 0 && (
             <div className="rounded-xl border border-white/10 bg-white/5 p-3">
               <div className="text-xs font-semibold text-white/80 mb-1">
                 All Ticket IDs in this Competition
                 <span className="ml-2 text-[10px] text-white/60">({group.allTicketNumbers.length})</span>
               </div>
-              <div className="text-[11px] text-white/70 max-h-36 overflow-y-auto break-words">
+              <div className="text-[11px] text-white/70 break-words">
                 {group.allTicketNumbers.join(', ')}
               </div>
             </div>
@@ -357,8 +345,7 @@ function GroupRow({ theme, items, defaultOpen=false }) {
 
       {open && (
         <div className="px-3 pb-3">
-          <div className="flex overflow-x-auto gap-6 pb-2 -mx-1 px-1 snap-x snap-mandatory
-                          [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex overflow-x-auto gap-6 pb-2 -mx-1 px-1 snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             {groups.map((g) => (
               <div key={g.key} className="snap-start">
                 <CompetitionDeck theme={theme} group={g} />
@@ -375,13 +362,14 @@ function GroupRow({ theme, items, defaultOpen=false }) {
 export default function AccountTicketsPanel({
   tickets = [],
   initialTab = 'active',        // 'all' | 'active' | 'completed' | 'gifted' | 'earned'
+  stickyFilter = false,         // turn on if you truly need sticky; defaults to off to avoid iOS glitches
+  stickyOffset = 64,            // header height in px when sticky enabled
 }) {
   const [tab, setTab] = useState(initialTab);
   const [q, setQ] = useState('');
   const [sort, setSort] = useState('endSoon'); // 'endSoon' | 'newest' | 'a2z'
   const [themeFilter, setThemeFilter] = useState('all'); // theme or 'all'
 
-  // Derived + normalize
   const normalized = useMemo(() => {
     return tickets.map(t => ({
       ...t,
@@ -393,7 +381,6 @@ export default function AccountTicketsPanel({
     }));
   }, [tickets]);
 
-  // Search / tab / theme / sort pipeline
   const filtered = useMemo(() => {
     let arr = normalized;
 
@@ -406,10 +393,7 @@ export default function AccountTicketsPanel({
 
     const qq = q.trim().toLowerCase();
     if (qq) {
-      arr = arr.filter(t =>
-        t.__title.includes(qq) || t.__slug.includes(qq) ||
-        String(t.prize || '').toLowerCase().includes(qq)
-      );
+      arr = arr.filter(t => t.__title.includes(qq) || t.__slug.includes(qq) || String(t.prize || '').toLowerCase().includes(qq));
     }
 
     if (sort === 'endSoon') arr = [...arr].sort((a,b) => a.__draw - b.__draw);
@@ -419,7 +403,6 @@ export default function AccountTicketsPanel({
     return arr;
   }, [normalized, tab, themeFilter, q, sort]);
 
-  // Group by theme in fixed order
   const grouped = useMemo(() => {
     const m = new Map();
     for (const th of THEME_ORDER) m.set(th, []);
@@ -430,7 +413,6 @@ export default function AccountTicketsPanel({
     return Array.from(m.entries()).filter(([,list]) => list.length > 0);
   }, [filtered]);
 
-  // Quick stats
   const stats = useMemo(() => {
     const total = filtered.length;
     const live = filtered.filter(t => t.__active).length;
@@ -441,8 +423,11 @@ export default function AccountTicketsPanel({
 
   return (
     <div className="rounded-2xl border border-cyan-600 bg-[#0b1022] text-white">
-      {/* Sticky filter bar */}
-      <div className="sticky top-0 z-40 bg-[#0b1022]/95 backdrop-blur border-b border-white/10 p-3 space-y-3">
+      {/* Filter bar – NOT sticky by default to avoid iOS sticky/blur bugs. */}
+      <div
+        className={`z-40 border-b border-white/10 p-3 space-y-3 ${stickyFilter ? '' : ''}`}
+        style={stickyFilter ? { position: 'sticky', top: stickyOffset, background: '#0b1022' } : {}}
+      >
         {/* Tabs */}
         <div className="flex flex-wrap gap-2" role="tablist" aria-label="Ticket filters">
           {[
@@ -499,9 +484,7 @@ export default function AccountTicketsPanel({
       {/* Body */}
       <div className="p-3 space-y-4">
         {filtered.length === 0 ? (
-          <div className="text-center text-white/70 py-12">
-            No tickets match your filters.
-          </div>
+          <div className="text-center text-white/70 py-12">No tickets match your filters.</div>
         ) : (
           grouped.map(([theme, list]) => (
             <GroupRow key={theme} theme={theme} items={list} defaultOpen />
