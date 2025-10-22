@@ -16,7 +16,7 @@ export default function XPSpendModalTrigger({ userId, username }) {
           items: [
             { slug: "pi-stages", title: "Pi Stages", how: "Convert XP → extra entries", href: "/competitions/pi-stages" },
             { slug: "pi-cash-code", title: "Pi Cash Code", how: "Spend XP to reveal hints", href: "/pi-cash-code" },
-            { slug: "try-your-skill", title: "Try Your Skill", how: "XP → bonus spins / lower fee", href: "/games/try-your-skill" },
+            { slug: "try-your-skill", title: "Try Your Skill", how: "XP → bonus / lower fee", href: "/games/try-your-skill" },
           ],
         };
         if (!ignore) setData(json);
