@@ -131,16 +131,9 @@ export default function AdminDashboard() {
       setLoading(true);
       setError('');
 
-      const u = typeof window !== 'undefined' ? localStorage.getItem('omc_admin_user') : null;
-      const p = typeof window !== 'undefined' ? localStorage.getItem('omc_admin_pass') : null;
-      if (!u || !p) {
-        goLogin();
-        return;
-      }
-
       const res = await fetch('/api/admin/competitions', {
-        headers: { 'x-admin-user': u, 'x-admin-pass': p },
         cache: 'no-store',
+        credentials: 'include',
       });
 
       if (res.status === 401 || res.status === 403) {
@@ -174,9 +167,6 @@ export default function AdminDashboard() {
 
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this competition?')) return;
-    const u = localStorage.getItem('omc_admin_user');
-    const p = localStorage.getItem('omc_admin_pass');
-    if (!u || !p) return goLogin();
 
     const prev = competitions; // optimistic
     setDeletingId(id);
@@ -185,8 +175,8 @@ export default function AdminDashboard() {
     try {
       const res = await fetch(`/api/admin/competitions/${id}`, {
         method: 'DELETE',
-        headers: { 'x-admin-user': u, 'x-admin-pass': p },
         cache: 'no-store',
+        credentials: 'include',
       });
       if (res.status === 401 || res.status === 403) return goLogin();
       if (!res.ok) throw new Error(`Delete failed (${res.status})`);

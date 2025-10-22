@@ -1,10 +1,8 @@
 // file: src/pages/api/admin/logout.js
-import { clearAuthCookies } from 'lib/auth';
+import { clearAdminSessionCookie } from 'lib/adminHeaderGuard'; // add this helper if not present
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ success: false, error: 'METHOD_NOT_ALLOWED' });
-  }
-  clearAuthCookies(res);
-  return res.status(200).json({ success: true });
+export default function handler(req, res) {
+  if (req.method !== 'POST') { res.setHeader('Allow','POST'); return res.status(405).end(); }
+  clearAdminSessionCookie(res);
+  res.status(200).json({ ok: true });
 }

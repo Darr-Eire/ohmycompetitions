@@ -84,10 +84,11 @@ export default function AdminCompetitionsHealth() {
       const p = typeof window !== 'undefined' ? localStorage.getItem('omc_admin_pass') : null;
       if (!u || !p) return goLogin();
 
-      const res = await fetch('/api/admin/competitions/health', {
-        headers: { 'x-admin-user': u, 'x-admin-pass': p },
-        cache: 'no-store',
-      });
+     const res = await fetch('/api/admin/competitions/health', {
+  cache: 'no-store',
+  credentials: 'include',
+});
+
       if (res.status === 401 || res.status === 403) return goLogin();
       if (!res.ok) throw new Error(`Failed to load (${res.status})`);
       const data = await res.json();

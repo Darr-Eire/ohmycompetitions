@@ -10,7 +10,7 @@ const adminRoutes = [
     items: [
       { name: 'Overview', href: '/admin', icon: '📊', description: 'Main dashboard' },
       { name: 'Referrals Top', href: '/admin/referrals-top', icon: '🏅', description: 'Top referrers' },
-      { name: 'Competitions Health', href: '/admin/competitions-health', icon: '🩺', description: 'Capacity & sales' }, // ✅ fixed
+      { name: 'Competitions Health', href: '/admin/competitions-health', icon: '🩺', description: 'Capacity & sales' },
     ]
   },
   {
@@ -77,13 +77,14 @@ export default function AdminSidebar({ children }) {
     try {
       const u = typeof window !== 'undefined' ? localStorage.getItem('omc_admin_user') : null;
       const p = typeof window !== 'undefined' ? localStorage.getItem('omc_admin_pass') : null;
-      const hdrs = u && p ? { 'x-admin-user': u, 'x-admin-pass': p } : undefined;
+     const opts = { cache: 'no-store', credentials: 'include' };
+// ...
+const [compsRes, forumsRes, trySkillRes] = await Promise.all([
+  fetch('/api/admin/competitions', opts).catch(() => ({ ok: false })),
+  fetch('/api/admin/forums', opts).catch(() => ({ ok: false })),
+  fetch('/api/admin/try-your-skill?action=stats', opts).catch(() => ({ ok: false })),
+]);
 
-      const [compsRes, forumsRes, trySkillRes] = await Promise.all([
-        fetch('/api/admin/competitions', { headers: hdrs, cache: 'no-store' }).catch(() => ({ ok: false })),
-        fetch('/api/admin/forums', { headers: hdrs, cache: 'no-store' }).catch(() => ({ ok: false })),
-        fetch('/api/admin/try-your-skill?action=stats', { headers: hdrs, cache: 'no-store' }).catch(() => ({ ok: false })),
-      ]);
 
       const compsData = compsRes.ok ? await compsRes.json() : [];
       const forumsData = forumsRes.ok ? await forumsRes.json() : [];
