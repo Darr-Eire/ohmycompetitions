@@ -1,182 +1,291 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 
-export default function EditCompetitionPage() {
+export default function EditCompetition() {
   const router = useRouter();
   const { id } = router.query;
 
   const [form, setForm] = useState({
+    comp: {
+      slug: '',
+      entryFee: '',
+      totalTickets: '',
+      piAmount: '',
+      paymentType: 'pi',
+      status: 'active',
+      startsAt: '',
+      endsAt: ''
+    },
     title: '',
     prize: '',
-    slug: '',
-    entryFee: 0,
-    totalTickets: 0,
     theme: '',
+    description: '',
+    winners: []
   });
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
 
-  const goLogin = () => {
-    const next = encodeURIComponent(router.asPath || '/admin/competitions');
-    router.replace(`/admin/login?next=${next}`);
-  };
-
-  // Shape helper in case your API returns nested comp.*
-  const normalize = (data) => {
-    if (!data || typeof data !== 'object') return form;
-    return {
-      title: data.title ?? '',
-      prize: data.prize ?? '',
-      slug: data.slug ?? data.comp?.slug ?? '',
-      entryFee: Number(data.entryFee ?? data.comp?.entryFee ?? 0) || 0,
-      totalTickets: Number(data.totalTickets ?? data.comp?.totalTickets ?? 0) || 0,
-      theme: data.theme ?? '',
-    };
-  };
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    if (!id) return;
+    const adminUser = localStorage.getItem('adminUser');
+    if (!adminUser) {
+      router.push('/admin/login');
+      return;
+    }
 
-    const fetchCompetition = async () => {
+    if (!id || loaded) return;
+
+    async function loadCompetition() {
       try {
-        setLoading(true);
+        const adminData = JSON.parse(localStorage.getItem('adminUser'));
         const res = await fetch(`/api/admin/competitions/${id}`, {
-          cache: 'no-store',
-          credentials: 'include',
+          headers: {
+            'Authorization': `Basic ${btoa(adminData.username + ':' + adminData.password)}`
+          }
         });
 
-        if (res.status === 401 || res.status === 403) {
-          goLogin();
-          return;
-        }
-        if (!res.ok) throw new Error(`Failed to fetch competition (${res.status})`);
-
         const data = await res.json();
-        setForm(normalize(data));
-      } catch (err) {
-        console.error(err);
-        alert('Error loading competition data.');
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    fetchCompetition();
-  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+        if (!res.ok) {
+          if (res.status === 401) {
+            router.push('/admin/login');
+            return;
+          }
+          throw new Error(data.message || 'Failed to load competition');
+        }
+
+        setForm({
+          comp: {
+            slug: String(data.competition.comp?.slug || ''),
+            entryFee: String(data.competition.comp?.entryFee || ''),
+            totalTickets: String(data.competition.comp?.totalTickets || ''),
+            piAmount: String(data.competition.comp?.piAmount || ''),
+            paymentType: data.competition.comp?.paymentType || 'pi',
+            status: data.competition.comp?.status || 'active',
+            startsAt: data.competition.comp?.startsAt
+              ? new Date(data.competition.comp.startsAt).toISOString().slice(0, 16)
+              : '',
+            endsAt: data.competition.comp?.endsAt
+              ? new Date(data.competition.comp.endsAt).toISOString().slice(0, 16)
+              : '',
+          },
+          title: String(data.competition.title || ''),
+          prize: String(data.competition.prize || ''),
+          theme: String(data.competition.theme || ''),
+          description: String(data.competition.description || ''),
+          winners: data.competition.winners || []
+        });
+
+        setLoaded(true);
+      } catch (err) {
+        console.error('Error loading competition:', err);
+        setError(err.message || 'Failed to load competition');
+      }
+    }
+
+    loadCompetition();
+  }, [id, loaded, router]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    // coerce numeric fields
-    if (name === 'entryFee') {
-      const n = Number(value);
-      setForm((prev) => ({ ...prev, [name]: Number.isFinite(n) ? n : 0 }));
-    } else if (name === 'totalTickets') {
-      const n = parseInt(value, 10);
-      setForm((prev) => ({ ...prev, [name]: Number.isFinite(n) ? n : 0 }));
+    if (['slug', 'entryFee', 'totalTickets', 'piAmount', 'paymentType', 'status', 'startsAt', 'endsAt'].includes(name)) {
+      setForm(prev => ({
+        ...prev,
+        comp: {
+          ...prev.comp,
+          [name]: value
+        }
+      }));
     } else {
-      setForm((prev) => ({ ...prev, [name]: value }));
+      setForm(prev => ({
+        ...prev,
+        [name]: value
+      }));
     }
   };
-
-  const canSave = useMemo(() => {
-    return (form.title || '').trim().length > 0 && (form.slug || '').trim().length > 0;
-  }, [form.title, form.slug]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!canSave || !id) return;
-
+    setError('');
+    setLoading(true);
     try {
-      setSaving(true);
+      const adminData = JSON.parse(localStorage.getItem('adminUser'));
       const res = await fetch(`/api/admin/competitions/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(form),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Basic ${btoa(adminData.username + ':' + adminData.password)}`
+        },
+        body: JSON.stringify({
+          comp: {
+            slug: form.comp.slug,
+            entryFee: parseFloat(form.comp.entryFee) || 0,
+            totalTickets: parseInt(form.comp.totalTickets) || 0,
+            piAmount: parseFloat(form.comp.piAmount) || 0,
+            paymentType: form.comp.paymentType,
+            status: form.comp.status,
+            startsAt: form.comp.startsAt,
+            endsAt: form.comp.endsAt
+          },
+          title: form.title,
+          prize: form.prize,
+          theme: form.theme || 'tech',
+          description: form.description
+        }),
       });
 
-      if (res.status === 401 || res.status === 403) {
-        goLogin();
-        return;
+      const data = await res.json();
+      if (!res.ok) {
+        if (res.status === 401) {
+          router.push('/admin/login');
+          return;
+        }
+        throw new Error(data.message || 'Failed to update competition');
       }
 
-      if (res.ok) {
-        router.push('/admin/competitions');
-      } else {
-        const msg = await res.text().catch(() => '');
-        alert(`Failed to update competition. ${msg || ''}`);
-      }
+      router.push('/admin/competitions');
     } catch (err) {
-      console.error(err);
-      alert('Network error while updating competition.');
+      setError(err.message);
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
   };
 
-  if (loading) {
-    return <div className="text-white text-center py-10">Loading…</div>;
-  }
-
   return (
-    <main className="p-8 max-w-xl mx-auto text-white font-orbitron">
-      <h1 className="text-3xl font-bold mb-6">Edit Competition</h1>
+    <div className="max-w-3xl mx-auto p-6 text-white">
+      <h1 className="text-3xl font-bold mb-6 text-cyan-400">Edit Competition</h1>
+
+      {error && <p className="text-red-400 mb-4">{error}</p>}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {['title', 'prize', 'slug', 'theme'].map((field) => (
-          <div key={field}>
-            <label className="block mb-1 capitalize">{field}</label>
-            <input
-              type="text"
-              name={field}
-              value={form[field]}
+        <div className="space-y-4 p-4 border border-cyan-400/30 rounded-lg">
+          <h2 className="text-xl font-semibold text-cyan-300">Basic Details</h2>
+          {['slug', 'entryFee', 'totalTickets', 'piAmount', 'startsAt', 'endsAt'].map((field) => (
+            <div key={field} className="space-y-1">
+              <label className="block text-sm font-medium text-cyan-300">
+                {field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1')}
+              </label>
+              <input
+                type={field.includes('At') ? 'datetime-local' : 'text'}
+                name={field}
+                value={form.comp[field]}
+                onChange={handleChange}
+                placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+                className="w-full p-3 rounded bg-black border border-cyan-400"
+                required
+              />
+            </div>
+          ))}
+
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-cyan-300">Payment Type</label>
+            <select
+              name="paymentType"
+              value={form.comp.paymentType}
               onChange={handleChange}
-              className="w-full p-2 bg-black border border-cyan-400 rounded"
-              required={field === 'title' || field === 'slug'}
+              className="w-full p-3 rounded bg-black border border-cyan-400"
+            >
+              <option value="pi">Pi</option>
+              <option value="free">Free</option>
+            </select>
+          </div>
+
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-cyan-300">Status</label>
+            <select
+              name="status"
+              value={form.comp.status}
+              onChange={handleChange}
+              className="w-full p-3 rounded bg-black border border-cyan-400"
+            >
+              <option value="active">Active</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="space-y-4 p-4 border border-cyan-400/30 rounded-lg">
+          <h2 className="text-xl font-semibold text-cyan-300">Competition Details</h2>
+          {['title', 'prize'].map((field) => (
+            <div key={field} className="space-y-1">
+              <label className="block text-sm font-medium text-cyan-300">
+                {field.charAt(0).toUpperCase() + field.slice(1)}
+              </label>
+              <input
+                name={field}
+                value={form[field]}
+                onChange={handleChange}
+                placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+                className="w-full p-3 rounded bg-black border border-cyan-400"
+                required
+              />
+            </div>
+          ))}
+
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-cyan-300">Description</label>
+            <textarea
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              placeholder="Competition description"
+              className="w-full p-3 rounded bg-black border border-cyan-400 h-32"
             />
           </div>
-        ))}
 
-        <div>
-          <label className="block mb-1">Entry Fee (π)</label>
-          <input
-            type="number"
-            name="entryFee"
-            value={form.entryFee}
-            onChange={handleChange}
-            step="0.01"
-            min="0"
-            className="w-full p-2 bg-black border border-cyan-400 rounded"
-          />
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-cyan-300">Theme</label>
+            <select
+              name="theme"
+              value={form.theme}
+              onChange={handleChange}
+              className="w-full p-3 rounded bg-black border border-cyan-400"
+            >
+              <option value="">Select Theme</option>
+              <option value="tech">Tech</option>
+              <option value="premium">Premium</option>
+              <option value="daily">Daily</option>
+              <option value="free">Free</option>
+              <option value="pi">Pi</option>
+              <option value="crypto">Crypto</option>
+            </select>
+          </div>
         </div>
 
-        <div>
-          <label className="block mb-1">Total Tickets</label>
-          <input
-            type="number"
-            name="totalTickets"
-            value={form.totalTickets}
-            onChange={handleChange}
-            step="1"
-            min="0"
-            className="w-full p-2 bg-black border border-cyan-400 rounded"
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={!canSave || saving}
-          className={`w-full py-3 rounded-lg font-bold text-black ${
-            saving
-              ? 'bg-cyan-300 cursor-wait'
-              : 'bg-gradient-to-r from-[#00ffd5] to-[#0077ff]'
-          }`}
+        <button 
+          type="submit" 
+          disabled={loading} 
+          className="w-full py-3 bg-cyan-400 text-black font-bold rounded hover:bg-cyan-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {saving ? 'Saving…' : 'Save Changes'}
+          {loading ? 'Updating...' : 'Update Competition'}
         </button>
       </form>
-    </main>
+
+      {form?.winners?.length > 0 && (
+        <div className="mt-10 p-4 border border-cyan-500/40 rounded-lg">
+          <h2 className="text-xl font-bold text-cyan-300 mb-4">🏆 Winners</h2>
+          <ul className="space-y-2 text-sm">
+            {form.winners.map((winner, i) => (
+              <li key={i} className="bg-white/5 p-3 rounded">
+                <div>
+                  <strong>#{i + 1}:</strong> {winner.username || 'Unknown'} – 🎟️ {winner.ticketNumber}
+                </div>
+                <div>
+                  {winner.claimed ? (
+                    <span className="text-green-400">✅ Claimed at {new Date(winner.claimedAt).toLocaleString()}</span>
+                  ) : (
+                    <span className="text-yellow-400">⏳ Not Claimed</span>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
   );
 }
