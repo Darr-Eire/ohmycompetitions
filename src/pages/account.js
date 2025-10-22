@@ -107,6 +107,16 @@ export default function Account() {
     setActiveTab(tab);
   }, [router.isReady, router.query?.tab]);
 
+  // Keep URL in sync when user switches tabs (shallow, no data refetch)
+  const switchTab = useCallback(
+    (tabKey) => {
+      setActiveTab(tabKey);
+      const q = new URLSearchParams({ ...router.query, tab: tabKey }).toString();
+      router.replace(`${router.pathname}?${q}`, undefined, { shallow: true });
+    },
+    [router]
+  );
+
   const [showGift, setShowGift] = useState(false);
 
   // Load referral code
@@ -158,7 +168,7 @@ export default function Account() {
   const userId = user.uid || user.piUserId;
 
   return (
-    <div className="relative z-0 bg-[#0a1024] min-h-[100dvh] max-w-md mx-auto text-white pt-16 sm:pt-20">
+    <div className="relative z-0 bg-[#0a1024] min-h-[100dvh] max-w-md mx-auto text-white pt-16 sm:pt-20 pb-[max(12px,env(safe-area-inset-bottom))]">
       {/* Profile Header (below global fixed header) */}
       <div className="bg-[#0a1024] border-b border-white/10">
         <div className="px-4 py-3 flex items-center gap-3">
@@ -196,7 +206,7 @@ export default function Account() {
           ['rewards', 'Rewards'],
           ['activity', 'Activity'],
         ].map(([key, label]) => (
-          <Chip key={key} active={activeTab === key} onClick={() => setActiveTab(key)}>
+          <Chip key={key} active={activeTab === key} onClick={() => switchTab(key)}>
             {label}
           </Chip>
         ))}
