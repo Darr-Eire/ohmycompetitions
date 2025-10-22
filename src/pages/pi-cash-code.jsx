@@ -1,4 +1,3 @@
-// src/pages/pi-cash-code.jsx — MOBILE-FIRST MAKEOVER (OMC style)
 "use client";
 
 import React, { useEffect, useMemo, useState, useId } from "react";
@@ -11,10 +10,12 @@ import {
   Trophy,
   Rocket,
   Sparkles,
-  Loader2,
+  RefreshCcw, // Changed Loader2 to RefreshCcw for icon-only refresh
   Info,
   ExternalLink,
   User,
+  Minus, // Added Minus icon for quantity
+  Plus, // Added Plus icon for quantity
 } from "lucide-react";
 import { usePiAuth } from "../context/PiAuthContext";
 import LiveActivityFeed from "../components/LiveActivityFeed";
@@ -152,11 +153,20 @@ function CountdownRing({
       <foreignObject x={stroke} y={stroke} width={size - stroke * 2} height={size - stroke * 2}>
         <div className="flex h-full w-full flex-col items-center justify-center text-center leading-tight">
           <div className="text-[10px] tracking-widest text-cyan-300/80 sm:text-xs">{label}</div>
-          <div className="mt-1 grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] font-bold text-white sm:text-sm">
-            <div><span className="tabular-nums">{d}</span> <span className="opacity-80">Days</span></div>
-            <div><span className="tabular-nums">{h}</span> <span className="opacity-80">Hours</span></div>
-            <div><span className="tabular-nums">{m}</span> <span className="opacity-80">Mins</span></div>
-            <div><span className="tabular-nums">{s}</span> <span className="opacity-80">Secs</span></div>
+          {/* Changed time display for better mobile stacking */}
+          <div className="mt-1 flex flex-col items-center gap-y-0.5 text-[11px] font-bold text-white sm:text-sm">
+            <div className="flex gap-1">
+              <span className="tabular-nums">{d}</span> <span className="opacity-80">Days</span>
+            </div>
+            <div className="flex gap-1">
+              <span className="tabular-nums">{h}</span> <span className="opacity-80">Hours</span>
+            </div>
+            <div className="flex gap-1">
+              <span className="tabular-nums">{m}</span> <span className="opacity-80">Mins</span>
+            </div>
+            <div className="flex gap-1">
+              <span className="tabular-nums">{s}</span> <span className="opacity-80">Secs</span>
+            </div>
           </div>
         </div>
       </foreignObject>
@@ -404,9 +414,11 @@ export default function PiCashCodePage() {
           </div>
           <button
             onClick={() => window.location.reload()}
-            className="inline-flex items-center gap-1.5 rounded-full border border-cyan-400/60 bg-black/40 px-2.5 py-1.5 text-[11px] text-cyan-100 hover:bg-cyan-400/20 active:bg-cyan-400/30 transition sm:text-xs sm:px-3 sm:py-1.5"
+            className="inline-flex items-center justify-center h-8 w-8 rounded-full text-cyan-100 hover:bg-cyan-400/20 active:bg-cyan-400/30 transition sm:h-auto sm:w-auto sm:rounded-full sm:border sm:border-cyan-400/60 sm:bg-black/40 sm:px-3 sm:py-1.5 sm:text-[11px] sm:text-cyan-100"
+            aria-label="Refresh data"
           >
-            <Loader2 className="h-3.5 w-3.5 animate-spin" /> Refresh
+            <RefreshCcw className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+            <span className="sr-only sm:not-sr-only sm:ml-1.5">Refresh</span>
           </button>
         </div>
       </header>
@@ -427,49 +439,10 @@ export default function PiCashCodePage() {
 
       {/* HERO */}
       <section className="mx-auto mt-3 w-full max-w-5xl px-3 sm:mt-5 sm:px-4">
-        <div className="relative overflow-hidden rounded-2xl border border-cyan-500/50 bg-white/5 p-3 shadow-[0_0_40px_#22d3ee33] sm:rounded-3xl sm:p-6">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
-            {/* LEFT: Code + copy */}
-            <div className="flex flex-col items-center justify-center text-center order-2 sm:order-1">
-              <motion.h1
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="text-balance text-xl font-extrabold tracking-tight text-cyan-200 sm:text-5xl"
-              >
-                Pi Cash Code
-              </motion.h1>
-
-              <p className="mt-1.5 max-w-md text-white/80 text-[13px] leading-relaxed sm:text-base sm:mt-2">
-                Keep the code safe, watch the drop and be the Pioneer who’s fast enough.
-              </p>
-
-              <div className="mt-3 sm:mt-5">
-                <div className="inline-block rounded-2xl border border-cyan-500/70 bg-gradient-to-r from-[#081425] via-[#0e1b33] to-[#081425] p-[2px] shadow-[0_0_32px_#22d3ee44]">
-                  <div className="flex justify-center mt-3 sm:mt-5">
-                    <div className="flex items-center gap-2 sm:gap-3 rounded-[12px] bg-black/40 px-3.5 py-2.5 font-mono text-lg sm:text-4xl tracking-[0.18em] sm:tracking-[0.25em] text-cyan-100 whitespace-nowrap shadow-[0_0_28px_#22d3eeaa]">
-                      <LockKeyhole className="text-cyan-300 shrink-0 h-4 w-4 sm:h-auto sm:w-auto" />
-                      <span className="select-all">{showCode ? data?.code || "0000-0000" : "XXXX-XXXX"}</span>
-                    </div>
-                  </div>
-                </div>
-                {data?.dropAt && (
-                  <p className="mt-1.5 text-[11px] text-cyan-300/80 sm:text-xs">
-                    Drop time: {new Date(data.dropAt).toLocaleString()}
-                  </p>
-                )}
-              </div>
-
-              {/* Info ribbon */}
-              {!isPiBrowser && (
-                <div className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-cyan-400/50 bg-cyan-500/10 px-2.5 py-1.5 text-[11px] text-cyan-100 sm:text-xs">
-                  <Info size={14} /> Best experience in Pi Browser.
-                </div>
-              )}
-            </div>
-
-            {/* RIGHT: Countdown + stats */}
-            <div className="flex flex-col items-center justify-center gap-3.5 sm:gap-5 order-1 sm:order-2">
+        <div className="relative overflow-hidden rounded-2xl border border-cyan-500/50 bg-white/5 p-4 shadow-[0_0_40px_#22d3ee33] sm:rounded-3xl sm:p-6">
+          <div className="flex flex-col items-center justify-center text-center sm:grid sm:grid-cols-2 sm:gap-6">
+            {/* Countdown + primary info (order for mobile-first) */}
+            <div className="flex flex-col items-center justify-center gap-3.5 sm:gap-5 order-1">
               <CountdownRing
                 size={132}
                 stroke={8}
@@ -483,15 +456,56 @@ export default function PiCashCodePage() {
                 }
               `}</style>
 
-              <div className="grid w-full grid-cols-3 gap-2 sm:gap-3">
+              {/* Info ribbon */}
+              {!isPiBrowser && (
+                <div className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-cyan-400/50 bg-cyan-500/10 px-2.5 py-1.5 text-[11px] text-cyan-100 sm:text-xs">
+                  <Info size={14} /> Best experience in Pi Browser.
+                </div>
+              )}
+            </div>
+
+            {/* Code + stats (order for mobile-first) */}
+            <div className="flex flex-col items-center justify-center text-center order-2 mt-6 sm:mt-0">
+              <motion.h1
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="text-balance text-xl font-extrabold tracking-tight text-cyan-200 sm:text-5xl"
+              >
+                Pi Cash Code
+              </motion.h1>
+
+              <p className="mt-1.5 max-w-md text-white/80 text-[13px] leading-relaxed sm:text-base sm:mt-2">
+                Keep the code safe, watch the drop and be the Pioneer who’s fast enough.
+              </p>
+
+              <div className="mt-4 sm:mt-5">
+                <div className="inline-block rounded-2xl border border-cyan-500/70 bg-gradient-to-r from-[#081425] via-[#0e1b33] to-[#081425] p-[2px] shadow-[0_0_32px_#22d3ee44]">
+                  <div className="flex justify-center">
+                    <div className="flex items-center gap-2 sm:gap-3 rounded-[12px] bg-black/40 px-3.5 py-2.5 font-mono text-lg sm:text-4xl tracking-[0.18em] sm:tracking-[0.25em] text-cyan-100 whitespace-nowrap shadow-[0_0_28px_#22d3eeaa]">
+                      <LockKeyhole className="text-cyan-300 shrink-0 h-4 w-4 sm:h-auto sm:w-auto" />
+                      <span className="select-all">{showCode ? data?.code || "0000-0000" : "XXXX-XXXX"}</span>
+                    </div>
+                  </div>
+                </div>
+                {data?.dropAt && (
+                  <p className="mt-1.5 text-[11px] text-cyan-300/80 sm:text-xs">
+                    Drop time: {new Date(data.dropAt).toLocaleString()}
+                  </p>
+                )}
+              </div>
+
+              {/* Stats - mobile-first vertical stack */}
+              <div className="grid w-full grid-cols-1 gap-2 mt-4 sm:grid-cols-3 sm:gap-3 sm:mt-6">
                 <Stat label="Prize Pool" value={`${data?.prizePool?.toLocaleString?.() ?? "—"} π`} />
                 <Stat label="Tickets Sold" value={data?.ticketsSold ?? "—"} />
                 <Stat label="Progress" value={`${unlockPct}%`} sub={showCode ? "To expiry" : "To drop"} />
               </div>
+
             </div>
           </div>
 
-          {/* Inline CTA (desktop) */}
+          {/* Inline CTA (desktop only) */}
           <div className="mt-4 hidden sm:flex items-stretch gap-3">
             {!authUser ? (
               <button
@@ -506,7 +520,7 @@ export default function PiCashCodePage() {
                 <div className="flex flex-1 items-center justify-between gap-3 rounded-xl border border-cyan-500/60 bg-black/30 px-3 py-2.5">
                   <span className="text-sm text-cyan-200">Tickets</span>
                   <div className="flex items-center gap-2">
-                    <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="h-10 w-10 rounded-lg bg-cyan-300/90 text-black font-extrabold text-xl leading-none">−</button>
+                    <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="h-10 w-10 rounded-lg bg-cyan-300/90 text-black font-extrabold text-xl leading-none"><Minus size={20} /></button>
                     <input
                       inputMode="numeric"
                       type="number"
@@ -515,7 +529,7 @@ export default function PiCashCodePage() {
                       min={1}
                       onChange={(e) => setQty(Math.max(1, parseInt(e.target.value || "1", 10)))}
                     />
-                    <button onClick={() => setQty((q) => q + 1)} className="h-10 w-10 rounded-lg bg-cyan-300/90 text-black font-extrabold text-xl leading-none">+</button>
+                    <button onClick={() => setQty((q) => q + 1)} className="h-10 w-10 rounded-lg bg-cyan-300/90 text-black font-extrabold text-xl leading-none"><Plus size={20} /></button>
                   </div>
                 </div>
 
@@ -532,7 +546,7 @@ export default function PiCashCodePage() {
         </div>
       </section>
 
-      {/* Info blocks */}
+      {/* Info blocks - mobile-first vertical stack */}
       <section className="mx-auto w-full max-w-5xl px-3 py-5 sm:px-4 sm:py-8">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
           <div className="rounded-2xl border border-cyan-500/40 bg-white/5 p-3 sm:p-5">
@@ -550,7 +564,7 @@ export default function PiCashCodePage() {
         </div>
       </section>
 
-      {/* Live widgets */}
+      {/* Live widgets - mobile-first vertical stack */}
       <section className="mx-auto w-full max-w-5xl px-3 pb-24 sm:px-4 sm:pb-14">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5">
           <div className="rounded-2xl border border-cyan-500/50 bg-white/5 p-3 sm:p-4">
@@ -580,7 +594,7 @@ export default function PiCashCodePage() {
           ) : (
             <>
               <div className="flex items-center gap-2 rounded-xl border border-cyan-500/60 bg-black/30 px-2 py-1.5">
-                <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="h-8 w-8 rounded-lg bg-cyan-300/90 text-black font-extrabold text-lg leading-none">−</button>
+                <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="h-8 w-8 flex items-center justify-center rounded-lg bg-cyan-300/90 text-black font-extrabold text-lg leading-none"><Minus size={18} /></button>
                 <input
                   inputMode="numeric"
                   type="number"
@@ -589,7 +603,7 @@ export default function PiCashCodePage() {
                   min={1}
                   onChange={(e) => setQty(Math.max(1, parseInt(e.target.value || "1", 10)))}
                 />
-                <button onClick={() => setQty((q) => q + 1)} className="h-8 w-8 rounded-lg bg-cyan-300/90 text-black font-extrabold text-lg leading-none">+</button>
+                <button onClick={() => setQty((q) => q + 1)} className="h-8 w-8 flex items-center justify-center rounded-lg bg-cyan-300/90 text-black font-extrabold text-lg leading-none"><Plus size={18} /></button>
               </div>
               <button onClick={() => setShowSkill(true)} className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#00ffd5] to-[#0077ff] px-4 py-2.5 font-extrabold text-black text-sm shadow-[0_8px_24px_#22d3ee55] hover:brightness-110">
                 <Sparkles className="h-4 w-4" /> {totalPrice} π
