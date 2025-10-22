@@ -29,11 +29,11 @@ export default function App({ Component, pageProps }) {
 
             w.Pi.init({
               version: '2.0',
-              sandbox: false,            // MAINNET
+              sandbox: true,            // MAINNET
               appId: APP_ID || undefined // pass app id if set
             });
             w.__piInitDone = true;
-            console.info('[Pi] init OK', { appIdPresent: !!APP_ID, sandbox: false });
+            console.info('[Pi] init OK', { appIdPresent: !!APP_ID, sandbox: true });
             resolve(w.Pi);
           } catch (e) {
             reject(e);
