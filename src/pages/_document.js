@@ -1,4 +1,3 @@
-// src/pages/_document.tsx (or .js)
 import { Html, Head, Main, NextScript } from "next/document";
 
 export default function Document() {
@@ -14,6 +13,7 @@ export default function Document() {
   w.__readyPi = (function () {
     let done = false;
     let cachedPi = null;
+
 
     return function __readyPiInternal() {
       if (done && cachedPi) return Promise.resolve(cachedPi);
@@ -77,10 +77,6 @@ export default function Document() {
       <Head />
       <body>
         <Main />
-
-        {/* Portal mount for modals (kept server-rendered to avoid event blockers) */}
-        <div id="modal-root" className="relative z-[10000]" />
-
         <NextScript />
         {/* Expose window.__readyPi() and inject the SDK once */}
         <script dangerouslySetInnerHTML={{ __html: loader }} />
