@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
@@ -10,7 +10,7 @@ const adminRoutes = [
     items: [
       { name: 'Overview', href: '/admin', icon: '📊', description: 'Main dashboard' },
       { name: 'Referrals Top', href: '/admin/referrals-top', icon: '🏅', description: 'Top referrers' },
-      { name: 'Competitions Health', href: '/admin/competitions-health', icon: '🩺', description: 'Capacity & sales' },
+      { name: 'Competitions Health', href: '/admin/competitions-health', icon: '🩺', description: 'Capacity & sales' }, // ✅ fixed
     ]
   },
   {
@@ -64,53 +64,53 @@ export default function AdminSidebar({ children }) {
     games: 0
   });
 
-  // Set current time only on client side to avoid hydration mismatch
+  // current time (client-only)
   useEffect(() => {
-    const updateTime = () => {
-      setCurrentTime(new Date().toLocaleTimeString());
-    };
-    
-    updateTime(); // Set initial time
-    const interval = setInterval(updateTime, 1000); // Update every second
-    
+    const updateTime = () => setCurrentTime(new Date().toLocaleTimeString());
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
   }, []);
 
-  // Load admin stats
-  useEffect(() => {
-    const loadStats = async () => {
-      try {
-        const [compsRes, forumsRes, trySkillRes] = await Promise.all([
-          fetch('/api/admin/competitions').catch(() => ({ ok: false })),
-          fetch('/api/admin/forums').catch(() => ({ ok: false })),
-          fetch('/api/admin/try-your-skill?action=stats').catch(() => ({ ok: false }))
-        ]);
+  // Load admin stats with headers so protected APIs work
+  const loadStats = useCallback(async () => {
+    try {
+      const u = typeof window !== 'undefined' ? localStorage.getItem('omc_admin_user') : null;
+      const p = typeof window !== 'undefined' ? localStorage.getItem('omc_admin_pass') : null;
+      const hdrs = u && p ? { 'x-admin-user': u, 'x-admin-pass': p } : undefined;
 
-        // Read each response only once to avoid "body stream already read" error
-        const compsData = compsRes.ok ? await compsRes.json() : [];
-        const forumsData = forumsRes.ok ? await forumsRes.json() : [];
-        const trySkillData = trySkillRes.ok ? await trySkillRes.json() : {};
+      const [compsRes, forumsRes, trySkillRes] = await Promise.all([
+        fetch('/api/admin/competitions', { headers: hdrs, cache: 'no-store' }).catch(() => ({ ok: false })),
+        fetch('/api/admin/forums', { headers: hdrs, cache: 'no-store' }).catch(() => ({ ok: false })),
+        fetch('/api/admin/try-your-skill?action=stats', { headers: hdrs, cache: 'no-store' }).catch(() => ({ ok: false })),
+      ]);
 
-        const stats = {
-          competitions: compsData.length || 0,
-          threads: forumsData.length || 0,
-          users: trySkillData.userStats?.totalUsers || 0,
-          games: trySkillData.gameStats?.reduce((total, game) => total + (game.totalPlayed || 0), 0) || 0
-        };
+      const compsData = compsRes.ok ? await compsRes.json() : [];
+      const forumsData = forumsRes.ok ? await forumsRes.json() : [];
+      const trySkillData = trySkillRes.ok ? await trySkillRes.json() : {};
 
-        setAdminStats(stats);
-      } catch (error) {
-        console.error('Failed to load admin stats:', error);
-      }
-    };
-
-    loadStats();
+      setAdminStats({
+        competitions: Array.isArray(compsData) ? compsData.length : (compsData?.items?.length ?? 0),
+        threads: Array.isArray(forumsData) ? forumsData.length : (forumsData?.items?.length ?? 0),
+        users: trySkillData?.userStats?.totalUsers || 0,
+        games: (Array.isArray(trySkillData?.gameStats)
+          ? trySkillData.gameStats.reduce((t, g) => t + (g.totalPlayed || 0), 0)
+          : 0),
+      });
+    } catch (err) {
+      console.error('Failed to load admin stats:', err);
+    }
   }, []);
 
+  useEffect(() => {
+    loadStats();
+  }, [loadStats]);
+
+  // Active route check (handles nested routes)
   const isActiveRoute = (href) => {
-    if (href === '/admin' && router.pathname === '/admin') return true;
-    if (href !== '/admin' && router.pathname.startsWith(href)) return true;
-    return false;
+    if (!router?.pathname) return false;
+    if (href === '/admin') return router.pathname === '/admin';
+    return router.pathname.startsWith(href);
   };
 
   const getStatForRoute = (href) => {
@@ -125,6 +125,9 @@ export default function AdminSidebar({ children }) {
 
   const handleLogout = () => {
     if (confirm('Are you sure you want to logout?')) {
+      // clear both new + legacy keys
+      localStorage.removeItem('omc_admin_user');
+      localStorage.removeItem('omc_admin_pass');
       localStorage.removeItem('adminUser');
       router.push('/admin/login');
     }
@@ -146,6 +149,7 @@ export default function AdminSidebar({ children }) {
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               className="p-2 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 transition text-cyan-400"
+              aria-label="Toggle sidebar"
             >
               {isSidebarOpen ? '◀' : '▶'}
             </button>
@@ -185,13 +189,13 @@ export default function AdminSidebar({ children }) {
                   {category.category}
                 </h3>
               )}
-              
+
               <nav className="space-y-1">
                 {category.items.map((item) => {
                   const isActive = isActiveRoute(item.href);
                   const stat = getStatForRoute(item.href);
-                  
-                  // Handle logout action
+
+                  // Logout action
                   if (item.action === 'logout') {
                     return (
                       <button
@@ -200,21 +204,50 @@ export default function AdminSidebar({ children }) {
                         className="mx-2 rounded-lg flex items-center px-3 py-2 text-sm transition-all text-gray-300 hover:bg-red-500/20 hover:text-red-300 w-full text-left"
                       >
                         <span className="text-lg mr-3">{item.icon}</span>
-                        
                         {isSidebarOpen && (
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between">
                               <span className="font-medium">{item.name}</span>
                             </div>
-                            <p className="text-xs mt-1 text-gray-400">
-                              {item.description}
-                            </p>
+                            <p className="text-xs mt-1 text-gray-400">{item.description}</p>
                           </div>
                         )}
                       </button>
                     );
                   }
-                  
+
+                  // External link? Use <a>
+                  if (item.external) {
+                    return (
+                      <a
+                        key={item.href}
+                        href={item.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`
+                          mx-2 rounded-lg flex items-center px-3 py-2 text-sm transition-all
+                          ${isActive 
+                            ? 'bg-cyan-500 text-black font-bold shadow-lg' 
+                            : 'text-gray-300 hover:bg-cyan-500/20 hover:text-cyan-300'
+                          }
+                        `}
+                      >
+                        <span className="text-lg mr-3">{item.icon}</span>
+                        {isSidebarOpen && (
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <span className="font-medium">{item.name}</span>
+                            </div>
+                            <p className={`text-xs mt-1 ${isActive ? 'text-black/70' : 'text-gray-400'}`}>
+                              {item.description}
+                            </p>
+                          </div>
+                        )}
+                      </a>
+                    );
+                  }
+
+                  // Internal link
                   return (
                     <Link
                       key={item.href}
@@ -228,7 +261,6 @@ export default function AdminSidebar({ children }) {
                       `}
                     >
                       <span className="text-lg mr-3">{item.icon}</span>
-                      
                       {isSidebarOpen && (
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
@@ -273,17 +305,12 @@ export default function AdminSidebar({ children }) {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-bold text-cyan-300">
-                {adminRoutes
-                  .flatMap(cat => cat.items)
-                  .find(item => isActiveRoute(item.href))?.name || 'Admin Dashboard'}
+                {adminRoutes.flatMap(cat => cat.items).find(item => isActiveRoute(item.href))?.name || 'Admin Dashboard'}
               </h2>
               <p className="text-sm text-gray-400">
-                {adminRoutes
-                  .flatMap(cat => cat.items)
-                  .find(item => isActiveRoute(item.href))?.description || 'Manage your platform'}
+                {adminRoutes.flatMap(cat => cat.items).find(item => isActiveRoute(item.href))?.description || 'Manage your platform'}
               </p>
             </div>
-            
             <div className="flex items-center space-x-3">
               <div className="text-xs text-gray-400">
                 {currentTime && `Last updated: ${currentTime}`}
@@ -305,4 +332,4 @@ export default function AdminSidebar({ children }) {
       </div>
     </div>
   );
-} 
+}

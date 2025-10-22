@@ -416,7 +416,7 @@ export default function PiCashCodePage() {
         <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-between sm:gap-3">
           <div className="flex items-center gap-2">
             <NeonBadge icon={ShieldCheck}>Fair • Transparent</NeonBadge>
-            <NeonBadge icon={Rocket}>Open Network</NeonBadge>
+            <NeonBadge icon={Rocket}>Pi Cash Code</NeonBadge>
           </div>
           <div className="flex items-center gap-2 mt-1.5 sm:mt-0">
             <NeonBadge icon={Ticket}>{ticketPrice} π per ticket</NeonBadge>
