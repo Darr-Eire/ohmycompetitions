@@ -138,6 +138,58 @@ function prizePiDisplay(c) {
   return 'TBA';
 }
 
+/* Ensure numeric prize text shows π; leave non-numeric text as-is */
+function ensurePiSymbol(txt) {
+  if (!txt) return 'Prize TBA';
+  const s = String(txt).trim();
+  if (/[π]/.test(s)) return s;
+  const n = parseNumericLike(s);
+  return Number.isFinite(n) ? `${n.toLocaleString()} π` : s;
+}
+
+/* ------------------------------ OMC Prize Banner ------------------------------ */
+function PrizeBanner({ title, prizeText }) {
+  const displayPrize = ensurePiSymbol(prizeText);
+
+  return (
+    <div className="relative aspect-[4/3] w-full overflow-hidden">
+      {/* Neon gradient base */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#00ffd5] via-[#00b7ff] to-[#005eff]" />
+
+      {/* Cyber grid / dots */}
+      <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(rgba(255,255,255,0.7)_1.5px,transparent_1.5px)] [background-size:22px_22px]" />
+
+      {/* Radial glow rings */}
+      <div className="absolute -inset-10 opacity-30 blur-2xl pointer-events-none">
+        <div className="absolute left-1/3 top-1/3 w-72 h-72 rounded-full bg-cyan-300/40" />
+        <div className="absolute right-1/4 bottom-1/4 w-72 h-72 rounded-full bg-blue-400/40" />
+      </div>
+
+      {/* Inner glow frame */}
+      <div className="absolute inset-0 ring-1 ring-white/20 shadow-[0_0_50px_#22d3ee66_inset]" />
+
+      {/* Content */}
+      <div className="relative h-full w-full flex items-center justify-center text-center px-3">
+        <div className="max-w-[86%] select-none">
+          {/* BIG PRIZE */}
+          <div className="text-black drop-shadow-[0_3px_14px_rgba(255,255,255,0.7)]">
+            <div className="inline-flex items-baseline gap-1 rounded-2xl bg-white/35 px-3 py-1.5 ring-1 ring-white/60 shadow-[0_8px_28px_rgba(34,211,238,0.55)]">
+              <span className="text-[20px] sm:text-[28px] font-black leading-none tracking-tight">
+                {displayPrize}
+              </span>
+            </div>
+          </div>
+
+          {/* Title (centered) */}
+          <h3 className="mt-2 mx-auto w-full text-center text-[14px] sm:text-[16px] font-extrabold leading-snug text-black/90 line-clamp-2">
+            {title}
+          </h3>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const formatDate = (d) => {
   if (!d) return '—';
   const ts = typeof d === 'number' ? d : new Date(d).getTime();
@@ -145,7 +197,6 @@ const formatDate = (d) => {
   return new Date(ts).toLocaleString(undefined, {
     month: 'short',
     day: 'numeric',
-
   });
 };
 
@@ -160,12 +211,15 @@ function BackgroundFX() {
   );
 }
 
-/* ------------------------------ card (stacked details, no icons) ------------------------------ */
-/* ------------------------------ card (stacked details, no icons) ------------------------------ */
-function LiveCard({ data, onGift, onShare }) {
+/* ------------------------------ card (show image for TECH, banner otherwise) ------------------------------ */
+function LiveCard({ data, onGift }) {
   const comp = data.comp ?? data;
   const status = getStatus(data);
   const { sold, total, pct } = ticketsProgress(data);
+
+  // Theme & media
+  const theme = (data.theme || comp.theme || '').toLowerCase();
+  const imgUrl = data.imageUrl || comp.imageUrl || '';
 
   // Dates
   const startTs = comp?.startsAt ? new Date(comp.startsAt).getTime() : null;
@@ -187,18 +241,22 @@ function LiveCard({ data, onGift, onShare }) {
         overflow-hidden transition-all duration-200 hover:bg-white/10
       "
     >
-      {/* Media (slightly taller for breathing room) */}
-      <div className="relative aspect-[4/3] w-full overflow-hidden">
-        <img
-          src={data.imageUrl || '/pi.jpeg'}
-          alt={theTitle}
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-          loading="lazy"
-          decoding="async"
-        />
-      </div>
+      {/* For TECH theme with an image, show the image; otherwise show the prize banner */}
+      {theme === 'tech' && imgUrl ? (
+        <div className="relative aspect-[4/3] w-full overflow-hidden">
+          <img
+            src={imgUrl}
+            alt={theTitle}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+      ) : (
+        <PrizeBanner title={theTitle} prizeText={prizeText} />
+      )}
 
-      {/* Status chip BELOW the image */}
+      {/* Status chip BELOW media/banner */}
       <div className="px-3.5 sm:px-4 pt-2 flex justify-center">
         {status === 'live' && (
           <span className="rounded-md bg-emerald-500/25 px-2 py-0.5 text-emerald-200 text-[11px] font-bold">
@@ -217,7 +275,7 @@ function LiveCard({ data, onGift, onShare }) {
         )}
       </div>
 
-      {/* Body: everything stacked under the image */}
+      {/* Body */}
       <div className="p-3.5 sm:p-4">
         {/* Title + fee chip */}
         <div className="flex items-start justify-between gap-3">
@@ -226,7 +284,7 @@ function LiveCard({ data, onGift, onShare }) {
           </h3>
         </div>
 
-        {/* Stacked details (all real data) */}
+        {/* Stacked details */}
         <div className="mt-3 space-y-1.5 text-[13px] text-white">
           <div className="flex items-baseline justify-between gap-2">
             <span className="text-white/60">Fee</span>
@@ -260,7 +318,7 @@ function LiveCard({ data, onGift, onShare }) {
           </div>
         </div>
 
-        {/* CTA button */}
+        {/* CTA */}
         <div className="mt-3">
           <Link
             href={purchaseHref(data)}
@@ -286,7 +344,6 @@ function LiveCard({ data, onGift, onShare }) {
   );
 }
 
-
 /* ------------------------------ empty/skeleton ------------------------------ */
 function EmptyState({ onRefresh, label = 'competitions' }) {
   return (
@@ -297,8 +354,8 @@ function EmptyState({ onRefresh, label = 'competitions' }) {
       <button
         onClick={onRefresh}
         type="button"
-        className="mt-6 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold px-4 py-2 hover:brightness-110 active:translate-y-px transition-all"
-      >
+        className="mt-6 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold px-4 py-2 hover:brightness-110 active:translate-y-px transition-all
+      ">
         <RefreshCw size={16} /> Refresh
       </button>
     </div>
@@ -323,7 +380,7 @@ export default function AllCompetitionsPage() {
   const [competitions, setCompetitions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeFilter, setActiveFilter] = useState('Live'); // default to Live
+  const [activeFilter, setActiveFilter] = useState('Live');
   const [tick, setTick] = useState(0);
 
   // Gift modal state
@@ -361,7 +418,7 @@ export default function AllCompetitionsPage() {
 
   // Filters
   const filters = useMemo(() => {
-    const set = new Set(['Live', 'Ending Soon', 'All']); // guaranteed tabs
+    const set = new Set(['Live', 'Ending Soon', 'All']);
     for (const c of competitions) {
       const theme = (c.theme || c?.comp?.theme || '').trim();
       if (theme) set.add(theme.charAt(0).toUpperCase() + theme.slice(1));
@@ -376,13 +433,14 @@ export default function AllCompetitionsPage() {
       const status = getStatus(item);
       const end = comp?.endsAt ? new Date(comp.endsAt).getTime() : Number.POSITIVE_INFINITY;
       const start = comp?.startsAt ? new Date(comp.startsAt).getTime() : 0;
-      const score =
-        status === 'live'
-          ? end
-          : status === 'upcoming'
-          ? start
-          : end;
-      return { ...item, __status: status, __score: score, __end: end, theme: (item.theme || item?.comp?.theme || '').toLowerCase() };
+      const score = status === 'live' ? end : status === 'upcoming' ? start : end;
+      return {
+        ...item,
+        __status: status,
+        __score: score,
+        __end: end,
+        theme: (item.theme || item?.comp?.theme || '').toLowerCase(),
+      };
     });
   }, [competitions]);
 
@@ -395,7 +453,8 @@ export default function AllCompetitionsPage() {
   }, [normalized]);
 
   const filtered = useMemo(() => {
-    if (activeFilter === 'Live') return normalized.filter(n => n.__status === 'live').sort((a, b) => a.__score - b.__score);
+    if (activeFilter === 'Live')
+      return normalized.filter(n => n.__status === 'live').sort((a, b) => a.__score - b.__score);
     if (activeFilter === 'Ending Soon') {
       return normalized
         .filter(n => n.__status === 'live')
@@ -403,13 +462,11 @@ export default function AllCompetitionsPage() {
         .slice(0, 24);
     }
     if (activeFilter === 'All') {
-      return normalized
-        .slice()
-        .sort((a, b) => {
-          const rank = { live: 0, upcoming: 1, ended: 2 };
-          const r = rank[a.__status] - rank[b.__status];
-          return r !== 0 ? r : a.__score - b.__score;
-        });
+      return normalized.slice().sort((a, b) => {
+        const rank = { live: 0, upcoming: 1, ended: 2 };
+        const r = rank[a.__status] - rank[b.__status];
+        return r !== 0 ? r : a.__score - b.__score;
+      });
     }
     const theme = activeFilter.toLowerCase();
     return normalized
@@ -423,7 +480,6 @@ export default function AllCompetitionsPage() {
 
   const liveCount = normalized.filter(n => n.__status === 'live').length;
   const totalPrizePool = useMemo(() => {
-    // If your backend mixes fee into prizeValue, consider adding a separate prizePool field server-side.
     return competitions.reduce((sum, c) => sum + (toNum((c.comp ?? c)?.prizeValue, 0)), 0);
   }, [competitions]);
 
@@ -448,48 +504,47 @@ export default function AllCompetitionsPage() {
         <BackgroundFX />
 
         {/* Slim header */}
-      <header className="relative z-10 pt-[calc(12px+env(safe-area-inset-top))] pb-3 sm:pb-4">
-                <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
-                  <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-                    <div>
-                      <h1 className="text-center mx-auto text-[22px] sm:text-[28px] font-extrabold tracking-tight">
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff]">
-                          Live Competitions
-                        </span>
-                      </h1>
-      
-                      <p className="text-center mx-auto text-white/70 text-[13px] sm:text-[14px]">
-        Hand-picked tech, consoles and Pi compeitions with easy entry.
-      </p>
-      
-                    </div>
-      
-                    {/* compact stats */}
-                    <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                      <div className="web3-stat-card !px-3 !py-2">
-                        <Trophy size={18} className="text-yellow-300" />
-                        <span className="text-[10px] text-white/70">Total Pool</span>
-                        <span className="text-[14px] font-bold text-cyan-300">{totalPrizePool.toLocaleString()} π</span>
-                      </div>
-                      <div className="web3-stat-card !px-3 !py-2">
-                        <Sparkles size={18} className="text-purple-300" />
-                        <span className="text-[10px] text-white/70">Live Now</span>
-                        <span className="text-[14px] font-bold text-blue-400">{liveCount}</span>
-                      </div>
-                      <button
-                        onClick={() => location.reload()}
-                        className="web3-stat-card !px-3 !py-2 active:translate-y-px"
-                        title="Refresh"
-                        type="button"
-                      >
-                        <RefreshCw size={18} className="text-orange-300" />
-                        <span className="text-[10px] text-white/70">Updated</span>
-                        <span className="text-[12px] font-bold text-pink-300">~{Math.round(REFRESH_MS/1000)}s</span>
-                      </button>
-                    </div>
-                  </div>
+        <header className="relative z-10 pt-[calc(12px+env(safe-area-inset-top))] pb-3 sm:pb-4">
+          <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+              <div>
+                <h1 className="text-center mx-auto text-[22px] sm:text-[28px] font-extrabold tracking-tight">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff]">
+                    Live Competitions
+                  </span>
+                </h1>
+
+                <p className="text-center mx-auto text-white/70 text-[13px] sm:text-[14px]">
+                  Hand-picked tech, consoles and Pi compeitions with easy entry.
+                </p>
+              </div>
+
+              {/* compact stats */}
+              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                <div className="web3-stat-card !px-3 !py-2">
+                  <Trophy size={18} className="text-yellow-300" />
+                  <span className="text-[10px] text-white/70">Total Pool</span>
+                  <span className="text-[14px] font-bold text-cyan-300">{totalPrizePool.toLocaleString()} π</span>
                 </div>
-              </header>
+                <div className="web3-stat-card !px-3 !py-2">
+                  <Sparkles size={18} className="text-purple-300" />
+                  <span className="text-[10px] text-white/70">Live Now</span>
+                  <span className="text-[14px] font-bold text-blue-400">{liveCount}</span>
+                </div>
+                <button
+                  onClick={() => location.reload()}
+                  className="web3-stat-card !px-3 !py-2 active:translate-y-px"
+                  title="Refresh"
+                  type="button"
+                >
+                  <RefreshCw size={18} className="text-orange-300" />
+                  <span className="text-[10px] text-white/70">Updated</span>
+                  <span className="text-[12px] font-bold text-pink-300">~{Math.round(REFRESH_MS/1000)}s</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
 
         {/* Ending Soon Ticker */}
         {endingSoon.length > 0 && (
@@ -557,7 +612,6 @@ export default function AllCompetitionsPage() {
                       setGiftComp(c.comp ?? c);
                       setGiftOpen(true);
                     }}
-                    onShare={() => {}}
                   />
                 ))}
               </div>

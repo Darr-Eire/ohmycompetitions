@@ -54,6 +54,17 @@ function fmtDateTime(value) {
   return new Intl.DateTimeFormat(undefined, { month: 'short', day: '2-digit' }).format(d);
 }
 
+function parseNumericLike(v) {
+  if (v == null) return NaN;
+  if (typeof v === 'number') return Number.isFinite(v) ? v : NaN;
+  if (typeof v === 'string') {
+    const stripped = v.replace(/[^\d.,-]/g, '').replace(',', '.').trim();
+    const n = Number(stripped);
+    return Number.isFinite(n) ? n : NaN;
+  }
+  return NaN;
+}
+
 function ticketsProgress(c) {
   const comp = c.comp ?? c;
   const sold = toNum(comp?.ticketsSold);
@@ -61,6 +72,7 @@ function ticketsProgress(c) {
   const pct = total > 0 ? Math.min(100, Math.round((sold / total) * 100)) : 0;
   return { sold, total, pct };
 }
+
 const REFRESH_MS = 20000; // 20s soft live refresh
 
 const slugOf = (c) => {
@@ -74,18 +86,7 @@ const purchaseHref = (c) => {
   return slug ? `/ticket-purchase/${slug}` : '/ticket-purchase';
 };
 
-
-function parseNumericLike(v) {
-  if (v == null) return NaN;
-  if (typeof v === 'number') return Number.isFinite(v) ? v : NaN;
-  if (typeof v === 'string') {
-    const stripped = v.replace(/[^\d.,-]/g, '').replace(',', '.').trim();
-    const n = Number(stripped);
-    return Number.isFinite(n) ? n : NaN;
-  }
-  return NaN;
-}
-
+/* ---- prize & fee helpers --------------------------------------------------- */
 function prizePiDisplay(c) {
   const raw = c.comp ?? c;
   const entryFee = parseNumericLike(raw.entryFee);
@@ -152,20 +153,36 @@ function BackgroundFX() {
   );
 }
 
-/* ------------------------------ PRIZE BANNER ------------------------------ */
-function PrizeBanner({ title, prizeText }) {
+/* ------------------------------ PRIZE BANNER (OMC style) ------------------------------ */
+function PrizeBanner({ title, prizeText, feeText }) {
+  const prize = prizeText && String(prizeText).trim() ? prizeText : 'Prize TBA';
+
   return (
     <div className="relative aspect-[4/3] w-full overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#6EE7F9] via-[#22D3EE] to-[#3B82F6]" />
-      <div className="absolute inset-0 opacity-15 [background-image:radial-gradient(rgba(255,255,255,0.7)_1.5px,transparent_1.5px)] [background-size:22px_22px]" />
-      <div className="relative h-full w-full flex items-center justify-center px-4 text-center">
-        <div className="max-w-[85%]">
-          <div className="text-base sm:text-lg font-bold tracking-tight text-black drop-shadow-[0_1px_8px_rgba(255,255,255,0.55)] line-clamp-2">
+      {/* Neon gradient base */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#00ffd5] via-[#00b7ff] to-[#005eff]" />
+
+      {/* Cyber grid / dots */}
+      <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(rgba(255,255,255,0.7)_1.5px,transparent_1.5px)] [background-size:22px_22px]" />
+
+      {/* Radial glow rings */}
+      <div className="absolute -inset-10 opacity-30 blur-2xl pointer-events-none">
+        <div className="absolute left-1/3 top-1/3 w-72 h-72 rounded-full bg-cyan-300/40" />
+        <div className="absolute right-1/4 bottom-1/4 w-72 h-72 rounded-full bg-blue-400/40" />
+      </div>
+
+      {/* Inner glow frame */}
+      <div className="absolute inset-0 ring-1 ring-white/20 shadow-[0_0_50px_#22d3ee66_inset]" />
+
+      {/* Content */}
+      <div className="relative h-full w-full flex items-center justify-center text-center px-3">
+        <div className="max-w-[86%] select-none">
+  
+
+          {/* Title */}
+          <h3 className="mt-2 mx-auto text-[14px] sm:text-[16px] font-extrabold leading-snug text-black/90 line-clamp-2">
             {title}
-          </div>
-          {prizeText && (
-            <div className="mt-2 text-sm font-extrabold text-black/80">{prizeText}</div>
-          )}
+          </h3>
         </div>
       </div>
     </div>
@@ -192,23 +209,11 @@ function PiLiveCard({ data }) {
     ? (showCountdownStart ? timeLeftStartLabel(data) : null)
     : (showCountdownEnd   ? timeLeftEndLabel(data)   : (status === 'ended' ? null : null));
 
-  const img = data.imageUrl || comp.imageUrl;
-
   return (
     <article className="group relative rounded-2xl border border-white/10 bg-white/5 overflow-hidden transition-all duration-200 hover:bg-white/10">
-      {/* Media: image if present, banner otherwise */}
+      {/* ALWAYS show OMC banner (no images) */}
       <div className="relative aspect-[4/3] w-full overflow-hidden">
-        {img ? (
-          <img
-            src={img}
-            alt={theTitle}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-            loading="lazy"
-            decoding="async"
-          />
-        ) : (
-          <PrizeBanner title={theTitle} prizeText={prizeText} />
-        )}
+        <PrizeBanner title={theTitle} prizeText={prizeText} feeText={feeText} />
       </div>
 
       {/* Status chip BELOW media (same line, centered) */}
@@ -233,7 +238,7 @@ function PiLiveCard({ data }) {
           </h3>
         </div>
 
-        {/* Stacked details (REAL prize, etc.) */}
+        {/* Stacked details */}
         <div className="mt-3 space-y-1.5 text-[13px] text-white/85">
           <div className="flex items-baseline justify-between gap-2">
             <span className="text-white/60">Prize</span>
@@ -428,48 +433,47 @@ export default function PiCompetitionsPage() {
         <BackgroundFX />
 
         {/* header (centered like Tech page) */}
-     <header className="relative z-10 pt-[calc(12px+env(safe-area-inset-top))] pb-3 sm:pb-4">
-               <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
-                 <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-                   <div>
-                     <h1 className="text-center mx-auto text-[22px] sm:text-[28px] font-extrabold tracking-tight">
-                       <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff]">
-                         Pi Competitions
-                       </span>
-                     </h1>
-     
-                     <p className="text-center mx-auto text-white/70 text-[13px] sm:text-[14px]">
-       Hand-picked Compeitions, Win Pi and more with easy entry.
-     </p>
-     
-                   </div>
-     
-                   {/* compact stats */}
-                   <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                     <div className="web3-stat-card !px-3 !py-2">
-                       <Trophy size={18} className="text-yellow-300" />
-                       <span className="text-[10px] text-white/70">Total Pool</span>
-                       <span className="text-[14px] font-bold text-cyan-300">{totalPrizePool.toLocaleString()} π</span>
-                     </div>
-                     <div className="web3-stat-card !px-3 !py-2">
-                       <Sparkles size={18} className="text-purple-300" />
-                       <span className="text-[10px] text-white/70">Live Now</span>
-                       <span className="text-[14px] font-bold text-blue-400">{liveCount}</span>
-                     </div>
-                     <button
-                       onClick={() => location.reload()}
-                       className="web3-stat-card !px-3 !py-2 active:translate-y-px"
-                       title="Refresh"
-                       type="button"
-                     >
-                       <RefreshCw size={18} className="text-orange-300" />
-                       <span className="text-[10px] text-white/70">Updated</span>
-                       <span className="text-[12px] font-bold text-pink-300">~{Math.round(REFRESH_MS/1000)}s</span>
-                     </button>
-                   </div>
-                 </div>
-               </div>
-             </header>
+        <header className="relative z-10 pt-[calc(12px+env(safe-area-inset-top))] pb-3 sm:pb-4">
+          <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+              <div>
+                <h1 className="text-center mx-auto text-[22px] sm:text-[28px] font-extrabold tracking-tight">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff]">
+                    Pi Competitions
+                  </span>
+                </h1>
+
+                <p className="text-center mx-auto text-white/70 text-[13px] sm:text-[14px]">
+                  Hand-picked Compeitions, Win Pi and more with easy entry.
+                </p>
+              </div>
+
+              {/* compact stats */}
+              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                <div className="web3-stat-card !px-3 !py-2">
+                  <Trophy size={18} className="text-yellow-300" />
+                  <span className="text-[10px] text-white/70">Total Pool</span>
+                  <span className="text-[14px] font-bold text-cyan-300">{totalPrizePool.toLocaleString()} π</span>
+                </div>
+                <div className="web3-stat-card !px-3 !py-2">
+                  <Sparkles size={18} className="text-purple-300" />
+                  <span className="text-[10px] text-white/70">Live Now</span>
+                  <span className="text-[14px] font-bold text-blue-400">{liveCount}</span>
+                </div>
+                <button
+                  onClick={() => location.reload()}
+                  className="web3-stat-card !px-3 !py-2 active:translate-y-px"
+                  title="Refresh"
+                  type="button"
+                >
+                  <RefreshCw size={18} className="text-orange-300" />
+                  <span className="text-[10px] text-white/70">Updated</span>
+                  <span className="text-[12px] font-bold text-pink-300">~{Math.round(REFRESH_MS/1000)}s</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
 
         {/* sticky filters (centered like Tech page) */}
         <div className="sticky top-[calc(6px+env(safe-area-inset-top))] z-20 bg-[#0f1b33]/95 backdrop-blur-sm border-y border-white/10">

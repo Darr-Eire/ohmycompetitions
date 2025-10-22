@@ -169,22 +169,44 @@ function BackgroundFX() {
   );
 }
 
-/* ------------------------------ banner fallback (no image) ------------------------------ */
-function BannerFallback({ title, prizeText }) {
+/* ------------------------------ OMC PRIZE BANNER (always shown) ------------------------------ */
+function PrizeBanner({ title, prizeText, feeText }) {
+  const prize = prizeText && String(prizeText).trim() ? prizeText : 'Prize TBA';
+
   return (
     <div className="relative aspect-[4/3] w-full overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#6EE7F9] via-[#22D3EE] to-[#3B82F6]" />
-      <div className="absolute inset-0 opacity-15 [background-image:radial-gradient(rgba(255,255,255,0.7)_1.5px,transparent_1.5px)] [background-size:22px_22px]" />
-      <div className="relative h-full w-full flex items-center justify-center px-4 text-center">
-        <div className="max-w-[85%] space-y-2">
-          <div className="text-base sm:text-lg font-bold tracking-tight text-black drop-shadow-[0_1px_8px_rgba(255,255,255,0.55)] line-clamp-2">
-            {title}
-          </div>
-          {prizeText ? (
-            <div className="inline-block rounded-md bg-white/80 px-2 py-1 text-[12px] font-extrabold text-black">
-              {prizeText}
+      {/* Neon gradient base */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#00ffd5] via-[#00b7ff] to-[#005eff]" />
+
+      {/* Cyber grid / dots */}
+      <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(rgba(255,255,255,0.7)_1.5px,transparent_1.5px)] [background-size:22px_22px]" />
+
+      {/* Radial glow rings */}
+      <div className="absolute -inset-10 opacity-30 blur-2xl pointer-events-none">
+        <div className="absolute left-1/3 top-1/3 w-72 h-72 rounded-full bg-cyan-300/40" />
+        <div className="absolute right-1/4 bottom-1/4 w-72 h-72 rounded-full bg-blue-400/40" />
+      </div>
+
+      {/* Inner glow frame */}
+      <div className="absolute inset-0 ring-1 ring-white/20 shadow-[0_0_50px_#22d3ee66_inset]" />
+
+      {/* Content */}
+      <div className="relative h-full w-full flex items-center justify-center text-center px-3">
+        <div className="max-w-[86%] select-none">
+          {/* BIG PRIZE */}
+          <div className="text-black drop-shadow-[0_3px_14px_rgba(255,255,255,0.7)]">
+            <div className="inline-flex items-baseline gap-1 rounded-2xl bg-white/35 px-3 py-1.5 ring-1 ring-white/60 shadow-[0_8px_28px_rgba(34,211,238,0.55)]">
+              <span className="text-[20px] font-black leading-none sm:text-[28px] tracking-tight">
+                {prize}
+              </span>
+             
             </div>
-          ) : null}
+          </div>
+
+          {/* Title */}
+          <h3 className="mt-2 mx-auto text-[14px] sm:text-[16px] font-extrabold leading-snug text-black/90 line-clamp-2">
+            {title}
+          </h3>
         </div>
       </div>
     </div>
@@ -209,24 +231,13 @@ function LiveCard({ data, onGift }) {
   const theTitle = titleOf(data);
   const feeText = feePi(data);
 
-  const imgUrl = data.imageUrl || comp.imageUrl || '';
+  // Always show banner (no images)
+  const prizeText = resolveRealPrizeText(data);
 
   return (
     <article className="group relative rounded-2xl border border-white/10 bg-white/5 overflow-hidden transition-all duration-200 hover:bg-white/10">
-      {/* Media or Banner fallback */}
-      {imgUrl ? (
-        <div className="relative aspect-[4/3] w-full overflow-hidden">
-          <img
-            src={imgUrl}
-            alt={theTitle}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-            loading="lazy"
-            decoding="async"
-          />
-        </div>
-      ) : (
-        <BannerFallback title={theTitle} prizeText={resolveRealPrizeText(data)} />
-      )}
+      {/* OMC Prize Banner */}
+      <PrizeBanner title={theTitle} prizeText={prizeText} feeText={feeText} />
 
       {/* Status chip BELOW the media */}
       <div className="px-3.5 sm:px-4 pt-2 flex justify-center">
@@ -352,10 +363,8 @@ export default function DailyCompetitionsPage() {
   const [tick, setTick] = useState(0);
 
   // Gift modal state
-// Gift modal state
-const [giftOpen, setGiftOpen] = useState(false);
-const [giftComp, setGiftComp] = useState(null);
-
+  const [giftOpen, setGiftOpen] = useState(false);
+  const [giftComp, setGiftComp] = useState(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -457,48 +466,47 @@ const [giftComp, setGiftComp] = useState(null);
         <BackgroundFX />
 
         {/* Header (centered like tech page) */}
-     <header className="relative z-10 pt-[calc(12px+env(safe-area-inset-top))] pb-3 sm:pb-4">
-               <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
-                 <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-                   <div>
-                     <h1 className="text-center mx-auto text-[22px] sm:text-[28px] font-extrabold tracking-tight">
-                       <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff]">
-                         Daily & Weekly Competitions
-                       </span>
-                     </h1>
-     
-                     <p className="text-center mx-auto text-white/70 text-[13px] sm:text-[14px]">
-       Hand-picked competitions, Pi, random prizes and more.
-     </p>
-     
-                   </div>
-     
-                   {/* compact stats */}
-                   <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                     <div className="web3-stat-card !px-3 !py-2">
-                       <Trophy size={18} className="text-yellow-300" />
-                       <span className="text-[10px] text-white/70">Total Pool</span>
-                       <span className="text-[14px] font-bold text-cyan-300">{totalPrizePool.toLocaleString()} π</span>
-                     </div>
-                     <div className="web3-stat-card !px-3 !py-2">
-                       <Sparkles size={18} className="text-purple-300" />
-                       <span className="text-[10px] text-white/70">Live Now</span>
-                       <span className="text-[14px] font-bold text-blue-400">{liveCount}</span>
-                     </div>
-                     <button
-                       onClick={() => location.reload()}
-                       className="web3-stat-card !px-3 !py-2 active:translate-y-px"
-                       title="Refresh"
-                       type="button"
-                     >
-                       <RefreshCw size={18} className="text-orange-300" />
-                       <span className="text-[10px] text-white/70">Updated</span>
-                       <span className="text-[12px] font-bold text-pink-300">~{Math.round(REFRESH_MS/1000)}s</span>
-                     </button>
-                   </div>
-                 </div>
-               </div>
-             </header>
+        <header className="relative z-10 pt-[calc(12px+env(safe-area-inset-top))] pb-3 sm:pb-4">
+          <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+              <div>
+                <h1 className="text-center mx-auto text-[22px] sm:text-[28px] font-extrabold tracking-tight">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff]">
+                    Daily & Weekly Competitions
+                  </span>
+                </h1>
+
+                <p className="text-center mx-auto text-white/70 text-[13px] sm:text-[14px]">
+                  Hand-picked competitions, Pi, random prizes and more.
+                </p>
+              </div>
+
+              {/* compact stats */}
+              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                <div className="web3-stat-card !px-3 !py-2">
+                  <Trophy size={18} className="text-yellow-300" />
+                  <span className="text-[10px] text-white/70">Total Pool</span>
+                  <span className="text-[14px] font-bold text-cyan-300">{totalPrizePool.toLocaleString()} π</span>
+                </div>
+                <div className="web3-stat-card !px-3 !py-2">
+                  <Sparkles size={18} className="text-purple-300" />
+                  <span className="text-[10px] text-white/70">Live Now</span>
+                  <span className="text-[14px] font-bold text-blue-400">{liveCount}</span>
+                </div>
+                <button
+                  onClick={() => location.reload()}
+                  className="web3-stat-card !px-3 !py-2 active:translate-y-px"
+                  title="Refresh"
+                  type="button"
+                >
+                  <RefreshCw size={18} className="text-orange-300" />
+                  <span className="text-[10px] text-white/70">Updated</span>
+                  <span className="text-[12px] font-bold text-pink-300">~{Math.round(REFRESH_MS/1000)}s</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
 
         {/* Ending Soon Ticker */}
         {endingSoon.length > 0 && (
@@ -563,7 +571,6 @@ const [giftComp, setGiftComp] = useState(null);
                     key={keyOf(item)}
                     data={item}
                     onGift={(c) => {
-                      // open modal
                       setGiftComp((c?.comp ?? c) || c);
                       setGiftOpen(true);
                     }}
