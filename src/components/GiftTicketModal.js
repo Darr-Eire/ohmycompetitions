@@ -4,14 +4,27 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { usePiAuth } from 'context/PiAuthContext'
 
-/* ---------- lightweight logger (toggle with ?debugGift=1 or localStorage.debugGift=1) ---------- */
+/* ---------- ALERT logger (toggle with ?debugGift=1 or localStorage.debugGift=1) ---------- */
 const DEBUG_GIFT =
   typeof window !== 'undefined' &&
   (new URLSearchParams(window.location.search).get('debugGift') === '1' ||
    localStorage.getItem('debugGift') === '1')
-const L = (...a) => { if (DEBUG_GIFT) console.log('%c[OMC][Gift]', 'color:#00e5ff', ...a) }
-const W = (...a) => { if (DEBUG_GIFT) console.warn('%c[OMC][Gift]', 'color:#ffcc00', ...a) }
-const E = (...a) => { if (DEBUG_GIFT) console.error('%c[OMC][Gift]', 'color:#ff5a5a', ...a) }
+
+// Convert anything to readable string for alert
+const fmt = (v) => {
+  try {
+    if (v == null) return String(v)
+    if (typeof v === 'string') return v
+    return JSON.stringify(v, null, 2)
+  } catch {
+    return String(v)
+  }
+}
+
+// Alert-based loggers (no console usage)
+const L = (...a) => { if (DEBUG_GIFT) alert(`[OMC][Gift]\n\n${a.map(fmt).join('\n')}`) }
+const W = (...a) => { if (DEBUG_GIFT) alert(`[OMC][Gift][WARN]\n\n${a.map(fmt).join('\n')}`) }
+const E = (...a) => { if (DEBUG_GIFT) alert(`[OMC][Gift][ERROR]\n\n${a.map(fmt).join('\n')}`) }
 
 /** Ensure we have a portal root */
 function useModalRoot() {
@@ -23,9 +36,12 @@ function useModalRoot() {
       root = document.createElement('div')
       root.id = 'modal-root'
       document.body.appendChild(root)
+      L('Created #modal-root')
+    } else {
+      L('Found existing #modal-root')
     }
     setEl(root)
-    return () => { /* keep it for reuse */ }
+    return () => { /* keep for reuse */ }
   }, [])
   return el
 }
@@ -49,46 +65,57 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
   // Load when opened
   useEffect(() => {
     if (!isOpen) return
-    L('Modal opened')
+    L('Modal opened. User:', user?.username)
+
     ;(async () => {
       try {
+        L('Fetching competitions for gifting…')
         const r = await fetch('/api/competitions/all', { headers: { 'x-client-trace': 'gift-modal' } })
         const data = await r.json()
         if (data.success) {
-          // Accept active or live competitions
           const active = (data.data || []).filter((c) => {
             const s = String(c?.comp?.status || '').toLowerCase()
             return s === 'active' || s === 'live'
           })
           setCompetitions(active)
+          L('Loaded competitions:', {
+            count: active.length,
+            sample: active.slice(0, 3).map(c => ({ id: c._id, slug: c.comp?.slug, title: c.title, fee: c.comp?.entryFee }))
+          })
         } else {
+          W('Failed to load competitions response shape:', data)
           setMessage('Failed to load competitions'); setMessageType('error')
         }
       } catch (err) {
-        E('load comps', err)
+        E('load comps error', err)
         setMessage('Failed to load competitions'); setMessageType('error')
       }
     })()
+
     if (preselectedCompetition) {
       const competitionId = preselectedCompetition._id || preselectedCompetition.id
+      L('Preselected competition id:', competitionId)
       setSelectedCompetition(competitionId)
     }
-  }, [isOpen, preselectedCompetition])
+  }, [isOpen, preselectedCompetition, user?.username])
 
   // Focus retries (covers paint delays)
   useEffect(() => {
     if (!isOpen) return
-    const t1 = setTimeout(() => { try { recipientRef.current?.focus() } catch {} }, 40)
-    const t2 = setTimeout(() => { try { recipientRef.current?.focus() } catch {} }, 200)
+    const t1 = setTimeout(() => { try { recipientRef.current?.focus(); L('Focus attempt #1') } catch {} }, 40)
+    const t2 = setTimeout(() => { try { recipientRef.current?.focus(); L('Focus attempt #2') } catch {} }, 200)
     return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [isOpen])
 
   const validateRecipient = async (username) => {
     try {
+      L('Validating recipient:', username)
       const r = await fetch(`/api/user/lookup?username=${encodeURIComponent(username)}`, { headers: { 'x-client-trace': 'gift-modal' } })
       const d = await r.json().catch(() => ({}))
+      L('Recipient check response:', { ok: r.ok, body: d })
       return r.ok && d.found ? { valid: true, user: d } : { valid: false, error: 'User not found' }
-    } catch {
+    } catch (err) {
+      E('validateRecipient error', err)
       return { valid: false, error: 'Error checking user' }
     }
   }
@@ -97,6 +124,13 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
     e.preventDefault()
 
     const qty = Math.max(1, parseInt(String(quantity), 10) || 0)
+    L('Submit pressed with:', {
+      user: user?.username,
+      selectedCompetition,
+      recipientUsername,
+      qty
+    })
+
     if (!user?.username) { setMessage('You must be logged in to gift tickets'); setMessageType('error'); return }
     if (!selectedCompetition || !recipientUsername.trim() || qty < 1) { setMessage('Please fill in all fields'); setMessageType('error'); return }
     if (recipientUsername.trim().toLowerCase() === user.username.toLowerCase()) { setMessage('You cannot gift a ticket to yourself'); setMessageType('error'); return }
@@ -108,13 +142,23 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
     const amountToPay = qty * entryFee
     const selectedSlug = selectedComp?.comp?.slug || selectedComp?.slug || null
 
+    L('Selected comp details:', {
+      id: selectedCompetition,
+      slug: selectedSlug,
+      title: selectedComp?.title,
+      entryFee,
+      amountToPay
+    })
+
     if (!Number.isFinite(entryFee) || entryFee <= 0) {
+      W('Entry fee is not payable; blocking gift.')
       setMessage('This competition cannot be gifted right now.')
       setMessageType('error')
       return
     }
 
     if (typeof window === 'undefined' || !window.Pi?.createPayment) {
+      W('Pi SDK not available')
       setLoading(false)
       setMessage('Pi SDK not loaded. Please open in Pi Browser.')
       setMessageType('error')
@@ -128,6 +172,7 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
       if (!recipientCheck.valid) { setMessage(recipientCheck.error); setMessageType('error'); setLoading(false); return }
 
       const headerToken = ctxToken || (typeof window !== 'undefined' && localStorage.getItem('omc_token')) || ''
+      L('Starting Pi.createPayment…')
 
       window.Pi.createPayment({
         amount: amountToPay,
@@ -140,13 +185,27 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
           quantity: qty,
         },
       }, {
-        onReadyForServerApproval: (paymentId) => { L('Ready for approval', paymentId) },
+        onReadyForServerApproval: (paymentId) => {
+          L('onReadyForServerApproval', { paymentId })
+        },
         onReadyForServerCompletion: async (paymentId, txId) => {
+          L('onReadyForServerCompletion fired', { paymentId, rawTx: txId })
           try {
-            // Normalize tx id from different Pi Browser shapes
             const normalizedTx = typeof txId === 'string'
               ? txId
               : (txId?.txId || txId?.txid || txId?.identifier || null)
+            L('Normalized tx id:', normalizedTx)
+
+            const payload = {
+              fromUsername: user.username,
+              toUsername: recipientUsername.trim(),
+              competitionId: selectedCompetition,
+              competitionSlug: selectedSlug,
+              quantity: qty,
+              paymentId,
+              transaction: { identifier: paymentId, txId: normalizedTx },
+            }
+            L('POST /api/tickets/gift payload:', payload)
 
             const res = await fetch('/api/tickets/gift', {
               method: 'POST',
@@ -155,17 +214,11 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
                 'x-client-trace': 'gift-modal',
                 ...(headerToken ? { Authorization: `Bearer ${headerToken}` } : {}),
               },
-              body: JSON.stringify({
-                fromUsername: user.username,
-                toUsername: recipientUsername.trim(),
-                competitionId: selectedCompetition,     // send both for robustness
-                competitionSlug: selectedSlug,
-                quantity: qty,
-                paymentId,
-                transaction: { identifier: paymentId, txId: normalizedTx },
-              }),
+              body: JSON.stringify(payload),
             })
             const result = await res.json().catch(()=> ({}))
+            L('Gift API response:', { status: res.status, ok: res.ok, body: result })
+
             if (res.ok && (result.success || result.ok)) {
               setMessage(`🎁 Successfully gifted ${qty} ticket(s) to ${recipientUsername}!`)
               setMessageType('success')
@@ -183,8 +236,14 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
             setLoading(false)
           }
         },
-        onCancel: () => { setLoading(false); setMessage('Payment cancelled'); setMessageType('info') },
-        onError: (err) => { E('Payment error:', err); setLoading(false); setMessage('Payment error: ' + (err?.message || 'Unknown')); setMessageType('error') },
+        onCancel: () => {
+          L('Payment cancelled by user')
+          setLoading(false); setMessage('Payment cancelled'); setMessageType('info')
+        },
+        onError: (err) => {
+          E('Payment error:', err)
+          setLoading(false); setMessage('Payment error: ' + (err?.message || 'Unknown')); setMessageType('error')
+        },
       })
     } catch (error) {
       E('Gift flow unhandled error:', error)
@@ -194,6 +253,7 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
   }
 
   const handleClose = () => {
+    L('Modal closing; reset inputs')
     setMessage(''); setRecipientUsername(''); setQuantity(1)
     if (!preselectedCompetition) setSelectedCompetition('')
     onClose?.()
@@ -202,7 +262,7 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
   if (!isOpen || !portalRoot) return null
 
   return createPortal(
-    <div id="gift-modal-root" className="fixed inset-0 z:[9999] z-[9999]" aria-hidden={!isOpen}>
+    <div id="gift-modal-root" className="fixed inset-0 z-[9999]" aria-hidden={!isOpen}>
       {/* BACKDROP */}
       <button
         type="button"
@@ -230,7 +290,7 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
             <label className="block text-cyan-300 text-sm font-bold mb-2">Competition *</label>
             <select
               value={selectedCompetition}
-              onChange={(e) => setSelectedCompetition(e.target.value)}
+              onChange={(e) => { setSelectedCompetition(e.target.value); L('Select changed:', e.target.value) }}
               disabled={!!preselectedCompetition}
               className="w-full px-3 py-3 bg-black border border-cyan-400 rounded text-white focus:border-cyan-300 focus:outline-none disabled:opacity-50"
               required
@@ -257,7 +317,7 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
               readOnly={false}
               autoFocus
               value={recipientUsername}
-              onChange={(e) => setRecipientUsername(e.target.value)}
+              onChange={(e) => { setRecipientUsername(e.target.value); L('Recipient typed:', e.target.value) }}
               className="w-full px-3 py-3 bg-black border border-cyan-400 rounded text-white placeholder-gray-400 focus:border-cyan-300 focus:outline-none"
               placeholder="Enter Pi username"
               required
@@ -275,6 +335,7 @@ export default function GiftTicketModal({ isOpen, onClose, preselectedCompetitio
               onChange={(e) => {
                 const n = Math.max(1, Math.min(50, parseInt(e.target.value || '1', 10)))
                 setQuantity(n)
+                L('Quantity changed:', n)
               }}
               className="w-full px-3 py-3 bg-black border border-cyan-400 rounded text-white focus:border-cyan-300 focus:outline-none"
               required
