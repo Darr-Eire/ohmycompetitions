@@ -215,16 +215,6 @@ export default function NotificationsBell({ username }) {
                 ))}
               </ul>
             </div>
-
-            {/* Footer */}
-            <div className="border-t border-slate-700 px-3 py-2 flex justify-end gap-2">
-              <button
-                onClick={() => setOpen(false)}
-                className="h-8 px-3 rounded-lg border border-slate-600 bg-slate-800 hover:bg-slate-700 text-xs"
-              >
-                Close
-              </button>
-            </div>
           </div>,
           document.body
         )
