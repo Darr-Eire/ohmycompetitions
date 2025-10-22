@@ -3,13 +3,6 @@ import PiCashCode from '../../../models/PiCashCode';
 
 export default async function handler(req, res) {
   await dbConnect();
-
-  // Skip auth for testing - can be re-enabled later
-  // const session = await getServerSession(req, res, authOptions);
-  // if (!session || session.user?.role !== 'admin') {
-  //   return res.status(401).json({ message: 'Unauthorized' });
-  // }
-
   if (req.method === 'GET') {
     try {
       const codes = await PiCashCode.find({})
