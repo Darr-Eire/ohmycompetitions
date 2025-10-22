@@ -4,8 +4,8 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import AdminSidebar from '../../components/AdminSidebar';
-import AdminGuard from '../../components/AdminGuard';
+import AdminSidebar from 'components/AdminSidebar';
+import AdminGuard from 'components/AdminGuard';
 import { RefreshCw, Activity, AlarmClock, Trophy, Users, Ticket, PercentCircle, CalendarClock } from 'lucide-react';
 
 /* ------------------------------ helpers ------------------------------ */
