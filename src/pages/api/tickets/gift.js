@@ -31,8 +31,16 @@ export default async function handler(req, res) {
     transaction,
   } = req.body || {}
 
-  LOG('Incoming', { fromUsername, toUsername, competitionId, competitionSlug, quantity, hasPayment:!!paymentId })
+  LOG('Incoming', {
+    fromUsername,
+    toUsername,
+    competitionId,
+    competitionSlug,
+    quantity,
+    hasPayment: !!paymentId,
+  })
 
+  // Basic validation
   if (!fromUsername || !toUsername || (!competitionSlug && !competitionId)) {
     WARN('Missing required fields')
     return res.status(400).json({ success:false, error:'Missing required fields' })
@@ -40,10 +48,12 @@ export default async function handler(req, res) {
   if (String(fromUsername).toLowerCase() === String(toUsername).toLowerCase()) {
     return res.status(400).json({ success:false, error:'You cannot gift a ticket to yourself' })
   }
-  if (+quantity < 1 || +quantity > 50) {
+  const qtyNum = Math.max(1, parseInt(quantity, 10) || 0)
+  if (qtyNum < 1 || qtyNum > 50) {
     return res.status(400).json({ success:false, error:'Quantity must be between 1 and 50' })
   }
 
+  // Simple IP rate limit
   const ip = (req.headers['x-forwarded-for']?.split(',')[0] || req.socket?.remoteAddress || 'unknown').trim()
   const now = Date.now()
   if (recentGifts.has(ip) && now - recentGifts.get(ip) < 15_000) {
@@ -52,6 +62,7 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Sender/recipient lookup (case-insensitive)
     const sender = await User.findOne({
       $or: [
         { usernameLower: String(fromUsername).toLowerCase() },
@@ -68,50 +79,67 @@ export default async function handler(req, res) {
     }).lean()
     if (!recipient) return res.status(404).json({ success:false, error:'Recipient not found' })
 
+    // Competition lookup by id or slug
     let competition =
       competitionId
         ? await Competition.findById(competitionId).lean()
         : await Competition.findOne({ 'comp.slug': competitionSlug }).lean()
-    if (!competition) return res.status(404).json({ success:false, error:'Competition not found' })
 
-    if (competition.comp?.status !== 'active') {
+    if (!competition) {
+      return res.status(404).json({ success:false, error:'Competition not found' })
+    }
+
+    // Normalize nested shape
+    const compData = competition.comp ?? competition
+    const compStatus = (compData.status || '').toLowerCase()
+
+    if (compStatus && !['active', 'live'].includes(compStatus)) {
       return res.status(400).json({ success:false, error:'Competition is not active' })
     }
 
-    // Optional: stock guard
-    const total = Number(competition.totalTickets || 0)
-    const sold  = Number(competition.ticketsSold || 0)
-    if (total > 0 && sold + Number(quantity) > total) {
+    // Optional: stock guard (read from either level)
+    const totalTickets = Number(
+      compData.totalTickets ?? competition.totalTickets ?? 0
+    )
+    const ticketsSold = Number(
+      compData.ticketsSold ?? competition.ticketsSold ?? 0
+    )
+    if (totalTickets > 0 && ticketsSold + qtyNum > totalTickets) {
       return res.status(400).json({ success:false, error:'Not enough tickets remaining' })
     }
 
-    const entryFee = Number(competition.comp?.entryFee || 0)
-    const expectedAmount = Number(quantity) * entryFee
+    // Compute expected amount
+    const entryFee = Number(compData.entryFee || 0)
+    const expectedAmount = Number((qtyNum * entryFee).toFixed(8))
 
-    if (!paymentId || !transaction) {
-      return res.status(400).json({ success:false, error:'Missing payment data' })
+    // If the gift costs > 0, require payment & verify. If free, skip verification.
+    if (expectedAmount > 0) {
+      if (!paymentId || !transaction) {
+        return res.status(400).json({ success:false, error:'Missing payment data' })
+      }
+
+      let paymentOk = false
+      try {
+        paymentOk = await verifyPayment({
+          paymentId,
+          transaction,
+          expectedAmount,
+          username: sender.username,
+          reason: 'gift',
+        })
+      } catch (ve) {
+        ERR('verifyPayment error', ve?.message)
+        return res.status(500).json({ success:false, error:'Payment verification error' })
+      }
+
+      if (!paymentOk) {
+        WARN('Payment verification failed', { paymentId, expectedAmount })
+        return res.status(402).json({ success:false, error:'Pi payment verification failed' })
+      }
     }
 
-    let paymentOk = false
-    try {
-      paymentOk = await verifyPayment({
-        paymentId,
-        transaction,
-        expectedAmount,
-        username: sender.username,
-        reason: 'gift',
-      })
-    } catch (ve) {
-      ERR('verifyPayment error', ve?.message)
-      return res.status(500).json({ success:false, error:'Payment verification error' })
-    }
-    if (!paymentOk) {
-      WARN('Payment verification failed', { paymentId, expectedAmount })
-      return res.status(402).json({ success:false, error:'Pi payment verification failed' })
-    }
-
-    // Per-user cap for recipient (supports Map or object)
-    const compCap       = Number(competition.comp?.maxPerUser || 0)
+    // Per-user cap for recipient
+    const compCap       = Number(compData.maxPerUser || 0)
     const userDefault   = Number(recipient.maxTicketsDefault || 0)
     const overrides     = recipient.maxTicketsOverrides || new Map()
     const overrideCap   = typeof overrides.get === 'function'
@@ -122,9 +150,9 @@ export default async function handler(req, res) {
     if (effectiveCap > 0) {
       const currentCount = await Ticket.countDocuments({
         username: recipient.username,
-        competitionSlug: competition.comp?.slug || competitionSlug,
+        competitionSlug: compData.slug || competitionSlug,
       })
-      if (currentCount + Number(quantity) > effectiveCap) {
+      if (currentCount + qtyNum > effectiveCap) {
         return res.status(400).json({
           success:false,
           error:`Recipient ticket limit reached. Max ${effectiveCap}. They currently have ${currentCount}.`
@@ -133,44 +161,54 @@ export default async function handler(req, res) {
     }
 
     // Generate ticket numbers & create doc
-    const ticketNumbers = Array.from({ length: Number(quantity) }, (_, i) =>
+    const ticketNumbers = Array.from({ length: qtyNum }, (_, i) =>
       `GIFT-${Date.now()}-${Math.floor(Math.random() * 1000)}-${i + 1}`
     )
 
+    // Normalize transaction id variants for storage
+    const txId =
+      (transaction && (transaction.txId || transaction.txid || transaction.identifier)) || null
+
     const giftTicket = await Ticket.create({
       username: recipient.username,
-      competitionSlug: competition.comp?.slug || competitionSlug,
+      competitionSlug: compData.slug || competitionSlug,
       competitionId: competition._id,
-      competitionTitle: competition.title,
+      competitionTitle: competition.title || compData.title,
       imageUrl: competition.imageUrl || competition.thumbnail || '/images/default-prize.png',
-      quantity: parseInt(quantity, 10),
+      quantity: qtyNum,
       ticketNumbers,
       gifted: true,
       giftedBy: sender.username,
       purchasedAt: new Date(),
       payment: {
-        paymentId,
-        transactionId: transaction.identifier || transaction.txid || null,
+        paymentId: paymentId || null,
+        transactionId: txId,
         amount: expectedAmount,
         type: 'gift',
       },
     })
 
     recentGifts.set(ip, now)
-    LOG('Gift OK', { from: sender.username, to: recipient.username, comp: competition.title, qty: Number(quantity), ticketId: String(giftTicket._id) })
+    LOG('Gift OK', {
+      from: sender.username,
+      to: recipient.username,
+      comp: compData.title || competition.title,
+      qty: qtyNum,
+      ticketId: String(giftTicket._id)
+    })
 
     return res.status(200).json({
       success: true,
       ticket: {
         id: giftTicket._id,
-        competitionTitle: competition.title,
-        quantity,
+        competitionTitle: compData.title || competition.title,
+        quantity: qtyNum,
         recipient: recipient.username,
         ticketNumbers,
       },
     })
   } catch (error) {
-    ERR('Unhandled', error?.message)
+    ERR('Unhandled', error?.message, error)
     return res.status(500).json({ success:false, error:'Server error while gifting ticket' })
   }
 }
