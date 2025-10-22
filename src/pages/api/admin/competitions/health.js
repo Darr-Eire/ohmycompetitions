@@ -1,6 +1,6 @@
 // src/pages/api/admin/competitions/health.js
-import { dbConnect } from '../../../../../lib/dbConnect';
-import Competition from '../../../../../models/Competition';
+import { dbConnect } from 'lib/dbConnect';
+import Competition from 'models/Competition';
 import { requireAdmin } from '../_adminAuth';
 
 export default async function handler(req, res) {
