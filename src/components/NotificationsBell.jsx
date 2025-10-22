@@ -1,7 +1,7 @@
 // FILE: src/components/NotificationsBell.jsx
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 export default function NotificationsBell({ username }) {
   const [items, setItems] = useState([]);
@@ -9,6 +9,7 @@ export default function NotificationsBell({ username }) {
   const pollRef = useRef(null);
   const btnRef = useRef(null);
   const panelRef = useRef(null);
+  const [pos, setPos] = useState({ top: 0, left: 0, maxH: '60vh' });
 
   // ---- poll notifications ---------------------------------------------------
   useEffect(() => {
@@ -31,11 +32,67 @@ export default function NotificationsBell({ username }) {
 
   const unread = items.filter((i) => !i.read).length;
 
+  // ---- compute & clamp popover position ------------------------------------
+  const positionPanel = () => {
+    const btn = btnRef.current;
+    const panel = panelRef.current;
+    if (!btn || !panel) return;
+
+    const margin = 8; // viewport padding
+    const winW = window.innerWidth;
+    const winH = window.innerHeight;
+
+    const b = btn.getBoundingClientRect();
+
+    // Set a provisional width to measure (matches Tailwind width clamp)
+    const targetWidth = Math.min(winW * 0.92, 448); // min(92vw, 28rem≈448px)
+    panel.style.width = `${targetWidth}px`;
+
+    const p = panel.getBoundingClientRect();
+    const pw = p.width;
+
+    // Prefer below the bell
+    const spaceBelow = winH - (b.bottom + margin);
+    const spaceAbove = b.top - margin;
+    const placeBelow = spaceBelow >= Math.min(240, winH * 0.35) || spaceBelow >= spaceAbove;
+
+    const top = placeBelow ? b.bottom + margin : Math.max(margin, b.top - p.height - margin);
+
+    // Try to align panel’s right edge with button’s right edge
+    let left = b.right - pw;
+
+    // Clamp horizontally inside the viewport
+    if (left < margin) left = margin;
+    if (left + pw > winW - margin) left = winW - margin - pw;
+
+    // Compute max height so the panel never overflows viewport
+    const availableH = placeBelow ? (winH - top - margin) : (b.top - margin);
+    const maxH = `${Math.max(200, Math.min(availableH, Math.round(winH * 0.7))) }px`;
+
+    setPos({ top, left, maxH });
+  };
+
+  // re-position when opened & on resize/scroll
+  useLayoutEffect(() => {
+    if (!open) return;
+    positionPanel();
+    const onReflow = () => positionPanel();
+    window.addEventListener('resize', onReflow);
+    window.addEventListener('scroll', onReflow, true);
+    const ro = new ResizeObserver(onReflow);
+    ro.observe(document.body);
+    return () => {
+      window.removeEventListener('resize', onReflow);
+      window.removeEventListener('scroll', onReflow, true);
+      ro.disconnect();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
   // ---- focus first interactive element when opened -------------------------
   useEffect(() => {
     if (!open) return;
     const t = setTimeout(() => {
-      // try focus close, else the panel itself
       panelRef.current?.querySelector('button, a, [tabindex]:not([tabindex="-1"])')?.focus()
         || panelRef.current?.focus();
     }, 0);
@@ -74,7 +131,7 @@ export default function NotificationsBell({ username }) {
 
   return (
     <div className="relative inline-block shrink-0">
-      {/* Bell button (keeps header layout stable) */}
+      {/* Bell button */}
       <button
         ref={btnRef}
         onClick={() => setOpen((v) => !v)}
@@ -92,7 +149,7 @@ export default function NotificationsBell({ username }) {
         )}
       </button>
 
-      {/* POPOVER PANEL (mobile-first) */}
+      {/* POPOVER (fixed + clamped to viewport) */}
       {open && (
         <div
           ref={panelRef}
@@ -101,28 +158,24 @@ export default function NotificationsBell({ username }) {
           aria-modal="true"
           aria-labelledby="notif-title"
           tabIndex={-1}
-          // Position: on mobile, full-width-ish card anchored to bottom of header;
-          // on sm+ screens, a right-aligned pop under the bell.
           className={`
-            absolute right-0 mt-2
-            w-[min(92vw,28rem)] sm:w-[26rem]
-            max-h-[70vh]
+            fixed
             rounded-2xl border border-slate-700
             bg-slate-900/95 backdrop-blur supports-[backdrop-filter]:bg-slate-900/80
-            shadow-2xl
-            overflow-hidden
-            outline-none
-            motion-safe:transition-all motion-safe:duration-150
+            shadow-2xl overflow-hidden outline-none
+            motion-safe:transition-[opacity,transform] motion-safe:duration-150
             data-[state=open]:opacity-100 data-[state=open]:translate-y-0 data-[state=open]:scale-100
           `}
           data-state="open"
           style={{
-            // Nudge for tiny screens so it feels centered and fits:
-            // if the bell hugs the right edge, the width already clamps via 92vw.
-            zIndex: 60,
+            top: `${pos.top}px`,
+            left: `${pos.left}px`,
+            zIndex: 1000,
+            maxHeight: pos.maxH,
+            width: 'min(92vw, 28rem)',
           }}
         >
-          {/* Mobile-friendly header */}
+          {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700">
             <h2 id="notif-title" className="text-sm font-semibold text-cyan-300">
               Notifications
@@ -136,8 +189,8 @@ export default function NotificationsBell({ username }) {
             </button>
           </div>
 
-          {/* Scrollable content */}
-          <div className="max-h-[60vh] overflow-auto">
+          {/* Content */}
+          <div className="overflow-auto" style={{ maxHeight: `calc(${pos.maxH} - 88px)` }}>
             <ul className="p-3 space-y-3">
               {items.length === 0 && (
                 <li className="text-sm text-gray-400 px-1 py-1">No notifications</li>
@@ -164,7 +217,7 @@ export default function NotificationsBell({ username }) {
             </ul>
           </div>
 
-          {/* Footer (optional actions) */}
+          {/* Footer */}
           <div className="border-t border-slate-700 px-3 py-2 flex justify-end gap-2">
             <button
               onClick={() => setOpen(false)}
