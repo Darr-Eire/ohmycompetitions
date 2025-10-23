@@ -4,10 +4,7 @@
 import Link from 'next/link';
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import Head from 'next/head';
-import dynamic from 'next/dynamic';
 import { RefreshCw, Sparkles, Trophy } from 'lucide-react';
-
-const GiftTicketModal = dynamic(() => import('@components/GiftTicketModal'), { ssr: false });
 
 const REFRESH_MS = 20000; // 20s soft live refresh
 
@@ -144,9 +141,8 @@ function BackgroundFX() {
   );
 }
 
-/* ------------------------------ card (stacked details) ------------------------------ */
 /* ------------------------------ card (stacked details, no icons) ------------------------------ */
-function LiveCard({ data, onGift, onShare }) {
+function LiveCard({ data, onGift }) {
   const comp = data.comp ?? data;
   const status = getStatus(data);
   const { sold, total, pct } = ticketsProgress(data);
@@ -203,13 +199,12 @@ function LiveCard({ data, onGift, onShare }) {
 
       {/* Body: everything stacked under the image */}
       <div className="p-3.5 sm:p-4">
-        {/* Title + fee chip */}
-      <div className="flex items-start justify-center">
-  <h3 className="text-center mx-auto text-[15px] sm:text-[16px] font-semibold leading-snug line-clamp-2">
-    {theTitle}
-  </h3>
-</div>
-
+        {/* Title centered */}
+        <div className="flex items-start justify-center">
+          <h3 className="text-center mx-auto text-[15px] sm:text-[16px] font-semibold leading-snug line-clamp-2">
+            {theTitle}
+          </h3>
+        </div>
 
         {/* Stacked details (all real data) */}
         <div className="mt-3 space-y-1.5 text-[13px] text-white">
@@ -262,7 +257,7 @@ function LiveCard({ data, onGift, onShare }) {
 
         {/* Gift link */}
         <div className="mt-2 text-center">
-          <button onClick={() => onGift(data)} className="text-[12px] underline text-cyan-300">
+          <button onClick={() => onGift(data)} className="text-[12px] underline text-cyan-300" type="button">
             Gift a ticket
           </button>
         </div>
@@ -310,7 +305,7 @@ export default function TechGadgetsCompetitionsPage() {
   const [activeFilter, setActiveFilter] = useState('Live');
   const [tick, setTick] = useState(0);
 
-  // Gift modal state
+  // Gift info-modal state
   const [giftOpen, setGiftOpen] = useState(false);
   const [giftComp, setGiftComp] = useState(null);
 
@@ -407,7 +402,7 @@ export default function TechGadgetsCompetitionsPage() {
   const openGift = (c) => {
     setGiftComp(c.comp ?? c);
     setGiftOpen(true);
-    if (navigator.vibrate) navigator.vibrate(15);
+    if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(15);
   };
 
   const go = (c) => {
@@ -436,9 +431,8 @@ export default function TechGadgetsCompetitionsPage() {
                 </h1>
 
                 <p className="text-center mx-auto text-white/70 text-[13px] sm:text-[14px]">
-  Hand-picked phones, consoles and more easy entry.
-</p>
-
+                  Hand-picked phones, consoles and more easy entry.
+                </p>
               </div>
 
               {/* compact stats */}
@@ -494,25 +488,24 @@ export default function TechGadgetsCompetitionsPage() {
         )}
 
         {/* sticky filters */}
-       <div className="sticky top-[calc(6px+env(safe-area-inset-top))] z-20 bg-[#0f1b33]/95 backdrop-blur-sm border-y border-white/10">
-  <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
-    <div className="flex justify-center items-center gap-2 overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      {['Live', 'Ending Soon', 'All'].map((f) => (
-        <button
-          key={f}
-          onClick={() => setActiveFilter(f)}
-          className={`shrink-0 rounded-full px-3.5 py-1.5 text-[13px] font-semibold transition
-            ${activeFilter === f
-              ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md'
-              : 'text-white/70 hover:text-white hover:bg-white/10 border border-white/20'}`}
-        >
-          {f}
-        </button>
-      ))}
-    </div>
-  </div>
-</div>
-
+        <div className="sticky top-[calc(6px+env(safe-area-inset-top))] z-20 bg-[#0f1b33]/95 backdrop-blur-sm border-y border-white/10">
+          <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
+            <div className="flex justify-center items-center gap-2 overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {['Live', 'Ending Soon', 'All'].map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setActiveFilter(f)}
+                  className={`shrink-0 rounded-full px-3.5 py-1.5 text-[13px] font-semibold transition
+                    ${activeFilter === f
+                      ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md'
+                      : 'text-white/70 hover:text-white hover:bg-white/10 border border-white/20'}`}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
 
         {/* grid */}
         <section className="py-6 sm:py-8">
@@ -543,13 +536,51 @@ export default function TechGadgetsCompetitionsPage() {
         </section>
       </main>
 
-      {/* Gift modal */}
+      {/* Inline “coming soon” Gift modal */}
       {giftOpen && giftComp && (
-        <GiftTicketModal
-          isOpen={giftOpen}
-          onClose={() => setGiftOpen(false)}
-          comp={giftComp}
-        />
+        <div
+          className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Gift Tickets"
+          onClick={() => setGiftOpen(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-xl border border-cyan-400 bg-[#101426] shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-4 py-3 border-b border-cyan-900/50 flex items-center justify-between">
+              <h4 className="text-lg font-bold text-cyan-300">Gift Tickets</h4>
+              <button onClick={() => setGiftOpen(false)} className="text-cyan-200 hover:text-white text-sm" type="button">
+                Close
+              </button>
+            </div>
+
+            <div className="p-4 space-y-2">
+              <p className="text-white/90">
+                Gifting tickets to other users is coming very soon.
+              </p>
+              {(giftComp?.title || giftComp?.comp?.title) && (
+                <p className="text-sm text-white/70">
+                  You’ll be able to gift tickets for:{' '}
+                  <span className="font-semibold">
+                    {giftComp?.title ?? giftComp?.comp?.title}
+                  </span>
+                </p>
+              )}
+            </div>
+
+            <div className="px-4 pb-4">
+              <button
+                onClick={() => setGiftOpen(false)}
+                className="w-full py-2 rounded-md font-bold text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:brightness-110"
+                type="button"
+              >
+                Got it
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* compact global styles */}

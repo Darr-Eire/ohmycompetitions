@@ -1,4 +1,3 @@
-// File: src/pages/your-detail-component.jsx (or the original file path you use)
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';

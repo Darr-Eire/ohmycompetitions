@@ -4,10 +4,7 @@
 import Link from 'next/link';
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import Head from 'next/head';
-import dynamic from 'next/dynamic';
 import { RefreshCw, Sparkles, Trophy } from 'lucide-react';
-
-const GiftTicketModal = dynamic(() => import('@components/GiftTicketModal'), { ssr: false });
 
 const REFRESH_MS = 20000; // 20s soft live refresh
 
@@ -153,20 +150,14 @@ function BackgroundFX() {
 }
 
 /* ------------------------------ OMC Prize Banner (always shown) ------------------------------ */
-/* ------------------------------ OMC Prize Banner (always shown) ------------------------------ */
-function PrizeBanner({ title, prizeText, feeText }) {
+function PrizeBanner({ title, prizeText }) {
   // Reuse the numeric parser from above
   const ensurePiSymbol = (txt) => {
     if (!txt) return 'Prize TBA';
     const s = String(txt).trim();
-    // If it already has a π (pi) glyph anywhere, keep as-is
-    if (/[π]/.test(s)) return s;
-
-    // If it's numeric-ish, format with thousands and append π
+    if (/[π]/.test(s)) return s; // already has π
     const n = parseNumericLike(s);
     if (Number.isFinite(n)) return `${n.toLocaleString()} π`;
-
-    // Otherwise keep the original label (e.g., "Mystery Box")
     return s;
   };
 
@@ -198,33 +189,26 @@ function PrizeBanner({ title, prizeText, feeText }) {
               <span className="text-[20px] font-black leading-none sm:text-[28px] tracking-tight">
                 {displayPrize}
               </span>
-              {feeText ? (
-                <span className="ml-2 text-[11px] sm:text-[12px] font-extrabold text-black bg-cyan-300 rounded-full px-2 py-[2px]">
-                  {feeText}
-                </span>
-              ) : null}
             </div>
           </div>
 
           {/* Title */}
           <h3
-  className="
-    mt-2 mx-auto w-full
-    text-center
-    text-[14px] sm:text-[16px]
-    font-extrabold leading-snug
-    text-black/90 line-clamp-2
-  "
->
-  {title}
-</h3>
-
+            className="
+              mt-2 mx-auto w-full
+              text-center
+              text-[14px] sm:text-[16px]
+              font-extrabold leading-snug
+              text-black/90 line-clamp-2
+            "
+          >
+            {title}
+          </h3>
         </div>
       </div>
     </div>
   );
 }
-
 
 /* ------------------------------ card (stacked details) ------------------------------ */
 function LiveCard({ data, onGift }) {
@@ -334,7 +318,7 @@ function LiveCard({ data, onGift }) {
 
         {/* Gift link */}
         <div className="mt-2 text-center">
-          <button onClick={() => onGift(data)} className="text-[12px] underline text-cyan-300">
+          <button onClick={() => onGift(data)} className="text-[12px] underline text-cyan-300" type="button">
             Gift a ticket
           </button>
         </div>
@@ -342,7 +326,6 @@ function LiveCard({ data, onGift }) {
     </article>
   );
 }
-
 
 /* ------------------------------ empty/skeleton ------------------------------ */
 function EmptyState({ onRefresh, label = 'competitions' }) {
@@ -383,7 +366,7 @@ export default function LaunchWeekCompetitionsPage() {
   const [activeFilter, setActiveFilter] = useState('Live'); // same tabs
   const [tick, setTick] = useState(0);
 
-  // Gift modal state
+  // Gift info-modal state
   const [giftOpen, setGiftOpen] = useState(false);
   const [giftComp, setGiftComp] = useState(null);
 
@@ -473,10 +456,57 @@ export default function LaunchWeekCompetitionsPage() {
     return competitions.reduce((sum, c) => sum + (toNum((c.comp ?? c)?.prizeValue, 0)), 0);
   }, [competitions]);
 
+  // ======= HERO extra stats (data-driven) =======
+  const upcomingCount = useMemo(
+    () => normalized.filter((n) => n.__status === 'upcoming').length,
+    [normalized]
+  );
+  const endedCount = useMemo(
+    () => normalized.filter((n) => n.__status === 'ended').length,
+    [normalized]
+  );
+
+  const { totalSoldAll, totalTicketsAll } = useMemo(() => {
+    let sold = 0, total = 0;
+    for (const c of competitions) {
+      const comp = c.comp ?? c;
+      sold += toNum(comp?.ticketsSold, 0);
+      total += Math.max(toNum(comp?.totalTickets, 0), toNum(comp?.ticketsSold, 0));
+    }
+    return { totalSoldAll: sold, totalTicketsAll: total };
+  }, [competitions]);
+
+  const avgEntryFee = useMemo(() => {
+    const fees = competitions
+      .map((c) => toNum((c.comp ?? c)?.entryFee, NaN))
+      .filter((n) => Number.isFinite(n) && n >= 0);
+    if (!fees.length) return 0;
+    const sum = fees.reduce((a, b) => a + b, 0);
+    return Math.round((sum / fees.length) * 100) / 100;
+  }, [competitions]);
+
+  const nextEnding = useMemo(() => {
+    const target = normalized
+      .filter((n) => n.__status === 'live')
+      .sort((a, b) => a.__end - b.__end)[0];
+    if (!target) return null;
+    return {
+      title: titleOf(target),
+      endsAt: (target.comp ?? target)?.endsAt,
+    };
+  }, [normalized]);
+
+  const nextEndsIn = useMemo(() => {
+    if (!nextEnding?.endsAt) return null;
+    const ms = new Date(nextEnding.endsAt).getTime() - now();
+    return msToShort(ms);
+  }, [nextEnding, tick]);
+  // ==============================================
+
   const openGift = (c) => {
     setGiftComp(c.comp ?? c);
     setGiftOpen(true);
-    if (navigator.vibrate) navigator.vibrate(15);
+    if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(15);
   };
 
   const go = (c) => {
@@ -493,46 +523,141 @@ export default function LaunchWeekCompetitionsPage() {
       <main className="relative min-h-[100svh] text-white bg-[#0f1b33]">
         <BackgroundFX />
 
-        {/* Slim header */}
-        <header className="relative z-10 pt-[calc(12px+env(safe-area-inset-top))] pb-3 sm:pb-4">
+        {/* HERO (data-driven) */}
+        <header className="relative z-10 pt-[calc(14px+env(safe-area-inset-top))] pb-4 sm:pb-6">
           <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-              <div>
-                <h1 className="text-center mx-auto text-[22px] sm:text-[28px] font-extrabold tracking-tight">
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff]">
-                    Launch Week Competitions
-                  </span>
-                </h1>
+            <section
+              className="
+                relative overflow-hidden rounded-2xl
+                bg-gradient-to-br from-[#071225] via-[#0f1b33] to-[#122449]
+                border border-white/10
+                shadow-[0_10px_40px_rgba(0,0,0,0.35)]
+              "
+              aria-labelledby="launch-hero-title"
+            >
+              {/* ambient glows */}
+              <div className="pointer-events-none absolute -top-20 -left-20 h-64 w-64 rounded-full bg-cyan-500/25 blur-3xl" />
+              <div className="pointer-events-none absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-blue-500/20 blur-3xl" />
+              <div className="pointer-events-none absolute inset-0 opacity-10 [background-image:radial-gradient(rgba(255,255,255,0.08)_1.5px,transparent_1.5px)] [background-size:22px_22px]" />
 
-                <p className="text-center mx-auto text-white/70 text-[13px] sm:text-[14px]">
-                  Hand-picked competitions, tech, instant wins and more.
-                </p>
-              </div>
+              <div className="relative grid gap-5 p-4 sm:p-6 lg:grid-cols-[1.1fr_0.9fr]">
+                {/* Left: title + meta */}
+                <div className="flex flex-col justify-center gap-3">
+                  <h1
+                    id="launch-hero-title"
+                    className="text-center lg:text-left text-[24px] sm:text-[30px] font-extrabold tracking-tight"
+                  >
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff]">
+                      Launch Week Competitions
+                    </span>
+                  </h1>
 
-              {/* compact stats */}
-              <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                <div className="web3-stat-card !px-3 !py-2">
-                  <Trophy size={18} className="text-yellow-300" />
-                  <span className="text-[10px] text-white/70">Total Pool</span>
-                  <span className="text-[14px] font-bold text-cyan-300">{totalPrizePool.toLocaleString()} π</span>
+                  <p className="text-center lg:text-left text-white/80 text-[13px] sm:text-[15px]">
+                    Hand-picked competitions, tech, instant wins and more. Real-time pools, fair odds, and transparent tickets.
+                  </p>
+
+                  {/* CTA row */}
+                  <div className="mt-1 flex flex-col sm:flex-row items-center lg:items-start gap-2 sm:gap-3">
+                    <button
+                      onClick={() => location.reload()}
+                      type="button"
+                      className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-extrabold px-4 py-2 active:translate-y-px hover:brightness-110"
+                      title="Refresh data"
+                    >
+                      <RefreshCw size={16} /> Refresh
+                      <span className="text-[11px] ml-1 opacity-80">
+                        ~{Math.round(REFRESH_MS / 1000)}s
+                      </span>
+                    </button>
+
+                    <Link
+                      href="/competitions/all"
+                      className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/40 bg-white/5 px-4 py-2 text-[13px] font-semibold text-cyan-200 hover:bg-white/10"
+                    >
+                      View All Competitions
+                    </Link>
+
+                    {nextEnding && (
+                      <span
+                        className="inline-flex items-center gap-2 rounded-xl bg-amber-400/15 text-amber-200 border border-amber-400/30 px-3 py-1.5 text-[12px] font-semibold"
+                        title="Next ending live competition"
+                      >
+                        <Sparkles size={14} className="text-amber-300" />
+                        Ends {nextEndsIn ?? 'soon'}: <span className="truncate max-w-[160px] ml-1">{nextEnding.title}</span>
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div className="web3-stat-card !px-3 !py-2">
-                  <Sparkles size={18} className="text-purple-300" />
-                  <span className="text-[10px] text-white/70">Live Now</span>
-                  <span className="text-[14px] font-bold text-blue-400">{liveCount}</span>
+
+                {/* Right: stat blocks */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+                  {/* Total Pool */}
+                  <div className="web3-stat-card !px-3 !py-2">
+                    <Trophy size={18} className="text-yellow-300" />
+                    <span className="text-[10px] text-white/70">Total Pool</span>
+                    <span className="text-[16px] font-bold text-cyan-300">
+                      {totalPrizePool.toLocaleString()} π
+                    </span>
+                  </div>
+
+                  {/* Live Now */}
+                  <div className="web3-stat-card !px-3 !py-2">
+                    <Sparkles size={18} className="text-purple-300" />
+                    <span className="text-[10px] text-white/70">Live Now</span>
+                    <span className="text-[16px] font-bold text-blue-400">
+                      {liveCount}
+                    </span>
+                  </div>
+
+                  {/* Upcoming */}
+                  <div className="web3-stat-card !px-3 !py-2">
+                    <svg viewBox="0 0 24 24" className="h-4 w-4 text-cyan-300" aria-hidden="true">
+                      <path fill="currentColor" d="M7 11h10v2H7v-2zm-4 0a9 9 0 1 1 18 0A9 9 0 0 1 3 11zm9-7a7 7 0 1 0 .001 14.001A7 7 0 0 0 12 4z" />
+                    </svg>
+                    <span className="text-[10px] text-white/70">Upcoming</span>
+                    <span className="text-[16px] font-bold text-cyan-300">
+                      {upcomingCount}
+                    </span>
+                  </div>
+
+                  {/* Ended */}
+                  <div className="web3-stat-card !px-3 !py-2">
+                    <svg viewBox="0 0 24 24" className="h-4 w-4 text-white/80" aria-hidden="true">
+                      <path fill="currentColor" d="M12 2a10 10 0 1 1-.001 20.001A10 10 0 0 1 12 2Zm1 5v6h5v2h-7V7h2Z" />
+                    </svg>
+                    <span className="text-[10px] text-white/70">Ended</span>
+                    <span className="text-[16px] font-bold text-white/80">
+                      {endedCount}
+                    </span>
+                  </div>
+
+                  {/* Tickets */}
+                  <div className="web3-stat-card !px-3 !py-2">
+                    <svg viewBox="0 0 24 24" className="h-4 w-4 text-pink-300" aria-hidden="true">
+                      <path fill="currentColor" d="M3 7a2 2 0 0 1 2-2h6v2a2 2 0 1 0 4 0V5h4a2 2 0 0 1 2 2v3h-2a2 2 0 1 0 0 4h2v3a2 2 0 0 1-2 2h-4v-2a2 2 0 1 0-4 0v2H5a2 2 0 0 1-2-2v-3h2a2 2 0 1 0 0-4H3V7Z" />
+                    </svg>
+                    <span className="text-[10px] text-white/70">Tickets Sold</span>
+                    <span className="text-[16px] font-bold text-pink-300">
+                      {totalSoldAll.toLocaleString()}
+                      {totalTicketsAll ? (
+                        <span className="text-[11px] text-white/60"> / {totalTicketsAll.toLocaleString()}</span>
+                      ) : null}
+                    </span>
+                  </div>
+
+                  {/* Avg Fee */}
+                  <div className="web3-stat-card !px-3 !py-2">
+                    <svg viewBox="0 0 24 24" className="h-4 w-4 text-emerald-300" aria-hidden="true">
+                      <path fill="currentColor" d="M12 1 3 5v6c0 5 4 9 9 12 5-3 9-7 9-12V5l-9-4Z" />
+                    </svg>
+                    <span className="text-[10px] text-white/70">Avg Entry</span>
+                    <span className="text-[16px] font-bold text-emerald-300">
+                      {avgEntryFee ? `${avgEntryFee.toFixed(2)} π` : '—'}
+                    </span>
+                  </div>
                 </div>
-                <button
-                  onClick={() => location.reload()}
-                  className="web3-stat-card !px-3 !py-2 active:translate-y-px"
-                  title="Refresh"
-                  type="button"
-                >
-                  <RefreshCw size={18} className="text-orange-300" />
-                  <span className="text-[10px] text-white/70">Updated</span>
-                  <span className="text-[12px] font-bold text-pink-300">~{Math.round(REFRESH_MS/1000)}s</span>
-                </button>
               </div>
-            </div>
+            </section>
           </div>
         </header>
 
@@ -610,13 +735,48 @@ export default function LaunchWeekCompetitionsPage() {
         </section>
       </main>
 
-      {/* Gift modal */}
       {giftOpen && giftComp && (
-        <GiftTicketModal
-          isOpen={giftOpen}
-          onClose={() => setGiftOpen(false)}
-          comp={giftComp}
-        />
+        <div
+          className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Gift Tickets"
+          onClick={() => setGiftOpen(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-xl border border-cyan-400 bg-[#101426] shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-4 py-3 border-b border-cyan-900/50 flex items-center justify-between">
+              <h4 className="text-lg font-bold text-cyan-300">Gift Tickets</h4>
+              <button onClick={() => setGiftOpen(false)} className="text-cyan-200 hover:text-white text-sm">
+                Close
+              </button>
+            </div>
+
+            <div className="p-4 space-y-2">
+              <p className="text-white/90">
+                Gifting tickets to other users is coming very soon.
+              </p>
+              {(giftComp?.title || giftComp?.comp?.title) && (
+                <p className="text-sm text-white/70">
+                  You’ll be able to gift tickets for: <span className="font-semibold">
+                    {giftComp?.title ?? giftComp?.comp?.title}
+                  </span>
+                </p>
+              )}
+            </div>
+
+            <div className="px-4 pb-4">
+              <button
+                onClick={() => setGiftOpen(false)}
+                className="w-full py-2 rounded-md font-bold text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:brightness-110"
+              >
+                Got it
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* compact global styles */}

@@ -1,10 +1,10 @@
+// src/components/PiCompetitionCard.js
 'use client'
 
 import Link from 'next/link'
 import { useEffect, useState, useMemo } from 'react'
 import { usePiAuth } from 'context/PiAuthContext'
 import { useSafeTranslation } from '../hooks/useSafeTranslation'
-import GiftTicketModal from './GiftTicketModal'
 import '@fontsource/orbitron'
 import React from 'react'
 
@@ -72,7 +72,6 @@ export default function PiCompetitionCard({
 
   const countryList = Array.isArray(topCountries) ? topCountries : []
 
-  // Sort and take top 5 (by entries desc)
   const top5 = useMemo(() => {
     const safe = countryList
       .map(c => ({ name: c?.name ?? '—', entries: Number(c?.entries ?? 0) }))
@@ -156,7 +155,6 @@ export default function PiCompetitionCard({
 
   const statusLabel = willPreSale ? t('pre_sale', 'PRE-SALE') : status
 
-  // Shared date formatter
   const fmtOpts = { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }
   const startsDisplay = Number.isFinite(startsAt.getTime()) ? startsAt.toLocaleString(undefined, fmtOpts) : '—'
   const endsDisplay = Number.isFinite(endsAt.getTime()) ? endsAt.toLocaleString(undefined, fmtOpts) : '—'
@@ -178,7 +176,7 @@ export default function PiCompetitionCard({
 
   return (
     <>
-      <div className={`relative w-full max-w-[19rem] sm:max-w-sm mx-auto p-4 bg-[#0f172a] rounded-xl text-white font-orbitron shadow-xl border-2 border-cyan-400 overflow-hidden ${className}`}>
+      <div className={`relative w/full max-w-[19rem] sm:max-w-sm mx-auto p-4 bg-[#0f172a] rounded-xl text-white font-orbitron shadow-xl border-2 border-cyan-400 overflow-hidden ${className}`.replace('w/full','w-full')}>
         {/* Header */}
         <div className="flex flex-col items-center justify-center gap-2 text-sm mb-3 z-10 relative">
           <span className="px-3 py-1 rounded-full border border-cyan-400 bg-cyan-600/30 text-white font-semibold text-center">
@@ -281,7 +279,6 @@ export default function PiCompetitionCard({
               aria-label={ctaLabel}
               onClick={() => {
                 if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(15)
-                // trackEnter?.({ slug }) // optional analytics
               }}
             >
               {ctaLabel}
@@ -306,13 +303,50 @@ export default function PiCompetitionCard({
           )}
         </div>
       </div>
+      {showGiftModal && (
+        <div
+          className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('gift_tickets', 'Gift Tickets')}
+          onClick={() => setShowGiftModal(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-xl border border-cyan-400 bg-[#101426] shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-4 py-3 border-b border-cyan-900/50 flex items-center justify-between">
+              <h4 className="text-lg font-bold text-cyan-300">
+                {t('gift_tickets', 'Gift Tickets')}
+              </h4>
+              <button onClick={() => setShowGiftModal(false)} className="text-cyan-200 hover:text-white text-sm">
+                {t('close', 'Close')}
+              </button>
+            </div>
 
-      {/* Gift Modal */}
-      <GiftTicketModal
-        isOpen={showGiftModal}
-        onClose={() => setShowGiftModal(false)}
-        preselectedCompetition={comp}
-      />
+            <div className="p-4 space-y-2">
+              <p className="text-white/90">
+                {t('gifting_coming_soon', 'Gifting tickets to other users is coming very soon.')}
+              </p>
+              {(comp?.title || comp?.comp?.title) && (
+                <p className="text-sm text-white/70">
+                  {t('you_will_be_able_to_gift_for', 'You’ll be able to gift tickets for:')}{' '}
+                  <span className="font-semibold">{comp?.title ?? comp?.comp?.title}</span>
+                </p>
+              )}
+            </div>
+
+            <div className="px-4 pb-4">
+              <button
+                onClick={() => setShowGiftModal(false)}
+                className="w-full py-2 rounded-md font-bold text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:brightness-110"
+              >
+                {t('got_it', 'Got it')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Top Countries Modal */}
       {showCountriesModal && (
