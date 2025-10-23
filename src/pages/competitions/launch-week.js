@@ -557,49 +557,31 @@ export default function LaunchWeekCompetitionsPage() {
                   </p>
 
                   {/* CTA row */}
-                  <div className="mt-1 flex flex-col sm:flex-row items-center lg:items-start gap-2 sm:gap-3">
-                    <button
-                      onClick={() => location.reload()}
-                      type="button"
-                      className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-extrabold px-4 py-2 active:translate-y-px hover:brightness-110"
-                      title="Refresh data"
-                    >
-                      <RefreshCw size={16} /> Refresh
-                      <span className="text-[11px] ml-1 opacity-80">
-                        ~{Math.round(REFRESH_MS / 1000)}s
-                      </span>
-                    </button>
+                <div className="mt-1 flex flex-row flex-wrap items-center lg:items-start gap-2">
+  <button
+    onClick={() => location.reload()}
+    type="button"
+    className="flex-1 basis-1/2 inline-flex justify-center items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-extrabold px-4 py-2 active:translate-y-px hover:brightness-110"
+    title="Refresh data"
+  >
+    <RefreshCw size={16} /> Refresh
+    <span className="text-[11px] ml-1 opacity-80">
+      ~{Math.round(REFRESH_MS / 1000)}s
+    </span>
+  </button>
 
-                    <Link
-                      href="/competitions/all"
-                      className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/40 bg-white/5 px-4 py-2 text-[13px] font-semibold text-cyan-200 hover:bg-white/10"
-                    >
-                      View All Competitions
-                    </Link>
+  <Link
+    href="/competitions/all"
+    className="flex-1 basis-1/2 inline-flex justify-center items-center gap-2 rounded-xl border border-cyan-400/40 bg-white/5 px-4 py-2 text-[13px] font-semibold text-cyan-200 hover:bg-white/10"
+  >
+    View All Competitions
+  </Link>
+</div>
 
-                    {nextEnding && (
-                      <span
-                        className="inline-flex items-center gap-2 rounded-xl bg-amber-400/15 text-amber-200 border border-amber-400/30 px-3 py-1.5 text-[12px] font-semibold"
-                        title="Next ending live competition"
-                      >
-                        <Sparkles size={14} className="text-amber-300" />
-                        Ends {nextEndsIn ?? 'soon'}: <span className="truncate max-w-[160px] ml-1">{nextEnding.title}</span>
-                      </span>
-                    )}
-                  </div>
                 </div>
 
                 {/* Right: stat blocks */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
-                  {/* Total Pool */}
-                  <div className="web3-stat-card !px-3 !py-2">
-                    <Trophy size={18} className="text-yellow-300" />
-                    <span className="text-[10px] text-white/70">Total Pool</span>
-                    <span className="text-[16px] font-bold text-cyan-300">
-                      {totalPrizePool.toLocaleString()} π
-                    </span>
-                  </div>
-
                   {/* Live Now */}
                   <div className="web3-stat-card !px-3 !py-2">
                     <Sparkles size={18} className="text-purple-300" />
@@ -608,7 +590,6 @@ export default function LaunchWeekCompetitionsPage() {
                       {liveCount}
                     </span>
                   </div>
-
                   {/* Upcoming */}
                   <div className="web3-stat-card !px-3 !py-2">
                     <svg viewBox="0 0 24 24" className="h-4 w-4 text-cyan-300" aria-hidden="true">
@@ -628,20 +609,6 @@ export default function LaunchWeekCompetitionsPage() {
                     <span className="text-[10px] text-white/70">Ended</span>
                     <span className="text-[16px] font-bold text-white/80">
                       {endedCount}
-                    </span>
-                  </div>
-
-                  {/* Tickets */}
-                  <div className="web3-stat-card !px-3 !py-2">
-                    <svg viewBox="0 0 24 24" className="h-4 w-4 text-pink-300" aria-hidden="true">
-                      <path fill="currentColor" d="M3 7a2 2 0 0 1 2-2h6v2a2 2 0 1 0 4 0V5h4a2 2 0 0 1 2 2v3h-2a2 2 0 1 0 0 4h2v3a2 2 0 0 1-2 2h-4v-2a2 2 0 1 0-4 0v2H5a2 2 0 0 1-2-2v-3h2a2 2 0 1 0 0-4H3V7Z" />
-                    </svg>
-                    <span className="text-[10px] text-white/70">Tickets Sold</span>
-                    <span className="text-[16px] font-bold text-pink-300">
-                      {totalSoldAll.toLocaleString()}
-                      {totalTicketsAll ? (
-                        <span className="text-[11px] text-white/60"> / {totalTicketsAll.toLocaleString()}</span>
-                      ) : null}
                     </span>
                   </div>
 
