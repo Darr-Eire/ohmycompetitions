@@ -382,7 +382,6 @@ export default function AllCompetitionsPage() {
 
   // Gift info-modal state
   const [giftOpen, setGiftOpen] = useState(false);
-  the
   const [giftComp, setGiftComp] = useState(null);
 
   const fetchData = useCallback(async () => {
