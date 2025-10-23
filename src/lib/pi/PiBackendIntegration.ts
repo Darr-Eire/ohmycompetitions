@@ -41,16 +41,16 @@ export class PiNetworkService {
   private apiKey: string;
 
   /**
-   * Creates an instance of PiNetworkService.
-   * @param apiKey Your Pi Network Application API Key. Get this from the Pi Developer Portal.
-   * @param walletPrivateSeed (Optional) Your wallet's private seed - ONLY add this if needed for signing transactions on the backend. HANDLE WITH EXTREME CARE.
+   *
+   * @param apiKey  
+   * @param walletPrivateSeed 
    */
   static connect() {
-    // ❗️Do NOT hardcode a real key in code for production. Use env vars.
+   
     return new PiNetworkService("txhzlncl9eoidl6ck5bzjon49ynijmqc1xxilnzddrjtucvjdsthrs7nuc4qpi3h");
   }
 
-  constructor(apiKey: string /* walletPrivateSeed?: string */) {
+  constructor(apiKey: string ) {
     if (!apiKey) {
       throw new Error("Pi Network API Key is required.");
     }

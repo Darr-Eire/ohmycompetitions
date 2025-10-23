@@ -1,8 +1,59 @@
-// --- terms.js ---------------------------------------------------------------
+// file: src/data/competition-terms.js
 
-// Minimal example; add more slugs as needed.
+/** Normalize any slug-ish value to a kebab-case lookup key */
+export function normalizeSlug(v) {
+  return String(v || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9\-]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+/** Generic fallback terms used when a slug is not explicitly listed */
+export function buildGenericTerms({
+  title = 'Competition',
+  entryFee,
+  prizeLabel = 'Prize / Prize Pool',
+  prizeValue,
+  scheduleText = 'See the competition page for the exact timing.',
+} = {}) {
+  const feeText =
+    entryFee == null
+      ? 'Entry fee as shown on the page (if any).'
+      : `Entry fee: ${String(entryFee)} π per ticket (unless otherwise stated).`;
+
+  const prizeText =
+    prizeValue == null
+      ? `${prizeLabel} as displayed on the page.`
+      : `${prizeLabel}: ${String(prizeValue)} π (as displayed on the page).`;
+
+  return {
+    title: `Terms & Conditions — ${title}`,
+    sections: [
+      { h: 'Eligibility', p: 'Open to verified Pi users, 18+, where lawful. Void where prohibited.' },
+      { h: 'How to Enter', p: 'Sign in with Pi, answer the skill question correctly (where applicable), and complete entry.' },
+      { h: 'Entry Fee', p: feeText },
+      { h: 'Tickets', p: 'Each valid ticket equals one (1) entry. Per-user caps may apply and will be shown on the page.' },
+      { h: 'Prize', p: prizeText },
+      { h: 'Draw Timing', p: `Random draw occurs at or after the end date/time. ${scheduleText}` },
+      { h: 'Winner Verification', p: 'Winner(s) must pass account and eligibility checks. Failure results in redraw.' },
+      { h: 'Notification', p: 'Winner(s) are notified in-app/email within a reasonable timeframe (typically within 7 days).' },
+      { h: 'Delivery / Payout', p: 'Payouts are in π (for π prizes). Physical items are delivered where feasible; customs/duties/taxes are the winner’s responsibility.' },
+      { h: 'Fair Play', p: 'Multiple accounts, bots, or manipulation lead to disqualification and forfeiture.' },
+      { h: 'Cancellations & Refunds', p: 'We may amend/cancel for reasons beyond our control. If cancelled prior to a draw, entries in π may be refunded.' },
+      { h: 'Liability', p: 'Not liable for technical issues, outages, or delays beyond our control.' },
+      { h: 'General', p: 'These terms supplement platform terms and any policies shown on the page. Organizer decisions are final.' },
+    ],
+    lastUpdated: new Date().toISOString().slice(0, 10),
+  };
+}
+
+/* ----------------------- Explicit competition terms ----------------------- */
+/*  Keys must be lowercase kebab-case to match your runtime comp.slug        */
+
 export const COMPETITION_TERMS = {
-  // (Already in your file) — leaving here for completeness
   'iphone-15-giveaway': {
     title: 'Terms & Conditions — iPhone 15 Giveaway',
     sections: [
@@ -16,7 +67,6 @@ export const COMPETITION_TERMS = {
     lastUpdated: '2025-10-01',
   },
 
-  // (Already in your file)
   'pi-week-mega-pot': {
     title: 'Terms & Conditions — Pi Week Mega Pot',
     sections: [
@@ -29,10 +79,8 @@ export const COMPETITION_TERMS = {
     lastUpdated: '2025-10-01',
   },
 
-  /* ----------------------------- NEW ENTRIES ----------------------------- */
-
   '55-smart-tv': {
-    title: 'Terms & Conditions — 55″ Smart TV',
+    title: 'Terms & Conditions 55″ Smart TV',
     sections: [
       { h: 'Eligibility', p: 'Open to Pioneers aged 18+ where local laws permit. Void where prohibited.' },
       { h: 'Entry Fee', p: '0.35 π per ticket as shown. Each valid ticket equals one (1) entry.' },
@@ -79,8 +127,6 @@ export const COMPETITION_TERMS = {
     lastUpdated: '2025-10-22',
   },
 
-  // Note: Your data shows title "10,000 Pi Prize Pool" with href "omc-1000-pi-prize-pool".
-  // Using the slug from href to match routing.
   'omc-1000-pi-prize-pool': {
     title: 'Terms & Conditions — 10,000 π Prize Pool',
     sections: [
@@ -136,7 +182,8 @@ export const COMPETITION_TERMS = {
     lastUpdated: '2025-10-22',
   },
 
-  'psuedo:test-competition-fallback': undefined, // helper marker; ignore in code
+  // Dev/test examples
+  'psuedo:test-competition-fallback': undefined,
 
   'test-competition': {
     title: 'Terms & Conditions — Test Competition',
@@ -162,41 +209,36 @@ export const COMPETITION_TERMS = {
   },
 };
 
-// Fallback/default terms (used if slug not found)
-export const DEFAULT_TERMS = {
-  title: 'Terms & Conditions',
-  sections: [
-    { h: 'Eligibility', p: 'Open where legally permitted. Void where prohibited.' },
-    { h: 'Entries', p: 'No purchase necessary where applicable. Skill question required for paid entries.' },
-    { h: 'Liability', p: 'Organizer not liable for technical failures, delays, or lost communications.' },
-  ],
-  lastUpdated: '2025-10-01',
-};
+/* --------------------------- Defaults / Descriptions --------------------------- */
 
-
-// --- descriptions.js --------------------------------------------------------
+export const DEFAULT_TERMS = buildGenericTerms({ title: 'Competition' });
 
 export const COMPETITION_DESCRIPTIONS = {
   '55-smart-tv': `Win a brand-new 55″ Smart TV and upgrade movie nights in one hit. Answer the skill question, grab a ticket for just 0.35 π, and you’re in. Simple entry, big screen, bigger vibes.`,
-
   'pi-to-the-moon': `7,500 π up for grabs! Enter “Pi To The Moon,” answer the skill check, and shoot your shot. One ticket = one entry — the prize pot is pure π.`,
-
   'omc-5000-pi-prize-pool': `The 5,000 π Prize Pool is live. Stack your entries, pass the skill question, and let the RNG gods decide. Payouts are in π — no fluff, just digital gold.`,
-
-  // Slug follows your href even though the title says 10,000 π
   'omc-1000-pi-prize-pool': `Go big with the 10,000 π Prize Pool. Secure entries, beat the skill gate, and you’re in the running for a serious π haul.`,
-
   'ps5-bundle-giveaway': `Next-gen gaming starts here. Win a PS5 bundle — console plus extras (varies by region). Enter with a ticket, clear the skill check, and level up IRL.`,
-
   'pi-daily-draw': `Daily shot at 100 π. Quick entry, quick draw — perfect for regulars. Check the cutoff in-app, answer the skill Q, and you’re in today’s pool.`,
-
   'weekly-micro-monday': `Kick off the week with a tidy 15 π micro-pot. Light, fast, every Monday — clean mechanics, quick results.`,
-
   'test-competition': `Internal testing/QA item. Not intended for public participation. Entries may be reset or voided at any time.`,
-
   'test2': `Secondary internal test. Content and state may change without notice. Not a public competition.`,
 };
 
-// Optional: a simple helper if a slug has no bespoke description.
 export const DEFAULT_DESCRIPTION =
   'Enter the draw by securing a ticket and passing the skill question. Check the page for live prize details, end time, and any ticket caps.';
+
+/* ------------------------------ Lookup helpers ------------------------------ */
+
+export function getTermsForSlug(slug) {
+  const key = normalizeSlug(slug);
+  const explicit = COMPETITION_TERMS[key];
+  if (explicit && typeof explicit === 'object') return explicit;
+  if (Object.prototype.hasOwnProperty.call(COMPETITION_TERMS, key)) return DEFAULT_TERMS;
+  return DEFAULT_TERMS;
+}
+
+export function getDescriptionForSlug(slug) {
+  const key = normalizeSlug(slug);
+  return COMPETITION_DESCRIPTIONS[key] ?? DEFAULT_DESCRIPTION;
+}

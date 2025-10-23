@@ -7,21 +7,27 @@ import { usePiAuth } from 'context/PiAuthContext';
 import { getRandomQuestion, isCorrectAnswer as checkAnswer } from 'data/skill-questions';
 import { CreatePayment } from '@lib/pi/PiIntegration';
 import UiModal from 'components/UiModal';
-import { COMPETITION_TERMS, DEFAULT_TERMS } from 'data/competition-terms';
+import { COMPETITION_TERMS, DEFAULT_TERMS } from 'data/terms-and-details';
 
 /* ----------------------------- helpers ----------------------------- */
-function normalizePrizeBreakdown(raw) { /* unchanged */ 
+function normalizePrizeBreakdown(raw) {
   if (!raw) return {};
   if (typeof raw === 'object' && !Array.isArray(raw)) {
     const out = {};
-    const map = { '1st':'1st','first':'1st','first prize':'1st','grand':'1st','grand prize':'1st','2nd':'2nd','second':'2nd','second prize':'2nd','3rd':'3rd','third':'3rd','third prize':'3rd' };
+    const map = {
+      '1st': '1st', 'first': '1st', 'first prize': '1st', 'grand': '1st', 'grand prize': '1st',
+      '2nd': '2nd', 'second': '2nd', 'second prize': '2nd',
+      '3rd': '3rd', 'third': '3rd', 'third prize': '3rd'
+    };
     for (const [k, v] of Object.entries(raw)) {
       const m = map[String(k).toLowerCase()];
       if (m && out[m] == null) out[m] = v;
     }
     if (out['1st'] || out['2nd'] || out['3rd']) return out;
-    const sorted = Object.values(raw).map(v => ({ v, n: Number(String(v).replace(/[^\d.-]/g, '')) }))
-      .sort((a, b) => (b.n || -Infinity) - (a.n || -Infinity)).slice(0, 3);
+    const sorted = Object.values(raw)
+      .map(v => ({ v, n: Number(String(v).replace(/[^\d.-]/g, '')) }))
+      .sort((a, b) => (b.n || -Infinity) - (a.n || -Infinity))
+      .slice(0, 3);
     const ord = ['1st', '2nd', '3rd'];
     sorted.forEach((e, i) => { if (e?.v != null) out[ord[i]] = e.v; });
     return out;
@@ -34,7 +40,8 @@ function normalizePrizeBreakdown(raw) { /* unchanged */
   }
   return {};
 }
-function buildPrizeBreakdownFromComp(input, prizeFallback) { /* unchanged */ 
+
+function buildPrizeBreakdownFromComp(input, prizeFallback) {
   const c = input?.comp ?? input ?? {};
   const explicit = { '1st': c.firstPrize ?? c.prize1, '2nd': c.secondPrize ?? c.prize2, '3rd': c.thirdPrize ?? c.prize3 };
   if (explicit['1st'] || explicit['2nd'] || explicit['3rd']) return explicit;
@@ -42,7 +49,8 @@ function buildPrizeBreakdownFromComp(input, prizeFallback) { /* unchanged */
   if (!tiers['1st'] && (prizeFallback ?? c.prize ?? c.prizeLabel)) tiers['1st'] = prizeFallback ?? c.prize ?? c.prizeLabel;
   return tiers;
 }
-function getWinnersCount(comp, tiers) { /* unchanged */ 
+
+function getWinnersCount(comp, tiers) {
   const c = comp?.comp ?? comp ?? {};
   const direct = c.winners ?? c.totalWinners ?? c.numberOfWinners ?? c.numWinners;
   const n = Number(direct);
@@ -59,7 +67,8 @@ function getWinnersCount(comp, tiers) { /* unchanged */
   const count = Object.values(tiers || {}).filter(Boolean).length;
   return Math.min(3, count || 1);
 }
-function formatPrize(v, theme) { /* unchanged */ 
+
+function formatPrize(v, theme) {
   if (v === null || v === undefined) return null;
   const isTechOrGadgets = ['tech', 'gadgets', 'premium'].includes(String(theme || '').toLowerCase());
   if (typeof v === 'string') {
@@ -76,32 +85,40 @@ function formatPrize(v, theme) { /* unchanged */
   const formatted = n >= 1000 ? Math.round(n).toLocaleString('en-US') : n.toFixed(2);
   return isTechOrGadgets ? `${formatted}` : `${formatted} π`;
 }
-function primaryPrizeFrom({ comp, prize, tiers, theme }) { /* unchanged */ 
+
+function primaryPrizeFrom({ comp, prize, tiers, theme }) {
   const p = tiers?.['1st'] ?? prize ?? comp?.prize ?? comp?.prizeLabel ?? comp?.firstPrize;
   return formatPrize(p ?? 'TBA', theme);
 }
-function normalizeText(x) { /* unchanged */ 
+
+function normalizeText(x) {
   if (x == null) return '';
-  return String(x).trim().toLowerCase().replace(/[^\p{L}\p{N}.\- ]+/gu, '').replace(/\s+/g, ' ');
+  return String(x).trim().toLowerCase()
+    .replace(/[^\p{L}\p{N}.\- ]+/gu, '')
+    .replace(/\s+/g, ' ');
 }
-function asAnswerList(q) { /* unchanged */ 
+
+function asAnswerList(q) {
   const raw = q?.acceptableAnswers ?? q?.answers ?? q?.answer ?? q?.correct ?? null;
   if (Array.isArray(raw)) return raw.filter(Boolean);
   if (raw == null) return [];
   return [raw];
 }
-function isProbablyNumber(str) { /* unchanged */ 
+
+function isProbablyNumber(str) {
   const s = String(str).replace(/,/g, '').trim();
   const n = Number(s);
   return Number.isFinite(n);
 }
-function numbersEqualLoose(a, b, eps = 1e-6) { /* unchanged */ 
+
+function numbersEqualLoose(a, b, eps = 1e-6) {
   const na = Number(String(a).replace(/,/g, '').trim());
   const nb = Number(String(b).replace(/,/g, '').trim());
   if (!Number.isFinite(na) || !Number.isFinite(nb)) return false;
   return Math.abs(na - nb) <= eps;
 }
-function isAnswerCorrectFlexible(q, userInput) { /* unchanged */ 
+
+function isAnswerCorrectFlexible(q, userInput) {
   const answers = asAnswerList(q);
   if (!answers.length) return false;
   const userLooksNumeric = isProbablyNumber(userInput);
@@ -111,6 +128,78 @@ function isAnswerCorrectFlexible(q, userInput) { /* unchanged */
   }
   const u = normalizeText(userInput);
   return answers.some(ans => normalizeText(ans) === u);
+}
+
+/* --------- terms resolver (robust to slug/title variations) --------- */
+function normalizeKey(s) {
+  return String(s || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[\s_]+/g, '-')
+    .replace(/[^a-z0-9\-]/g, '');
+}
+function resolveTerms(slug, title) {
+  const candidates = [normalizeKey(slug), normalizeKey(title)].filter(Boolean);
+  for (const k of candidates) {
+    if (k && COMPETITION_TERMS[k]) return COMPETITION_TERMS[k];
+  }
+  return DEFAULT_TERMS;
+}
+
+/* Build “Competition Details” sections */
+function buildDetailsSections({
+  title,
+  description,
+  entryNum,
+  startsAt,
+  endsAt,
+  ticketsSold,
+  totalTickets,
+  tiers,
+  theme,
+}) {
+  const fmtDate = (d) =>
+    d ? new Date(d).toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'TBA';
+
+  const sections = [];
+
+  if (description) {
+    sections.push({
+      h: 'Overview',
+      p: description,
+    });
+  }
+
+  sections.push({
+    h: 'Schedule',
+    p: `Starts: ${fmtDate(startsAt)}\nEnds: ${fmtDate(endsAt)}`,
+  });
+
+  sections.push({
+    h: 'Entry',
+    p: entryNum <= 0 ? 'Free' : `${Number(entryNum).toFixed(2)} π`,
+  });
+
+  if (Number.isFinite(Number(totalTickets)) && Number(totalTickets) > 0) {
+    sections.push({
+      h: 'Tickets',
+      p: `${ticketsSold ?? 0} sold of ${totalTickets}`,
+    });
+  }
+
+  const prizeLines = [];
+  if (tiers?.['1st']) prizeLines.push(`1st: ${formatPrize(tiers['1st'], theme)}`);
+  if (tiers?.['2nd']) prizeLines.push(`2nd: ${formatPrize(tiers['2nd'], theme)}`);
+  if (tiers?.['3rd']) prizeLines.push(`3rd: ${formatPrize(tiers['3rd'], theme)}`);
+
+  if (prizeLines.length) {
+    sections.push({
+      h: 'Prizes',
+      p: prizeLines.join('\n'),
+    });
+  }
+
+  return sections;
 }
 
 /* ----------------------------- UI atoms ----------------------------- */
@@ -227,8 +316,32 @@ export default function LaunchCompetitionDetailCard({
   const ordinals = useMemo(() => ['1st', '2nd', '3rd'].slice(0, winnersCount), [winnersCount]);
 
   const slug = comp?.slug || comp?.comp?.slug;
-  const termsContent = (slug && COMPETITION_TERMS[slug]) || DEFAULT_TERMS;
+
+  // robust terms resolution (by slug or title)
+  const termsContent = useMemo(
+    () => resolveTerms(slug, displayTitle),
+    [slug, displayTitle]
+  );
+
+  // Build "Competition Details" content
+  const detailsSections = useMemo(
+    () =>
+      buildDetailsSections({
+        title: displayTitle,
+        description: effectiveDescription,
+        entryNum,
+        startsAt,
+        endsAt,
+        ticketsSold,
+        totalTickets,
+        tiers,
+        theme,
+      }),
+    [displayTitle, effectiveDescription, entryNum, startsAt, endsAt, ticketsSold, totalTickets, tiers, theme]
+  );
+
   const [showTerms, setShowTerms] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   const [qty, setQty] = useState(1);
   const [showSkill, setShowSkill] = useState(false);
@@ -332,14 +445,24 @@ export default function LaunchCompetitionDetailCard({
             </div>
           </div>
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center flex flex-col items-center gap-2">
             <button
               type="button"
               onClick={() => setShowTerms(true)}
               className="text-sm text-cyan-300 underline hover:text-cyan-200"
               aria-haspopup="dialog"
             >
-              More Details & Competitions T&Cs
+              Competitions T&Cs
+            </button>
+
+            {/* NEW: Competition Details link (same behavior as terms popup) */}
+            <button
+              type="button"
+              onClick={() => setShowDetails(true)}
+              className="text-sm text-cyan-300 underline hover:text-cyan-200"
+              aria-haspopup="dialog"
+            >
+              Competition Details
             </button>
           </div>
         </section>
@@ -507,12 +630,12 @@ export default function LaunchCompetitionDetailCard({
 
       {/* Terms Modal */}
       <UiModal open={showTerms} onClose={() => setShowTerms(false)} title={termsContent.title}>
-        <div id="terms-modal">
+        <div id="terms-modal" className="max-h-[70vh] overflow-y-auto pr-1">
           {Array.isArray(termsContent.sections) ? (
             termsContent.sections.map((s, i) => (
               <section key={i} className="space-y-1">
                 {s.h && <h4 className="text-white font-semibold">{s.h}</h4>}
-                {s.p && <p className="text-white/80">{s.p}</p>}
+                {s.p && <p className="text-white/80 whitespace-pre-wrap">{s.p}</p>}
               </section>
             ))
           ) : (
@@ -520,6 +643,22 @@ export default function LaunchCompetitionDetailCard({
           )}
           {termsContent.lastUpdated && (
             <p className="mt-3 text-xs text-white/60">Last updated: {termsContent.lastUpdated}</p>
+          )}
+        </div>
+      </UiModal>
+
+      {/* NEW: Competition Details Modal */}
+      <UiModal open={showDetails} onClose={() => setShowDetails(false)} title="Competition Details">
+        <div id="details-modal" className="max-h-[70vh] overflow-y-auto pr-1">
+          {Array.isArray(detailsSections) && detailsSections.length ? (
+            detailsSections.map((s, i) => (
+              <section key={i} className="space-y-1">
+                {s.h && <h4 className="text-white font-semibold">{s.h}</h4>}
+                {s.p && <p className="text-white/80 whitespace-pre-wrap">{s.p}</p>}
+              </section>
+            ))
+          ) : (
+            <p className="text-white/80">No details available.</p>
           )}
         </div>
       </UiModal>

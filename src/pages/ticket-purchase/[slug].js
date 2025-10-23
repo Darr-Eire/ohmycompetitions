@@ -1,13 +1,20 @@
-// file: src/pages/ticket-purchase/[...slug].js  (or wherever this page lives)
+// file: src/pages/ticket-purchase/[...slug].js
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import LaunchCompetitionDetailCard from '@components/LaunchCompetitionDetailCard';
 import { usePiAuth } from '../../context/PiAuthContext';
 
+/* ------------------------------ Utils ------------------------------ */
+const toNum = (v, d = 0) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : d;
+};
+
+/* --------------------------- Gift Modal ---------------------------- */
 function GiftTicketModalInline({ isOpen, onClose, comp, preselectedCompetition }) {
   const c = comp ?? preselectedCompetition ?? null;
   if (!isOpen) return null;
@@ -31,16 +38,12 @@ function GiftTicketModalInline({ isOpen, onClose, comp, preselectedCompetition }
           </button>
         </div>
 
-        <div className="p-4 space-y-2">
-          <p className="text-white/90">
-            Gifting tickets to other users is coming very soon.
-          </p>
+        <div className="p-4 space-y-3">
+          <p className="text-white/90">Gifting tickets to other users is coming very soon.</p>
           {(c?.title || c?.comp?.title) && (
             <p className="text-sm text-white/70">
-              You’ll be able to gift tickets for:{' '}
-              <span className="font-semibold">
-                {c?.title ?? c?.comp?.title}
-              </span>
+              You’ll be able to gift tickets for{' '}
+              <span className="font-semibold">{c?.title ?? c?.comp?.title}</span>
             </p>
           )}
         </div>
@@ -59,6 +62,7 @@ function GiftTicketModalInline({ isOpen, onClose, comp, preselectedCompetition }
   );
 }
 
+/* --------------------------------- Page ---------------------------------- */
 export default function TicketPurchasePage() {
   const router = useRouter();
 
@@ -66,15 +70,13 @@ export default function TicketPurchasePage() {
   const slugArr = router.query.slug;
   const slug = Array.isArray(slugArr) ? slugArr[slugArr.length - 1] : slugArr || '';
 
-  // Pi auth (optional; guard if context not ready)
+  // Pi auth (optional)
   let user = null, login = null;
   try {
     const ctx = usePiAuth?.();
     user = ctx?.user || null;
     login = ctx?.login || null;
-  } catch {
-    // Non-blocking; card can handle unauthenticated state
-  }
+  } catch {}
 
   const [loading, setLoading] = useState(false);
   const [comp, setComp] = useState(null);
@@ -83,8 +85,8 @@ export default function TicketPurchasePage() {
   const [sharedBonus, setSharedBonus] = useState(false);
   const [error, setError] = useState(null);
 
-  // Fetch competition from API
-  const fetchCompetition = async (slugParam) => {
+  // fetch competition
+  const fetchCompetition = useCallback(async (slugParam) => {
     if (!slugParam) return;
     try {
       setLoading(true);
@@ -95,28 +97,30 @@ export default function TicketPurchasePage() {
         headers: { Accept: 'application/json' },
         cache: 'no-store',
       });
-
       if (!res.ok) throw new Error(`API ${res.status} ${res.statusText}`);
 
       const json = await res.json();
       const norm = normalizeFromApi(json);
       setComp(norm);
       setLiveTicketsSold(norm.ticketsSold ?? 0);
-      setDesc((norm.description || '').trim() || autoDescribeCompetition(norm));
+
+      // No terms/details mapping — just use API description or fallback
+      const fromApi = (norm.description || '').trim();
+      setDesc(fromApi || autoDescribeCompetition(norm));
     } catch (e) {
       console.error('❌ Competition fetch failed:', e);
       setError('Unable to load this competition right now.');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (!router.isReady || !slug) return;
     fetchCompetition(slug);
-  }, [router.isReady, slug]);
+  }, [router.isReady, slug, fetchCompetition]);
 
-  // Derived status
+  // status
   const status = useMemo(() => {
     if (!comp) return 'active';
     const now = Date.now();
@@ -127,27 +131,7 @@ export default function TicketPurchasePage() {
     return 'active';
   }, [comp]);
 
-  const isCryptoCompetition =
-    comp?.theme === 'crypto' || comp?.slug?.startsWith?.('crypto');
-
-  // Payment success → refresh
-  const handlePaymentSuccess = async (result) => {
-    try {
-      if (result?.ticketQuantity) {
-        setLiveTicketsSold((prev) => prev + Number(result.ticketQuantity || 0));
-      }
-      await fetchCompetition(slug);
-      const txt =
-        result?.competitionStatus === 'completed'
-          ? '🎉 Success! Your tickets are confirmed. This competition is now SOLD OUT!'
-          : '🎉 Success! Your tickets are confirmed.';
-      alert(txt);
-    } catch (e) {
-      console.error('Refresh after payment failed:', e);
-    }
-  };
-
-  // Free ticket / share bonus
+  // share bonus state
   useEffect(() => {
     if (!slug) return;
     setSharedBonus(localStorage.getItem(`${slug}-shared`) === 'true');
@@ -172,7 +156,22 @@ export default function TicketPurchasePage() {
     alert('✅ Thanks for sharing! Bonus ticket unlocked.');
   };
 
-  // Loading / Error states
+  const handlePaymentSuccess = async (result) => {
+    try {
+      if (result?.ticketQuantity) {
+        setLiveTicketsSold((prev) => prev + Number(result.ticketQuantity || 0));
+      }
+      await fetchCompetition(slug);
+      const txt =
+        result?.competitionStatus === 'completed'
+          ? '🎉 Success! Your tickets are confirmed. This competition is now SOLD OUT!'
+          : '🎉 Success! Your tickets are confirmed.';
+      alert(txt);
+    } catch (e) {
+      console.error('Refresh after payment failed:', e);
+    }
+  };
+
   if (!router.isReady || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0f172a]">
@@ -193,7 +192,6 @@ export default function TicketPurchasePage() {
     );
   }
 
-  // Render
   return (
     <>
       <Head>
@@ -204,9 +202,7 @@ export default function TicketPurchasePage() {
         {comp.imageUrl ? <meta property="og:image" content={comp.imageUrl} /> : null}
       </Head>
 
-      {/* MODIFIED: Adjusted padding to control the "border" and "zoomed-in" feel */}
       <main className="min-h-screen w-full p-0 text-white bg-[#070d19] font-orbitron">
-        {/* MODIFIED: Added a div for content padding around the card */}
         <div className="px-4 sm:px-6 py-4 sm:py-6">
           <LaunchCompetitionDetailCard
             comp={comp}
@@ -235,7 +231,6 @@ export default function TicketPurchasePage() {
 }
 
 /* --------------------------------- Helpers --------------------------------- */
-
 function autoDescribeCompetition(c) {
   const parts = [
     c?.title,
@@ -251,16 +246,12 @@ function normalizeFromApi(data) {
   return {
     slug: firstDefined(data?.slug, c?.slug, ''),
     title: firstDefined(data?.title, c?.title, ''),
-
     startsAt: firstDefined(data?.startsAt, c?.startsAt, null),
     endsAt: firstDefined(data?.endsAt, c?.endsAt, null),
-
     totalTickets: toInt(firstDefined(data?.totalTickets, c?.totalTickets, 0), 0),
     ticketsSold: toInt(firstDefined(data?.ticketsSold, c?.ticketsSold, 0), 0),
     maxTicketsPerUser: firstDefined(data?.maxTicketsPerUser, c?.maxPerUser, null),
-
     entryFee: toNum(firstDefined(data?.entryFee, c?.entryFee, 0)),
-
     winners: firstDefined(data?.winners, c?.winners, 'Multiple'),
     firstPrize: firstDefined(
       data?.prizeBreakdown?.first,
@@ -271,7 +262,6 @@ function normalizeFromApi(data) {
       c?.prize
     ),
     prizeBreakdown: firstDefined(data?.prizeBreakdown, c?.prizeBreakdown, null),
-
     imageUrl: firstDefined(
       data?.imageUrl,
       c?.imageUrl,
@@ -297,10 +287,6 @@ function firstDefined(...vals) {
 }
 function toInt(v, d = 0) {
   const n = Number.parseInt(v, 10);
-  return Number.isFinite(n) ? n : d;
-}
-function toNum(v, d = 0) {
-  const n = Number(v);
   return Number.isFinite(n) ? n : d;
 }
 function isFiniteNum(v) {
