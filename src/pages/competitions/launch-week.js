@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import Head from 'next/head';
-import { RefreshCw, Sparkles, Trophy } from 'lucide-react';
+import { RefreshCw, Sparkles } from 'lucide-react';
 
 const REFRESH_MS = 20000; // 20s soft live refresh
 
@@ -242,17 +242,17 @@ function LiveCard({ data, onGift }) {
       {/* Status chip BELOW the banner */}
       <div className="px-3.5 sm:px-4 pt-2 flex justify-center">
         {status === 'live' && (
-          <span className="rounded-md bg-emerald-500/25 px-2 py-0.5 text-emerald-200 text-[11px] font-bold">
+          <span aria-label="Status live" className="rounded-md bg-emerald-500/25 px-2 py-0.5 text-emerald-200 text-[11px] font-bold">
             LIVE
           </span>
         )}
         {status === 'upcoming' && (
-          <span className="rounded-md bg-yellow-500/25 px-2 py-0.5 text-yellow-100 text-[11px] font-bold">
+          <span aria-label="Status upcoming" className="rounded-md bg-yellow-500/25 px-2 py-0.5 text-yellow-100 text-[11px] font-bold">
             UPCOMING
           </span>
         )}
         {status === 'ended' && (
-          <span className="rounded-md bg-white/25 px-2 py-0.5 text-white/90 text-[11px] font-bold">
+          <span aria-label="Status finished" className="rounded-md bg-white/25 px-2 py-0.5 text-white/90 text-[11px] font-bold">
             FINISHED
           </span>
         )}
@@ -396,6 +396,9 @@ export default function LaunchWeekCompetitionsPage() {
     }
   }, []);
 
+  // Manual refresh without page reload
+  const manualRefresh = useCallback(() => setTick((t) => t + 1), []);
+
   useEffect(() => {
     fetchData();
     const id = setInterval(() => setTick((t) => t + 1), REFRESH_MS);
@@ -452,9 +455,6 @@ export default function LaunchWeekCompetitionsPage() {
   }, [normalized, activeFilter]);
 
   const liveCount = normalized.filter(n => n.__status === 'live').length;
-  const totalPrizePool = useMemo(() => {
-    return competitions.reduce((sum, c) => sum + (toNum((c.comp ?? c)?.prizeValue, 0)), 0);
-  }, [competitions]);
 
   // ======= HERO extra stats (data-driven) =======
   const upcomingCount = useMemo(
@@ -475,15 +475,14 @@ export default function LaunchWeekCompetitionsPage() {
     }
     return { totalSoldAll: sold, totalTicketsAll: total };
   }, [competitions]);
-
-  const avgEntryFee = useMemo(() => {
-    const fees = competitions
-      .map((c) => toNum((c.comp ?? c)?.entryFee, NaN))
-      .filter((n) => Number.isFinite(n) && n >= 0);
-    if (!fees.length) return 0;
-    const sum = fees.reduce((a, b) => a + b, 0);
-    return Math.round((sum / fees.length) * 100) / 100;
-  }, [competitions]);
+const avgEntryFee = useMemo(() => {
+  const fees = competitions
+    .map((c) => toNum((c.comp ?? c)?.entryFee, NaN))
+    .filter((n) => Number.isFinite(n) && n >= 0);
+  if (!fees.length) return 0;
+  const sum = fees.reduce((a, b) => a + b, 0);
+  return Math.round((sum / fees.length) * 100) / 100;
+}, [competitions]);
 
   const nextEnding = useMemo(() => {
     const target = normalized
@@ -553,76 +552,79 @@ export default function LaunchWeekCompetitionsPage() {
                   </h1>
 
                   <p className="text-center lg:text-left text-white/80 text-[13px] sm:text-[15px]">
-                    Hand-picked competitions, tech, instant wins and more. Real-time pools, fair odds, and transparent tickets.
+                    Hand-picked competitions, tech, instant wins and more. Real-time pools, fair and transparent tickets.
                   </p>
 
                   {/* CTA row */}
-                <div className="mt-1 flex flex-row flex-wrap items-center lg:items-start gap-2">
-  <button
-    onClick={() => location.reload()}
-    type="button"
-    className="flex-1 basis-1/2 inline-flex justify-center items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-extrabold px-4 py-2 active:translate-y-px hover:brightness-110"
-    title="Refresh data"
-  >
-    <RefreshCw size={16} /> Refresh
-    <span className="text-[11px] ml-1 opacity-80">
-      ~{Math.round(REFRESH_MS / 1000)}s
-    </span>
-  </button>
+                  <div className="mt-1 flex flex-row flex-wrap items-center lg:items-start gap-1.5">
+                    <button
+                      onClick={manualRefresh}
+                      type="button"
+                      className="flex-1 basis-1/2 min-w-[8.5rem] inline-flex justify-center items-center gap-1.5 rounded-lg bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold px-3 py-1.5 active:translate-y-px hover:brightness-110"
+                      title="Refresh data"
+                    >
+                      <RefreshCw size={14} /> <span className="text-[12px] leading-none">Refresh</span>
+                      <span className="text-[10px] ml-1 opacity-80 leading-none">
+                        ~{Math.round(REFRESH_MS / 1000)}s
+                      </span>
+                    </button>
 
-  <Link
-    href="/competitions/all"
-    className="flex-1 basis-1/2 inline-flex justify-center items-center gap-2 rounded-xl border border-cyan-400/40 bg-white/5 px-4 py-2 text-[13px] font-semibold text-cyan-200 hover:bg-white/10"
-  >
-    View All Competitions
-  </Link>
-</div>
+                    <Link
+                      href="/competitions/all"
+                      className="flex-1 basis-1/2 min-w-[8.5rem] inline-flex justify-center items-center gap-1.5 rounded-lg border border-cyan-400/40 bg-white/5 px-3 py-1.5 text-[12px] font-semibold text-cyan-200 hover:bg-white/10"
+                    >
+                      View All Competitions
+                    </Link>
+                  </div>
 
+                  {/* Right: stat blocks — smaller */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2">
+                    {/* Live Now */}
+                    <div className="web3-stat-card !px-2 !py-1.5">
+                      <Sparkles size={15} className="text-purple-300" />
+                      <span className="text-[10px] text-white/70 leading-none">Live Now</span>
+                      <span className="text-[13px] font-bold text-blue-400 leading-tight">
+                        {liveCount}
+                      </span>
+                    </div>
+
+                    {/* Upcoming */}
+                    <div className="web3-stat-card !px-2 !py-1.5">
+                      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-cyan-300" aria-hidden="true">
+                        <path fill="currentColor" d="M7 11h10v2H7v-2zm-4 0a9 9 0 1 1 18 0A9 9 0 0 1 3 11zm9-7a7 7 0 1 0 .001 14.001A7 7 0 0 0 12 4z" />
+                      </svg>
+                      <span className="text-[10px] text-white/70 leading-none">Upcoming</span>
+                      <span className="text-[13px] font-bold text-cyan-300 leading-tight">
+                        {upcomingCount}
+                      </span>
+                    </div>
+
+                    {/* Ended */}
+                    <div className="web3-stat-card !px-2 !py-1.5">
+                      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-white/80" aria-hidden="true">
+                        <path fill="currentColor" d="M12 2a10 10 0 1 1-.001 20.001A10 10 0 0 1 12 2Zm1 5v6h5v2h-7V7h2Z" />
+                      </svg>
+                      <span className="text-[10px] text-white/70 leading-none">Ended</span>
+                      <span className="text-[13px] font-bold text-white/80 leading-tight">
+                        {endedCount}
+                      </span>
+                    </div>
+
+                    {/* Avg Fee */}
+                    <div className="web3-stat-card !px-2 !py-1.5">
+                      <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-emerald-300" aria-hidden="true">
+                        <path fill="currentColor" d="M12 1 3 5v6c0 5 4 9 9 12 5-3 9-7 9-12V5l-9-4Z" />
+                      </svg>
+                      <span className="text-[10px] text-white/70 leading-none">Avg Entry</span>
+                      <span className="text-[13px] font-bold text-emerald-300 leading-tight">
+                        {avgEntryFee ? `${avgEntryFee.toFixed(2)} π` : '—'}
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Right: stat blocks */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
-                  {/* Live Now */}
-                  <div className="web3-stat-card !px-3 !py-2">
-                    <Sparkles size={18} className="text-purple-300" />
-                    <span className="text-[10px] text-white/70">Live Now</span>
-                    <span className="text-[16px] font-bold text-blue-400">
-                      {liveCount}
-                    </span>
-                  </div>
-                  {/* Upcoming */}
-                  <div className="web3-stat-card !px-3 !py-2">
-                    <svg viewBox="0 0 24 24" className="h-4 w-4 text-cyan-300" aria-hidden="true">
-                      <path fill="currentColor" d="M7 11h10v2H7v-2zm-4 0a9 9 0 1 1 18 0A9 9 0 0 1 3 11zm9-7a7 7 0 1 0 .001 14.001A7 7 0 0 0 12 4z" />
-                    </svg>
-                    <span className="text-[10px] text-white/70">Upcoming</span>
-                    <span className="text-[16px] font-bold text-cyan-300">
-                      {upcomingCount}
-                    </span>
-                  </div>
-
-                  {/* Ended */}
-                  <div className="web3-stat-card !px-3 !py-2">
-                    <svg viewBox="0 0 24 24" className="h-4 w-4 text-white/80" aria-hidden="true">
-                      <path fill="currentColor" d="M12 2a10 10 0 1 1-.001 20.001A10 10 0 0 1 12 2Zm1 5v6h5v2h-7V7h2Z" />
-                    </svg>
-                    <span className="text-[10px] text-white/70">Ended</span>
-                    <span className="text-[16px] font-bold text-white/80">
-                      {endedCount}
-                    </span>
-                  </div>
-
-                  {/* Avg Fee */}
-                  <div className="web3-stat-card !px-3 !py-2">
-                    <svg viewBox="0 0 24 24" className="h-4 w-4 text-emerald-300" aria-hidden="true">
-                      <path fill="currentColor" d="M12 1 3 5v6c0 5 4 9 9 12 5-3 9-7 9-12V5l-9-4Z" />
-                    </svg>
-                    <span className="text-[10px] text-white/70">Avg Entry</span>
-                    <span className="text-[16px] font-bold text-emerald-300">
-                      {avgEntryFee ? `${avgEntryFee.toFixed(2)} π` : '—'}
-                    </span>
-                  </div>
-                </div>
+                {/* Right column left empty on purpose (future: promo, tips, etc.) */}
+                <div className="hidden lg:block" aria-hidden="true" />
               </div>
             </section>
           </div>
@@ -630,7 +632,12 @@ export default function LaunchWeekCompetitionsPage() {
 
         {/* Ending Soon Ticker */}
         {endingSoon.length > 0 && (
-          <div className="sticky top-[calc(44px+env(safe-area-inset-top))] z-30 bg-[#0f1b33]/95 px-3 py-2 border-b border-white/10 text-[12px]">
+          <div
+           className="sticky top-[calc(44px+env(safe-area-inset-top))] z-30 bg-[#0f1b33]/95 px-3 py-2 border-b border-white/10 text-[12px]"
+            role="region"
+            aria-live="polite"
+            aria-label="Ending soon competitions"
+          >
             <div className="mx-auto w-full max-w-[min(94vw,1400px)]">
               <div className="flex gap-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {endingSoon.slice(0, 4).map((c) => (
@@ -681,9 +688,9 @@ export default function LaunchWeekCompetitionsPage() {
                 {Array.from({ length: 10 }).map((_, i) => <SkeletonCard key={i} />)}
               </div>
             ) : error ? (
-              <EmptyState onRefresh={() => location.reload()} label="launch competitions" />
+              <EmptyState onRefresh={manualRefresh} label="launch competitions" />
             ) : filtered.length === 0 ? (
-              <EmptyState onRefresh={() => location.reload()} label={activeFilter.toLowerCase()} />
+              <EmptyState onRefresh={manualRefresh} label={activeFilter.toLowerCase()} />
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3.5 sm:gap-4">
                 {filtered.map((item) => (
