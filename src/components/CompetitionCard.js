@@ -7,11 +7,9 @@ import Link from 'next/link';
 import { useEffect, useState, useMemo } from 'react';
 import { usePiAuth } from 'context/PiAuthContext';
 import { useSafeTranslation } from '../hooks/useSafeTranslation';
-import GiftTicketModal from './GiftTicketModal';
 import '@fontsource/orbitron';
 
 const WIDTH = {
-  // a touch narrower + capped and centered with mx-auto in root
   fluid: 'w-full max-w-[440px]',
   sm: 'min-w-[240px] sm:min-w-[260px] max-w-[360px]',
   md: 'min-w-[280px] sm:min-w-[320px] max-w-[420px]',
@@ -24,9 +22,8 @@ export default function CompetitionCard({
   prize,
   fee,
   imageUrl,
-  // Keep images from being “giant” on mobile. Default is media-letterboxed.
   imageAspect = 'aspect-[16/9] sm:aspect-[4/3] lg:aspect-[16/9]',
-  imageFit = 'cover', // 'cover' or 'contain'
+  imageFit = 'cover',
   endsAt,
   hideButton = false,
   disableGift = false,
@@ -88,7 +85,7 @@ export default function CompetitionCard({
 
       setStatus('LIVE NOW');
       const diff = e - now;
-      setShowCountdown(diff <= 48 * 3600 * 1000); // last 48h only
+      setShowCountdown(diff <= 48 * 3600 * 1000);
 
       const d = Math.floor(diff / 86400000);
       const h = Math.floor((diff % 86400000) / 3600000);
@@ -96,24 +93,20 @@ export default function CompetitionCard({
       const sLeft = Math.floor((diff % 60000) / 1000);
 
       setTimeLeft(
-        d > 0
-          ? `${d}D ${h}H ${m}M`
-          : h > 0
-          ? `${h}H ${m}M`
-          : `${m}M ${String(sLeft).padStart(2, '0')}S`
+        d > 0 ? `${d}D ${h}H ${m}M` : h > 0 ? `${h}H ${m}M` : `${m}M ${String(sLeft).padStart(2, '0')}S`
       );
     }, 1000);
 
     return () => clearInterval(timer);
   }, [startAt, endAt]);
 
-  /* ---------- gift modal ---------- */
+  /* ---------- gift popup (coming soon) ---------- */
   const [showGiftModal, setShowGiftModal] = useState(false);
   const isGiftable = status === 'LIVE NOW' && !isSoldOut && (comp?.comp?.slug || comp?.slug);
 
   /* ---------- root classes ---------- */
   const root = [
-    'mx-auto', // center within its slot
+    'mx-auto',
     'flex flex-col overflow-hidden text-white font-orbitron',
     'bg-[#0f172a] border border-cyan-600 rounded-2xl shadow-md',
     'transition-transform duration-200 hover:scale-[1.02]',
@@ -131,7 +124,7 @@ export default function CompetitionCard({
           </h3>
         </div>
 
-        {/* Media (capped on mobile) */}
+        {/* Media */}
         <div className={`relative w-full ${imageAspect} bg-black/70`}>
           {img.external ? (
             <img
@@ -271,11 +264,10 @@ export default function CompetitionCard({
         )}
       </div>
 
-      {/* Gift Modal */}
-      <GiftTicketModal
+      {/* Coming-soon popup instead of real gifting modal */}
+      <ComingSoonModal
         isOpen={showGiftModal}
         onClose={() => setShowGiftModal(false)}
-        preselectedCompetition={comp}
       />
     </>
   );
@@ -287,6 +279,57 @@ function Row({ label, value }) {
     <div className="flex items-center justify-between">
       <span className="text-cyan-300 font-semibold">{label}:</span>
       <span className="font-medium">{value}</span>
+    </div>
+  );
+}
+
+/* ---------- Local "Coming Soon" modal ---------- */
+function ComingSoonModal({ isOpen, onClose }) {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-[9999]">
+      <button
+        type="button"
+        aria-label="Close"
+        onClick={onClose}
+        className="absolute inset-0 bg-black/60 backdrop-blur-[1px]"
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="relative z-[10000] mx-auto my-20 max-w-md w-[92%] sm:w-full
+                   bg-[#0f172a] border border-cyan-400 rounded-2xl p-6 text-white
+                   shadow-[0_0_30px_#00f0ff88]"
+        onClick={(e)=>e.stopPropagation()}
+      >
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-bold text-cyan-400">🎁 Gift Tickets</h2>
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={onClose}
+            className="text-gray-400 hover:text-white text-xl"
+          >
+            ✕
+          </button>
+        </div>
+        <p className="text-white/90">
+          Gifting tickets to other users is{' '}
+          <span className="font-semibold text-cyan-300">coming very soon</span>.
+        </p>
+        <p className="text-white/70 mt-2 text-sm">
+          We’re finishing the last details. Thanks for your patience!
+        </p>
+        <div className="mt-6 flex justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 rounded-lg bg-cyan-400 text-black font-bold"
+          >
+            Okay
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

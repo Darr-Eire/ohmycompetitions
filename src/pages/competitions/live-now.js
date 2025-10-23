@@ -3,10 +3,7 @@
 import Link from 'next/link';
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import Head from 'next/head';
-import dynamic from 'next/dynamic';
 import { RefreshCw, Sparkles, Trophy } from 'lucide-react';
-
-const GiftTicketModal = dynamic(() => import('@components/GiftTicketModal'), { ssr: false });
 
 const REFRESH_MS = 20000; // 20s soft live refresh
 
@@ -335,7 +332,7 @@ function LiveCard({ data, onGift }) {
 
         {/* Gift link */}
         <div className="mt-2 text-center">
-          <button onClick={() => onGift(data)} className="text-[12px] underline text-cyan-300">
+          <button onClick={() => onGift(data)} className="text-[12px] underline text-cyan-300" type="button">
             Gift a ticket
           </button>
         </div>
@@ -383,8 +380,9 @@ export default function AllCompetitionsPage() {
   const [activeFilter, setActiveFilter] = useState('Live');
   const [tick, setTick] = useState(0);
 
-  // Gift modal state
+  // Gift info-modal state
   const [giftOpen, setGiftOpen] = useState(false);
+  the
   const [giftComp, setGiftComp] = useState(null);
 
   const fetchData = useCallback(async () => {
@@ -548,7 +546,7 @@ export default function AllCompetitionsPage() {
 
         {/* Ending Soon Ticker */}
         {endingSoon.length > 0 && (
-          <div className="sticky top-[calc(44px+env(safe-area-inset-top))] z-30 bg-[#0f1b33]/95 px-3 py-2 border-b border-white/10 text-[12px]">
+          <div className="sticky top_[calc(44px+env(safe-area-inset-top))] z-30 bg-[#0f1b33]/95 px-3 py-2 border-b border-white/10 text-[12px]">
             <div className="mx-auto w-full max-w-[min(94vw,1400px)]">
               <div className="flex gap-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {endingSoon.slice(0, 4).map((c) => (
@@ -620,13 +618,51 @@ export default function AllCompetitionsPage() {
         </section>
       </main>
 
-      {/* Gift modal */}
+      {/* Inline “coming soon” Gift modal */}
       {giftOpen && giftComp && (
-        <GiftTicketModal
-          isOpen={giftOpen}
-          onClose={() => setGiftOpen(false)}
-          comp={giftComp}
-        />
+        <div
+          className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Gift Tickets"
+          onClick={() => setGiftOpen(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-xl border border-cyan-400 bg-[#101426] shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-4 py-3 border-b border-cyan-900/50 flex items-center justify-between">
+              <h4 className="text-lg font-bold text-cyan-300">Gift Tickets</h4>
+              <button onClick={() => setGiftOpen(false)} className="text-cyan-200 hover:text-white text-sm" type="button">
+                Close
+              </button>
+            </div>
+
+            <div className="p-4 space-y-2">
+              <p className="text-white/90">
+                Gifting tickets to other users is coming very soon.
+              </p>
+              {(giftComp?.title || giftComp?.comp?.title) && (
+                <p className="text-sm text-white/70">
+                  You’ll be able to gift tickets for:{' '}
+                  <span className="font-semibold">
+                    {giftComp?.title ?? giftComp?.comp?.title}
+                  </span>
+                </p>
+              )}
+            </div>
+
+            <div className="px-4 pb-4">
+              <button
+                onClick={() => setGiftOpen(false)}
+                className="w-full py-2 rounded-md font-bold text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:brightness-110"
+                type="button"
+              >
+                Got it
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* compact global styles */}

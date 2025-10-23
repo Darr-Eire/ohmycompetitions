@@ -6,7 +6,6 @@ import axios from 'axios';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 import { usePiAuth } from '../context/PiAuthContext';
-import GiftTicketModal from 'components/GiftTicketModal';
 import PiCashClaimBox from 'components/PiCashClaimBox';
 import StagesXPSection from '../components/StagesXPSection';
 import RedeemVoucherPanel from 'components/RedeemVoucherPanel';
@@ -220,7 +219,8 @@ export default function Account() {
         {activeTab === 'activity' && <ActivityPanel userId={userId} />}
       </main>
 
-      <GiftTicketModal isOpen={showGift} onClose={() => setShowGift(false)} />
+      {/* 🔔 Coming-soon modal instead of real gifting flow */}
+      <ComingSoonModal isOpen={showGift} onClose={() => setShowGift(false)} />
     </div>
   );
 }
@@ -523,5 +523,54 @@ function ShareReferralButton({ refLink }) {
     >
       {copied ? 'Copied!' : 'Share'}
     </button>
+  );
+}
+
+/* ------------------------- Coming Soon Modal ------------------------- */
+function ComingSoonModal({ isOpen, onClose }) {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-[9999]">
+      <button
+        type="button"
+        aria-label="Close"
+        onClick={onClose}
+        className="absolute inset-0 bg-black/60 backdrop-blur-[1px]"
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="relative z-[10000] mx-auto my-20 max-w-md w-[92%] sm:w-full
+                   bg-[#0f172a] border border-cyan-400 rounded-xl p-6 text-white
+                   shadow-[0_0_30px_#00f0ff88]"
+        onClick={(e)=>e.stopPropagation()}
+      >
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-bold text-cyan-400">🎁 Gift Tickets</h2>
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={onClose}
+            className="text-gray-400 hover:text-white text-xl"
+          >✕</button>
+        </div>
+        <p className="text-white/90">
+          Gifting tickets to other users is{' '}
+          <span className="font-semibold text-cyan-300">coming very soon</span>.
+        </p>
+        <p className="text-white/70 mt-2 text-sm">
+          We’re putting the final touches on this feature. Stay tuned!
+        </p>
+        <div className="mt-6 flex justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 rounded-lg bg-cyan-400 text-black font-bold"
+          >
+            Okay
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -1,12 +1,63 @@
+// file: src/pages/ticket-purchase/[...slug].js  (or wherever this page lives)
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import GiftTicketModal from '@components/GiftTicketModal';
 import LaunchCompetitionDetailCard from '@components/LaunchCompetitionDetailCard';
 import { usePiAuth } from '../../context/PiAuthContext';
+
+function GiftTicketModalInline({ isOpen, onClose, comp, preselectedCompetition }) {
+  const c = comp ?? preselectedCompetition ?? null;
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Gift Tickets"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md rounded-xl border border-cyan-400 bg-[#101426] shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="px-4 py-3 border-b border-cyan-900/50 flex items-center justify-between">
+          <h4 className="text-lg font-bold text-cyan-300">Gift Tickets</h4>
+          <button onClick={onClose} className="text-cyan-200 hover:text-white text-sm" type="button">
+            Close
+          </button>
+        </div>
+
+        <div className="p-4 space-y-2">
+          <p className="text-white/90">
+            Gifting tickets to other users is coming very soon.
+          </p>
+          {(c?.title || c?.comp?.title) && (
+            <p className="text-sm text-white/70">
+              You’ll be able to gift tickets for:{' '}
+              <span className="font-semibold">
+                {c?.title ?? c?.comp?.title}
+              </span>
+            </p>
+          )}
+        </div>
+
+        <div className="px-4 pb-4">
+          <button
+            onClick={onClose}
+            className="w-full py-2 rounded-md font-bold text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:brightness-110"
+            type="button"
+          >
+            Got it
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function TicketPurchasePage() {
   const router = useRouter();
@@ -155,11 +206,10 @@ export default function TicketPurchasePage() {
 
       {/* MODIFIED: Adjusted padding to control the "border" and "zoomed-in" feel */}
       <main className="min-h-screen w-full p-0 text-white bg-[#070d19] font-orbitron">
-     
-
         {/* MODIFIED: Added a div for content padding around the card */}
         <div className="px-4 sm:px-6 py-4 sm:py-6">
-            <LaunchCompetitionDetailCard            comp={comp}
+          <LaunchCompetitionDetailCard
+            comp={comp}
             title={comp?.title}
             prize={comp?.firstPrize ?? comp?.prize}
             imageUrl={comp?.imageUrl || comp?.thumbnail}
@@ -169,7 +219,7 @@ export default function TicketPurchasePage() {
             totalTickets={comp?.totalTickets ?? 0}
             status={status}
             fee={comp?.entryFee}
-            GiftTicketModal={GiftTicketModal}
+            GiftTicketModal={GiftTicketModalInline}
             description={desc}
             handlePaymentSuccess={handlePaymentSuccess}
             claimFreeTicket={claimFreeTicket}
@@ -177,7 +227,7 @@ export default function TicketPurchasePage() {
             sharedBonus={sharedBonus}
             user={user}
             login={login}
-            />
+          />
         </div>
       </main>
     </>
@@ -254,5 +304,5 @@ function toNum(v, d = 0) {
   return Number.isFinite(n) ? n : d;
 }
 function isFiniteNum(v) {
-  return typeof v === 'number' && Number.isFinite(v); 
+  return typeof v === 'number' && Number.isFinite(v);
 }
