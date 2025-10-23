@@ -47,7 +47,7 @@ export class PiNetworkService {
    */
   static connect() {
     // ❗️Do NOT hardcode a real key in code for production. Use env vars.
-    return new PiNetworkService("ekekxxceb2hfmgtoezrwmm9rjjh2vlk5pufwtzv8xtoif5olivlnng7rhowamlbg");
+    return new PiNetworkService("txhzlncl9eoidl6ck5bzjon49ynijmqc1xxilnzddrjtucvjdsthrs7nuc4qpi3h");
   }
 
   constructor(apiKey: string /* walletPrivateSeed?: string */) {
