@@ -75,7 +75,7 @@ export default function LaunchCompetitionCard({
   title: titleProp,
   prize: prizeProp,
 }) {
-  const c = comp?.comp ?? comp ?? {}
+const c = comp?.comp && Object.keys(comp.comp).length ? comp.comp : comp
 
   const title = titleProp ?? c.title ?? 'Launch Week'
   const slug = c.slug ?? ''

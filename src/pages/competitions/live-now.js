@@ -38,38 +38,17 @@ const toNum = (v, d = 0) => {
   }
   return d
 }
-const timeTo = (date) => (date ? new Date(date).getTime() - now() : 0)
-function msParts(ms) {
-  const total = Math.max(0, Math.floor(ms / 1000))
-  const days = Math.floor(total / 86400)
-  const hours = Math.floor((total % 86400) / 3600)
-  const minutes = Math.floor((total % 3600) / 60)
-  const seconds = total % 60
-  return { days, hours, minutes, seconds }
-}
-function pad(n) { return n < 10 ? `0${n}` : `${n}` }
-function getStatus(cLike) {
-  const c = cLike.comp ?? cLike
-  const start = c?.startsAt || c?.startAt || c?.drawOpensAt
-  const end   = c?.endsAt   || c?.endAt   || c?.drawAt      || c?.closingAt
-  const ts = now()
-  const startMs = start ? new Date(start).getTime() : null
-  const endMs   = end   ? new Date(end).getTime()   : null
-  if (startMs && ts < startMs) return 'upcoming'
-  if (endMs && ts > endMs) return 'ended'
-  return 'live'
-}
 
 /* ─────────────────────────────── Image fallbacks ─────────────────────────────── */
 const TECH_KEYWORDS = [
-  { re:/tv/i,                             img:'/images/tv.jpeg' },
+  { re:/tv/i,                             img:'/images/tv.jpg' },
   { re:/iphone|ios|apple/i,               img:'/images/iphone.jpg' },
   { re:/samsung|galaxy/i,                 img:'/images/galaxy.jpg' },
   { re:/ipad|tablet/i,                    img:'/images/tablet.jpg' },
   { re:/ps5|playstation/i,                img:'/images/playstation.jpeg' },
   { re:/xbox/i,                           img:'/images/xbox.jpg' },
   { re:/nintendo|switch/i,                img:'/images/switch.jpg' },
-  { re:/laptop|macbook|notebook/i,        img:'/images/laptop.jpg' },
+  { re:/laptop|mac book|notebook/i,        img:'/images/macbook.jpeg' },
   { re:/drone|dji/i,                      img:'/images/drone.jpg' },
   { re:/smartwatch|watch|fitbit|garmin/i, img:'/images/watch.jpg' },
 ]
@@ -134,7 +113,7 @@ function normalizeComp(raw) {
     prizePi: prizePi ?? undefined,
     pricePi: toNum(pricePi, 0),
     feePi: toNum(pricePi, 0),
-    entryFee: toNum(pricePi, 0), // ✅ ensures entry fee always available
+    entryFee: toNum(pricePi, 0),
     totalTickets,
     ticketsSold,
     maxPerUser,
@@ -144,6 +123,11 @@ function normalizeComp(raw) {
     tags,
     theme,
     freeEntryUrl,
+  }
+
+  // ✅ Preserve nested shape for Launch competitions
+  if (raw.comp) {
+    comp.comp = { ...raw.comp, ...comp }
   }
 
   return {
@@ -200,75 +184,68 @@ function classifyCategory(c) {
   return themed || 'launch'
 }
 
-/* ─────────────────────────────── Next draw countdown bar ─────────────────────────────── */
+/* ─────────────────────────────── Next draw countdown ─────────────────────────────── */
 function NextDrawBar({ items }) {
   const target = useMemo(() => {
-    const list = Array.isArray(items) ? items : []
-    const live = []
-    const upcoming = []
-    const ts = now()
+    const list = Array.isArray(items) ? items : [];
+    const ts = now();
+
+    const shape = (it, when) => {
+      const slug  = it.slug || it.comp?.slug;
+      const title = it.title || it.comp?.title || 'Competition';
+      return slug ? { when, slug, title } : null; // ignore if no slug
+    };
+
+    const live = [];
+    const upcoming = [];
+
     for (const it of list) {
-      const start = it.startsAt || it.comp?.startsAt
-      const end   = it.endsAt   || it.comp?.endsAt
-      const startMs = start ? new Date(start).getTime() : null
-      const endMs   = end   ? new Date(end).getTime()   : null
+      const start = it.startsAt || it.comp?.startsAt;
+      const end   = it.endsAt   || it.comp?.endsAt;
+      const startMs = start ? new Date(start).getTime() : null;
+      const endMs   = end   ? new Date(end).getTime()   : null;
+
       if (endMs && endMs > ts && (!startMs || ts >= startMs)) {
-        live.push({ when:endMs, slug: it.slug, title: it.title })
+        const row = shape(it, endMs);
+        if (row) live.push(row);
       } else if (startMs && startMs > ts) {
-        upcoming.push({ when:startMs, slug: it.slug, title: it.title })
+        const row = shape(it, startMs);
+        if (row) upcoming.push(row);
       }
     }
-    const pick = (arr) => arr.sort((a,b) => a.when - b.when)[0]
-    return pick(live) || pick(upcoming) || null
-  }, [items])
 
-  const [, setTick] = useState(0)
+    const pick = (arr) => arr.sort((a, b) => a.when - b.when)[0];
+    return pick(live) || pick(upcoming) || null;
+  }, [items]);
+
+  const [, setTick] = useState(0);
   useEffect(() => {
-    const id = setInterval(() => setTick(t => (t + 1) % 1e6), 1000)
-    return () => clearInterval(id)
-  }, [])
+    const id = setInterval(() => setTick((t) => (t + 1) % 1e6), 1000);
+    return () => clearInterval(id);
+  }, []);
 
-  if (!target) return null
+  if (!target) return null;
 
-  const left = Math.max(0, target.when - now())
-  const { days, hours, minutes, seconds } = msParts(left)
-  const GRAD_FROM = '#00ffd5'
-  const GRAD_TO   = '#0077ff'
+  const left = Math.max(0, target.when - now());
+  const days = Math.floor(left / 86400000);
+  const hours = Math.floor((left % 86400000) / 3600000);
+  const minutes = Math.floor((left % 3600000) / 60000);
+  const seconds = Math.floor((left % 60000) / 1000);
 
   return (
     <Link
-      href={`/competitions/${encodeURIComponent(target.slug)}`}
-      aria-label={`Next draw: ${target.title}`}
-      className="block rounded-xl p-[1px] bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow-[0_0_20px_rgba(34,211,238,0.25)] active:translate-y-px transition-transform"
+      href={`/competitions/${encodeURIComponent(target.slug)}`} // ✅ always links to the next competition’s slug
+      className="block rounded-xl p-[1px] bg-gradient-to-r from-[#00ffd5] to-[#0077ff]"
     >
-      <div className="rounded-[11px] bg-slate-950/85 px-3 py-2.5">
-        <div className="flex items-center justify-between gap-2">
-          <div className="text-[11px] sm:text-[12px] font-extrabold text-cyan-200 tracking-wide uppercase">
-            Next Draw
-          </div>
-          <div
-            className="max-w-[56%] truncate text-[12px] sm:text-[13px] font-semibold bg-gradient-to-r from-[var(--from)] to-[var(--to)] bg-clip-text text-transparent"
-            style={{ ['--from']: GRAD_FROM, ['--to']: GRAD_TO }}
-          >
-            {target.title}
-          </div>
-        </div>
-        <div className="mt-2 flex items-center justify-between gap-1.5">
-          {[{lbl:'D',val:days},{lbl:'H',val:hours},{lbl:'M',val:minutes},{lbl:'S',val:seconds}].map(({ lbl, val }) => (
-            <div key={lbl} className="flex-1 min-w-0 rounded-lg p-[1px] bg-gradient-to-b from-[rgba(0,255,213,0.65)] to-[rgba(0,119,255,0.65)]">
-              <div className="rounded-[7px] bg-slate-900/90 px-2 py-1.5 text-center">
-                <div className="font-extrabold text-[14px] text-white tabular-nums">{pad(val)}</div>
-                <div className="mt-0.5 text-[10px] uppercase tracking-wider text-cyan-200/80">{lbl}</div>
-              </div>
-            </div>
-          ))}
-        </div>
+      <div className="rounded-[11px] bg-slate-950/85 px-3 py-2.5 text-cyan-200 font-bold text-[12px] text-center">
+        🚀 Next Draw: {target.title} — {days}D {hours}H {minutes}M {seconds}S
       </div>
     </Link>
-  )
+  );
 }
 
-/* ─────────────────────────────── Card renderer ─────────────────────────────── */
+
+/* ─────────────────────────────── Card Renderer ─────────────────────────────── */
 function renderByCategory(id, common, fallback) {
   if (id === 'tech'        && TechCompetitionCard)   return <TechCompetitionCard {...common} />
   if (id === 'launch'      && LaunchCompetitionCard) return <LaunchCompetitionCard {...common} />
@@ -278,56 +255,63 @@ function renderByCategory(id, common, fallback) {
   return fallback ?? null
 }
 
+
 function CardPicker({ tab, item }) {
-  const common = { comp: item.comp ?? item, data: item.comp ?? item, competition: item.comp ?? item, item: item.comp ?? item }
-  return renderByCategory(tab, common, <GenericCard data={item} />) || <GenericCard data={item} />
+  if (tab === 'launch' && LaunchCompetitionCard) {
+    return (
+      <LaunchCompetitionCard
+        comp={item.comp ?? item}
+        title={item.title}     // ✅ pass top-level title
+        prize={item.prize}     
+        className=""
+      />
+    );
+  }
+
+  const common = {
+    comp: item.comp ?? item,
+    data: item,               
+    competition: item.comp ?? item,
+    item: item.comp ?? item
+  };
+
+  return renderByCategory(tab, common, <GenericCard data={item} />) || <GenericCard data={item} />;
 }
 
-/* ─────────────────────────────── Generic fallback card ─────────────────────────────── */
-function GenericCard({ data }) {
-  const status = getStatus(data)
-  const total = toNum(data.totalTickets)
-  const sold  = toNum(data.ticketsSold)
-  const pct   = total > 0 ? clamp((sold / total) * 100, 0, 100) : 0
-  const href = `/competitions/${data.slug}`
 
+/* ─────────────────────────────── Fallback Card ─────────────────────────────── */
+function GenericCard({ data }) {
+  const total = toNum(data.totalTickets)
+  const sold = toNum(data.ticketsSold)
+  const pct = total > 0 ? clamp((sold / total) * 100, 0, 100) : 0
   return (
-    <div className="rounded-xl border border-cyan-400/15 bg-slate-900/60 p-3 shadow-[0_0_12px_rgba(34,211,238,0.10)]">
-      <div className="text-[13px] font-extrabold line-clamp-2">{data.title}</div>
-      {!!data.prize && <div className="text-[12px] text-slate-300 mt-0.5">{data.prize}</div>}
-      <div className="mt-2 grid grid-cols-3 gap-1.5 text-[11px]">
-        <div className="rounded bg-slate-900/70 px-2 py-1"><div className="text-slate-400">Tickets</div><div className="font-bold">{sold} / {total || '∞'}</div></div>
-        <div className="rounded bg-slate-900/70 px-2 py-1"><div className="text-slate-400">Fee</div><div className="font-bold">{toNum(data.pricePi, 0)} π</div></div>
-        <div className="rounded bg-slate-900/70 px-2 py-1"><div className="text-slate-400">Status</div><div className="font-bold uppercase">{status}</div></div>
-      </div>
-      {total > 0 && (<div className="mt-2"><div className="h-1.5 rounded-full bg-slate-800/70 overflow-hidden"><div className="h-full bg-gradient-to-r from-cyan-400 to-blue-600" style={{ width: `${pct}%` }} /></div></div>)}
-      <div className="mt-2">
-        <Link href={href} className="inline-flex w-full items-center justify-center rounded-lg px-3 py-2 text-[12px] font-extrabold text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:brightness-110 active:translate-y-px transition">
-          {status === 'upcoming' ? 'View Details' : 'Enter Now'}
-        </Link>
+    <div className="rounded-xl border border-cyan-400/15 bg-slate-900/60 p-3">
+      <div className="font-bold text-sm mb-1">{data.title}</div>
+      <div className="text-xs text-cyan-300">{data.prize}</div>
+      <div className="text-xs mt-2">🎟 {sold}/{total || '∞'} sold</div>
+      <div className="h-1.5 bg-slate-800 rounded-full mt-1 overflow-hidden">
+        <div className="h-full bg-gradient-to-r from-[#00ffd5] to-[#0077ff]" style={{width:`${pct}%`}} />
       </div>
     </div>
   )
 }
 
-/* ─────────────────────────────── Main page ─────────────────────────────── */
+/* ─────────────────────────────── Page ─────────────────────────────── */
 export default function AllCompetitionsPage() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [q, setQ] = useState('')
   const [tab, setTab] = useState('tech')
+  const [q, setQ] = useState('')
 
   const fetchAll = useCallback(async () => {
     try {
-      setError('')
-      const res = await fetch('/api/competitions/all', { cache: 'no-store', headers: { Accept: 'application/json' } })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const res = await fetch('/api/competitions/all', { cache: 'no-store' })
       const json = await res.json()
       const arr = json?.data || []
       setItems(arr.map(normalizeComp))
     } catch (e) {
-      setError(e?.message || 'Failed to load')
+      setError(e.message)
     } finally {
       setLoading(false)
     }
@@ -339,17 +323,14 @@ export default function AllCompetitionsPage() {
     return () => clearInterval(t)
   }, [fetchAll])
 
-  // Filter
   const filtered = useMemo(() => {
     if (!q.trim()) return items
-    const s = q.trim().toLowerCase()
-    return items.filter(x => {
-      const title = (x.title || '').toLowerCase()
-      const prize = (x.prize || '').toLowerCase()
-      const slug  = (x.slug  || '').toLowerCase()
-      return title.includes(s) || prize.includes(s) || slug.includes(s)
-    })
-  }, [items, q])
+    const s = q.toLowerCase()
+    return items.filter(x =>
+      (x.title || '').toLowerCase().includes(s) ||
+      (x.prize || '').toLowerCase().includes(s)
+    )
+  }, [q, items])
 
   const buckets = useMemo(() => {
     const acc = { tech: [], launch: [], dailyweekly: [], pi: [], stages: [], free: [] }
@@ -357,111 +338,39 @@ export default function AllCompetitionsPage() {
     return acc
   }, [filtered])
 
-  // Auto-tab switch if empty
-  useEffect(() => {
-    if (buckets[tab]?.length) return
-    const first = CATEGORY_ORDER.find(k => buckets[k].length > 0) || 'tech'
-    setTab(first)
-  }, [buckets, tab])
-
-  // Swipe navigation
-  const touchStartX = useRef(0)
-  const onTouchStart = (e) => { touchStartX.current = e.changedTouches[0].clientX }
-  const onTouchEnd = (e) => {
-    const dx = e.changedTouches[0].clientX - touchStartX.current
-    if (Math.abs(dx) < 50) return
-    const idx = CATEGORY_ORDER.indexOf(tab)
-    if (dx < 0) for (let i = idx + 1; i < CATEGORY_ORDER.length; i++) if (buckets[CATEGORY_ORDER[i]].length) { setTab(CATEGORY_ORDER[i]); break }
-    else for (let i = idx - 1; i >= 0; i--) if (buckets[CATEGORY_ORDER[i]].length) { setTab(CATEGORY_ORDER[i]); break }
-  }
-
   const counts = Object.fromEntries(CATEGORY_ORDER.map(k => [k, buckets[k].length]))
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
+    <main className="min-h-screen bg-slate-950 text-white">
       <Head><title>All Competitions • OMC</title></Head>
-
-      {/* Header */}
       <div className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur border-b border-white/5">
-        <div className="mx-auto max-w-6xl px-3 sm:px-4">
+        <div className="mx-auto max-w-6xl px-3">
           <div className="py-2 flex items-center gap-2">
-            <h1 className="text-sm sm:text-base font-extrabold">All Competitions</h1>
-            <button onClick={fetchAll} className="ml-auto inline-flex items-center gap-1 rounded-md border border-cyan-400/20 px-2.5 py-1.5 text-[12px] bg-slate-900/60 active:translate-y-px">
-              <RefreshCw className="h-4 w-4" /> Refresh
-            </button>
+            <h1 className="font-extrabold text-base">All Competitions</h1>
+            <button onClick={fetchAll} className="ml-auto flex items-center gap-1 border border-cyan-400/20 px-2 py-1 rounded text-xs bg-slate-900"> <RefreshCw className="h-4 w-4"/>Refresh </button>
           </div>
-          <div className="pb-2"><NextDrawBar items={items} /></div>
-
-          {/* Search + Tabs */}
-          <div className="pb-2">
-            <div className="flex items-center gap-2 rounded-md border border-cyan-400/20 bg-slate-900/70 px-2.5 py-1.5 focus-within:border-cyan-400/40">
-              <Search className="h-4 w-4 opacity-80" />
-              <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search…" className="w-full bg-transparent text-[12px] sm:text-[13px] outline-none placeholder:text-slate-400" />
-              {q && <button onClick={() => setQ('')} className="text-[11px] opacity-80">Clear</button>}
-            </div>
-
-            <div className="mt-2 flex gap-2 overflow-x-auto -mx-1 px-1 pb-1 snap-x snap-mandatory scrollbar-thin [scrollbar-width:thin] scrollbar-thumb-cyan-500/30">
-              {CATS.map(c => {
-                const active = tab === c.id
-                const disabled = counts[c.id] === 0
-                return (
-                  <button
-                    key={c.id}
-                    disabled={disabled}
-                    onClick={() => setTab(c.id)}
-                    className={[
-                      'snap-start shrink-0 rounded-full px-3 py-1.5 text-[12px] font-bold min-w-max border transition',
-                      disabled ? 'opacity-40 cursor-not-allowed border-slate-600/30'
-                        : active ? 'border-cyan-400 bg-cyan-500/15 shadow-[0_0_12px_#22d3ee33] text-cyan-200'
-                        : 'border-cyan-400/20 bg-slate-900/70 text-slate-200'
-                    ].join(' ')}
-                  >
-                    <span className="mr-1">{c.emoji}</span>{c.label}
-                    <span className="ml-1 opacity-70">({counts[c.id] || 0})</span>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
+          <NextDrawBar items={items}/>
         </div>
       </div>
 
-      {/* Body */}
-      <div className="mx-auto max-w-6xl px-3 sm:px-4 py-3 sm:py-5" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-        {error && (<div className="mb-3 rounded-lg border border-rose-500/40 bg-rose-500/10 p-2.5 text-rose-200 text-[12px]">{error}</div>)}
-        {loading ? <ListSkeleton /> : counts[tab] === 0 ? <EmptyState /> : (
+      <div className="mx-auto max-w-6xl px-3 py-4">
+        {loading ? <p>Loading...</p> : error ? <p>{error}</p> : (
           <>
-            <div className="mb-2 text-[12px] text-cyan-300 font-extrabold">{CATS.find(c => c.id === tab)?.label}</div>
-            <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-3.5 lg:grid-cols-3">
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {CATS.map(c => (
+                <button key={c.id} onClick={() => setTab(c.id)} disabled={!counts[c.id]} className={`px-3 py-1.5 rounded-full border text-xs font-bold ${tab===c.id?'bg-cyan-500/15 border-cyan-400 text-cyan-200':'border-cyan-400/20 text-slate-200'}`}>
+                  {c.emoji} {c.label} ({counts[c.id]})
+                </button>
+              ))}
+            </div>
+            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {buckets[tab].map((item) => (
-                <li key={item._id} className="list-none">
-                  <CardPicker tab={tab} item={item} />
-                </li>
+                <li key={item._id}><CardPicker tab={tab} item={item} /></li>
               ))}
             </ul>
           </>
         )}
       </div>
     </main>
-  )
-}
-
-/* ─────────────────────────────── Skeleton & Empty ─────────────────────────────── */
-function ListSkeleton() {
-  return (
-    <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <li key={i} className="rounded-xl border border-cyan-400/10 bg-slate-900/50 p-3 animate-pulse h-44" />
-      ))}
-    </ul>
-  )
-}
-
-function EmptyState() {
-  return (
-    <div className="rounded-xl border border-cyan-400/10 bg-slate-900/60 p-4 text-center">
-      <Sparkles className="mx-auto h-5 w-5 text-cyan-300" />
-      <p className="mt-1 text-xs text-cyan-200/80 font-semibold">No competitions available.</p>
-    </div>
   )
 }
