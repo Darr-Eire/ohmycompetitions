@@ -3,18 +3,19 @@ import { dbConnect } from '../../../lib/dbConnect';
 import Competition from '../../../models/Competition';
 
 export default async function handler(req, res) {
-  // CORS (allow GET + preflight)
+  /* ──────────────────────────────── CORS ──────────────────────────────── */
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(204).end();
 
+  /* ──────────────────────────────── Method Guard ──────────────────────────────── */
   if (req.method !== 'GET') {
     res.setHeader('Allow', 'GET, OPTIONS');
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  // Normalize slug
+  /* ──────────────────────────────── Validate Slug ──────────────────────────────── */
   const raw = req.query.slug;
   if (typeof raw !== 'string' || !raw.trim()) {
     return res.status(400).json({ error: 'Missing slug parameter' });
@@ -24,6 +25,7 @@ export default async function handler(req, res) {
   try {
     await dbConnect();
 
+    /* ──────────────────────────────── Fetch Competition ──────────────────────────────── */
     const competition = await Competition.findOne({
       $or: [{ 'comp.slug': slug }, { slug }],
     })
@@ -40,15 +42,15 @@ export default async function handler(req, res) {
         'comp.paymentType': 1,
         'comp.piAmount': 1,
         'comp.location': 1,
-        'comp.maxPerUser': 1,      // ✅ include it
-        'comp.winnersCount': 1,    // ✅ include it
+        'comp.maxPerUser': 1,
+        'comp.winnersCount': 1,
 
         // top-level fields
         slug: 1,
         title: 1,
         prize: 1,
         prizeLabel: 1,
-        prizeBreakdown: 1,         // ✅ top-level, not comp.prizeBreakdown
+        prizeBreakdown: 1,
         imageUrl: 1,
         theme: 1,
         href: 1,
@@ -58,11 +60,13 @@ export default async function handler(req, res) {
       .lean();
 
     if (!competition) {
-      return res
-        .status(404)
-        .json({ error: 'Competition not found', code: 'COMPETITION_NOT_FOUND' });
+      return res.status(404).json({
+        error: 'Competition not found',
+        code: 'COMPETITION_NOT_FOUND',
+      });
     }
 
+    /* ──────────────────────────────── Normalize & Response ──────────────────────────────── */
     const c = competition.comp || {};
     const totalTickets = c.totalTickets ?? 100;
     const ticketsSold = c.ticketsSold ?? 0;
@@ -80,10 +84,10 @@ export default async function handler(req, res) {
       theme: competition.theme ?? null,
       href: competition.href ?? null,
 
-      // comp (numbers + meta)
+      // Numbers + meta
       ticketsSold,
       totalTickets,
-      percentSold, // optional convenience
+      percentSold,
       entryFee: c.entryFee ?? 0,
       piAmount: c.piAmount ?? c.entryFee ?? 0,
       status: c.status ?? 'active',
@@ -92,23 +96,24 @@ export default async function handler(req, res) {
       endsAt: c.endsAt ?? null,
       location: c.location ?? 'Online',
 
-      // ✅ the two fields your UI needs
+      // Key UI fields
       maxPerUser: c.maxPerUser ?? null,
       winnersCount: c.winnersCount ?? null,
 
-      // ✅ correct source (top-level in schema)
+      // Prize breakdown (top-level)
       prizeBreakdown: competition.prizeBreakdown ?? [],
 
       published: competition.published ?? true,
     };
 
-    // Cache (edge-friendly): 60s fresh, 5m SWR
+    /* ──────────────────────────────── Cache Control ──────────────────────────────── */
     res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
     return res.status(200).json(response);
   } catch (error) {
     console.error('❌ Error fetching competition:', error);
-    return res
-      .status(500)
-      .json({ error: error.message || 'Internal server error', code: 'INTERNAL_ERROR' });
+    return res.status(500).json({
+      error: error.message || 'Internal server error',
+      code: 'INTERNAL_ERROR',
+    });
   }
 }

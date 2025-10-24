@@ -1,7 +1,6 @@
-// src/components/CompetitionCard.js
+// file: src/components/CompetitionCard.js
 'use client';
 
-import ResponsiveImage from "./ResponsiveImage";
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState, useMemo } from 'react';
@@ -18,48 +17,44 @@ const WIDTH = {
 
 export default function CompetitionCard({
   comp = {},
-  title,
-  prize,
-  fee,
-  imageUrl,
-  imageAspect = 'aspect-[16/9] sm:aspect-[4/3] lg:aspect-[16/9]',
-  imageFit = 'cover',
-  endsAt,
-  hideButton = false,
-  disableGift = false,
-  children,
+  data,
+  competition,
+  item,
   size = 'md',
   className = '',
+  hideButton = false,
+  disableGift = false,
 }) {
   const { t } = useSafeTranslation();
   const { user } = usePiAuth();
+  const c = comp ?? data ?? competition ?? item ?? {};
 
   /* ---------- normalized props ---------- */
+  const headerTitle = c.title || t('exclusive_draw', 'Exclusive Draw');
+  const prize = c.prize ?? c.prizeLabel ?? '';
+  const entryFee = c.pricePi ?? c.entryFeePi ?? c.feePi ?? c.entryFee ?? 0;
+
   const img = useMemo(() => {
-    const src = (imageUrl || comp.imageUrl || comp.thumbnail || '/pi.jpeg')
+    const src = (c.imageUrl || '/pi.jpeg')
       .replace(/\\/g, '/')
       .replace(/^(?!\/|https?:\/\/)/, '/');
     const external = /^https?:\/\//i.test(src);
     return { src, external };
-  }, [imageUrl, comp?.imageUrl, comp?.thumbnail]);
+  }, [c.imageUrl]);
 
-  const fitClass = imageFit === 'contain' ? 'object-contain' : 'object-cover';
-  const headerTitle = title || comp?.title || t('exclusive_draw', 'Exclusive Draw');
-
-  const startAt = comp?.comp?.startsAt || comp?.startsAt || null;
-  const endAt =
-    endsAt || comp?.comp?.endsAt || comp?.endsAt || new Date(Date.now() + 864e5).toISOString();
-
-  const sold = comp?.comp?.ticketsSold ?? comp?.ticketsSold ?? 0;
-  const total = comp?.comp?.totalTickets ?? comp?.totalTickets ?? 100;
+  const total = c.totalTickets ?? 100;
+  const sold = c.ticketsSold ?? 0;
   const remaining = Math.max(0, total - sold);
   const soldPct = total > 0 ? Math.min((sold / total) * 100, 100) : 0;
-
   const isSoldOut = sold >= total;
   const lowStock = remaining <= total * 0.1 && remaining > 0;
   const nearlyFull = remaining <= total * 0.25 && remaining > 0;
 
   /* ---------- status + countdown ---------- */
+  const startAt = c.startsAt || c.startAt || null;
+  const endAt =
+    c.endsAt || c.endAt || new Date(Date.now() + 864e5).toISOString();
+
   const [status, setStatus] = useState('UPCOMING');
   const [timeLeft, setTimeLeft] = useState('');
   const [showCountdown, setShowCountdown] = useState(false);
@@ -93,21 +88,21 @@ export default function CompetitionCard({
       const sLeft = Math.floor((diff % 60000) / 1000);
 
       setTimeLeft(
-        d > 0 ? `${d}D ${h}H ${m}M` : h > 0 ? `${h}H ${m}M` : `${m}M ${String(sLeft).padStart(2, '0')}S`
+        d > 0
+          ? `${d}D ${h}H ${m}M`
+          : h > 0
+          ? `${h}H ${m}M`
+          : `${m}M ${String(sLeft).padStart(2, '0')}S`
       );
     }, 1000);
-
     return () => clearInterval(timer);
   }, [startAt, endAt]);
 
-  /* ---------- gift popup (coming soon) ---------- */
-  const [showGiftModal, setShowGiftModal] = useState(false);
-  const isGiftable = status === 'LIVE NOW' && !isSoldOut && (comp?.comp?.slug || comp?.slug);
+  const isGiftable = status === 'LIVE NOW' && !isSoldOut && (c.slug || c.comp?.slug);
 
-  /* ---------- root classes ---------- */
+  /* ---------- root styles ---------- */
   const root = [
-    'mx-auto',
-    'flex flex-col overflow-hidden text-white font-orbitron',
+    'mx-auto flex flex-col overflow-hidden text-white font-orbitron',
     'bg-[#0f172a] border border-cyan-600 rounded-2xl shadow-md',
     'transition-transform duration-200 hover:scale-[1.02]',
     WIDTH[size] || WIDTH.md,
@@ -118,19 +113,19 @@ export default function CompetitionCard({
     <>
       <div className={root}>
         {/* Header */}
-        <div className="relative z-10 px-4 py-3 bg-gradient-to-r from-[#00ffd5] via-[#00ccff] to-[#0077ff]">
-          <h3 className="w-full text-base font-bold uppercase text-black text-center truncate">
+        <div className="relative z-10 px-4 py-2 bg-gradient-to-r from-[#00ffd5] via-[#00ccff] to-[#0077ff]">
+          <h3 className="text-base font-bold uppercase text-black text-center truncate">
             {headerTitle}
           </h3>
         </div>
 
-        {/* Media */}
-        <div className={`relative w-full ${imageAspect} bg-black/70`}>
+        {/* Image */}
+        <div className="relative w-full aspect-[16/9] bg-black/70">
           {img.external ? (
             <img
               src={img.src}
               alt={headerTitle || 'Competition image'}
-              className={`w-full h-full ${fitClass}`}
+              className="w-full h-full object-cover"
               loading="lazy"
             />
           ) : (
@@ -139,7 +134,7 @@ export default function CompetitionCard({
               alt={headerTitle || 'Competition image'}
               fill
               priority={false}
-              className={fitClass}
+              className="object-cover"
               sizes="(max-width: 480px) 100vw, (max-width: 960px) 50vw, 33vw"
             />
           )}
@@ -177,6 +172,12 @@ export default function CompetitionCard({
         <div className="p-3 text-sm space-y-2">
           <Row label={t('prize', 'Prize')} value={prize} />
           <Row
+            label={t('entry_fee', 'Entry Fee')}
+            value={
+              entryFee > 0 ? `${entryFee} π` : t('free_entry', 'Free Entry')
+            }
+          />
+          <Row
             label={t('draw_date', 'Draw Date')}
             value={
               endAt
@@ -189,12 +190,13 @@ export default function CompetitionCard({
                 : t('tba', 'TBA')
             }
           />
-          <Row label={t('entry_fee', 'Entry Fee')} value={status === 'UPCOMING' ? t('tba', 'TBA') : fee} />
 
           {/* Tickets */}
           <div className="mt-2">
             <div className="flex items-center justify-between text-[13px]">
-              <span className="text-cyan-300">{t('tickets_sold', 'Tickets Sold')}</span>
+              <span className="text-cyan-300">
+                {t('tickets_sold', 'Tickets Sold')}
+              </span>
               <span
                 className={[
                   'font-semibold',
@@ -220,116 +222,50 @@ export default function CompetitionCard({
                     ? 'bg-orange-400'
                     : nearlyFull
                     ? 'bg-yellow-400'
-                    : 'bg-blue-500',
+                    : 'bg-gradient-to-r from-[#00ffd5] to-[#0077ff]',
                 ].join(' ')}
                 style={{ width: `${soldPct}%` }}
               />
             </div>
-            {isSoldOut && (
-              <p className="mt-1 text-center text-[12px] font-bold text-rose-400">
-                {t('sold_out', 'SOLD OUT')}
-              </p>
-            )}
           </div>
         </div>
 
         {/* Actions */}
-        {children ? (
-          children
-        ) : (
-          !hideButton && (
-            <div className="px-3 pb-3 space-y-2 mt-auto">
-              {comp?.comp?.slug || comp?.slug ? (
-                <Link href={`/ticket-purchase/${comp.comp?.slug || comp.slug}`} className="block">
-                  <button className="w-full py-2 rounded-md font-bold text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-sm hover:opacity-90">
-                    {t('enter_now', 'More Details')}
-                  </button>
-                </Link>
-              ) : (
-                <button className="w-full py-2 rounded-md font-bold text-white bg-zinc-600 text-sm">
-                  {t('not_available', 'Not Available')}
+        {!hideButton && (
+          <div className="px-3 pb-3 space-y-2 mt-auto">
+            {c.slug ? (
+              <Link href={`/ticket-purchase/${c.slug}`} className="block">
+                <button className="w-full py-2 rounded-md font-bold text-black text-sm bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:brightness-110 active:translate-y-px">
+                  {t('enter_now', 'More Details')}
                 </button>
-              )}
+              </Link>
+            ) : (
+              <button className="w-full py-2 rounded-md font-bold text-white bg-zinc-600 text-sm">
+                {t('not_available', 'Not Available')}
+              </button>
+            )}
 
-              {isGiftable && !disableGift && user?.username && (
-                <button
-                  onClick={() => setShowGiftModal(true)}
-                  className="w-full py-2 rounded-md font-bold text-cyan-400 border border-cyan-400 hover:bg-cyan-400 hover:text-black transition-colors text-sm"
-                >
-                  {t('gift_ticket', 'Gift Ticket')}
-                </button>
-              )}
-            </div>
-          )
+            {isGiftable && !disableGift && user?.username && (
+              <button
+                onClick={() => alert('🎁 Gift feature coming soon!')}
+                className="w-full py-2 rounded-md font-bold text-cyan-400 border border-cyan-400 hover:bg-cyan-400 hover:text-black transition-colors text-sm"
+              >
+                {t('gift_ticket', 'Gift Ticket')}
+              </button>
+            )}
+          </div>
         )}
       </div>
-
-      {/* Coming-soon popup instead of real gifting modal */}
-      <ComingSoonModal
-        isOpen={showGiftModal}
-        onClose={() => setShowGiftModal(false)}
-      />
     </>
   );
 }
 
-/* Small row helper */
+/* ---------- Helpers ---------- */
 function Row({ label, value }) {
   return (
     <div className="flex items-center justify-between">
       <span className="text-cyan-300 font-semibold">{label}:</span>
       <span className="font-medium">{value}</span>
-    </div>
-  );
-}
-
-/* ---------- Local "Coming Soon" modal ---------- */
-function ComingSoonModal({ isOpen, onClose }) {
-  if (!isOpen) return null;
-  return (
-    <div className="fixed inset-0 z-[9999]">
-      <button
-        type="button"
-        aria-label="Close"
-        onClick={onClose}
-        className="absolute inset-0 bg-black/60 backdrop-blur-[1px]"
-      />
-      <div
-        role="dialog"
-        aria-modal="true"
-        className="relative z-[10000] mx-auto my-20 max-w-md w-[92%] sm:w-full
-                   bg-[#0f172a] border border-cyan-400 rounded-2xl p-6 text-white
-                   shadow-[0_0_30px_#00f0ff88]"
-        onClick={(e)=>e.stopPropagation()}
-      >
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-bold text-cyan-400">🎁 Gift Tickets</h2>
-          <button
-            type="button"
-            aria-label="Close"
-            onClick={onClose}
-            className="text-gray-400 hover:text-white text-xl"
-          >
-            ✕
-          </button>
-        </div>
-        <p className="text-white/90">
-          Gifting tickets to other users is{' '}
-          <span className="font-semibold text-cyan-300">coming very soon</span>.
-        </p>
-        <p className="text-white/70 mt-2 text-sm">
-          We’re finishing the last details. Thanks for your patience!
-        </p>
-        <div className="mt-6 flex justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 rounded-lg bg-cyan-400 text-black font-bold"
-          >
-            Okay
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
