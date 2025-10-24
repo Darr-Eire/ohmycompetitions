@@ -1,4 +1,3 @@
-// File: src/components/Header.jsx
 'use client';
 
 import Link from 'next/link';
@@ -20,6 +19,9 @@ export default function Header() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const sidebarRef = useRef(null);
+
+  // NEW: local state for collapsible "Competitions" dropdown
+  const [isCompOpen, setIsCompOpen] = useState(true);
 
   // Buttons match app + mobile nav
   const BTN_BASE =
@@ -57,15 +59,14 @@ export default function Header() {
 
   const safeT = (key, fallback = key) => (!mounted || !ready ? fallback : t(key));
 
-  // Nav data
-  const competitionCategories = [
+  // ───────────────────────── Nav data (updated) ─────────────────────────
+  // Removed: Pi Daily / Tech & Gadgets / Launch Week etc.
+  // Only two entries under a single dropdown: Live Now + Active (all comps)
+  const competitionMenu = [
     [safeT('live_now', 'Live Now'), '/competitions/live-now'],
-    [safeT('launch_week', 'Launch Week'), '/competitions/launch-week'],
-    [safeT('tech_gadgets', 'Tech/Gadgets'), '/competitions/tech&gadgets'],
-    [safeT('daily_weekly', 'Daily/Weekly'), '/competitions/daily'],
-    [safeT('pi_giveaways', 'Pi Giveaways'), '/competitions/pi'],
-    
+    [safeT('all_competitions', 'Active Competitions'), '/competitions/active'],
   ];
+
   const navItems = [[safeT('home', 'Home'), '/homepage']];
   const miniGames = [[safeT('try_your_skill', 'Try Your Skill'), '/try-your-skill', safeT('coming_soon', 'Coming Soon')]];
   const navExtras = [
@@ -244,23 +245,22 @@ export default function Header() {
         aria-modal="true"
         aria-label="Site navigation"
       >
-     <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-white/[0.02] backdrop-blur">
-  <span className="text-cyan-300 font-orbitron text-lg">{safeT('menu', 'Menu')}</span>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-white/[0.02] backdrop-blur">
+          <span className="text-cyan-300 font-orbitron text-lg">{safeT('menu', 'Menu')}</span>
 
-  <div className="flex items-center gap-2">
-    {user && <NotificationsBell username={user.username} />}
+          <div className="flex items-center gap-2">
+            {user && <NotificationsBell username={user.username} />}
 
-    <button
-      onClick={() => setMenuOpen(false)}
-      className={`${BTN_BASE} ${BTN_GRADIENT} h-8 px-2 rounded-md`}
-      aria-label={safeT('close_menu', 'Close menu')}
-      title={safeT('close_menu', 'Close menu')}
-    >
-      ✕
-    </button>
-  </div>
-</div>
-
+            <button
+              onClick={() => setMenuOpen(false)}
+              className={`${BTN_BASE} ${BTN_GRADIENT} h-8 px-2 rounded-md`}
+              aria-label={safeT('close_menu', 'Close menu')}
+              title={safeT('close_menu', 'Close menu')}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
 
         <nav className="p-4 space-y-6">
           <div>
@@ -269,11 +269,43 @@ export default function Header() {
             ))}
           </div>
 
-          <Section title={safeT('competitions', 'Competitions')}>
-            {competitionCategories.map((tuple) => (
-              <Item key={tuple[1]} tuple={tuple} />
-            ))}
-          </Section>
+          {/* Collapsible Competitions dropdown */}
+          <div>
+            <button
+              onClick={() => setIsCompOpen((v) => !v)}
+              className="w-full flex items-center justify-between px-3 py-2 text-sm font-bold rounded border border-white/10 bg-white/[0.04] hover:bg-white/[0.07] text-cyan-200"
+              aria-expanded={isCompOpen}
+              aria-controls="comp-menu"
+            >
+              <span className="inline-flex items-center gap-2">
+                {/* trophy icon */}
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M8 21h8" />
+                  <path d="M12 17v4" />
+                  <path d="M7 4h10v4a5 5 0 0 1-10 0V4Z" />
+                  <path d="M17 8h1a3 3 0 0 0 3-3V4h-4" />
+                  <path d="M7 8H6a3 3 0 0 1-3-3V4h4" />
+                </svg>
+                {safeT('competitions', 'Competitions')}
+              </span>
+              <svg
+                className={`w-4 h-4 transition-transform ${isCompOpen ? 'rotate-180' : ''}`}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+            <div id="comp-menu" className={`${isCompOpen ? 'mt-2' : 'h-0 overflow-hidden'} transition-[max-height]`}>
+              <div className="pl-2 space-y-1">
+                {competitionMenu.map((tuple) => (
+                  <Item key={tuple[1]} tuple={tuple} />
+                ))}
+              </div>
+            </div>
+          </div>
 
           <Section title={safeT('mini_games', 'Mini Games')}>
             {miniGames.map((tuple) => (
@@ -301,143 +333,139 @@ export default function Header() {
       </aside>
 
       {/* Auth Modal */}
-   {showLoginModal && (
-  <>
-    {/* Backdrop */}
-    <div
-      className={`fixed inset-0 z-50 bg-black/70 backdrop-blur-sm transition-opacity ${isLoggingIn ? 'cursor-wait' : ''}`}
-      onClick={() => { if (!isLoggingIn) setShowLoginModal(false); }}
-      aria-hidden="true"
-    />
-
-    {/* Modal */}
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label="Login dialog"
-        aria-busy={isLoggingIn ? 'true' : 'false'}
-        className="w-full max-w-sm rounded-2xl border border-cyan-500/50 bg-[#0b1220] p-6 shadow-[0_0_40px_#22d3ee40] text-center"
-      >
-        {/* Heading */}
-        <h2 className="font-orbitron text-lg font-bold text-cyan-300">
-          {safeT('welcome', 'Welcome to OMC!')}{' '}
-          <span className="text-xs text-cyan-500">(Oh My Competitions)</span>
-        </h2>
-
-        {/* Sign up block */}
-        <div className="mt-4 flex flex-col gap-1.5">
-          <Link
-            href="/signup"
+      {showLoginModal && (
+        <>
+          {/* Backdrop */}
+          <div
+            className={`fixed inset-0 z-50 bg-black/70 backdrop-blur-sm transition-opacity ${isLoggingIn ? 'cursor-wait' : ''}`}
             onClick={() => { if (!isLoggingIn) setShowLoginModal(false); }}
-            tabIndex={isLoggingIn ? -1 : 0}
-            aria-disabled={isLoggingIn}
-            className={[
-              // keep your global .neon-button style if it exists
-              'neon-button',
-              // plus our Tailwind palette to match the app
-              'w-full px-3 py-2 text-sm font-semibold rounded-lg',
-              'bg-white/5 border border-cyan-400/50 text-cyan-200',
-              'hover:bg-cyan-400/10 hover:border-cyan-400',
-              'focus:outline-none focus:ring-2 focus:ring-cyan-400/60 focus:ring-offset-0',
-              isLoggingIn ? 'pointer-events-none opacity-60' : ''
-            ].join(' ')}
-          >
-            {safeT('sign_up_now', 'Sign Up Now')}
-          </Link>
-          <p className="text-xs italic text-cyan-400">
-            {safeT('create_account', 'Create your free OMC account and start competing today!')}
-          </p>
-        </div>
+            aria-hidden="true"
+          />
 
-        {/* Pi login block */}
-        <div className="mt-4 flex flex-col gap-1.5">
-          <button
-            onClick={async () => {
-              if (loading) return;
-              if (!sdkReady) {
-                try {
-                  if (typeof window !== 'undefined' && typeof window.__readyPi === 'function') {
-                    await window.__readyPi();
-                  } else {
-                    alert('Loading Pi SDK… Please try again in a moment (open in Pi Browser).');
-                    return;
+          {/* Modal */}
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Login dialog"
+              aria-busy={isLoggingIn ? 'true' : 'false'}
+              className="w-full max-w-sm rounded-2xl border border-cyan-500/50 bg-[#0b1220] p-6 shadow-[0_0_40px_#22d3ee40] text-center"
+            >
+              {/* Heading */}
+              <h2 className="font-orbitron text-lg font-bold text-cyan-300">
+                {safeT('welcome', 'Welcome to OMC!')}{' '}
+                <span className="text-xs text-cyan-500">(Oh My Competitions)</span>
+              </h2>
+
+              {/* Sign up block */}
+              <div className="mt-4 flex flex-col gap-1.5">
+                <Link
+                  href="/signup"
+                  onClick={() => { if (!isLoggingIn) setShowLoginModal(false); }}
+                  tabIndex={isLoggingIn ? -1 : 0}
+                  aria-disabled={isLoggingIn}
+                  className={[
+                    'neon-button',
+                    'w-full px-3 py-2 text-sm font-semibold rounded-lg',
+                    'bg-white/5 border border-cyan-400/50 text-cyan-200',
+                    'hover:bg-cyan-400/10 hover:border-cyan-400',
+                    'focus:outline-none focus:ring-2 focus:ring-cyan-400/60 focus:ring-offset-0',
+                    isLoggingIn ? 'pointer-events-none opacity-60' : ''
+                  ].join(' ')}
+                >
+                  {safeT('sign_up_now', 'Sign Up Now')}
+                </Link>
+                <p className="text-xs italic text-cyan-400">
+                  {safeT('create_account', 'Create your free OMC account and start competing today!')}
+                </p>
+              </div>
+
+              {/* Pi login block */}
+              <div className="mt-4 flex flex-col gap-1.5">
+                <button
+                  onClick={async () => {
+                    if (loading) return;
+                    if (!sdkReady) {
+                      try {
+                        if (typeof window !== 'undefined' && typeof window.__readyPi === 'function') {
+                          await window.__readyPi();
+                        } else {
+                          alert('Loading Pi SDK… Please try again in a moment (open in Pi Browser).');
+                          return;
+                        }
+                      } catch {
+                        alert('Pi SDK not ready yet. Please try again in a moment.');
+                        return;
+                      }
+                    }
+                    setIsLoggingIn(true);
+                    try {
+                      await login();
+                      setShowLoginModal(false);
+                    } catch (err) {
+                      console.error('❌ Pi Login failed:', err);
+                      alert(err?.message || 'Pi login failed. Please try again.');
+                    } finally {
+                      setIsLoggingIn(false);
+                    }
+                  }}
+                  disabled={loading || !sdkReady}
+                  title={
+                    loading
+                      ? 'Authorizing…'
+                      : !sdkReady
+                      ? 'Loading Pi SDK… Open in Pi Browser'
+                      : 'Login with Pi'
                   }
-                } catch {
-                  alert('Pi SDK not ready yet. Please try again in a moment.');
-                  return;
-                }
-              }
-              setIsLoggingIn(true);
-              try {
-                await login();
-                setShowLoginModal(false);
-              } catch (err) {
-                console.error('❌ Pi Login failed:', err);
-                alert(err?.message || 'Pi login failed. Please try again.');
-              } finally {
-                setIsLoggingIn(false);
-              }
-            }}
-            disabled={loading || !sdkReady}
-            title={
-              loading
-                ? 'Authorizing…'
-                : !sdkReady
-                ? 'Loading Pi SDK… Open in Pi Browser'
-                : 'Login with Pi'
-            }
-            className={[
-              'neon-button',
-              'w-full px-3 py-2 text-sm font-extrabold rounded-lg',
-              // primary gradient button (your app’s signature)
-              'bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black',
-              'shadow-[0_8px_24px_#22d3ee55]',
-              'hover:brightness-110 active:brightness-110',
-              'focus:outline-none focus:ring-2 focus:ring-cyan-300/70',
-              'disabled:opacity-60 disabled:cursor-not-allowed'
-            ].join(' ')}
-          >
-            {loading ? (
-              <span className="inline-flex items-center gap-2">
-                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.25" strokeWidth="4" />
-                  <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
-                </svg>
-                {safeT('logging_in', 'Logging in...')}
-              </span>
-            ) : !sdkReady ? (
-              safeT('loading_sdk', 'Loading Pi SDK…')
-            ) : (
-              safeT('login', 'Login')
-            )}
-          </button>
+                  className={[
+                    'neon-button',
+                    'w-full px-3 py-2 text-sm font-extrabold rounded-lg',
+                    'bg-gradient-to-r from-[#00ffd5] to-[#0077ff] text-black',
+                    'shadow-[0_8px_24px_#22d3ee55]',
+                    'hover:brightness-110 active:brightness-110',
+                    'focus:outline-none focus:ring-2 focus:ring-cyan-300/70',
+                    'disabled:opacity-60 disabled:cursor-not-allowed'
+                  ].join(' ')}
+                >
+                  {loading ? (
+                    <span className="inline-flex items-center gap-2">
+                      <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.25" strokeWidth="4" />
+                        <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+                      </svg>
+                      {safeT('logging_in', 'Logging in...')}
+                    </span>
+                  ) : !sdkReady ? (
+                    safeT('loading_sdk', 'Loading Pi SDK…')
+                  ) : (
+                    safeT('login', 'Login')
+                  )}
+                </button>
 
-          {error && <p className="mt-1 text-xs text-rose-400">{error}</p>}
+                {error && <p className="mt-1 text-xs text-rose-400">{error}</p>}
 
-          <p className="text-xs italic text-cyan-400">
-            {safeT('login_auto', 'Login will automatically log you in with Pi Auth.')}
-          </p>
-        </div>
+                <p className="text-xs italic text-cyan-400">
+                  {safeT('login_auto', 'Login will automatically log you in with Pi Auth.')}
+                </p>
+              </div>
 
-        {/* Cancel */}
-        <button
-          onClick={() => { if (!isLoggingIn) setShowLoginModal(false); }}
-          disabled={isLoggingIn}
-          aria-disabled={isLoggingIn}
-          className={`mt-3 text-xs ${
-            isLoggingIn
-              ? 'text-gray-500'
-              : 'text-gray-400 hover:text-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-300/60 rounded'
-          }`}
-        >
-          {safeT('cancel', 'Cancel')}
-        </button>
-      </div>
-    </div>
-  </>
-)}
-
+              {/* Cancel */}
+              <button
+                onClick={() => { if (!isLoggingIn) setShowLoginModal(false); }}
+                disabled={isLoggingIn}
+                aria-disabled={isLoggingIn}
+                className={`mt-3 text-xs ${
+                  isLoggingIn
+                    ? 'text-gray-500'
+                    : 'text-gray-400 hover:text-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-300/60 rounded'
+                }`}
+              >
+                {safeT('cancel', 'Cancel')}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Scrollbar Styles */}
       <style jsx>{`

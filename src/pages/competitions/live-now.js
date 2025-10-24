@@ -1,687 +1,441 @@
-// src/pages/competitions/all.js
-'use client';
-import Link from 'next/link';
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
-import Head from 'next/head';
-import { RefreshCw, Sparkles, Trophy } from 'lucide-react';
+// file: src/pages/competitions/all.js
+'use client'
 
-const REFRESH_MS = 20000; // 20s soft live refresh
+import Head from 'next/head'
+import Link from 'next/link'
+import dynamic from 'next/dynamic'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { RefreshCw, Search, Sparkles } from 'lucide-react'
 
-/* ------------------------------ utils ------------------------------ */
+/* ───────────────────── import your ACTUAL cards (lazy, SSR-safe) ───────────────────── */
+const DailyCompetitionCard   = dynamic(() => import('components/DailyCompetitionCard').catch(() => null), { ssr:false })
+const LaunchCompetitionCard  = dynamic(() => import('components/LaunchCompetitionCard').catch(() => null), { ssr:false })
+const PiCompetitionCard      = dynamic(() => import('components/PiCompetitionCard').catch(() => null), { ssr:false }) // Pi / Giveaways
+const FreeCompetitionCard    = dynamic(() => import('components/FreeCompetitionCard').catch(() => null), { ssr:false })
+const TechCompetitionCard    = dynamic(() => import('components/CompetitionCard').catch(() => null), { ssr:false })   // Tech & Gadgets
+
+/* ───────────────────────── Config ───────────────────────── */
+const REFRESH_MS = 20000 // 20s refresh
+
+/* ───────────────────────── Tiny Utils ───────────────────────── */
+const now = () => new Date().getTime()
+const clamp = (n, a, b) => Math.max(a, Math.min(b, n))
 const toNum = (v, d = 0) => {
-  const n = Number(v);
-  return Number.isFinite(n) ? n : d;
-};
-
-const now = () => new Date().getTime();
-
-function getStatus(c) {
-  const comp = c.comp ?? c;
-  const start = comp?.startsAt ? new Date(comp.startsAt).getTime() : null;
-  const end = comp?.endsAt ? new Date(comp.endsAt).getTime() : null;
-  const ts = now();
-  if (start && ts < start) return 'upcoming';
-  if (end && ts > end) return 'ended';
-  return 'live';
-}
-
-function msToShort(ms) {
-  if (ms <= 0) return '0m';
-  const s = Math.floor(ms / 1000);
-  const d = Math.floor(s / 86400);
-  const h = Math.floor((s % 86400) / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  if (d > 0) return `${d}d ${h}h`;
-  if (h > 0) return `${h}h ${m}m`;
-  return `${m}m`;
-}
-
-function timeUntilEndMs(c) {
-  const comp = c.comp ?? c;
-  const end = comp?.endsAt ? new Date(comp.endsAt).getTime() : null;
-  if (!end) return NaN;
-  return end - now();
-}
-
-function timeLeftLabel(c) {
-  const ms = timeUntilEndMs(c);
-  if (!Number.isFinite(ms)) return '—';
-  return msToShort(ms);
-}
-
-function ticketsProgress(c) {
-  const comp = c.comp ?? c;
-  const sold = toNum(comp?.ticketsSold);
-  const total = Math.max(toNum(comp?.totalTickets), sold || 0);
-  const pct = total > 0 ? Math.min(100, Math.round((sold / total) * 100)) : 0;
-  return { sold, total, pct };
-}
-
-function feePi(c) {
-  const comp = c.comp ?? c;
-  const fee = comp?.entryFee;
-  if (fee == null) return '—';
-  const n = Number.parseFloat(fee);
-  if (!Number.isFinite(n)) return String(fee);
-  if (n <= 0) return 'Free';
-  return (n % 1 === 0 ? n.toFixed(0) : n.toFixed(2)) + ' π';
-}
-
-const slugOf = (c) => {
-  const comp = c.comp ?? c;
-  return comp?.slug || comp?._id || '';
-};
-const titleOf = (c) => (c.title || (c.comp ?? c)?.title || 'Competition');
-const keyOf = (c) => slugOf(c) || titleOf(c);
-
-const purchaseHref = (c) => {
-  const slug = slugOf(c);
-  return slug ? `/ticket-purchase/${slug}` : '/ticket-purchase';
-};
-
-/* ------------------------------ Prize helpers (REAL PRIZE, never fee) ------------------------------ */
-function parseNumericLike(v) {
-  if (v == null) return NaN;
-  if (typeof v === 'number') return Number.isFinite(v) ? v : NaN;
+  if (v == null) return d
+  if (typeof v === 'number' && Number.isFinite(v)) return v
   if (typeof v === 'string') {
-    const stripped = v.replace(/[^\d.,-]/g, '').replace(',', '.').trim();
-    const n = Number(stripped);
-    return Number.isFinite(n) ? n : NaN;
+    const s = v.replace(/[^\d.,-]/g, '').replace(',', '.')
+    const n = Number(s)
+    return Number.isFinite(n) ? n : d
   }
-  return NaN;
+  return d
+}
+const timeTo = (date) => (date ? new Date(date).getTime() - now() : 0)
+function msShort(ms) {
+  if (!Number.isFinite(ms) || ms <= 0) return '0m'
+  const s = Math.floor(ms / 1000)
+  const d = Math.floor(s / 86400)
+  const h = Math.floor((s % 86400) / 3600)
+  const m = Math.floor((s % 3600) / 60)
+  if (d) return `${d}d ${h}h`
+  if (h) return `${h}h ${m}m`
+  return `${m}m`
+}
+function getStatus(cLike) {
+  const c = cLike.comp ?? cLike
+  const start = c?.startsAt || c?.startAt || c?.drawOpensAt
+  const end   = c?.endsAt   || c?.endAt   || c?.drawAt      || c?.closingAt
+  const ts = now()
+  const startMs = start ? new Date(start).getTime() : null
+  const endMs   = end   ? new Date(end).getTime()   : null
+  if (startMs && ts < startMs) return 'upcoming'
+  if (endMs && ts > endMs) return 'ended'
+  return 'live'
 }
 
-function prizePiDisplay(c) {
-  const raw = c.comp ?? c;
+/* ───────────────────────── Image fallbacks (tech) ───────────────────────── */
+const TECH_KEYWORDS = [
+  { re:/iphone|ios|apple/i,               img:'/images/iphone.jpg' },
+  { re:/samsung|galaxy/i,                 img:'/images/galaxy.jpg' },
+  { re:/ipad|tablet/i,                    img:'/images/tablet.jpg' },
+  { re:/ps5|playstation/i,                img:'/images/playstation.jpeg' },
+  { re:/xbox/i,                           img:'/images/xbox.jpg' },
+  { re:/nintendo|switch/i,                img:'/images/switch.jpg' },
+  { re:/laptop|macbook|notebook/i,        img:'/images/laptop.jpg' },
+  { re:/drone|dji/i,                      img:'/images/drone.jpg' },
+  { re:/smartwatch|watch|fitbit|garmin/i, img:'/images/watch.jpg' },
+]
+const PLACEHOLDER_IMG = '/images/placeholder.jpg'
+function isAbs(url='') { return /^https?:\/\//i.test(url) || url?.startsWith('/') }
+function normalizePath(url='') { if (!url) return ''; return isAbs(url) ? url : `/${url.replace(/^\.?\//,'')}` }
+function techFallbackImage({title='', tags=[]}) {
+  const text = `${title} ${(Array.isArray(tags)?tags.join(' '):'')}`.toLowerCase()
+  for (const {re, img} of TECH_KEYWORDS) if (re.test(text)) return img
+  return PLACEHOLDER_IMG
+}
 
-  // Never confuse fee with prize
-  const entryFee = parseNumericLike(raw.entryFee);
+/* ───────────────────────── Normalizer ───────────────────────── */
+function normalizeComp(raw) {
+  // Support both {comp: {...}} and flat
+  const c0 = raw?.comp ?? raw ?? {}
 
-  // 1) Explicit Pi prize fields
-  const piFields = ['prizeValuePi', 'prizePi', 'topPrizePi'];
-  for (const key of piFields) {
-    const n = parseNumericLike(raw[key]);
-    if (Number.isFinite(n) && (!Number.isFinite(entryFee) || n !== entryFee) && n > 0) {
-      return `${n.toLocaleString()} π`;
+  // Price/fee in Pi (various possible keys)
+  const pricePi = c0.pricePi ?? c0.entryFeePi ?? c0.ticketPricePi ??
+                  toNum(c0.price ?? c0.entryFee ?? c0.ticketPrice ?? c0.feePi, 0)
+
+  // Tickets
+  const totalTickets = toNum(c0.totalTickets ?? c0.ticketsTotal ?? c0.capacity ?? c0.capacityTotal ?? 0)
+  const ticketsSold  = toNum(c0.ticketsSold  ?? c0.sold         ?? c0.entries ?? c0.entriesCount ?? 0)
+  const maxPerUser   = toNum(c0.maxPerUser   ?? c0.limitPerUser ?? c0.maxEntriesPerUser ?? 0)
+
+  // Timing
+  const startsAt     = c0.startsAt || c0.startAt || c0.drawOpensAt || null
+  const endsAt       = c0.endsAt   || c0.endAt   || c0.drawAt      || c0.closingAt || null
+
+  // Prize
+  const prizePi      = c0.prizePi ?? null
+  const prizeText    = raw.prize ?? c0.prize ?? c0.prizeText ?? (prizePi ? `${prizePi} π` : '')
+  const prize        = prizeText
+
+  // Identity / tags
+  const title        = raw.title ?? c0.title ?? 'Competition'
+  const slug         = c0.slug || raw.slug || title
+  const tags         = Array.isArray(c0.tags) ? c0.tags : []
+
+  // Images: try many keys & arrays
+  let imageUrl = c0.imageUrl || c0.bannerUrl || c0.cover || c0.thumbnail || ''
+  if (!imageUrl && Array.isArray(c0.images) && c0.images.length) {
+    imageUrl = c0.images[0]?.url || c0.images[0]
+  }
+  if (!imageUrl) imageUrl = techFallbackImage({ title, tags })
+  imageUrl = normalizePath(imageUrl)
+
+  // Misc
+  const freeEntryUrl = c0.freeEntryUrl || c0.freeMethodUrl || null
+
+  const comp = {
+    ...c0,
+    _id: c0._id || raw?._id || slug,
+    slug,
+    title,
+    prize,
+    prizePi: prizePi ?? undefined,
+    pricePi: toNum(pricePi, 0),
+    feePi: toNum(pricePi, 0), // alias some cards expect
+    totalTickets,
+    ticketsSold,
+    maxPerUser,
+    startsAt,
+    endsAt,
+    imageUrl,
+    tags,
+    freeEntryUrl,
+  }
+
+  return {
+    _id: comp._id,
+    slug, title, prize, prizePi: comp.prizePi,
+    pricePi: comp.pricePi, feePi: comp.feePi,
+    totalTickets, ticketsSold, maxPerUser,
+    startsAt, endsAt, imageUrl, tags,
+    freeEntryUrl,
+    comp, // pass the rich object
+  }
+}
+
+/* ───────────────────────── Tabs (Live/Coming/All removed) ───────────────────────── */
+const CATS = [
+  { id: 'tech',       label: 'Tech & Gadgets',  emoji: '📱' },
+  { id: 'launch',     label: 'Launch Week',     emoji: '🚀' },
+  { id: 'dailyweekly',label: 'Weekly',          emoji: '🔥' },
+  { id: 'giveaways',  label: 'Pi',              emoji: '🎁' },
+  { id: 'stages',     label: 'Pi Stages',       emoji: '🏆' },
+  { id: 'free',       label: 'Free',            emoji: '✨' },
+]
+
+/* ───────────────────────── Category routing (tags + keywords) ───────────────────────── */
+const kw = (s = '', re) => re.test(String(s).toLowerCase())
+function inCat(c, id) {
+  const t = (c.tags || []).map(x => String(x).toLowerCase())
+  const title = (c.title || '').toLowerCase()
+  switch (id) {
+    case 'dailyweekly': return t.includes('daily') || t.includes('weekly') || kw(title, /(daily|weekly|micro)/)
+    case 'launch':      return t.includes('launch') || t.includes('launch-week') || t.includes('launchweek') || kw(title, /(launch|welcome)/)
+    case 'giveaways': {
+      const piish = ['pi', 'pi-only', 'pi only', 'pi-network', 'pinetwork', 'pi giveaway', 'pi-giveaway']
+      const hitTag = piish.some(k => t.includes(k)) || t.includes('giveaway') || t.includes('giveaways')
+      const hitTitle = kw(title, /\bpi\b|\bpi\s*giveaway\b|giveaway|prize pool|exclusive/)
+      return hitTag || hitTitle
     }
+    case 'stages':      return t.includes('stages') || t.includes('pi stages') || t.includes('pi-stages') || kw(title, /(stage|stages|qualify)/)
+    case 'free':        return t.includes('free') || t.includes('no-fee') || c.pricePi === 0 || kw(title, /\bfree\b/)
+    case 'tech':        return t.includes('tech') || t.includes('gadgets') || t.includes('technology') ||
+                               kw(title, /(tech|gadget|iphone|ps5|xbox|nintendo|ipad|tablet|laptop|drone|watch|samsung|galaxy|macbook)/)
+    default:            return false
   }
-
-  // 2) prizes[] array: use first numeric amount as π
-  if (Array.isArray(raw.prizes) && raw.prizes.length) {
-    for (const p of raw.prizes) {
-      const n = parseNumericLike(p?.amount ?? p?.value ?? p);
-      if (Number.isFinite(n) && (!Number.isFinite(entryFee) || n !== entryFee) && n > 0) {
-        return `${n.toLocaleString()} π`;
-      }
-    }
-  }
-
-  // 3) generic numeric prizeValue (assume π) if it's not the fee
-  const val = parseNumericLike(raw.prizeValue);
-  if (Number.isFinite(val) && (!Number.isFinite(entryFee) || val !== entryFee) && val > 0) {
-    return `${val.toLocaleString()} π`;
-  }
-
-  // 4) last resort: text fallbacks
-  const textCandidates = [
-    raw.topPrize,
-    raw.prizeLabel,
-    raw.prizeText,
-    raw.prize,
-    c.prize,
-  ].filter(Boolean);
-  if (textCandidates.length) return String(textCandidates[0]);
-
-  return 'TBA';
 }
 
-/* Ensure numeric prize text shows π; leave non-numeric text as-is */
-function ensurePiSymbol(txt) {
-  if (!txt) return 'Prize TBA';
-  const s = String(txt).trim();
-  if (/[π]/.test(s)) return s;
-  const n = parseNumericLike(s);
-  return Number.isFinite(n) ? `${n.toLocaleString()} π` : s;
-}
-
-/* ------------------------------ OMC Prize Banner ------------------------------ */
-function PrizeBanner({ title, prizeText }) {
-  const displayPrize = ensurePiSymbol(prizeText);
+/* ───────────────────────── Generic fallback card ───────────────────────── */
+function GenericCard({ data }) {
+  const status = getStatus(data)
+  const total = toNum(data.totalTickets)
+  const sold  = toNum(data.ticketsSold)
+  const pct   = total > 0 ? clamp((sold / total) * 100, 0, 100) : 0
+  const endsMs = data.endsAt ? timeTo(data.endsAt) : 0
+  const startsMs = data.startsAt ? timeTo(data.startsAt) : 0
+  const href = `/competitions/${data.slug}`
 
   return (
-    <div className="relative aspect-[4/3] w-full overflow-hidden">
-      {/* Neon gradient base */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#00ffd5] via-[#00b7ff] to-[#005eff]" />
-
-      {/* Cyber grid / dots */}
-      <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(rgba(255,255,255,0.7)_1.5px,transparent_1.5px)] [background-size:22px_22px]" />
-
-      {/* Radial glow rings */}
-      <div className="absolute -inset-10 opacity-30 blur-2xl pointer-events-none">
-        <div className="absolute left-1/3 top-1/3 w-72 h-72 rounded-full bg-cyan-300/40" />
-        <div className="absolute right-1/4 bottom-1/4 w-72 h-72 rounded-full bg-blue-400/40" />
+    <div className="rounded-2xl border border-cyan-400/15 bg-slate-900/60 p-3">
+      <div className="text-sm font-extrabold line-clamp-2">{data.title}</div>
+      {!!data.prize && <div className="text-xs text-slate-300 mt-1">{data.prize}</div>}
+      <div className="mt-2 grid grid-cols-3 gap-2 text-[11px]">
+        <div className="rounded bg-slate-900/70 px-2 py-1">
+          <div className="text-slate-400">Tickets</div>
+          <div className="font-bold">{sold} / {total || '∞'}</div>
+        </div>
+        <div className="rounded bg-slate-900/70 px-2 py-1">
+          <div className="text-slate-400">Fee</div>
+          <div className="font-bold">{toNum(data.pricePi, 0)} π</div>
+        </div>
+        <div className="rounded bg-slate-900/70 px-2 py-1">
+          <div className="text-slate-400">{status === 'upcoming' ? 'Starts In' : 'Ends In'}</div>
+          <div className="font-bold">{msShort(status === 'upcoming' ? startsMs : endsMs)}</div>
+        </div>
       </div>
-
-      {/* Inner glow frame */}
-      <div className="absolute inset-0 ring-1 ring-white/20 shadow-[0_0_50px_#22d3ee66_inset]" />
-
-      {/* Content */}
-      <div className="relative h-full w-full flex items-center justify-center text-center px-3">
-        <div className="max-w-[86%] select-none">
-          {/* BIG PRIZE */}
-          <div className="text-black drop-shadow-[0_3px_14px_rgba(255,255,255,0.7)]">
-            <div className="inline-flex items-baseline gap-1 rounded-2xl bg-white/35 px-3 py-1.5 ring-1 ring-white/60 shadow-[0_8px_28px_rgba(34,211,238,0.55)]">
-              <span className="text-[20px] sm:text-[28px] font-black leading-none tracking-tight">
-                {displayPrize}
-              </span>
-            </div>
+      {total > 0 && (
+        <div className="mt-2">
+          <div className="h-2 rounded-full bg-slate-800/70 overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-cyan-400 to-blue-600" style={{ width: `${pct}%` }} />
           </div>
-
-          {/* Title (centered) */}
-          <h3 className="mt-2 mx-auto w-full text-center text-[14px] sm:text-[16px] font-extrabold leading-snug text-black/90 line-clamp-2">
-            {title}
-          </h3>
+          <div className="mt-1 text-[11px] text-slate-400">{Math.round(pct)}% sold</div>
         </div>
-      </div>
-    </div>
-  );
-}
-
-const formatDate = (d) => {
-  if (!d) return '—';
-  const ts = typeof d === 'number' ? d : new Date(d).getTime();
-  if (!Number.isFinite(ts)) return '—';
-  return new Date(ts).toLocaleString(undefined, {
-    month: 'short',
-    day: 'numeric',
-  });
-};
-
-/* ------------------------------ background ------------------------------ */
-function BackgroundFX() {
-  return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-      <div className="absolute -top-1/3 left-1/2 -translate-x-1/2 w-[1100px] h-[1100px] rounded-full blur-3xl opacity-10 bg-gradient-to-br from-cyan-500/40 to-blue-600/40" />
-      <div className="absolute bottom-1/3 right-1/3 w-[700px] h-[700px] rounded-full blur-3xl opacity-10 bg-gradient-to-tl from-purple-500/40 to-pink-500/40" />
-      <div className="absolute inset-0 [background-image:radial-gradient(rgba(255,255,255,0.07)_1.5px,transparent_1.5px)] [background-size:22px_22px] opacity-10" />
-    </div>
-  );
-}
-
-/* ------------------------------ card (show image for TECH, banner otherwise) ------------------------------ */
-function LiveCard({ data, onGift }) {
-  const comp = data.comp ?? data;
-  const status = getStatus(data);
-  const { sold, total, pct } = ticketsProgress(data);
-
-  // Theme & media
-  const theme = (data.theme || comp.theme || '').toLowerCase();
-  const imgUrl = data.imageUrl || comp.imageUrl || '';
-
-  // Dates
-  const startTs = comp?.startsAt ? new Date(comp.startsAt).getTime() : null;
-  const endTs = comp?.endsAt ? new Date(comp.endsAt).getTime() : null;
-
-  // Show countdown only when ≤ 48h
-  const msLeft = Number.isFinite(endTs) ? endTs - now() : NaN;
-  const showCountdown48 = Number.isFinite(msLeft) && msLeft > 0 && msLeft <= 48 * 60 * 60 * 1000;
-  const timeLeft = showCountdown48 ? msToShort(msLeft) : (status === 'ended' ? 'Ended' : formatDate(endTs));
-
-  const theTitle = titleOf(data);
-  const prizeText = prizePiDisplay(data);
-  const feeText = feePi(data);
-
-  return (
-    <article
-      className="
-        group relative rounded-2xl border border-white/10 bg-white/5
-        overflow-hidden transition-all duration-200 hover:bg-white/10
-      "
-    >
-      {/* For TECH theme with an image, show the image; otherwise show the prize banner */}
-      {theme === 'tech' && imgUrl ? (
-        <div className="relative aspect-[4/3] w-full overflow-hidden">
-          <img
-            src={imgUrl}
-            alt={theTitle}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-            loading="lazy"
-            decoding="async"
-          />
-        </div>
-      ) : (
-        <PrizeBanner title={theTitle} prizeText={prizeText} />
       )}
-
-      {/* Status chip BELOW media/banner */}
-      <div className="px-3.5 sm:px-4 pt-2 flex justify-center">
-        {status === 'live' && (
-          <span className="rounded-md bg-emerald-500/25 px-2 py-0.5 text-emerald-200 text-[11px] font-bold">
-            LIVE
-          </span>
-        )}
-        {status === 'upcoming' && (
-          <span className="rounded-md bg-yellow-500/25 px-2 py-0.5 text-yellow-100 text-[11px] font-bold">
-            UPCOMING
-          </span>
-        )}
-        {status === 'ended' && (
-          <span className="rounded-md bg-white/25 px-2 py-0.5 text-white/90 text-[11px] font-bold">
-            FINISHED
-          </span>
-        )}
-      </div>
-
-      {/* Body */}
-      <div className="p-3.5 sm:p-4">
-        {/* Title + fee chip */}
-        <div className="flex items-start justify-between gap-3">
-          <h3 className="text-[15px] sm:text-[16px] font-semibold leading-snug line-clamp-2">
-            {theTitle}
-          </h3>
-        </div>
-
-        {/* Stacked details */}
-        <div className="mt-3 space-y-1.5 text-[13px] text-white">
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="text-white/60">Fee</span>
-            <span className="font-semibold">{feeText}</span>
-          </div>
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="text-white/60">Tickets</span>
-            <span className="font-semibold">
-              {total ? `${sold}/${total}` : sold}
-            </span>
-          </div>
-          {status === 'upcoming' && (
-            <div className="flex items-baseline justify-between gap-2">
-              <span className="text-white/60">Starts</span>
-              <span className="font-semibold">{formatDate(startTs)}</span>
-            </div>
-          )}
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="text-white/60">Ends</span>
-            <span className="font-semibold tabular-nums">{timeLeft}</span>
-          </div>
-        </div>
-
-        {/* Progress */}
-        <div className="mt-3">
-          <div className="h-2 w-full rounded-full bg-white/10 overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-cyan-400 to-blue-500"
-              style={{ width: `${pct}%` }}
-            />
-          </div>
-        </div>
-
-        {/* CTA */}
-        <div className="mt-3">
-          <Link
-            href={purchaseHref(data)}
-            className="
-              block w-full text-center rounded-lg
-              bg-gradient-to-r from-green-400 to-cyan-500
-              text-black font-extrabold px-3 py-2 text-[13px]
-              hover:brightness-110 active:translate-y-px transition-all
-            "
-          >
-            More Details
-          </Link>
-        </div>
-
-        {/* Gift link */}
-        <div className="mt-2 text-center">
-          <button onClick={() => onGift(data)} className="text-[12px] underline text-cyan-300" type="button">
-            Gift a ticket
-          </button>
-        </div>
-      </div>
-    </article>
-  );
-}
-
-/* ------------------------------ empty/skeleton ------------------------------ */
-function EmptyState({ onRefresh, label = 'competitions' }) {
-  return (
-    <div className="text-center py-12 rounded-xl border border-white/10 bg-white/5 mx-4 my-8">
-      <Sparkles className="mx-auto mb-4 text-cyan-400" size={32} />
-      <h3 className="text-lg font-semibold">No {label} right now</h3>
-      <p className="text-white/70 mt-2">New challenges are on the horizon. Stay tuned!</p>
-      <button
-        onClick={onRefresh}
-        type="button"
-        className="mt-6 inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold px-4 py-2 hover:brightness-110 active:translate-y-px transition-all
-      ">
-        <RefreshCw size={16} /> Refresh
-      </button>
-    </div>
-  );
-}
-
-function SkeletonCard() {
-  return (
-    <div className="animate-pulse rounded-2xl bg-white/5 border border-white/10 overflow-hidden">
-      <div className="aspect-[4/3] bg-white/10" />
-      <div className="p-3 space-y-2">
-        <div className="h-4 w-3/4 bg-white/10 rounded" />
-        <div className="h-3 w-1/2 bg-white/10 rounded" />
-        <div className="h-2 w-full bg-white/10 rounded" />
-      </div>
-    </div>
-  );
-}
-
-/* ------------------------------ page ------------------------------ */
-export default function AllCompetitionsPage() {
-  const [competitions, setCompetitions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [activeFilter, setActiveFilter] = useState('Live');
-  const [tick, setTick] = useState(0);
-
-  // Gift info-modal state
-  const [giftOpen, setGiftOpen] = useState(false);
-  const [giftComp, setGiftComp] = useState(null);
-
-  const fetchData = useCallback(async () => {
-    try {
-      setError(null);
-      const res = await fetch('/api/competitions/all', {
-        method: 'GET',
-        headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'cache-control': 'no-cache' },
-      });
-      if (!res.ok) throw new Error(`Failed to fetch competitions (${res.status})`);
-      const json = await res.json();
-      if (!json?.success || !Array.isArray(json?.data)) throw new Error(json?.error || 'Bad response shape');
-      setCompetitions(json.data);
-    } catch (e) {
-      console.error(e);
-      setError('Failed to load competitions. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-    const id = setInterval(() => setTick((t) => t + 1), REFRESH_MS);
-    return () => clearInterval(id);
-  }, [fetchData]);
-
-  useEffect(() => {
-    if (tick > 0) fetchData();
-  }, [tick, fetchData]);
-
-  // Filters
-  const filters = useMemo(() => {
-    const set = new Set(['Live', 'Ending Soon', 'All']);
-    for (const c of competitions) {
-      const theme = (c.theme || c?.comp?.theme || '').trim();
-      if (theme) set.add(theme.charAt(0).toUpperCase() + theme.slice(1));
-    }
-    return Array.from(set);
-  }, [competitions]);
-
-  // Normalized & sort helpers
-  const normalized = useMemo(() => {
-    return competitions.map((item) => {
-      const comp = item.comp ?? item;
-      const status = getStatus(item);
-      const end = comp?.endsAt ? new Date(comp.endsAt).getTime() : Number.POSITIVE_INFINITY;
-      const start = comp?.startsAt ? new Date(comp.startsAt).getTime() : 0;
-      const score = status === 'live' ? end : status === 'upcoming' ? start : end;
-      return {
-        ...item,
-        __status: status,
-        __score: score,
-        __end: end,
-        theme: (item.theme || item?.comp?.theme || '').toLowerCase(),
-      };
-    });
-  }, [competitions]);
-
-  // Ending soon list (< 60 min & live)
-  const endingSoon = useMemo(() => {
-    const cutoff = now() + 60 * 60 * 1000;
-    return normalized
-      .filter((n) => n.__status === 'live' && n.__end < cutoff)
-      .sort((a, b) => a.__end - b.__end);
-  }, [normalized]);
-
-  const filtered = useMemo(() => {
-    if (activeFilter === 'Live')
-      return normalized.filter(n => n.__status === 'live').sort((a, b) => a.__score - b.__score);
-    if (activeFilter === 'Ending Soon') {
-      return normalized
-        .filter(n => n.__status === 'live')
-        .sort((a, b) => a.__end - b.__end)
-        .slice(0, 24);
-    }
-    if (activeFilter === 'All') {
-      return normalized.slice().sort((a, b) => {
-        const rank = { live: 0, upcoming: 1, ended: 2 };
-        const r = rank[a.__status] - rank[b.__status];
-        return r !== 0 ? r : a.__score - b.__score;
-      });
-    }
-    const theme = activeFilter.toLowerCase();
-    return normalized
-      .filter((n) => n.theme === theme)
-      .sort((a, b) => {
-        const rank = { live: 0, upcoming: 1, ended: 2 };
-        const r = rank[a.__status] - rank[b.__status];
-        return r !== 0 ? r : a.__score - b.__score;
-      });
-  }, [normalized, activeFilter]);
-
-  const liveCount = normalized.filter(n => n.__status === 'live').length;
-  const totalPrizePool = useMemo(() => {
-    return competitions.reduce((sum, c) => sum + (toNum((c.comp ?? c)?.prizeValue, 0)), 0);
-  }, [competitions]);
-
-  const openGift = (c) => {
-    setGiftComp(c.comp ?? c);
-    setGiftOpen(true);
-    if (navigator.vibrate) navigator.vibrate(15);
-  };
-
-  const go = (c) => {
-    window.location.href = purchaseHref(c);
-  };
-
-  return (
-    <>
-      <Head>
-        <title>Live Pi Competitions | OhMyCompetitions</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-      </Head>
-
-      <main className="relative min-h-[100svh] text-white bg-[#0f1b33]">
-        <BackgroundFX />
-
-        {/* Slim header */}
-        <header className="relative z-10 pt-[calc(12px+env(safe-area-inset-top))] pb-3 sm:pb-4">
-          <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-              <div>
-                <h1 className="text-center mx-auto text-[22px] sm:text-[28px] font-extrabold tracking-tight">
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00ffd5] to-[#0077ff]">
-                    Live Competitions
-                  </span>
-                </h1>
-
-                <p className="text-center mx-auto text-white/70 text-[13px] sm:text-[14px]">
-                  Hand-picked tech, consoles and Pi compeitions with easy entry.
-                </p>
-              </div>
-
-              {/* compact stats */}
-              <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                <div className="web3-stat-card !px-3 !py-2">
-                  <Trophy size={18} className="text-yellow-300" />
-                  <span className="text-[10px] text-white/70">Total Pool</span>
-                  <span className="text-[14px] font-bold text-cyan-300">{totalPrizePool.toLocaleString()} π</span>
-                </div>
-                <div className="web3-stat-card !px-3 !py-2">
-                  <Sparkles size={18} className="text-purple-300" />
-                  <span className="text-[10px] text-white/70">Live Now</span>
-                  <span className="text-[14px] font-bold text-blue-400">{liveCount}</span>
-                </div>
-                <button
-                  onClick={() => location.reload()}
-                  className="web3-stat-card !px-3 !py-2 active:translate-y-px"
-                  title="Refresh"
-                  type="button"
-                >
-                  <RefreshCw size={18} className="text-orange-300" />
-                  <span className="text-[10px] text-white/70">Updated</span>
-                  <span className="text-[12px] font-bold text-pink-300">~{Math.round(REFRESH_MS/1000)}s</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Ending Soon Ticker */}
-        {endingSoon.length > 0 && (
-          <div className="sticky top_[calc(44px+env(safe-area-inset-top))] z-30 bg-[#0f1b33]/95 px-3 py-2 border-b border-white/10 text-[12px]">
-            <div className="mx-auto w-full max-w-[min(94vw,1400px)]">
-              <div className="flex gap-4 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                {endingSoon.slice(0, 4).map((c) => (
-                  <button
-                    key={keyOf(c)}
-                    onClick={() => go(c)}
-                    className="shrink-0 inline-flex items-center gap-2 px-2 py-1 rounded-md bg-white/5 hover:bg-white/10"
-                    type="button"
-                  >
-                    <span className="rounded-sm bg-pink-500/20 text-pink-300 px-1.5 py-0.5 text-[11px]">
-                      Ends {timeLeftLabel(c)}
-                    </span>
-                    <span className="text-white/80 truncate max-w-[200px]">
-                      {titleOf(c)}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* sticky filters */}
-        <div className="sticky top-[calc(6px+env(safe-area-inset-top))] z-20 bg-[#0f1b33]/95 backdrop-blur-sm border-y border-white/10">
-          <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
-            <div className="flex gap-2 overflow-x-auto py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {['Live', 'Ending Soon', 'All', ...filters.filter(f => !['Live','Ending Soon','All'].includes(f))].map((f) => (
-                <button
-                  key={f}
-                  onClick={() => setActiveFilter(f)}
-                  className={`shrink-0 rounded-full px-3.5 py-1.5 text-[13px] font-semibold transition
-                    ${activeFilter === f
-                      ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md'
-                      : 'text-white/70 hover:text-white hover:bg-white/10 border border-white/20'}`}
-                >
-                  {f}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* grid */}
-        <section className="py-6 sm:py-8">
-          <div className="mx-auto w-full max-w-[min(94vw,1400px)] px-2 sm:px-4">
-            {loading ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3.5 sm:gap-4">
-                {Array.from({ length: 10 }).map((_, i) => <SkeletonCard key={i} />)}
-              </div>
-            ) : error ? (
-              <EmptyState onRefresh={() => location.reload()} label="competitions" />
-            ) : filtered.length === 0 ? (
-              <EmptyState onRefresh={() => location.reload()} label={activeFilter.toLowerCase()} />
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3.5 sm:gap-4">
-                {filtered.map((item) => (
-                  <LiveCard
-                    key={keyOf(item)}
-                    data={item}
-                    onGift={(c) => {
-                      setGiftComp(c.comp ?? c);
-                      setGiftOpen(true);
-                    }}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
-      </main>
-
-      {/* Inline “coming soon” Gift modal */}
-      {giftOpen && giftComp && (
-        <div
-          className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Gift Tickets"
-          onClick={() => setGiftOpen(false)}
+      <div className="mt-2.5">
+        <Link
+          href={href}
+          className="inline-flex w-full items-center justify-center rounded-lg px-3 py-2 text-[13px] font-extrabold text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:brightness-110 active:translate-y-px transition"
         >
-          <div
-            className="w-full max-w-md rounded-xl border border-cyan-400 bg-[#101426] shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="px-4 py-3 border-b border-cyan-900/50 flex items-center justify-between">
-              <h4 className="text-lg font-bold text-cyan-300">Gift Tickets</h4>
-              <button onClick={() => setGiftOpen(false)} className="text-cyan-200 hover:text-white text-sm" type="button">
-                Close
-              </button>
-            </div>
+          {status === 'upcoming' ? 'View Details' : 'Enter Now'}
+        </Link>
+      </div>
+    </div>
+  )
+}
 
-            <div className="p-4 space-y-2">
-              <p className="text-white/90">
-                Gifting tickets to other users is coming very soon.
-              </p>
-              {(giftComp?.title || giftComp?.comp?.title) && (
-                <p className="text-sm text-white/70">
-                  You’ll be able to gift tickets for:{' '}
-                  <span className="font-semibold">
-                    {giftComp?.title ?? giftComp?.comp?.title}
-                  </span>
-                </p>
-              )}
-            </div>
+/* ───────────────────────── Category → Card renderer ───────────────────────── */
+function renderByCategory(id, common, fallback) {
+  if (id === 'tech'        && TechCompetitionCard)   return <TechCompetitionCard {...common} />
+  if (id === 'launch'      && LaunchCompetitionCard) return <LaunchCompetitionCard {...common} />
+  if (id === 'dailyweekly' && DailyCompetitionCard)  return <DailyCompetitionCard {...common} />
+  if (id === 'giveaways'   && PiCompetitionCard)     return <PiCompetitionCard {...common} />
+  if (id === 'stages'      && StagesCompetitionCard) return <StagesCompetitionCard {...common} />
+  if (id === 'free'        && FreeCompetitionCard)   return <FreeCompetitionCard {...common} />
+  return fallback ?? null
+}
 
-            <div className="px-4 pb-4">
-              <button
-                onClick={() => setGiftOpen(false)}
-                className="w-full py-2 rounded-md font-bold text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:brightness-110"
-                type="button"
-              >
-                Got it
-              </button>
+/* ───────────────────────── Card Picker (tab-only) ───────────────────────── */
+function CardPicker({ tab, item }) {
+  // Give your cards multiple prop aliases so they can consume what they expect
+  const common = {
+    comp: item.comp ?? item,
+    data: item.comp ?? item,
+    competition: item.comp ?? item,
+    item: item.comp ?? item,
+  }
+  return renderByCategory(tab, common, <GenericCard data={item} />) || <GenericCard data={item} />
+}
+
+/* ───────────────────────── Page ───────────────────────── */
+export default function AllCompetitionsPage() {
+  const [tab, setTab] = useState('tech') // default to first visible tab
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [q, setQ] = useState('')
+
+  const fetchAll = useCallback(async () => {
+    try {
+      setError('')
+      const res = await fetch('/api/competitions/all', { cache: 'no-store', headers: { Accept: 'application/json' } })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const json = await res.json()
+      const arr = Array.isArray(json) ? json : (json.items || json.data || json.competitions || json.results || [])
+      setItems(arr.map(normalizeComp))
+    } catch (e) {
+      setError(e?.message || 'Failed to load')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchAll()
+    const t = setInterval(fetchAll, REFRESH_MS)
+    return () => clearInterval(t)
+  }, [fetchAll])
+
+  // ticker to keep countdowns fresh
+  const [, setTick] = useState(0)
+  useEffect(() => {
+    const id = setInterval(() => setTick(t => (t + 1) % 1_000_000), 1000)
+    return () => clearInterval(id)
+  }, [])
+
+  // search
+  const filtered = useMemo(() => {
+    if (!q.trim()) return items
+    const s = q.trim().toLowerCase()
+    return items.filter(x => {
+      const title = (x.title || '').toLowerCase()
+      const prize = (x.prize || '').toLowerCase()
+      const slug  = (x.slug  || '').toLowerCase()
+      return title.includes(s) || prize.includes(s) || slug.includes(s)
+    })
+  }, [items, q])
+
+  // buckets (only category tabs)
+  const buckets = useMemo(() => {
+    const list = filtered
+    return {
+      tech:        list.filter(c => inCat(c, 'tech')),
+      launch:      list.filter(c => inCat(c, 'launch')),
+      dailyweekly: list.filter(c => inCat(c, 'dailyweekly')),
+      giveaways:   list.filter(c => inCat(c, 'giveaways')),
+      stages:      list.filter(c => inCat(c, 'stages')),
+      free:        list.filter(c => inCat(c, 'free')),
+    }
+  }, [filtered])
+
+  const counts = Object.fromEntries(CATS.map(c => [c.id, (buckets[c.id] || []).length]))
+  const dataByTab = buckets[tab] || []
+
+  return (
+    <main className="min-h-screen bg-slate-950 text-slate-100">
+      <Head><title>All Competitions • OMC</title></Head>
+
+      {/* sticky header (mobile-first) */}
+      <div className="sticky top-0 z-30 bg-slate-950/90 backdrop-blur border-b border-cyan-400/10">
+        <div className="mx-auto max-w-6xl px-3 sm:px-4">
+          <div className="py-3 flex items-center gap-2">
+            <h1 className="text-base sm:text-lg font-extrabold tracking-tight">All Competitions</h1>
+            <button
+              onClick={fetchAll}
+              className="ml-auto inline-flex items-center gap-1 rounded-lg border border-cyan-400/20 px-3 py-2 text-[13px] bg-slate-900/50 active:translate-y-px"
+            >
+              <RefreshCw className="h-4 w-4" /> Refresh
+            </button>
+          </div>
+
+          {/* search */}
+          <div className="pb-3">
+            <div className="flex items-center gap-2 rounded-xl border border-cyan-400/20 bg-slate-900/70 px-3 py-2 focus-within:border-cyan-400/40">
+              <Search className="h-4 w-4 opacity-80" />
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search competitions, prizes, slugs…"
+                className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
+              />
+              {q && <button onClick={() => setQ('')} className="text-xs opacity-80">Clear</button>}
             </div>
           </div>
+
+          {/* tabs (mobile: 2 cols, sm:3, lg:6) */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 pb-3">
+            {CATS.map(c => (
+              <button
+                key={c.id}
+                onClick={() => setTab(c.id)}
+                className={[
+                  'flex items-center justify-center gap-1.5 rounded-2xl border px-2 py-2 text-[13px] font-bold transition select-none',
+                  tab === c.id
+                    ? 'border-cyan-400 bg-cyan-500/10 shadow-[0_0_22px_#22d3ee33] text-cyan-200'
+                    : 'border-cyan-400/20 bg-slate-900/70 text-slate-200',
+                ].join(' ')}
+              >
+                {c.emoji && <span className="text-base">{c.emoji}</span>}
+                {c.label} <span className="opacity-70">({counts[c.id] || 0})</span>
+              </button>
+            ))}
+          </div>
         </div>
-      )}
+      </div>
 
-      {/* compact global styles */}
-      <style jsx global>{`
-        body { background-color: #0f1b33; color: white; }
+      {/* content */}
+      <div className="mx-auto max-w-6xl px-2 sm:px-4 py-3 sm:py-4">
+        {/* section header */}
+        <div className="mb-3">
+          <div className="w-full text-center text-[13px] sm:text-sm font-extrabold text-cyan-300 px-4 py-2 rounded-xl shadow-[0_0_30px_#00fff055] bg-gradient-to-r from-[#0f172a]/70 via-[#1e293b]/70 to-[#0f172a]/70 backdrop-blur border border-cyan-400">
+            {{
+              tech: 'Tech & Gadgets',
+              launch: 'Launch Week',
+              dailyweekly: 'Daily/Weekly',
+              giveaways: 'Pi Giveaways',
+              stages: 'OMC Pi Stages Competitions',
+              free: 'OMC Free Competitions',
+            }[tab]}
+          </div>
+        </div>
 
-        .web3-stat-card {
-          background: rgba(255,255,255,0.08);
-          backdrop-filter: blur(8px);
-          border: 1px solid rgba(255,255,255,0.15);
-          border-radius: 0.75rem;
-          padding: 0.75rem;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
-        .web3-stat-card svg { margin-bottom: 0.25rem; }
-      `}</style>
-    </>
-  );
+        {error && (
+          <div className="mb-4 rounded-xl border border-rose-500/40 bg-rose-500/10 p-3 text-rose-200 text-sm">{error}</div>
+        )}
+
+        {loading ? (
+          <ListSkeleton />
+        ) : dataByTab.length === 0 ? (
+          <EmptyState tab={tab} />
+        ) : (
+          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4">
+            {dataByTab.map((item) => (
+              <li key={item._id} className="list-none">
+                <CardPicker tab={tab} item={item} />
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {/* view more */}
+        {dataByTab.length > 6 && (
+          <div className="mt-4 flex justify-center">
+            <button
+              className="rounded-xl px-3 py-2 text-[13px] font-bold text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:brightness-110 active:translate-y-px transition"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            >
+              View More
+            </button>
+          </div>
+        )}
+      </div>
+    </main>
+  )
+}
+
+/* ───────────────────────── Minor UI helpers ───────────────────────── */
+function ListSkeleton() {
+  return (
+    <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <li key={i} className="rounded-2xl border border-cyan-400/10 bg-slate-900/50 p-3 animate-pulse h-48" />
+      ))}
+    </ul>
+  )
+}
+
+function EmptyState({ tab }) {
+  const map = {
+    tech: 'No Tech & Gadgets competitions yet.',
+    launch: 'No Launch Week competitions yet.',
+    dailyweekly: 'No Daily/Weekly competitions yet.',
+    giveaways: 'No Pi Giveaways yet.',
+    stages: 'No Stages competitions yet.',
+    free: 'No Free competitions yet.',
+  }
+  return (
+    <div className="rounded-2xl border border-cyan-400/10 bg-slate-900/60 p-5 text-center">
+      <Sparkles className="mx-auto mb-2" />
+      <p className="text-slate-300">{map[tab] || 'Nothing here right now.'}</p>
+    </div>
+  )
 }

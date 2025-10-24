@@ -179,9 +179,7 @@ export default function PiCompetitionCard({
       <div className={`relative w/full max-w-[19rem] sm:max-w-sm mx-auto p-4 bg-[#0f172a] rounded-xl text-white font-orbitron shadow-xl border-2 border-cyan-400 overflow-hidden ${className}`.replace('w/full','w-full')}>
         {/* Header */}
         <div className="flex flex-col items-center justify-center gap-2 text-sm mb-3 z-10 relative">
-          <span className="px-3 py-1 rounded-full border border-cyan-400 bg-cyan-600/30 text-white font-semibold text-center">
-            🌍 {t('pioneers_global_draw', 'Pioneers Global Competition')}
-          </span>
+
           <span
             className={`px-3 py-1 rounded-full font-bold text-xs shadow-md text-center ${
               status === 'LIVE NOW'

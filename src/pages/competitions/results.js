@@ -10,23 +10,23 @@ import dynamic from 'next/dynamic';
 const pick = (m, name) => m?.default ?? m?.[name] ?? null;
 
 const DailyCompetitionCard = dynamic(
-  () => import('../../components/DailyCompetitionCard').then((m) => pick(m, 'DailyCompetitionCard')).catch(() => null),
+  () => import('components/DailyCompetitionCard').then((m) => pick(m, 'DailyCompetitionCard')).catch(() => null),
   { ssr: false }
 );
 const CompetitionCard = dynamic(
-  () => import('../../components/CompetitionCard').then((m) => pick(m, 'CompetitionCard')).catch(() => null),
+  () => import('components/CompetitionCard').then((m) => pick(m, 'CompetitionCard')).catch(() => null),
   { ssr: false }
 );
 const StagesCard = dynamic(
-  () => import('../../components/FunnelStageCard').then((m) => pick(m, 'StagesCard')).catch(() => null),
+  () => import('components/FunnelStageCard').then((m) => pick(m, 'StagesCard')).catch(() => null),
   { ssr: false }
 );
 const CashCodeCard = dynamic(
-  () => import('../../components/CashCodeCard').then((m) => pick(m, 'CashCodeCard')).catch(() => null),
+  () => import('components/CashCodeCard').then((m) => pick(m, 'CashCodeCard')).catch(() => null),
   { ssr: false }
 );
 const PiCompetitionCard = dynamic(
-  () => import('../../components/PiCompetitionCard').then((m) => pick(m, 'PiCompetitionCard')).catch(() => null),
+  () => import('components/PiCompetitionCard').then((m) => pick(m, 'PiCompetitionCard')).catch(() => null),
   { ssr: false }
 );
 

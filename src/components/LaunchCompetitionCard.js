@@ -1,345 +1,276 @@
 // components/LaunchCompetitionCard.jsx
-'use client';
+'use client'
 
-import Link from 'next/link';
-import { useEffect, useState, useMemo } from 'react';
+import Link from 'next/link'
+import { useEffect, useMemo, useState } from 'react'
 
-/* ───────────── Prize helpers ───────────── */
-function formatPi(amount) {
-  if (amount == null) return 'TBA';
-  if (typeof amount === 'number' && Number.isFinite(amount)) {
-    return `${amount % 1 === 0 ? amount.toFixed(0) : amount.toFixed(2)} π`;
-  }
-  const s = String(amount).trim();
-  return /\bπ\b|[$€£]/.test(s) ? s : `${s} π`;
+/* Brand colors */
+const BRAND = { c1: '#00ffd5', c2: '#0077ff' }
+
+/* ───────── helpers ───────── */
+const clamp = (n, a, b) => Math.max(a, Math.min(b, n))
+const toNum = (v) => (Number.isFinite(Number(v)) ? Number(v) : null)
+const fmtPi = (v) => {
+  if (v == null || v === '') return 'TBA'
+  const n = Number(v)
+  if (Number.isFinite(n)) return `${n % 1 === 0 ? n.toFixed(0) : n.toFixed(2)} π`
+  const s = String(v)
+  return /\bπ\b|[$€£]/.test(s) ? s : `${s} π`
 }
 
-function normalizePrizeBreakdown(raw) {
-  if (!raw) return {};
-  if (typeof raw === 'object' && !Array.isArray(raw)) {
-    const out = {};
-    const map = {
-      '1st': '1st','first':'1st','first prize':'1st','grand':'1st','grand prize':'1st',
-      '2nd': '2nd','second':'2nd','second prize':'2nd',
-      '3rd': '3rd','third':'3rd','third prize':'3rd',
-    };
-    for (const [k, v] of Object.entries(raw)) {
-      const m = map[String(k).toLowerCase()];
-      if (m && out[m] == null) out[m] = v;
-    }
-    if (out['1st'] || out['2nd'] || out['3rd']) return out;
+/* Build 1st/2nd/3rd tiers from many possible shapes */
+function normalizeTiers(src, prizeProp) {
+  if (!src || typeof src !== 'object') src = {}
+  const out = {}
 
-    const sorted = Object.values(raw)
-      .map(v => ({ v, n: Number(String(v).replace(/[^\d.-]/g, '')) || -Infinity }))
-      .sort((a, b) => b.n - a.n)
-      .slice(0, 3);
-    const ord = ['1st', '2nd', '3rd'];
-    sorted.forEach((e, i) => { if (e?.v != null) out[ord[i]] = e.v; });
-    return out;
-  }
-  if (Array.isArray(raw)) {
-    const ord = ['1st', '2nd', '3rd'];
-    const out = {};
-    raw.slice(0, 3).forEach((v, i) => { out[ord[i]] = v; });
-    return out;
-  }
-  return {};
-}
+  // explicit fields
+  const f1 = src.firstPrize ?? src.prize1
+  const f2 = src.secondPrize ?? src.prize2
+  const f3 = src.thirdPrize ?? src.prize3
+  if (f1 != null) out['1st'] = f1
+  if (f2 != null) out['2nd'] = f2
+  if (f3 != null) out['3rd'] = f3
 
-function getPrizeTiers({ comp, prizeBreakdownProp, prizeProp }) {
-  const c = comp?.comp ?? comp ?? {};
-  const explicit = { '1st': c.firstPrize ?? c.prize1, '2nd': c.secondPrize ?? c.prize2, '3rd': c.thirdPrize ?? c.prize3 };
-  if (explicit['1st'] || explicit['2nd'] || explicit['3rd']) return explicit;
-
-  const fromProp  = normalizePrizeBreakdown(prizeBreakdownProp);
-  const fromComp  = normalizePrizeBreakdown(c.prizeBreakdown);
-  const fromArray = normalizePrizeBreakdown(c.prizes);
-
-  const tiers = { ...fromProp, ...fromComp, ...fromArray };
-  if (!tiers['1st'] && prizeProp != null) tiers['1st'] = prizeProp;
-  return tiers;
-}
-
-function getWinnersCount(comp, tiers) {
-  const c = comp?.comp ?? comp ?? {};
-  const direct = c.winners ?? c.totalWinners ?? c.numberOfWinners ?? c.numWinners;
-  const n = Number(direct);
-  if (Number.isFinite(n) && n > 0) return Math.min(3, Math.max(1, Math.floor(n)));
-
-  if (typeof direct === 'string') {
-    if (/single|one/i.test(direct)) return 1;
-    if (/two|2/i.test(direct))      return 2;
-    if (/three|3/i.test(direct))    return 3;
-    if (/multiple|multi/i.test(direct)) {
-      const count = Object.values(tiers || {}).filter(v => v != null).length;
-      return Math.min(3, count || 3);
+  // prizeBreakdown object
+  const bd = src.prizeBreakdown
+  if (bd && typeof bd === 'object' && !Array.isArray(bd)) {
+    const map = { '1st': /^(1st|first|grand)/i, '2nd': /^(2nd|second)/i, '3rd': /^(3rd|third)/i }
+    for (const [k, v] of Object.entries(bd)) {
+      if (map['1st'].test(k) && out['1st'] == null) out['1st'] = v
+      if (map['2nd'].test(k) && out['2nd'] == null) out['2nd'] = v
+      if (map['3rd'].test(k) && out['3rd'] == null) out['3rd'] = v
     }
   }
-  const count = Object.values(tiers || {}).filter(v => v != null).length;
-  return Math.min(3, count || 1);
+
+  // prizes array
+  if (Array.isArray(src.prizes)) {
+    if (out['1st'] == null && src.prizes[0] != null) out['1st'] = src.prizes[0]
+    if (out['2nd'] == null && src.prizes[1] != null) out['2nd'] = src.prizes[1]
+    if (out['3rd'] == null && src.prizes[2] != null) out['3rd'] = src.prizes[2]
+  }
+
+  if (out['1st'] == null && prizeProp != null) out['1st'] = prizeProp
+  return out
 }
 
-/* ───────────── Component ───────────── */
-export default function LaunchCompetitionCard({ comp = {}, title, prize, className = '' }) {
-  const {
-    slug = '',
-    entryFee = 0,
-    totalTickets = 100,
-    ticketsSold = 0,
-    startsAt,
-    endsAt,
-    comingSoon = false,
-    prizeBreakdown = {},
-    type = 'standard',
-  } = comp;
+/* Total prize pool (sum numeric tiers when possible) */
+function prizePoolFromTiers(tiers) {
+  const nums = ['1st', '2nd', '3rd']
+    .map((k) => toNum(String(tiers[k] ?? '').replace(/[^\d.,-]/g, '').replace(',', '.')))
+    .filter((n) => n != null)
+  if (!nums.length) return null
+  const total = nums.reduce((a, b) => a + b, 0)
+  return total
+}
 
-  const [status, setStatus] = useState('UPCOMING');
-  const [timeLeft, setTimeLeft] = useState('');
-  const [showCountdown, setShowCountdown] = useState(false);
+function statusFromDates(startsAt, endsAt) {
+  const now = Date.now()
+  const s = startsAt ? new Date(startsAt).getTime() : null
+  const e = endsAt ? new Date(endsAt).getTime() : null
+  if (s && now < s) return 'UPCOMING'
+  if (e && now > e) return 'ENDED'
+  return 'LIVE'
+}
 
-  const sold = Number.isFinite(Number(ticketsSold)) ? Number(ticketsSold) : 0;
-  const total = Number.isFinite(Number(totalTickets)) ? Math.max(0, Number(totalTickets)) : 100;
-  const remaining = Math.max(0, total - sold);
-  const progress = total > 0 ? Math.min(100, Math.max(0, Math.round((sold / total) * 100))) : 0;
+/* ───────── component ───────── */
+export default function LaunchCompetitionCard({
+  comp = {},
+  className = '',
+  title: titleProp,
+  prize: prizeProp,
+}) {
+  const c = comp?.comp ?? comp ?? {}
 
-  const isSoldOut = total > 0 && sold >= total;
-  const isLowStock = total > 0 && remaining <= total * 0.1 && remaining > 0;
-  const isNearlyFull = total > 0 && remaining <= total * 0.25 && remaining > 0;
+  const title = titleProp ?? c.title ?? 'Launch Week'
+  const slug = c.slug ?? ''
 
-  const tiers = useMemo(
-    () => getPrizeTiers({ comp, prizeBreakdownProp: prizeBreakdown, prizeProp: prize }),
-    [comp, prizeBreakdown, prize]
-  );
-  const winnersCount = useMemo(() => getWinnersCount(comp, tiers), [comp, tiers]);
+  const entryFee =
+    c.entryFeePi ?? c.pricePi ?? c.ticketPricePi ?? c.entryFee ?? c.price ?? c.ticketPrice ?? c.feePi ?? 0
 
-  const entryFeeLabel = useMemo(() => {
-    const n = Number(entryFee);
-    return !comingSoon && Number.isFinite(n) ? `${n.toFixed(2)} π` : 'TBA';
-  }, [entryFee, comingSoon]);
+  const totalTickets = toNum(c.totalTickets ?? c.ticketsTotal ?? c.capacity) ?? 0
+  const ticketsSold = clamp(toNum(c.ticketsSold ?? c.sold ?? c.entries) ?? 0, 0, Math.max(0, totalTickets))
+  const progress = totalTickets > 0 ? Math.round((ticketsSold / totalTickets) * 100) : 0
+  const remaining = totalTickets > 0 ? Math.max(0, totalTickets - ticketsSold) : null
 
+  const startsAt = c.startsAt ?? c.startAt ?? c.drawOpensAt ?? null
+  const endsAt   = c.endsAt   ?? c.endAt   ?? c.drawAt      ?? c.closingAt   ?? null
+
+  const status = statusFromDates(startsAt, endsAt)
+  const isLive = status === 'LIVE'
+  const isUpcoming = status === 'UPCOMING'
+  const isEnded = status === 'ENDED'
+
+  const tiers = useMemo(() => normalizeTiers(c, prizeProp), [c, prizeProp])
+  const winnersCount = useMemo(() => {
+    const n = Number(c.winners ?? c.totalWinners ?? c.numWinners)
+    if (Number.isFinite(n) && n > 0) return Math.min(3, Math.max(1, Math.floor(n)))
+    return Math.max(1, ['1st', '2nd', '3rd'].filter((k) => tiers[k] != null).length || 1)
+  }, [c, tiers])
+
+  const poolNum = prizePoolFromTiers(tiers)
+  const poolText = poolNum != null ? fmtPi(poolNum) : 'TBA'
+
+  // tiny live ticker to keep time-based UI in sync (keeps card height stable)
+  const [, setTick] = useState(0)
   useEffect(() => {
-    if (!endsAt || comingSoon) {
-      setStatus('COMING SOON');
-      setShowCountdown(false);
-      setTimeLeft('');
-      return;
-    }
-    const interval = setInterval(() => {
-      const now = Date.now();
-      const start = startsAt ? new Date(startsAt).getTime() : 0;
-      const end = new Date(endsAt).getTime();
+    if (!isLive || !endsAt) return
+    const id = setInterval(() => setTick((t) => (t + 1) % 1_000_000), 1000)
+    return () => clearInterval(id)
+  }, [isLive, endsAt])
 
-      if (start && now < start) {
-        setStatus('UPCOMING');
-        setShowCountdown(false);
-        setTimeLeft('');
-        return;
-      }
-      const diff = end - now;
-      if (diff <= 0) {
-        setStatus('ENDED');
-        setShowCountdown(false);
-        setTimeLeft('');
-        clearInterval(interval);
-        return;
-      }
-      setStatus('LIVE NOW');
-      // only show the ticking countdown in the last 24h
-      setShowCountdown(diff <= 24 * 60 * 60 * 1000);
-
-      const d = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
-      const m = Math.floor((diff / (1000 * 60)) % 60);
-      const s = Math.floor((diff / 1000) % 60);
-
-      let time = '';
-      if (d > 0) time += `${d}D `;
-      if (h > 0 || d > 0) time += `${h}H `;
-      if (m > 0 || h > 0 || d > 0) time += `${m}M `;
-      if (d === 0 && h === 0) time += `${s}S`;
-      setTimeLeft(time.trim());
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [endsAt, startsAt, comingSoon]);
-
-  const hasValidSlug = typeof slug === 'string' && slug.length > 0;
-  const competitionHref = hasValidSlug ? `/ticket-purchase/${encodeURIComponent(slug)}` : '#';
+  const drawText = endsAt ? new Date(endsAt).toLocaleDateString('en-GB') : 'TBA'
+  const entryFeeText = isUpcoming ? 'TBA' : fmtPi(entryFee)
+  const href = slug ? `/ticket-purchase/${encodeURIComponent(slug)}` : '#'
 
   return (
     <div
-      className={`
-        flex flex-col w-full mx-auto
-        bg-[#0f172a] border border-cyan-600 rounded-2xl shadow-lg
-        text-white font-orbitron overflow-hidden
-        select-none transition-colors duration-200
-        hover:shadow-[0_0_24px_rgba(0,255,213,0.18)]
-        ${className}
-      `}
-      style={{ WebkitTapHighlightColor: 'transparent' }}
+      className={[
+        'relative w-full max-w-sm mx-auto',
+        'rounded-2xl overflow-hidden',
+        'border border-cyan-400/60 bg-[#0b1220]/80 backdrop-blur',
+        'shadow-[0_0_30px_rgba(0,255,213,0.18)]',
+        'transition-transform duration-300 hover:scale-[1.02]',
+        'font-orbitron',
+        className,
+      ].join(' ')}
     >
-      {/* Header / Title */}
-      <div className="px-4 pt-4 text-center">
-        <h3 className="text-[18px] sm:text-[20px] font-bold bg-gradient-to-r from-cyan-300 to-blue-500 text-transparent bg-clip-text drop-shadow-md">
-          {title}
-        </h3>
-      </div>
+      {/* Neon bloom */}
+      <div className="pointer-events-none absolute inset-0 rounded-2xl bg-[radial-gradient(60%_60%_at_50%_0%,rgba(0,255,213,0.14),transparent_60%)]" />
 
-      {/* Status pill */}
-      <div className="px-4 pt-2">
-        <div
-          className={`text-center text-[11px] font-bold py-1 rounded-md ${
-            status === 'LIVE NOW'
-              ? 'bg-green-400 text-black'
-              : status === 'COMING SOON'
-              ? 'bg-yellow-500 text-black'
-              : status === 'ENDED'
-              ? 'bg-red-600 text-white'
-              : 'bg-orange-500 text-black'
-          }`}
-        >
-          {status}
+      {/* Header (no image) */}
+      <div className="relative z-10 px-4 pt-3 pb-2 border-b border-cyan-400/15 bg-slate-950/40">
+        <div className="flex items-center justify-between">
+          <h3
+            className="text-[16px] sm:text-[17px] font-extrabold tracking-wide uppercase bg-clip-text text-transparent"
+            style={{ backgroundImage: `linear-gradient(90deg, ${BRAND.c1}, ${BRAND.c2})` }}
+          >
+            {title}
+          </h3>
+     <div
+  className={[
+    'px-2 py-0.5 rounded-md text-[11px] font-extrabold shadow-sm',
+    isLive && 'bg-gradient-to-r from-emerald-300 to-green-400 text-black',
+    isUpcoming && 'bg-gradient-to-r from-orange-400 to-orange-500 text-black',
+    isEnded && 'bg-gradient-to-r from-rose-400 to-red-500 text-white',
+  ]
+    .filter(Boolean)
+    .join(' ')}
+>
+  {status === 'UPCOMING' ? 'COMING SOON' : status}
+</div>
+
         </div>
-      </div>
 
-      {/* Winners banner */}
-      <div className="text-center text-[11px] bg-cyan-500 text-black font-semibold py-1 mt-2 mx-4 rounded-md">
-        {winnersCount === 3 ? '1st • 2nd • 3rd Prizes' : winnersCount === 2 ? '1st • 2nd Prizes' : 'Single Winner'}
-      </div>
-
-      {/* Subline */}
-      <p className="text-center text-xs text-white mt-4">
-        Join us this Launch Week and be part of Pi history
-      </p>
-
-      {/* ── Fixed-height countdown slot to keep card heights identical ── */}
-      <div className="mt-2 min-h-[28px] sm:min-h-[32px] flex items-center justify-center">
-        {showCountdown ? (
-          <div className="text-cyan-300 text-sm font-bold font-mono tabular-nums tracking-wide">
-            {timeLeft}
-          </div>
-        ) : (
-          // Invisible placeholder reserves the same space & approx width
-          <div className="invisible text-cyan-300 text-sm font-bold font-mono tabular-nums tracking-wide">
-            00D 00H 00M 00S
-          </div>
-        )}
+        <div className="mt-2 flex items-center justify-center gap-2">
+          <span className="inline-flex items-center rounded-md bg-cyan-500/20 border border-cyan-400/30 text-cyan-200 px-2 py-0.5 text-[10px] font-bold">
+            Launch Week
+          </span>
+          <span className="inline-flex items-center rounded-md bg-blue-500/15 border border-blue-400/30 text-blue-200 px-2 py-0.5 text-[10px] font-bold">
+            {winnersCount === 1 ? 'Single Winner' : `${winnersCount} Winners`}
+          </span>
+        </div>
       </div>
 
       {/* Body */}
-      <div className="p-4 text-sm space-y-3">
-        {/* Prize Pool */}
-        <div className="relative rounded-xl border border-cyan-300 bg-cyan-300/10 p-4 shadow-[0_0_12px_rgba(34,211,238,0.25)]">
-          <div className="pointer-events-none absolute -inset-0.5 rounded-xl bg-cyan-300/10 blur-md animate-pulse" aria-hidden="true" />
-          <h4 className="relative text-center text-cyan-300 font-bold text-sm mb-3 tracking-wide">
-            Prize Pool
-          </h4>
+      <div className="relative z-10 p-3">
+        {/* Prize Pool (BIG) */}
+     <div className="mx-auto w-[96%] sm:w-[94%] rounded-xl border border-cyan-400/40 bg-gradient-to-r from-cyan-500/12 via-cyan-400/10 to-cyan-500/12 p-3 shadow-[0_0_10px_rgba(34,211,238,0.2)]">
+  <div className="text-center text-sm font-bold text-cyan-300">Prize Pool</div>
+  <div className="mt-1 text-center text-2xl sm:text-[26px] font-extrabold text-white tracking-wide">
+    {poolText}
+  </div>
 
-          <div className="relative grid grid-cols-1 gap-3">
-            {['1st','2nd','3rd'].slice(0, winnersCount).map((label) => (
-              <div
-                key={label}
-                className="flex items-center justify-between rounded-lg border border-cyan-300/40 bg-[#0b1220]/80 px-4 py-2"
-              >
-                <span className="text-[12px] uppercase tracking-wide text-cyan-300 font-semibold">
-                  {label} Prize
-                </span>
-                <span className="font-extrabold text-cyan-300 text-lg tabular-nums tracking-wide">
-                  {formatPi((getPrizeTiers({ comp, prizeBreakdownProp: prizeBreakdown, prizeProp: prize }))[label])}
-                </span>
-              </div>
-            ))}
+  {/* 1st / 2nd / 3rd under the pool */}
+  <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-1.5">
+    {['1st', '2nd', '3rd'].slice(0, winnersCount).map((k, i) => (
+      <div
+        key={k}
+        className={[
+          'rounded-lg px-3 py-2 text-center bg-white/5',
+          i === 0 ? 'border border-cyan-300/40' : 'border border-cyan-300/20',
+        ].join(' ')}
+      >
+        <div className="text-[10px] text-cyan-300 tracking-wider">{k} Prize</div>
+        <div className="text-white font-extrabold">{fmtPi(tiers[k])}</div>
+      </div>
+    ))}
+  </div>
+</div>
+
+
+        {/* Facts row */}
+        <div className="mt-2.5 grid grid-cols-3 gap-1.5 text-[11px]">
+          <div className="rounded-lg border border-cyan-300/25 bg-white/5 px-2 py-1">
+            <div className="text-slate-400">Entry Fee</div>
+            <div className="font-bold text-white">{entryFeeText}</div>
           </div>
-        </div>
-
-        {/* Key facts */}
-        <div className="flex justify-between items-center">
-          <span className="text-cyan-300 font-medium">Entry Fee</span>
-          <span className="text-white font-semibold">{entryFeeLabel}</span>
-        </div>
-
-        <div className="flex justify-between">
-          <span className="text-cyan-300">Draw Date</span>
-          <span>{endsAt ? new Date(endsAt).toLocaleDateString() : 'TBA'}</span>
-        </div>
-
-        {/* Tickets */}
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-cyan-300">Tickets Sold</span>
-            <div className="text-right">
-              {status === 'COMING SOON' ? (
-                <span className="text-sm font-semibold text-gray-300">TBA</span>
-              ) : (
-                <span
-                  className={`text-sm font-semibold ${
-                    isSoldOut
-                      ? 'text-red-400'
-                      : isLowStock
-                      ? 'text-orange-400'
-                      : isNearlyFull
-                      ? 'text-yellow-400'
-                      : 'text-gray-300'
-                  }`}
-                >
-                  {progress}% ({sold.toLocaleString()} / {total.toLocaleString()})
-                </span>
-              )}
-              {isSoldOut && <div className="text-xs text-red-400 font-bold">SOLD OUT</div>}
-              {isLowStock && !isSoldOut && (
-                <div className="text-xs text-orange-400 font-bold">Only {remaining} left!</div>
-              )}
-              {isNearlyFull && !isLowStock && !isSoldOut && (
-                <div className="text-xs text-yellow-400">{remaining} remaining</div>
-              )}
+          <div className="rounded-lg border border-cyan-300/25 bg-white/5 px-2 py-1">
+            <div className="text-slate-400">Draw Date</div>
+            <div className="font-bold text-white">{drawText}</div>
+          </div>
+          <div className="rounded-lg border border-cyan-300/25 bg-white/5 px-2 py-1">
+            <div className="text-slate-400">Tickets</div>
+            <div className="font-bold text-white">
+              {totalTickets ? `${ticketsSold} / ${totalTickets}` : '∞'}
             </div>
           </div>
-
-          <div className="w-full bg-gray-700 rounded-full h-2">
-            {status === 'COMING SOON' ? (
-              <div className="h-2 w-[20%] bg-gray-400 rounded-full animate-pulse" />
-            ) : (
-              <div
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  isSoldOut
-                    ? 'bg-red-500'
-                    : isLowStock
-                    ? 'bg-orange-500'
-                    : isNearlyFull
-                    ? 'bg-yellow-500'
-                    : 'bg-blue-500'
-                }`}
-                style={{ width: `${progress}%` }}
-              />
-            )}
-          </div>
         </div>
 
-        {/* CTA */}
-        {hasValidSlug ? (
-          <Link href={competitionHref} className="block mt-4 focus:outline-none focus-visible:outline-none">
-            <button
-              type="button"
-              disabled={comingSoon}
-              className={`w-full py-2 rounded-lg font-bold text-center transition-opacity duration-150 ${
-                comingSoon
-                  ? 'bg-gray-400 text-white cursor-not-allowed'
-                  : 'bg-gradient-to-r from-cyan-300 to-blue-500 text-black hover:opacity-90'
+        {/* Progress + stock hint */}
+        {totalTickets > 0 && (
+          <div className="mt-2.5">
+            <div className="w-full h-2 rounded-full bg-cyan-200/10 border border-cyan-300/30 overflow-hidden">
+              <div
+                className="h-full transition-[width] duration-700 ease-out bg-gradient-to-r from-[#00ffd5] via-blue-400 to-[#0077ff] shadow-[0_0_10px_rgba(0,255,213,0.5)]"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <p className="mt-1 text-center text-xs text-white">
+              Sold: <span className="font-semibold">{ticketsSold.toLocaleString()}</span>
+              {totalTickets ? ` / ${totalTickets.toLocaleString()}` : ''} ({progress}%)
+            </p>
+            <p
+              className={`-mt-0.5 text-center text-[11px] ${
+                isLive && remaining != null && remaining <= Math.max(5, Math.ceil(totalTickets * 0.1))
+                  ? 'text-cyan-300'
+                  : 'invisible select-none'
               }`}
-              style={{ WebkitTapHighlightColor: 'transparent' }}
             >
-              {comingSoon ? 'Coming Soon' : 'More Details'}
-            </button>
-          </Link>
-        ) : (
-          <button
-            type="button"
-            disabled
-            className="w-full py-2 rounded-lg font-bold text-center bg-gray-400 text-white cursor-not-allowed mt-4"
-          >
-            Unavailable
-          </button>
+              {remaining} tickets left! 🔥
+            </p>
+          </div>
         )}
+
+        {/* CTA */}
+        <div className="mt-2.5">
+          {isEnded ? (
+            <button
+              disabled
+              className="w-full py-2 rounded-md font-bold bg-slate-700 text-slate-300 cursor-not-allowed"
+            >
+              Ended
+            </button>
+          ) : isUpcoming || !slug ? (
+         
+            <button
+              disabled
+              className="w-full py-2 rounded-md font-bold text-black cursor-not-allowed opacity-70"
+              style={{ backgroundImage: `linear-gradient(90deg, ${BRAND.c1}, ${BRAND.c2})` }}
+            >
+              Coming Soon
+            </button>
+          ) : (
+            <Link href={href} legacyBehavior>
+              <a
+                className="block w-full rounded-md font-bold text-black text-center py-2 transition-transform duration-200 hover:scale-[1.02] hover:brightness-110"
+                style={{ backgroundImage: `linear-gradient(90deg, ${BRAND.c1}, ${BRAND.c2})` }}
+              >
+                More Details
+              </a>
+            </Link>
+          )}
+        </div>
       </div>
     </div>
-  );
+  )
 }
