@@ -18,7 +18,7 @@ const REFRESH_MS = 20000
 const CATS = [
   { id: 'tech',       label: 'Tech' },
   { id: 'launch',     label: 'Launch' },
-  { id: 'dailyweekly',label: 'Weekly/Daily' },
+  { id: 'dailyweekly',label: 'Weekly' },
   { id: 'pi',         label: 'Pi' },
   { id: 'stages',     label: 'Pi Stages' },
   { id: 'free',       label: 'Free' },
@@ -211,38 +211,36 @@ function NextDrawBar({ items }) {
       }
     }
 
-    const pick = (arr) => arr.sort((a, b) => a.when - b.when)[0];
-    return pick(live) || pick(upcoming) || null;
-  }, [items]);
+    const pick = (arr) => arr.sort((a, b) => a.when - b.when)[0]
+    return pick(live) || pick(upcoming) || null
+  }, [items])
 
-  const [, setTick] = useState(0);
+  const [, setTick] = useState(0)
   useEffect(() => {
-    const id = setInterval(() => setTick((t) => (t + 1) % 1e6), 1000);
-    return () => clearInterval(id);
-  }, []);
+    const id = setInterval(() => setTick((t) => (t + 1) % 1e6), 1000)
+    return () => clearInterval(id)
+  }, [])
 
-  if (!target) return null;
+  if (!target) return null
 
-  const left = Math.max(0, target.when - now());
-  theDays: {
-  }
-  const days = Math.floor(left / 86400000);
-  const hours = Math.floor((left % 86400000) / 3600000);
-  const minutes = Math.floor((left % 3600000) / 60000);
-  const seconds = Math.floor((left % 60000) / 1000);
+  const left = Math.max(0, target.when - now())
+  const days = Math.floor(left / 86400000)
+  const hours = Math.floor((left % 86400000) / 3600000)
+  const minutes = Math.floor((left % 3600000) / 60000)
+  const seconds = Math.floor((left % 60000) / 1000)
 
-  let progressPct = null;
+  let progressPct = null
   if (target.startMs && target.endMs && target.endMs > target.startMs) {
-    const span = target.endMs - target.startMs;
-    const elapsed = clamp(now() - target.startMs, 0, span);
-    progressPct = (elapsed / span) * 100;
+    const span = target.endMs - target.startMs
+    const elapsed = clamp(now() - target.startMs, 0, span)
+    progressPct = (elapsed / span) * 100
   }
 
-  const isLive = target.state === 'live';
-  const badgeText = isLive ? 'LIVE' : 'UPCOMING';
+  const isLive = target.state === 'live'
+  const badgeText = isLive ? 'LIVE' : 'UPCOMING'
   const badgeClass = isLive
     ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30'
-    : 'bg-amber-500/20 text-amber-300 border-amber-400/30';
+    : 'bg-amber-500/20 text-amber-300 border-amber-400/30'
 
   return (
     <Link href={`/ticket-purchase/${encodeURIComponent(target.slug)}`} aria-label={`Go to ${target.title}`} className="group block">
@@ -378,50 +376,67 @@ export default function AllCompetitionsPage() {
     <main className="min-h-screen bg-slate-950 text-cyan-200">
       <Head><title>All Competitions</title></Head>
 
-      {/* Sticky header */}
+      {/* Sticky title only */}
       <div className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur border-b border-white/5">
         <div className="mx-auto max-w-6xl px-4">
-          {/* Centered title row */}
           <div className="py-3 flex items-center justify-center">
             <h1 className="font-orbitron font-extrabold text-base text-cyan-300 text-center">
               All Competitions
             </h1>
-          </div>
-
-          {/* Timer with extra breathing room on mobile */}
-          <div className="mb-3">
-            <NextDrawBar items={items}/>
           </div>
         </div>
       </div>
 
       {/* Content */}
       <div className="mx-auto max-w-6xl px-4 py-6 lg:py-10">
-        {loading ? <p>Loading...</p> : error ? <p>{error}</p> : (
-          <div className="space-y-5 sm:space-y-6">
-            {/* Tabs – larger touch targets, better scroll area on mobile */}
-            <div className="flex gap-3 overflow-x-auto pb-2 scroll-px-4 snap-x snap-mandatory [-webkit-overflow-scrolling:touch]">
-              {CATS.map(c => (
-                <button
-                  key={c.id}
-                  onClick={() => setTab(c.id)}
-                  disabled={!counts[c.id]}
-                  className={`snap-start px-4 py-2 rounded-full border font-bold text-sm
-                    ${tab===c.id
-                      ? 'bg-cyan-500/15 border-cyan-400 text-cyan-200'
-                      : 'border-cyan-400/20 text-slate-200'
-                    } disabled:opacity-40 disabled:cursor-not-allowed`}
-                >
-                  {c.label} ({counts[c.id]})
-                </button>
-              ))}
-            </div>
+        {/* Next draw is NOT sticky anymore */}
+        <div className="mb-5">
+          <NextDrawBar items={items}/>
+        </div>
 
-            {/* Grid – looser base spacing on mobile */}
-            <ul className="grid grid-cols-1 gap-y-7 gap-x-4 sm:grid-cols-2 sm:gap-y-8 sm:gap-x-6 lg:grid-cols-3 lg:gap-y-10 lg:gap-x-8">
+        {loading ? <p>Loading...</p> : error ? <p>{error}</p> : (
+          <div className="space-y-6 sm:space-y-7">
+            {/* Tabs */}
+      {/* Tabs – compact on mobile */}
+<div className="flex items-center gap-2 overflow-x-auto scrollbar-none -mx-1 px-1
+                snap-x snap-mandatory [--pad:0.375rem] sm:[--pad:0.5rem]">
+  {CATS.map(c => {
+    const active = tab === c.id
+    return (
+      <button
+        key={c.id}
+        onClick={() => setTab(c.id)}
+        disabled={!counts[c.id]}
+        className={[
+          // sizing: compact base, scale up on sm+
+          'shrink-0 whitespace-nowrap snap-center md:snap-start',
+          'px-3 py-[var(--pad)] text-[12px] sm:px-4 sm:py-[var(--pad)] sm:text-sm',
+          'rounded-full border font-semibold transition-colors',
+          active
+            ? 'bg-cyan-500/15 border-cyan-400 text-cyan-200'
+            : 'border-cyan-400/20 text-slate-200 hover:border-cyan-400/30',
+          'disabled:opacity-40 disabled:cursor-not-allowed'
+        ].join(' ')}
+      >
+        <span>{c.label}</span>
+        {/* tiny count badge */}
+        <span className="ml-2 inline-flex items-center justify-center
+                         text-[10px] leading-none px-1.5 py-0.5 rounded-full
+                         bg-cyan-400/10 text-cyan-300 border border-cyan-400/20">
+          {counts[c.id]}
+        </span>
+      </button>
+    )
+  })}
+</div>
+
+
+            {/* Grid with extra breathing room + soft divider under each card */}
+            <ul className="grid grid-cols-1 gap-y-9 gap-x-4 sm:grid-cols-2 sm:gap-y-10 sm:gap-x-6 lg:grid-cols-3 lg:gap-y-12 lg:gap-x-8">
               {buckets[tab].map((item) => (
                 <li key={item._id} className="h-full">
                   <CardPicker tab={tab} item={item} />
+                  <div className="mt-5 h-px bg-gradient-to-r from-transparent via-cyan-400/10 to-transparent" />
                 </li>
               ))}
             </ul>
