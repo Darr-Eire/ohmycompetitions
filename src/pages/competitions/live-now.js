@@ -3,8 +3,8 @@
 import Head from 'next/head'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { RefreshCw, Search, Sparkles } from 'lucide-react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { RefreshCw } from 'lucide-react'
 
 /* ─────────────────────────────── Lazy cards ─────────────────────────────── */
 const DailyCompetitionCard   = dynamic(() => import('components/DailyCompetitionCard').catch(() => null), { ssr:false })
@@ -16,12 +16,12 @@ const TechCompetitionCard    = dynamic(() => import('components/CompetitionCard'
 /* ─────────────────────────────── Config ─────────────────────────────── */
 const REFRESH_MS = 20000
 const CATS = [
-  { id: 'tech',       label: 'Tech',          emoji: '📱' },
-  { id: 'launch',     label: 'Launch',        emoji: '🚀' },
-  { id: 'dailyweekly',label: 'Weekly/Daily',  emoji: '🔥' },
-  { id: 'pi',         label: 'Pi',            emoji: '🎁' },
-  { id: 'stages',     label: 'Pi Stages',     emoji: '🏆' },
-  { id: 'free',       label: 'Free',          emoji: '✨' },
+  { id: 'tech',       label: 'Tech' },
+  { id: 'launch',     label: 'Launch' },
+  { id: 'dailyweekly',label: 'Weekly/Daily' },
+  { id: 'pi',         label: 'Pi' },
+  { id: 'stages',     label: 'Pi Stages' },
+  { id: 'free',       label: 'Free' },
 ]
 const CATEGORY_ORDER = CATS.map(c => c.id)
 
@@ -38,17 +38,15 @@ const toNum = (v, d = 0) => {
   }
   return d
 }
-
-/* ─────────────────────────────── Image fallbacks ─────────────────────────────── */
 const TECH_KEYWORDS = [
   { re:/tv/i,                             img:'/images/tv.jpg' },
-  { re:/iphone|ios|apple/i,               img:'/images/iphone.jpg' },
+  { re:/iphone|ios|apple/i,               img:'/images/iphone.jpeg' },
   { re:/samsung|galaxy/i,                 img:'/images/galaxy.jpg' },
   { re:/ipad|tablet/i,                    img:'/images/tablet.jpg' },
   { re:/ps5|playstation/i,                img:'/images/playstation.jpeg' },
   { re:/xbox/i,                           img:'/images/xbox.jpg' },
   { re:/nintendo|switch/i,                img:'/images/switch.jpg' },
-  { re:/laptop|mac book|notebook/i,        img:'/images/macbook.jpeg' },
+  { re:/laptop|mac book|notebook/i,       img:'/images/macbook.jpeg' },
   { re:/drone|dji/i,                      img:'/images/drone.jpg' },
   { re:/smartwatch|watch|fitbit|garmin/i, img:'/images/watch.jpg' },
 ]
@@ -125,7 +123,6 @@ function normalizeComp(raw) {
     freeEntryUrl,
   }
 
-  // ✅ Preserve nested shape for Launch competitions
   if (raw.comp) {
     comp.comp = { ...raw.comp, ...comp }
   }
@@ -184,16 +181,16 @@ function classifyCategory(c) {
   return themed || 'launch'
 }
 
-/* ─────────────────────────────── Next draw countdown ─────────────────────────────── */
+/* ─────────────────────────────── Next draw countdown (green LIVE, mobile-first) ─────────────────────────────── */
 function NextDrawBar({ items }) {
   const target = useMemo(() => {
     const list = Array.isArray(items) ? items : [];
     const ts = now();
 
-    const shape = (it, when) => {
+    const shape = (it, when, meta={}) => {
       const slug  = it.slug || it.comp?.slug;
       const title = it.title || it.comp?.title || 'Competition';
-      return slug ? { when, slug, title } : null; // ignore if no slug
+      return slug ? { when, slug, title, ...meta } : null;
     };
 
     const live = [];
@@ -206,10 +203,10 @@ function NextDrawBar({ items }) {
       const endMs   = end   ? new Date(end).getTime()   : null;
 
       if (endMs && endMs > ts && (!startMs || ts >= startMs)) {
-        const row = shape(it, endMs);
+        const row = shape(it, endMs, { startMs, endMs, state: 'live' });
         if (row) live.push(row);
       } else if (startMs && startMs > ts) {
-        const row = shape(it, startMs);
+        const row = shape(it, startMs, { startMs, endMs, state: 'upcoming' });
         if (row) upcoming.push(row);
       }
     }
@@ -227,23 +224,62 @@ function NextDrawBar({ items }) {
   if (!target) return null;
 
   const left = Math.max(0, target.when - now());
+  theDays: {
+  }
   const days = Math.floor(left / 86400000);
   const hours = Math.floor((left % 86400000) / 3600000);
   const minutes = Math.floor((left % 3600000) / 60000);
   const seconds = Math.floor((left % 60000) / 1000);
 
+  let progressPct = null;
+  if (target.startMs && target.endMs && target.endMs > target.startMs) {
+    const span = target.endMs - target.startMs;
+    const elapsed = clamp(now() - target.startMs, 0, span);
+    progressPct = (elapsed / span) * 100;
+  }
+
+  const isLive = target.state === 'live';
+  const badgeText = isLive ? 'LIVE' : 'UPCOMING';
+  const badgeClass = isLive
+    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30'
+    : 'bg-amber-500/20 text-amber-300 border-amber-400/30';
+
   return (
-    <Link
-      href={`/competitions/${encodeURIComponent(target.slug)}`} // ✅ always links to the next competition’s slug
-      className="block rounded-xl p-[1px] bg-gradient-to-r from-[#00ffd5] to-[#0077ff]"
-    >
-      <div className="rounded-[11px] bg-slate-950/85 px-3 py-2.5 text-cyan-200 font-bold text-[12px] text-center">
-        🚀 Next Draw: {target.title} — {days}D {hours}H {minutes}M {seconds}S
+    <Link href={`/ticket-purchase/${encodeURIComponent(target.slug)}`} aria-label={`Go to ${target.title}`} className="group block">
+      <div className="relative rounded-2xl p-[1.5px] bg-gradient-to-r from-[#00ffd5] via-[#27b7ff] to-[#0077ff] shadow-[0_0_28px_#22d3ee33]">
+        <div className="rounded-[1rem] bg-slate-950/90 backdrop-blur-sm px-4 py-3 sm:px-5 sm:py-3.5 flex items-center gap-3">
+          <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-black tracking-wide border ${badgeClass}`}>{badgeText}</span>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
+              <p className="truncate text-xs sm:text-sm font-semibold text-cyan-200/90">
+                Next Draw: <span className="text-cyan-200">{target.title}</span>
+              </p>
+              <p className="text-[10px] sm:text-xs text-cyan-300/70">tap to enter →</p>
+            </div>
+            <div className="mt-1.5 text-center sm:text-left">
+              <span className="inline-block rounded-md px-2 py-1 bg-slate-900/70 border border-cyan-400/20 shadow-[0_0_20px_#06b6d433]">
+                <span className="font-mono tabular-nums text-sm sm:text-base font-extrabold text-cyan-200 tracking-wide">
+                  {days}<span className="opacity-70">D</span>{' '}
+                  {String(hours).padStart(2,'0')}<span className="opacity-70">H</span>{' '}
+                  {String(minutes).padStart(2,'0')}<span className="opacity-70">M</span>{' '}
+                  {String(seconds).padStart(2,'0')}<span className="opacity-70">S</span>
+                </span>
+              </span>
+            </div>
+            {progressPct != null && (
+              <div className="mt-2 h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                <div className="h-full w-0 transition-[width] duration-500 ease-linear bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow-[0_0_12px_#22d3ee77]" style={{ width: `${progressPct}%` }} />
+              </div>
+            )}
+          </div>
+          <div className="hidden sm:block shrink-0">
+            <div className={`h-3 w-3 rounded-full ${isLive ? 'bg-emerald-400' : 'bg-amber-400'} shadow-[0_0_16px_currentColor] animate-pulse`} />
+          </div>
+        </div>
       </div>
     </Link>
-  );
+  )
 }
-
 
 /* ─────────────────────────────── Card Renderer ─────────────────────────────── */
 function renderByCategory(id, common, fallback) {
@@ -255,29 +291,27 @@ function renderByCategory(id, common, fallback) {
   return fallback ?? null
 }
 
-
 function CardPicker({ tab, item }) {
   if (tab === 'launch' && LaunchCompetitionCard) {
     return (
       <LaunchCompetitionCard
         comp={item.comp ?? item}
-        title={item.title}     // ✅ pass top-level title
-        prize={item.prize}     
+        title={item.title}
+        prize={item.prize}
         className=""
       />
-    );
+    )
   }
 
   const common = {
     comp: item.comp ?? item,
-    data: item,               
+    data: item,
     competition: item.comp ?? item,
     item: item.comp ?? item
-  };
+  }
 
-  return renderByCategory(tab, common, <GenericCard data={item} />) || <GenericCard data={item} />;
+  return renderByCategory(tab, common, <GenericCard data={item} />) || <GenericCard data={item} />
 }
-
 
 /* ─────────────────────────────── Fallback Card ─────────────────────────────── */
 function GenericCard({ data }) {
@@ -285,7 +319,7 @@ function GenericCard({ data }) {
   const sold = toNum(data.ticketsSold)
   const pct = total > 0 ? clamp((sold / total) * 100, 0, 100) : 0
   return (
-    <div className="rounded-xl border border-cyan-400/15 bg-slate-900/60 p-3">
+    <div className="rounded-2xl border border-cyan-400/15 bg-slate-900/60 p-4 shadow-[0_6px_24px_rgba(0,0,0,0.35)]">
       <div className="font-bold text-sm mb-1">{data.title}</div>
       <div className="text-xs text-cyan-300">{data.prize}</div>
       <div className="text-xs mt-2">🎟 {sold}/{total || '∞'} sold</div>
@@ -341,34 +375,60 @@ export default function AllCompetitionsPage() {
   const counts = Object.fromEntries(CATEGORY_ORDER.map(k => [k, buckets[k].length]))
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
-      <Head><title>All Competitions • OMC</title></Head>
+    <main className="min-h-screen bg-slate-950 text-cyan-200">
+      <Head><title>All Competitions</title></Head>
+
+      {/* Sticky header */}
       <div className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur border-b border-white/5">
-        <div className="mx-auto max-w-6xl px-3">
-          <div className="py-2 flex items-center gap-2">
-            <h1 className="font-extrabold text-base">All Competitions</h1>
-            <button onClick={fetchAll} className="ml-auto flex items-center gap-1 border border-cyan-400/20 px-2 py-1 rounded text-xs bg-slate-900"> <RefreshCw className="h-4 w-4"/>Refresh </button>
+        <div className="mx-auto max-w-6xl px-4">
+          {/* Centered title row */}
+          <div className="py-3 flex items-center justify-center">
+            <h1 className="font-orbitron font-extrabold text-base text-cyan-300 text-center">
+              All Competitions
+            </h1>
           </div>
-          <NextDrawBar items={items}/>
+
+          {/* Timer with extra breathing room on mobile */}
+          <div className="mb-3">
+            <NextDrawBar items={items}/>
+          </div>
         </div>
       </div>
 
-      <div className="mx-auto max-w-6xl px-3 py-4">
+      {/* Content */}
+      <div className="mx-auto max-w-6xl px-4 py-6 lg:py-10">
         {loading ? <p>Loading...</p> : error ? <p>{error}</p> : (
-          <>
-            <div className="flex gap-2 overflow-x-auto pb-2">
+          <div className="space-y-5 sm:space-y-6">
+            {/* Tabs – larger touch targets, better scroll area on mobile */}
+            <div className="flex gap-3 overflow-x-auto pb-2 scroll-px-4 snap-x snap-mandatory [-webkit-overflow-scrolling:touch]">
               {CATS.map(c => (
-                <button key={c.id} onClick={() => setTab(c.id)} disabled={!counts[c.id]} className={`px-3 py-1.5 rounded-full border text-xs font-bold ${tab===c.id?'bg-cyan-500/15 border-cyan-400 text-cyan-200':'border-cyan-400/20 text-slate-200'}`}>
-                  {c.emoji} {c.label} ({counts[c.id]})
+                <button
+                  key={c.id}
+                  onClick={() => setTab(c.id)}
+                  disabled={!counts[c.id]}
+                  className={`snap-start px-4 py-2 rounded-full border font-bold text-sm
+                    ${tab===c.id
+                      ? 'bg-cyan-500/15 border-cyan-400 text-cyan-200'
+                      : 'border-cyan-400/20 text-slate-200'
+                    } disabled:opacity-40 disabled:cursor-not-allowed`}
+                >
+                  {c.label} ({counts[c.id]})
                 </button>
               ))}
             </div>
-            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+
+            {/* Grid – looser base spacing on mobile */}
+            <ul className="grid grid-cols-1 gap-y-7 gap-x-4 sm:grid-cols-2 sm:gap-y-8 sm:gap-x-6 lg:grid-cols-3 lg:gap-y-10 lg:gap-x-8">
               {buckets[tab].map((item) => (
-                <li key={item._id}><CardPicker tab={tab} item={item} /></li>
+                <li key={item._id} className="h-full">
+                  <CardPicker tab={tab} item={item} />
+                </li>
               ))}
             </ul>
-          </>
+
+            {/* Bottom spacer with safe-area awareness */}
+            <div className="pt-6 pb-[max(6rem,env(safe-area-inset-bottom))]" />
+          </div>
         )}
       </div>
     </main>

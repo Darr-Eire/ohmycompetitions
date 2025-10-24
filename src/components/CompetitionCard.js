@@ -25,9 +25,7 @@ const toNum = (v, d = null) => {
 };
 
 export default function CompetitionCard({
-  // primary data lives here
   comp = {},
-  // optional explicit overrides (homepage will pass these)
   title: titleProp,
   prize: prizeProp,
   imageUrl: imageUrlProp,
@@ -35,19 +33,16 @@ export default function CompetitionCard({
   size = 'md',
   className = '',
   hideButton = false,
-  disableGift = false,
 }) {
   const { t } = useSafeTranslation();
   const { user } = usePiAuth();
 
-  // accept both shapes: {comp:{...}} or flat
   const c = comp?.comp ?? comp ?? {};
 
   /* ---------- normalized props ---------- */
   const headerTitle = titleProp ?? c.title ?? t('exclusive_draw', 'Exclusive Draw');
   const prize = prizeProp ?? c.prize ?? c.prizeLabel ?? (Array.isArray(c.prizes) ? c.prizes[0] : '') ?? '';
 
-  // any known fee key
   const entryFeeRaw =
     c.entryFeePi ?? c.pricePi ?? c.entryFee ?? c.ticketPrice ?? c.feePi ?? c.entryFeeValue ?? 0;
   const entryFeeNum = toNum(entryFeeRaw, 0);
@@ -101,8 +96,6 @@ export default function CompetitionCard({
     return () => clearInterval(timer);
   }, [startAt, endAt]);
 
-  const isGiftable = status === 'LIVE NOW' && !isSoldOut && (c.slug || c.comp?.slug);
-
   /* ---------- root styles ---------- */
   const root = [
     'mx-auto flex flex-col overflow-hidden text-white font-orbitron',
@@ -124,8 +117,14 @@ export default function CompetitionCard({
         {img.external ? (
           <img src={img.src} alt={headerTitle || 'Competition image'} className="w-full h-full object-cover" loading="lazy" />
         ) : (
-          <Image src={img.src} alt={headerTitle || 'Competition image'} fill priority={false} className="object-cover"
-                 sizes="(max-width: 480px) 100vw, (max-width: 960px) 50vw, 33vw" />
+          <Image
+            src={img.src}
+            alt={headerTitle || 'Competition image'}
+            fill
+            priority={false}
+            className="object-cover"
+            sizes="(max-width: 480px) 100vw, (max-width: 960px) 50vw, 33vw"
+          />
         )}
       </div>
 
@@ -141,7 +140,11 @@ export default function CompetitionCard({
               : 'bg-rose-600 text-white',
           ].join(' ')}
         >
-          {status === 'UPCOMING' ? t('upcoming', 'Upcoming') : status === 'ENDED' ? t('ended', 'Ended') : t('live_now', 'LIVE NOW')}
+          {status === 'UPCOMING'
+            ? t('upcoming', 'Upcoming')
+            : status === 'ENDED'
+            ? t('ended', 'Ended')
+            : t('live_now', 'LIVE NOW')}
         </div>
 
         {showCountdown && (
@@ -161,7 +164,12 @@ export default function CompetitionCard({
           label={t('draw_date', 'Draw Date')}
           value={
             endAt
-              ? new Date(endAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+              ? new Date(endAt).toLocaleString(undefined, {
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })
               : t('tba', 'TBA')
           }
         />
@@ -173,7 +181,13 @@ export default function CompetitionCard({
             <span
               className={[
                 'font-semibold',
-                isSoldOut ? 'text-rose-400' : lowStock ? 'text-orange-300' : nearlyFull ? 'text-yellow-300' : 'text-zinc-300',
+                isSoldOut
+                  ? 'text-rose-400'
+                  : lowStock
+                  ? 'text-orange-300'
+                  : nearlyFull
+                  ? 'text-yellow-300'
+                  : 'text-zinc-300',
               ].join(' ')}
             >
               {sold.toLocaleString()} / {total.toLocaleString()}
@@ -183,7 +197,13 @@ export default function CompetitionCard({
             <div
               className={[
                 'h-full transition-all',
-                isSoldOut ? 'bg-rose-500' : lowStock ? 'bg-orange-400' : nearlyFull ? 'bg-yellow-400' : 'bg-gradient-to-r from-[#00ffd5] to-[#0077ff]',
+                isSoldOut
+                  ? 'bg-rose-500'
+                  : lowStock
+                  ? 'bg-orange-400'
+                  : nearlyFull
+                  ? 'bg-yellow-400'
+                  : 'bg-gradient-to-r from-[#00ffd5] to-[#0077ff]',
               ].join(' ')}
               style={{ width: `${soldPct}%` }}
             />
@@ -193,7 +213,7 @@ export default function CompetitionCard({
 
       {/* Actions */}
       {!hideButton && (
-        <div className="px-3 pb-3 space-y-2 mt-auto">
+        <div className="px-3 pb-3 mt-auto">
           {c.slug ? (
             <Link href={`/ticket-purchase/${c.slug}`} className="block">
               <button className="w-full py-2 rounded-md font-bold text-black text-sm bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:brightness-110 active:translate-y-px">
@@ -203,15 +223,6 @@ export default function CompetitionCard({
           ) : (
             <button className="w-full py-2 rounded-md font-bold text-white bg-zinc-600 text-sm">
               {t('not_available', 'Not Available')}
-            </button>
-          )}
-
-          {status === 'LIVE NOW' && !disableGift && !isSoldOut && c.slug && (
-            <button
-              onClick={() => alert('🎁 Gift feature coming soon!')}
-              className="w-full py-2 rounded-md font-bold text-cyan-400 border border-cyan-400 hover:bg-cyan-400 hover:text-black transition-colors text-sm"
-            >
-              {t('gift_ticket', 'Gift Ticket')}
             </button>
           )}
         </div>
