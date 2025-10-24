@@ -3,172 +3,191 @@
 
 import Link from 'next/link'
 import { FaTwitter, FaFacebookF, FaInstagram, FaDiscord } from 'react-icons/fa'
+import React from 'react'
+
+/* ------------------------------ Aurora + Stars BG (same as site) ------------------------------ */
+function BackgroundFX() {
+  return (
+    <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+      {/* soft aurora beams */}
+      <div className="absolute -inset-32 blur-3xl opacity-35 [background:conic-gradient(from_180deg_at_50%_50%,#00ffd5,rgba(0,255,213,.2),#0077ff,#00ffd5)] animate-[spin_35s_linear_infinite]" />
+      {/* star grid */}
+      <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:18px_18px]" />
+      {/* drifting glow orbs */}
+      <div className="absolute -top-20 -left-24 h-[420px] w-[420px] rounded-full blur-3xl opacity-25 bg-cyan-400 animate-[float_14s_ease-in-out_infinite]" />
+      <div className="absolute -bottom-20 -right-24 h-[420px] w-[420px] rounded-full blur-3xl opacity-20 bg-blue-500 animate-[float2_18s_ease-in-out_infinite]" />
+      <style jsx global>{`
+        @keyframes float   {0%{transform:translate(0,0)}50%{transform:translate(12px,18px)}100%{transform:translate(0,0)}}
+        @keyframes float2  {0%{transform:translate(0,0)}50%{transform:translate(-16px,-14px)}100%{transform:translate(0,0)}}
+      `}</style>
+    </div>
+  )
+}
+const PageWrapper = ({ children }) => (
+  <div className="app-background relative min-h-screen w-full text-white">
+    <BackgroundFX />
+    {children}
+  </div>
+)
 
 export default function HowToPlay() {
   return (
-    <main className="relative min-h-screen text-white">
-      {/* soft background + glow */}
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-[#0a1222]" />
-        <div
-          className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[90vw] max-w-[900px] aspect-square rounded-full blur-[120px] opacity-25"
-          style={{
-            background:
-              'radial-gradient(50% 50% at 50% 50%, #22d3ee66 0%, transparent 60%)',
-          }}
-        />
-      </div>
-
-      {/* page container (mobile-first, comfortable measure) */}
-      <div className="mx-auto w-full max-w-[680px] px-3 sm:px-4 py-6 sm:py-10">
-        {/* hero card */}
-        <div className="rounded-2xl sm:rounded-3xl border border-cyan-500/35 bg-white/[0.04] backdrop-blur-md shadow-[0_0_28px_rgba(34,211,238,0.18)] overflow-hidden">
-          <div className="competition-top-banner title-gradient text-center py-5 sm:py-7">
-            <h2 className="text-xl sm:text-3xl font-extrabold tracking-tight">
-              <span className="bg-gradient-to-r from-[#00ffd5] to-[#0077ff] bg-clip-text text-transparent">
-                How to Play
-              </span>
-            </h2>
-            <p className="mt-1 text-[13px] sm:text-base text-white px-4">
-              Welcome to <span className="font-semibold">Oh My Competitions</span>
-            </p>
-          </div>
-
-          {/* Steps */}
-          <div className="p-4 sm:p-8">
-            {/* On mobile, we don’t show the left timeline rule; it appears on sm+ */}
-            <ol className="relative sm:border-s sm:border-white/10 sm:pl-6 space-y-4 sm:space-y-7">
-              <Step
-                title="login & Secure Your Account"
-                items={[
-                  'Open ohmycompetitions.com in the Pi Browser.',
-                  'Tap “Login”. Choose Sign up (optional referral) or login.',
-                  'Select “Login with Pi” and approve in the Pi Browser.',
-                  'Your wallet is connected and ready.',
-                ]}
-              />
-
-              <Step
-                title="Enter Competitions"
-                items={[
-                  'Browse live/upcoming competitions on the homepage.',
-                  'Open a card for prize, draw time, tickets & fee.',
-                  'Tap “Pay With π” and choose ticket quantity.',
-                  'Answer the skill question to continue.',
-                  'Confirm with your Pi wallet your entry appears in your account.',
-                ]}
-              />
-
-              <Step
-                title="Track Entries"
-                items={[
-                  'Go to My Account → My Tickets.',
-                  'See tickets, draw dates and status in one place.',
-                  'Check history and winnings anytime.',
-                ]}
-              />
-
-              <Step
-                title="Pi Cash Code"
-                items={[
-                  'Each day a secret code appears for a limited time. See it, keep it safe and enter if picked to unlock the Pi Cash Code.',
-                  'New code every day, active for exactly 31 hours 4 minutes.',
-                  'Codes drop across site, Discord and socials stay sharp.',
-                ]}
-              />
-
-              <Step
-                title="Win & Claim Prizes"
-                items={[
-                  'Each competition shows a live countdown.',
-                  'Winners picked instantly via our fair draw system.',
-                  'Get an in-app alert (and email if subscribed).',
-                  'Prizes: Pi (instant) or shipped items for physical rewards.',
-                ]}
-              />
-
-              <Step
-                title="Play OMC Stages"
-                items={[
-                  'Stage 1 entry fee: 0.15 π.',
-                  'Each qualifier has 25 players; Top 5 advance.',
-                  'Same format for Stages 2–4.',
-                  'Tickets for Stages 2–4 are FREE you earn them by advancing.',
-                  'Stage 5 Final: all finalists share a part of the prize pool.',
-                  'One ticket per user per qualifier.',
-                ]}
-              />
-            </ol>
-
-            {/* Trust / transparency */}
-            <div className="mt-6 sm:mt-8 rounded-xl sm:rounded-2xl border border-emerald-400/30 bg-emerald-400/10 p-4 sm:p-5">
-              <h3 className="text-base sm:text-lg font-bold text-emerald-300 mb-2 sm:mb-3">
-                Fair Play & Transparency
-              </h3>
-              <ul className="list-disc list-inside space-y-1.5 sm:space-y-2 text-white/90 text-[13px] sm:text-base">
-                <li>Every draw is timestamped, logged and verifiable.</li>
-                <li>No bots. No manipulation. One account = one chance per draw.</li>
-                <li>All transactions run through the official Pi SDK.</li>
-              </ul>
-            </div>
-
-            {/* Support */}
-            <div className="mt-5 sm:mt-6 text-center">
-              <h3 className="text-base sm:text-lg font-semibold gradient-text mb-1.5 sm:mb-2">
-                Need Help?
-              </h3>
-              <p className="text-white/90 text-[13px] sm:text-base">
-                Visit our{' '}
-                <Link
-                  href="/help-support"
-                  className="gradient-text underline font-semibold"
-                >
-                  Help &amp; Support
-                </Link>{' '}
-                center available 24/7.
+    <PageWrapper>
+      <main className="relative min-h-screen">
+        {/* page container (mobile-first, comfortable measure) */}
+        <div className="mx-auto w-full max-w-[680px] px-3 sm:px-4 py-6 sm:py-10">
+          {/* hero card */}
+          <div className="rounded-2xl sm:rounded-3xl border border-white/10 bg-white/[0.06] backdrop-blur-md shadow-[0_0_28px_rgba(34,211,238,0.18)] overflow-hidden">
+            <div className="text-center py-5 sm:py-7 bg-[#0f172a]/70 border-b border-white/10">
+              <h2 className="text-xl sm:text-3xl font-extrabold tracking-tight">
+                <span className="bg-gradient-to-r from-[#00ffd5] via-[#27b7ff] to-[#0077ff] bg-clip-text text-transparent">
+                  How to Play
+                </span>
+              </h2>
+              <p className="mt-1 text-[13px] sm:text-base text-white/95 px-4">
+                Welcome to <span className="font-semibold">Oh My Competitions</span>
               </p>
             </div>
 
-            {/* Social */}
-            <div className="mt-6 sm:mt-8 text-center">
-              <h3 className="text-base sm:text-lg font-semibold gradient-text mb-1.5">
-                🌍 Stay Connected
-              </h3>
-              <p className="text-white/80 text-[13px] sm:text-sm mb-3">
-                Follow for surprise codes, announcements and exclusive giveaways
-              </p>
-              <div className="flex justify-center gap-3 sm:gap-4">
-                <Social href="https://x.com/OhMyComps" title="Twitter / X">
-                  <FaTwitter size={16} />
-                </Social>
-                <Social href="https://facebook.com" title="Facebook">
-                  <FaFacebookF size={16} />
-                </Social>
-                <Social href="https://instagram.com/ohmycompetitions" title="Instagram">
-                  <FaInstagram size={16} />
-                </Social>
-                <Social href="https://discord.gg" title="Discord">
-                  <FaDiscord size={16} />
-                </Social>
+            {/* Steps */}
+            <div className="p-4 sm:p-8">
+              {/* On mobile, we don’t show the left timeline rule; it appears on sm+ */}
+              <ol className="relative sm:border-s sm:border-white/10 sm:pl-6 space-y-4 sm:space-y-7">
+                <Step
+                  title="Login & Secure Your Account"
+                  items={[
+                    'Open ohmycompetitions.com in the Pi Browser.',
+                    'Tap “Login”. Choose Sign up (optional referral) or login.',
+                    'Select “Login with Pi” and approve in the Pi Browser.',
+                    'Your wallet is connected and ready.',
+                  ]}
+                />
+
+                <Step
+                  title="Enter Competitions"
+                  items={[
+                    'Browse live/upcoming competitions on the homepage.',
+                    'Open a card for prize, draw time, tickets & fee.',
+                    'Tap “Pay With π” and choose ticket quantity.',
+                    'Answer the skill question to continue.',
+                    'Confirm with your Pi wallet — your entry appears in your account.',
+                  ]}
+                />
+
+                <Step
+                  title="Track Entries"
+                  items={[
+                    'Go to My Account → My Tickets.',
+                    'See tickets, draw dates and status in one place.',
+                    'Check history and winnings anytime.',
+                  ]}
+                />
+
+                <Step
+                  title="Pi Cash Code"
+                  items={[
+                    'Each day a secret code appears for a limited time. See it, keep it safe and enter if picked to unlock the Pi Cash Code.',
+                    'New code every day, active for exactly 31 hours 4 minutes.',
+                    'Codes drop across site, Discord and socials — stay sharp.',
+                  ]}
+                />
+
+                <Step
+                  title="Win & Claim Prizes"
+                  items={[
+                    'Each competition shows a live countdown.',
+                    'Winners picked instantly via our fair draw system.',
+                    'Get an in-app alert (and email if subscribed).',
+                    'Prizes: Pi (instant) or shipped items for physical rewards.',
+                  ]}
+                />
+
+                <Step
+                  title="Play OMC Stages"
+                  items={[
+                    'Stage 1 entry fee: 0.15 π.',
+                    'Each qualifier has 25 players; Top 5 advance.',
+                    'Same format for Stages 2–4.',
+                    'Tickets for Stages 2–4 are FREE — you earn them by advancing.',
+                    'Stage 5 Final: all finalists share a part of the prize pool.',
+                    'One ticket per user per qualifier.',
+                  ]}
+                />
+              </ol>
+
+              {/* Trust / transparency */}
+              <div className="mt-6 sm:mt-8 rounded-xl sm:rounded-2xl border border-emerald-400/30 bg-emerald-400/10 p-4 sm:p-5">
+                <h3 className="text-base sm:text-lg font-bold text-emerald-300 mb-2 sm:mb-3">
+                  Fair Play & Transparency
+                </h3>
+                <ul className="list-disc list-inside space-y-1.5 sm:space-y-2 text-white/90 text-[13px] sm:text-base">
+                  <li>Every draw is timestamped, logged and verifiable.</li>
+                  <li>No bots. No manipulation. One account = one chance per draw.</li>
+                  <li>All transactions run through the official Pi SDK.</li>
+                </ul>
+              </div>
+
+              {/* Support */}
+              <div className="mt-5 sm:mt-6 text-center">
+                <h3 className="text-base sm:text-lg font-semibold bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-blue-400 to-cyan-300 mb-1.5 sm:mb-2">
+                  Need Help?
+                </h3>
+                <p className="text-white/90 text-[13px] sm:text-base">
+                  Visit our{' '}
+                  <Link
+                    href="/help-support"
+                    className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-blue-400 to-cyan-300 underline font-semibold"
+                  >
+                    Help &amp; Support
+                  </Link>{' '}
+                  center — available 24/7.
+                </p>
+              </div>
+
+              {/* Social */}
+              <div className="mt-6 sm:mt-8 text-center">
+                <h3 className="text-base sm:text-lg font-semibold bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-blue-400 to-cyan-300 mb-1.5">
+                  🌍 Stay Connected
+                </h3>
+                <p className="text-white/80 text-[13px] sm:text-sm mb-3">
+                  Follow for surprise codes, announcements and exclusive giveaways
+                </p>
+                <div className="flex justify-center gap-3 sm:gap-4">
+                  <Social href="https://x.com/OhMyComps" title="Twitter / X">
+                    <FaTwitter size={16} />
+                  </Social>
+                  <Social href="https://facebook.com" title="Facebook">
+                    <FaFacebookF size={16} />
+                  </Social>
+                  <Social href="https://instagram.com/ohmycompetitions" title="Instagram">
+                    <FaInstagram size={16} />
+                  </Social>
+                  <Social href="https://discord.gg" title="Discord">
+                    <FaDiscord size={16} />
+                  </Social>
+                </div>
+              </div>
+
+              {/* CTA */}
+              <div className="mt-7 sm:mt-10 text-center">
+                <Link href="/competitions/live-now" className="block">
+                  <button
+                    className="w-full sm:w-auto px-4 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base rounded-xl border border-cyan-400/60 bg-white/5 backdrop-blur hover:bg-white/10 shadow-[0_0_18px_#22d3ee33] transition focus:outline-none focus:ring-2 focus:ring-cyan-400/70"
+                    type="button"
+                  >
+                    <span className="bg-gradient-to-r from-[#00ffd5] to-[#0077ff] bg-clip-text text-transparent font-bold">
+                      View Live Competitions
+                    </span>
+                  </button>
+                </Link>
               </div>
             </div>
-
-            {/* CTA */}
-            <div className="mt-7 sm:mt-10 text-center">
-              <Link href="/competitions/live-now" className="block">
-                <button className="w-full sm:w-auto px-4 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base rounded-xl border border-cyan-400/60 bg-white/5 backdrop-blur hover:bg-white/10 shadow-[0_0_18px_#22d3ee33] transition focus:outline-none focus:ring-2 focus:ring-cyan-400/70">
-                  <span className="bg-gradient-to-r from-[#00ffd5] to-[#0077ff] bg-clip-text text-transparent font-bold">
-                    View Live Competitions
-                  </span>
-                </button>
-              </Link>
-            </div>
           </div>
-        </div>
 
-        {/* bottom padding for safe-area */}
-        <div className="h-8" />
-      </div>
+          {/* bottom padding for safe-area */}
+          <div className="h-8" />
+        </div>
+      </main>
 
       {/* reduce motion */}
       <style jsx global>{`
@@ -179,24 +198,22 @@ export default function HowToPlay() {
           }
         }
       `}</style>
-    </main>
+    </PageWrapper>
   )
 }
 
 function Step({ title, items }) {
   return (
     <li className="relative">
-  
       <div className="rounded-xl border border-white/10 bg-white/5 p-3.5 sm:p-0 sm:bg-transparent sm:border-0">
-        <h2 className="text-[15px] sm:text-lg font-bold gradient-text mb-2 sm:mb-3">
+        <h2 className="text-[15px] sm:text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-blue-400 to-cyan-300 mb-2 sm:mb-3">
           {title}
         </h2>
         <GlassList items={items} />
       </div>
     </li>
-  );
+  )
 }
-
 
 function GlassList({ items = [] }) {
   return (

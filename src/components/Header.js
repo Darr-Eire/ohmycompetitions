@@ -1,3 +1,4 @@
+// src/components/Header.jsx
 'use client';
 
 import Link from 'next/link';
@@ -20,15 +21,11 @@ export default function Header() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const sidebarRef = useRef(null);
 
-  // NEW: local state for collapsible "Competitions" dropdown
-  const [isCompOpen, setIsCompOpen] = useState(true);
-
-  // Buttons match app + mobile nav
+  // Buttons
   const BTN_BASE =
     'inline-flex items-center justify-center rounded-md text-sm font-bold px-3 py-2 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-black/40 active:scale-[0.99]';
   const BTN_GRADIENT =
     'bg-gradient-to-r from-[#00ffd5] via-[#00ccff] to-[#0077ff] text-black shadow-[0_0_14px_rgba(0,255,255,0.25)] hover:shadow-[0_0_18px_rgba(0,255,255,0.35)]';
-  const BTN_DISABLED = 'opacity-60 cursor-not-allowed shadow-none hover:shadow-none';
 
   // Close sidebar on outside click / Esc
   useEffect(() => {
@@ -52,18 +49,19 @@ export default function Header() {
   // Lock body scroll when overlays open
   useEffect(() => {
     document.body.style.overflow = menuOpen || showLoginModal ? 'hidden' : '';
-    return () => {
-      document.body.style.overflow = '';
-    };
+    return () => { document.body.style.overflow = ''; };
   }, [menuOpen, showLoginModal]);
 
   const safeT = (key, fallback = key) => (!mounted || !ready ? fallback : t(key));
-const competitionMenu = [
-  [safeT('live_now', 'Live Now'), '/competitions/live-now'],
-];
 
-
+  /* ─── NAV DATA ───
+     Keep top-level simple (Home [+ My Account when logged in]).
+     Put Competitions (Live Now + Scheduled) as a static section in the sidebar. */
   const navItems = [[safeT('home', 'Home'), '/homepage']];
+  const competitionMenu = [
+    [safeT('live_now', 'Live Now'), '/competitions/live-now'],
+    [safeT('scheduled', 'Scheduled'), '/competitions/scheduled'],
+  ];
   const miniGames = [[safeT('try_your_skill', 'Try Your Skill'), '/try-your-skill', safeT('coming_soon', 'Coming Soon')]];
   const navExtras = [
     [safeT('forums', 'Forums'), '/forums'],
@@ -140,7 +138,7 @@ const competitionMenu = [
 
   return (
     <>
-      {/* Glass header bar with safe-area top; matches mobile nav look */}
+      {/* Glass header bar */}
       <header
         className="
           fixed top-0 left-0 right-0 z-50
@@ -152,9 +150,8 @@ const competitionMenu = [
         style={{ WebkitBackdropFilter: 'blur(20px)' }}
       >
         <div className="container">
-          {/* 3-col grid keeps title centered */}
           <div className="grid grid-cols-3 items-center">
-            {/* Left: Menu button (gradient pill) */}
+            {/* Left: Menu button */}
             <div className="justify-self-start">
               <button
                 onClick={() => setMenuOpen(true)}
@@ -167,7 +164,7 @@ const competitionMenu = [
               </button>
             </div>
 
-            {/* Middle: Title + Welcome (sizes stable via clamp + reserved space) */}
+            {/* Middle: Title + Welcome */}
             <div className="justify-self-center text-center leading-tight">
               <Link href="/homepage" className="block">
                 <span
@@ -201,7 +198,7 @@ const competitionMenu = [
               </div>
             </div>
 
-            {/* Right: Auth button (gradient pill) */}
+            {/* Right: Auth button */}
             <div className="justify-self-end flex items-center gap-2">
               {!user ? (
                 <button
@@ -246,7 +243,6 @@ const competitionMenu = [
 
           <div className="flex items-center gap-2">
             {user && <NotificationsBell username={user.username} />}
-
             <button
               onClick={() => setMenuOpen(false)}
               className={`${BTN_BASE} ${BTN_GRADIENT} h-8 px-2 rounded-md`}
@@ -259,56 +255,30 @@ const competitionMenu = [
         </div>
 
         <nav className="p-4 space-y-6">
+          {/* Primary */}
           <div>
             {finalNavItems.map((tuple) => (
               <Item key={tuple[1]} tuple={tuple} />
             ))}
           </div>
 
-          {/* Collapsible Competitions dropdown */}
-          <div>
-            <button
-              onClick={() => setIsCompOpen((v) => !v)}
-              className="w-full flex items-center justify-between px-3 py-2 text-sm font-bold rounded border border-white/10 bg-white/[0.04] hover:bg-white/[0.07] text-cyan-200"
-              aria-expanded={isCompOpen}
-              aria-controls="comp-menu"
-            >
-              <span className="inline-flex items-center gap-2">
-                {/* trophy icon */}
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M8 21h8" />
-                  <path d="M12 17v4" />
-                  <path d="M7 4h10v4a5 5 0 0 1-10 0V4Z" />
-                  <path d="M17 8h1a3 3 0 0 0 3-3V4h-4" />
-                  <path d="M7 8H6a3 3 0 0 1-3-3V4h4" />
-                </svg>
-                {safeT('competitions', 'Competitions')}
-              </span>
-              <svg
-                className={`w-4 h-4 transition-transform ${isCompOpen ? 'rotate-180' : ''}`}
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="m6 9 6 6 6-6" />
-              </svg>
-            </button>
-            <div id="comp-menu" className={`${isCompOpen ? 'mt-2' : 'h-0 overflow-hidden'} transition-[max-height]`}>
-              <div className="pl-2 space-y-1">
-                {competitionMenu.map((tuple) => (
-                  <Item key={tuple[1]} tuple={tuple} />
-                ))}
-              </div>
+          {/* Competitions (static section, NOT a dropdown) */}
+          <Section title={safeT('competitions', 'Competitions')}>
+            <div className="pl-1 space-y-1">
+              {competitionMenu.map((tuple) => (
+                <Item key={tuple[1]} tuple={tuple} />
+              ))}
             </div>
-          </div>
+          </Section>
 
+          {/* Mini Games */}
           <Section title={safeT('mini_games', 'Mini Games')}>
             {miniGames.map((tuple) => (
               <Item key={tuple[1]} tuple={tuple} />
             ))}
           </Section>
 
+          {/* More */}
           <Section title={safeT('more', 'More')}>
             {navExtras.map((tuple) => (
               <Item key={tuple[1]} tuple={tuple} />
@@ -328,17 +298,14 @@ const competitionMenu = [
         </nav>
       </aside>
 
-      {/* Auth Modal */}
+      {/* Auth Modal (unchanged) */}
       {showLoginModal && (
         <>
-          {/* Backdrop */}
           <div
             className={`fixed inset-0 z-50 bg-black/70 backdrop-blur-sm transition-opacity ${isLoggingIn ? 'cursor-wait' : ''}`}
             onClick={() => { if (!isLoggingIn) setShowLoginModal(false); }}
             aria-hidden="true"
           />
-
-          {/* Modal */}
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
             <div
               role="dialog"
@@ -347,13 +314,11 @@ const competitionMenu = [
               aria-busy={isLoggingIn ? 'true' : 'false'}
               className="w-full max-w-sm rounded-2xl border border-cyan-500/50 bg-[#0b1220] p-6 shadow-[0_0_40px_#22d3ee40] text-center"
             >
-              {/* Heading */}
               <h2 className="font-orbitron text-lg font-bold text-cyan-300">
                 {safeT('welcome', 'Welcome to OMC!')}{' '}
                 <span className="text-xs text-cyan-500">(Oh My Competitions)</span>
               </h2>
 
-              {/* Sign up block */}
               <div className="mt-4 flex flex-col gap-1.5">
                 <Link
                   href="/signup"
@@ -376,7 +341,6 @@ const competitionMenu = [
                 </p>
               </div>
 
-              {/* Pi login block */}
               <div className="mt-4 flex flex-col gap-1.5">
                 <button
                   onClick={async () => {
@@ -445,7 +409,6 @@ const competitionMenu = [
                 </p>
               </div>
 
-              {/* Cancel */}
               <button
                 onClick={() => { if (!isLoggingIn) setShowLoginModal(false); }}
                 disabled={isLoggingIn}

@@ -1,3 +1,4 @@
+// file: src/pages/forums/index.jsx
 'use client'
 
 import Head from 'next/head'
@@ -9,7 +10,7 @@ import {
 } from 'react-icons/fa'
 import { motion, AnimatePresence } from 'framer-motion'
 
-/* ------------------------------ Aurora + Stars BG ------------------------------ */
+/* ------------------------------ Aurora + Stars BG (same as site) ------------------------------ */
 function BackgroundFX() {
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
@@ -27,6 +28,12 @@ function BackgroundFX() {
     </div>
   )
 }
+const PageWrapper = ({ children }) => (
+  <div className="app-background relative min-h-screen w-full text-white">
+    <BackgroundFX />
+    {children}
+  </div>
+)
 
 /* ------------------------------ Tiny helpers ------------------------------ */
 const formatDate = (dateString) =>
@@ -165,191 +172,205 @@ export default function ForumsPage() {
   return (
     <>
       <Head><title>Forums | Oh My Competitions</title></Head>
-      <BackgroundFX />
 
-      <main className="min-h-screen px-4 py-6 text-white">
-        <div className="mx-auto w-full max-w-6xl">
-
-          {/* HERO */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: .4 }}
-            className="mb-8 text-center"
-          >
-        <h1 className="text-2xl sm:text-2xl font-extrabold tracking-tight -mt-16 leading-tight">
-  <span className="bg-gradient-to-r from-[#00ffd5] to-[#0077ff] bg-clip-text text-transparent">
-    Community Forums
-  </span>
-</h1>
-
-            <p className="mt-2 text-white/80 text-sm sm:text-base">
-              Connect, vote, share ideas & celebrate wins with pioneers worldwide.
-            </p>
-
-            {/* live stats pill */}
-            <div className="mt-4 inline-flex items-center gap-3 rounded-full border border-cyan-500/40 bg-white/5 px-4 py-1.5 backdrop-blur">
-              <span className="text-white/30"></span>
-              <span className="text-xs sm:text-sm">💬 <b className="text-cyan-300">{totalThreads}</b> live threads</span>
-            </div>
-          </motion.div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-            {/* MAIN */}
-            <div className="lg:col-span-2 space-y-8">
-
-              {/* Nomination Card */}
-              <motion.div
-                initial={{ opacity:0, scale:.98 }}
-                animate={{ opacity:1, scale:1 }}
-                transition={{ duration:.35 }}
-                className="relative overflow-hidden rounded-2xl border border-cyan-500/30 bg-[#0b1022]/70 shadow-[0_0_30px_#00fff033] p-6 sm:p-8 backdrop-blur-md"
-              >
-                <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-cyan-400/20 blur-3xl" />
-                <div className="text-center relative">
-                  <div className="text-2xl sm:text-3xl font-extrabold text-cyan-300">Pioneer of the Week</div>
-                  <p className="mt-1 text-white/75 text-sm">
-                    Nominate yourself or a fellow pioneer. Community votes decide the spotlight.
-                  </p>
-
-                  <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <input
-                      value={nominee}
-                      onChange={(e) => setNominee(e.target.value)}
-                      placeholder="Your Name or Pi Username"
-                      className="px-4 py-2 rounded-xl bg-white/10 border border-white/10 placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                    />
-                    <input
-                      value={reason}
-                      onChange={(e) => setReason(e.target.value)}
-                      placeholder="Why you deserve the spotlight"
-                      className="px-4 py-2 rounded-xl bg-white/10 border border-white/10 placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                    />
-                  </div>
-
-                  <div className="mt-5 flex flex-wrap justify-center gap-3">
-                    <button onClick={handleSubmitNomination} className="btn-neon">Submit Nomination</button>
-                    <Link href="/forums/pioneer-of-the-week"><button className="btn-neon">Vote Now</button></Link>
-                    <Link href="/forums/pioneer-of-the-week/celebrate"><button className="btn-neon">This Week’s Pioneer</button></Link>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Sections */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {forumSections.map((s, idx) => (
-                  <motion.div
-                    key={s.slug}
-                    initial={{ opacity:0, y: 8 }}
-                    animate={{ opacity:1, y: 0 }}
-                    transition={{ duration:.35, delay: idx * 0.05 }}
-                    whileHover={{ y:-4, scale:1.01 }}
-                    className="group relative overflow-hidden rounded-2xl border border-cyan-500/25 bg-[#0b1022]/60 p-6 shadow-[0_0_20px_#00fff022] backdrop-blur"
-                  >
-                    <div className="absolute -right-20 -top-20 h-48 w-48 rounded-full bg-cyan-400/10 blur-2xl transition group-hover:opacity-80" />
-                    <div className="text-2xl mb-2 text-white">{s.icon}</div>
-                    <h2 className="text-lg font-bold">
-                      <span className="bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">{s.title}</span>
-                    </h2>
-                    <p className="text-white/75 text-sm mt-1">{s.description}</p>
-                    <div className="mt-4 text-xs text-gray-400">
-                      {loading ? 'Loading…' : `${s.count} discussions`}
-                    </div>
-                    <Link href={s.href}>
-                      <button className={`mt-4 w-full rounded-full px-5 py-2 font-bold text-white bg-gradient-to-r ${s.color} hover:brightness-110 transition`}>
-                        {s.buttonText}
-                      </button>
-                    </Link>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-
-            {/* SIDEBAR */}
-            <div className="lg:col-span-1">
-              <motion.div
-                initial={{ opacity:0, x: 8 }}
-                animate={{ opacity:1, x: 0 }}
-                transition={{ duration:.35 }}
-                className="sticky top-4 rounded-2xl border border-cyan-500/25 bg-[#0b1022]/60 p-6 shadow-[0_0_20px_#00fff022] backdrop-blur"
-              >
-                <h2 className="text-xl font-bold text-cyan-300 mb-5 flex items-center gap-2">
-                  <FaFire /> Recent Forums
-                </h2>
-
-                {loading ? (
-                  <div className="space-y-3">
-                    <ShimmerLine className="h-14 bg-white/5" />
-                    <ShimmerLine className="h-14 bg-white/5" />
-                    <ShimmerLine className="h-14 bg-white/5" />
-                  </div>
-                ) : recentThreads.length === 0 ? (
-                  <div className="text-center py-8">
-                    <FaComments className="text-3xl text-gray-400 mx-auto mb-3" />
-                    <p className="text-gray-400 text-sm">No recent activity</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <AnimatePresence mode="popLayout">
-                      {recentThreads.map((t) => (
-                        <motion.div
-                          key={t._id}
-                          initial={{ opacity: 0, y: 6 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -6 }}
-                          whileHover={{ scale: 1.01 }}
-                        >
-                          <Link href={`/forums/thread/${t.slug}`}>
-                            <div className="cursor-pointer rounded-lg border border-cyan-600/40 bg-[#0f172a]/40 p-3 hover:bg-[#0f172a]/60 transition">
-                              <h4 className="text-sm font-semibold mb-1 line-clamp-2">{t.title}</h4>
-                              <div className="flex items-center justify-between text-xs text-gray-400">
-                                <span className={categoryColor[t.category] || 'text-cyan-400'}>{t.category}</span>
-                                <div className="flex items-center gap-1"><FaClock />{formatDate(t.createdAt)}</div>
-                              </div>
-                            </div>
-                          </Link>
-                        </motion.div>
-                      ))}
-                    </AnimatePresence>
-                  </div>
-                )}
-
-                {/* Stats */}
-                <div className="mt-6 pt-6 border-t border-cyan-700/40">
-                  <h3 className="text-sm font-bold text-cyan-300 mb-3">Forum Stats</h3>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className="text-center">
-                      <div className="text-white font-bold">{totalThreads}</div>
-                      <div className="text-gray-400">Total Threads</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-white font-bold">{recentThreads.length}</div>
-                      <div className="text-gray-400">Recent Posts</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Pioneer of the Week */}
-                <div className="mt-6 pt-6 border-t border-cyan-700/40 text-center">
-                  <h3 className="text-sm font-bold text-cyan-300 mb-3">🌟 Pioneer of the Week</h3>
-                  {topPioneer && topPioneer.votes > 0 ? (
-                    <div className="text-white text-sm mb-4">
-                      <div className="font-bold text-cyan-400">{topPioneer.name}</div>
-                      <div className="italic text-xs text-gray-300 mt-1">"{topPioneer.reason}"</div>
-                      <div className="text-xs text-cyan-200 mt-2">🗳 {topPioneer.votes} votes</div>
-                    </div>
-                  ) : (
-                    <p className="text-xs text-gray-400 mb-4">No nominations yet.</p>
-                  )}
-                  <Link href="/forums/pioneer-of-the-week"><button className="btn-neon w-full mb-2">Nominate / Vote</button></Link>
-                  <Link href="/forums/pioneer-of-the-week/celebrate"><button className="btn-neon w-full">View Winner</button></Link>
-                </div>
-              </motion.div>
+      <PageWrapper>
+        {/* sticky chip header to match site feel */}
+        <div className="sticky top-0 z-40 bg-[#0f172a]/80 backdrop-blur border-b border-white/10">
+          <div className="mx-auto max-w-6xl px-4">
+            <div className="py-3 flex items-center justify-center">
+              <h1 className="font-orbitron font-extrabold text-base text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-500 to-cyan-300">
+                Community Forums
+              </h1>
             </div>
           </div>
         </div>
-      </main>
+
+        <main className="min-h-screen px-4 py-6">
+          <div className="mx-auto w-full max-w-6xl">
+            {/* HERO */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: .4 }}
+              className="mb-8 text-center"
+            >
+              <p className="mt-2 text-white/80 text-sm sm:text-base">
+                Connect, vote, share ideas & celebrate wins with pioneers worldwide.
+              </p>
+
+              {/* live stats pill */}
+              <div
+                className="mt-4 inline-flex items-center gap-3 rounded-full border border-cyan-500/40 bg-white/5 px-4 py-1.5 backdrop-blur"
+                aria-live="polite"
+              >
+                <span className="text-xs sm:text-sm">💬 <b className="text-cyan-300">{totalThreads}</b> live threads</span>
+                <span className="hidden sm:inline text-xs text-white/70">•</span>
+                <span className="hidden sm:inline text-xs sm:text-sm">🟢 {onlineNow} online</span>
+              </div>
+            </motion.div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* MAIN */}
+              <div className="lg:col-span-2 space-y-8">
+                {/* Nomination Card */}
+                <motion.div
+                  initial={{ opacity:0, scale:.98 }}
+                  animate={{ opacity:1, scale:1 }}
+                  transition={{ duration:.35 }}
+                  className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.06] shadow-[0_0_30px_#00fff033] p-6 sm:p-8 backdrop-blur-md"
+                >
+                  <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-cyan-400/20 blur-3xl" />
+                  <div className="text-center relative">
+                    <div className="text-2xl sm:text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-blue-400 to-cyan-300">
+                      Pioneer of the Week
+                    </div>
+                    <p className="mt-1 text-white/80 text-sm">
+                      Nominate yourself or a fellow pioneer. Community votes decide the spotlight.
+                    </p>
+
+                    <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <input
+                        value={nominee}
+                        onChange={(e) => setNominee(e.target.value)}
+                        placeholder="Your Name or Pi Username"
+                        className="px-4 py-2 rounded-xl bg-[#0f172a]/80 border border-white/10 placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                        aria-label="Nominee"
+                      />
+                      <input
+                        value={reason}
+                        onChange={(e) => setReason(e.target.value)}
+                        placeholder="Why you deserve the spotlight"
+                        className="px-4 py-2 rounded-xl bg-[#0f172a]/80 border border-white/10 placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                        aria-label="Nomination reason"
+                      />
+                    </div>
+
+                    <div className="mt-5 flex flex-wrap justify-center gap-3">
+                      <button onClick={handleSubmitNomination} className="btn-neon" type="button">Submit Nomination</button>
+                      <Link href="/forums/pioneer-of-the-week"><button className="btn-neon" type="button">Vote Now</button></Link>
+                      <Link href="/forums/pioneer-of-the-week/celebrate"><button className="btn-neon" type="button">This Week’s Pioneer</button></Link>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Sections */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {forumSections.map((s, idx) => (
+                    <motion.div
+                      key={s.slug}
+                      initial={{ opacity:0, y: 8 }}
+                      animate={{ opacity:1, y: 0 }}
+                      transition={{ duration:.35, delay: idx * 0.05 }}
+                      whileHover={{ y:-4, scale:1.01 }}
+                      className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.05] p-6 shadow-[0_0_20px_#00fff022] backdrop-blur"
+                    >
+                      <div className="absolute -right-20 -top-20 h-48 w-48 rounded-full bg-cyan-400/10 blur-2xl transition group-hover:opacity-80" />
+                      <div className="text-2xl mb-2 text-white">{s.icon}</div>
+                      <h2 className="text-lg font-bold">
+                        <span className="bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">{s.title}</span>
+                      </h2>
+                      <p className="text-white/75 text-sm mt-1">{s.description}</p>
+                      <div className="mt-4 text-xs text-gray-400">
+                        {loading ? 'Loading…' : `${s.count} discussions`}
+                      </div>
+                      <Link href={s.href}>
+                        <button className={`mt-4 w-full rounded-full px-5 py-2 font-bold text-white bg-gradient-to-r ${s.color} hover:brightness-110 transition`} type="button">
+                          {s.buttonText}
+                        </button>
+                      </Link>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+
+              {/* SIDEBAR */}
+              <div className="lg:col-span-1">
+                <motion.div
+                  initial={{ opacity:0, x: 8 }}
+                  animate={{ opacity:1, x: 0 }}
+                  transition={{ duration:.35 }}
+                  className="sticky top-4 rounded-2xl border border-white/10 bg-white/[0.05] p-6 shadow-[0_0_20px_#00fff022] backdrop-blur"
+                >
+                  <h2 className="text-xl font-bold text-cyan-300 mb-5 flex items-center gap-2">
+                    <FaFire /> Recent Forums
+                  </h2>
+
+                  {loading ? (
+                    <div className="space-y-3">
+                      <ShimmerLine className="h-14 bg-white/5" />
+                      <ShimmerLine className="h-14 bg-white/5" />
+                      <ShimmerLine className="h-14 bg-white/5" />
+                    </div>
+                  ) : recentThreads.length === 0 ? (
+                    <div className="text-center py-8">
+                      <FaComments className="text-3xl text-gray-400 mx-auto mb-3" />
+                      <p className="text-gray-400 text-sm">No recent activity</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <AnimatePresence mode="popLayout">
+                        {recentThreads.map((t) => (
+                          <motion.div
+                            key={t._id}
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -6 }}
+                            whileHover={{ scale: 1.01 }}
+                          >
+                            <Link href={`/forums/thread/${t.slug}`}>
+                              <div className="cursor-pointer rounded-lg border border-cyan-600/40 bg-[#0f172a]/40 p-3 hover:bg-[#0f172a]/60 transition">
+                                <h4 className="text-sm font-semibold mb-1 line-clamp-2">{t.title}</h4>
+                                <div className="flex items-center justify-between text-xs text-gray-400">
+                                  <span className={categoryColor[t.category] || 'text-cyan-400'}>{t.category}</span>
+                                  <div className="flex items-center gap-1"><FaClock />{formatDate(t.createdAt)}</div>
+                                </div>
+                              </div>
+                            </Link>
+                          </motion.div>
+                        ))}
+                      </AnimatePresence>
+                    </div>
+                  )}
+
+                  {/* Stats */}
+                  <div className="mt-6 pt-6 border-t border-cyan-700/40">
+                    <h3 className="text-sm font-bold text-cyan-300 mb-3">Forum Stats</h3>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="text-center">
+                        <div className="text-white font-bold">{totalThreads}</div>
+                        <div className="text-gray-400">Total Threads</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-white font-bold">{recentThreads.length}</div>
+                        <div className="text-gray-400">Recent Posts</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Pioneer of the Week */}
+                  <div className="mt-6 pt-6 border-t border-cyan-700/40 text-center">
+                    <h3 className="text-sm font-bold text-cyan-300 mb-3">🌟 Pioneer of the Week</h3>
+                    {topPioneer && topPioneer.votes > 0 ? (
+                      <div className="text-white text-sm mb-4">
+                        <div className="font-bold text-cyan-400">{topPioneer.name}</div>
+                        <div className="italic text-xs text-gray-300 mt-1">"{topPioneer.reason}"</div>
+                        <div className="text-xs text-cyan-200 mt-2">🗳 {topPioneer.votes} votes</div>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-400 mb-4">No nominations yet.</p>
+                    )}
+                    <Link href="/forums/pioneer-of-the-week"><button className="btn-neon w-full mb-2" type="button">Nominate / Vote</button></Link>
+                    <Link href="/forums/pioneer-of-the-week/celebrate"><button className="btn-neon w-full" type="button">View Winner</button></Link>
+                  </div>
+                </motion.div>
+              </div>
+            </div>
+
+            {/* bottom safe-area space */}
+            <div className="pt-6 pb-[max(5rem,env(safe-area-inset-bottom))]" />
+          </div>
+        </main>
+      </PageWrapper>
 
       {/* Neon buttons + accessibility tweaks */}
       <style jsx global>{`

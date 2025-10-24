@@ -1,10 +1,10 @@
+// file: src/pages/competitions/all.js
 'use client'
 
 import Head from 'next/head'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { RefreshCw } from 'lucide-react'
 
 /* ─────────────────────────────── Lazy cards ─────────────────────────────── */
 const DailyCompetitionCard   = dynamic(() => import('components/DailyCompetitionCard').catch(() => null), { ssr:false })
@@ -24,6 +24,31 @@ const CATS = [
   { id: 'free',       label: 'Free' },
 ]
 const CATEGORY_ORDER = CATS.map(c => c.id)
+
+/* ---------------------- background FX (app theme) ---------------------- */
+function BackgroundFX() {
+  return (
+    <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+      {/* aurora swirl */}
+      <div className="absolute -inset-32 blur-3xl opacity-35 [background:conic-gradient(from_180deg_at_50%_50%,#00ffd5,rgba(0,255,213,.2),#0077ff,#00ffd5)] animate-[spin_35s_linear_infinite]" />
+      {/* star grid */}
+      <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:18px_18px]" />
+      {/* drifting glows */}
+      <div className="absolute -top-20 -left-24 h-[420px] w-[420px] rounded-full blur-3xl opacity-25 bg-cyan-400 animate-[float_14s_ease-in-out_infinite]" />
+      <div className="absolute -bottom-20 -right-24 h-[420px] w-[420px] rounded-full blur-3xl opacity-20 bg-blue-500 animate-[float2_18s_ease-in-out_infinite]" />
+      <style jsx global>{`
+        @keyframes float {0%{transform:translate(0,0)}50%{transform:translate(12px,18px)}100%{transform:translate(0,0)}}
+        @keyframes float2{0%{transform:translate(0,0)}50%{transform:translate(-16px,-14px)}100%{transform:translate(0,0)}}
+      `}</style>
+    </div>
+  )
+}
+const PageWrapper = ({ children }) => (
+  <div className="app-background relative min-h-screen w-full text-white">
+    <BackgroundFX />
+    {children}
+  </div>
+)
 
 /* ─────────────────────────────── Utils ─────────────────────────────── */
 const now = () => new Date().getTime()
@@ -181,7 +206,7 @@ function classifyCategory(c) {
   return themed || 'launch'
 }
 
-/* ─────────────────────────────── Next draw countdown (green LIVE, mobile-first) ─────────────────────────────── */
+/* ─────────────────────────────── Next draw bar ─────────────────────────────── */
 function NextDrawBar({ items }) {
   const target = useMemo(() => {
     const list = Array.isArray(items) ? items : [];
@@ -245,7 +270,7 @@ function NextDrawBar({ items }) {
   return (
     <Link href={`/ticket-purchase/${encodeURIComponent(target.slug)}`} aria-label={`Go to ${target.title}`} className="group block">
       <div className="relative rounded-2xl p-[1.5px] bg-gradient-to-r from-[#00ffd5] via-[#27b7ff] to-[#0077ff] shadow-[0_0_28px_#22d3ee33]">
-        <div className="rounded-[1rem] bg-slate-950/90 backdrop-blur-sm px-4 py-3 sm:px-5 sm:py-3.5 flex items-center gap-3">
+        <div className="rounded-[1rem] bg-[#0f172a]/90 backdrop-blur-sm px-4 py-3 sm:px-5 sm:py-3.5 flex items-center gap-3">
           <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-black tracking-wide border ${badgeClass}`}>{badgeText}</span>
           <div className="min-w-0 flex-1">
             <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
@@ -266,7 +291,7 @@ function NextDrawBar({ items }) {
             </div>
             {progressPct != null && (
               <div className="mt-2 h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                <div className="h-full w-0 transition-[width] duration-500 ease-linear bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow-[0_0_12px_#22d3ee77]" style={{ width: `${progressPct}%` }} />
+                <div className="h-full w-0 transition-[width] duration-500 ease-linear bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow-[0_0_12px_#22d3ee77]" style={{width:`${progressPct}%`}} />
               </div>
             )}
           </div>
@@ -311,16 +336,16 @@ function CardPicker({ tab, item }) {
   return renderByCategory(tab, common, <GenericCard data={item} />) || <GenericCard data={item} />
 }
 
-/* ─────────────────────────────── Fallback Card ─────────────────────────────── */
+/* ─────────────────────────────── Fallback Card (color-matched) ─────────────────────────────── */
 function GenericCard({ data }) {
   const total = toNum(data.totalTickets)
   const sold = toNum(data.ticketsSold)
   const pct = total > 0 ? clamp((sold / total) * 100, 0, 100) : 0
   return (
-    <div className="rounded-2xl border border-cyan-400/15 bg-slate-900/60 p-4 shadow-[0_6px_24px_rgba(0,0,0,0.35)]">
-      <div className="font-bold text-sm mb-1">{data.title}</div>
+    <div className="rounded-2xl border border-cyan-400/15 bg-[#0b1022]/60 p-4 shadow-[0_6px_24px_rgba(0,0,0,0.35)]">
+      <div className="font-bold text-sm mb-1 text-cyan-100">{data.title}</div>
       <div className="text-xs text-cyan-300">{data.prize}</div>
-      <div className="text-xs mt-2">🎟 {sold}/{total || '∞'} sold</div>
+      <div className="text-xs mt-2 text-cyan-200/80">🎟 {sold}/{total || '∞'} sold</div>
       <div className="h-1.5 bg-slate-800 rounded-full mt-1 overflow-hidden">
         <div className="h-full bg-gradient-to-r from-[#00ffd5] to-[#0077ff]" style={{width:`${pct}%`}} />
       </div>
@@ -373,65 +398,86 @@ export default function AllCompetitionsPage() {
   const counts = Object.fromEntries(CATEGORY_ORDER.map(k => [k, buckets[k].length]))
 
   return (
-    <main className="min-h-screen bg-slate-950 text-cyan-200">
-      <Head><title>All Competitions</title></Head>
+    <PageWrapper>
+      <Head><title>All Competitions • OMC</title></Head>
 
-      {/* Sticky title only */}
-      <div className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur border-b border-white/5">
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="py-3 flex items-center justify-center">
-            <h1 className="font-orbitron font-extrabold text-base text-cyan-300 text-center">
-              All Competitions
-            </h1>
-          </div>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="mx-auto max-w-6xl px-4 py-6 lg:py-10">
-        {/* Next draw is NOT sticky anymore */}
-        <div className="mb-5">
-          <NextDrawBar items={items}/>
-        </div>
-
-        {loading ? <p>Loading...</p> : error ? <p>{error}</p> : (
-          <div className="space-y-6 sm:space-y-7">
-            {/* Tabs */}
-      {/* Tabs – compact on mobile */}
-<div className="flex items-center gap-2 overflow-x-auto scrollbar-none -mx-1 px-1
-                snap-x snap-mandatory [--pad:0.375rem] sm:[--pad:0.5rem]">
-  {CATS.map(c => {
-    const active = tab === c.id
-    return (
-      <button
-        key={c.id}
-        onClick={() => setTab(c.id)}
-        disabled={!counts[c.id]}
-        className={[
-          // sizing: compact base, scale up on sm+
-          'shrink-0 whitespace-nowrap snap-center md:snap-start',
-          'px-3 py-[var(--pad)] text-[12px] sm:px-4 sm:py-[var(--pad)] sm:text-sm',
-          'rounded-full border font-semibold transition-colors',
-          active
-            ? 'bg-cyan-500/15 border-cyan-400 text-cyan-200'
-            : 'border-cyan-400/20 text-slate-200 hover:border-cyan-400/30',
-          'disabled:opacity-40 disabled:cursor-not-allowed'
-        ].join(' ')}
-      >
-        <span>{c.label}</span>
-        {/* tiny count badge */}
-        <span className="ml-2 inline-flex items-center justify-center
-                         text-[10px] leading-none px-1.5 py-0.5 rounded-full
-                         bg-cyan-400/10 text-cyan-300 border border-cyan-400/20">
-          {counts[c.id]}
-        </span>
-      </button>
-    )
-  })}
+      {/* Sticky header (theme-matched) */}
+   {/* Sticky header (theme-matched) */}
+<div className="sticky top-0 z-40 bg-[#0b1220]/80 backdrop-blur border-b border-white/10">
+  <div className="mx-auto max-w-6xl px-4">
+    <div className="py-3 text-center">
+      <h1 className="font-orbitron font-extrabold text-base text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-500 to-cyan-300">
+        All Competitions
+      </h1>
+      {/* NEW: Subtitle (matches Scheduled style) */}
+      <p className="mt-1 text-[12px] sm:text-sm text-cyan-100/80">
+        All categories in one place use the tabs to filter and search to find your next win.
+        We’re adding and rotating competitions <span className="font-semibold text-cyan-300">every day</span>.
+      </p>
+    </div>
+  </div>
 </div>
 
 
-            {/* Grid with extra breathing room + soft divider under each card */}
+      {/* Content container */}
+      <div className="mx-auto max-w-6xl px-4 py-6 lg:py-10">
+        {/* Next draw */}
+        <div className="mb-6">
+          <NextDrawBar items={items}/>
+        </div>
+
+        {/* Search (glassy cyan frame) */}
+        <div className="mb-5 flex items-center justify-center">
+          <div className="w-full max-w-md">
+            <div className="rounded-xl p-[1px] bg-gradient-to-r from-cyan-500/40 via-blue-500/35 to-cyan-500/40 shadow-[0_0_24px_rgba(34,211,238,0.18)]">
+              <input
+                value={q}
+                onChange={(e)=>setQ(e.target.value)}
+                placeholder="Search competitions…"
+                className="w-full rounded-[11px] bg-[#0f172a]/90 border border-white/10 px-4 py-2.5 text-sm text-cyan-100 placeholder:text-cyan-200/40 outline-none focus:border-cyan-400/60"
+              />
+            </div>
+          </div>
+        </div>
+
+        {loading ? (
+          <p className="text-cyan-200/80 text-center">Loading…</p>
+        ) : error ? (
+          <p className="text-rose-300/90 text-center">{error}</p>
+        ) : (
+          <div className="space-y-6 sm:space-y-7">
+            {/* Tabs – cyan active state */}
+            <div className="flex items-center gap-2 overflow-x-auto scrollbar-none -mx-1 px-1
+                            snap-x snap-mandatory [--pad:0.375rem] sm:[--pad:0.5rem]">
+              {CATS.map(c => {
+                const active = tab === c.id
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => setTab(c.id)}
+                    disabled={!counts[c.id]}
+                    className={[
+                      'shrink-0 whitespace-nowrap snap-center md:snap-start',
+                      'px-3 py-[var(--pad)] text-[12px] sm:px-4 sm:py-[var(--pad)] sm:text-sm',
+                      'rounded-full border font-semibold transition-colors',
+                      active
+                        ? 'bg-cyan-500/15 border-cyan-400 text-cyan-200 shadow-[0_0_18px_#00fff055]'
+                        : 'border-cyan-400/20 text-cyan-100 hover:border-cyan-400/40',
+                      'disabled:opacity-40 disabled:cursor-not-allowed'
+                    ].join(' ')}
+                  >
+                    <span>{c.label}</span>
+                    <span className="ml-2 inline-flex items-center justify-center
+                                     text-[10px] leading-none px-1.5 py-0.5 rounded-full
+                                     bg-cyan-400/10 text-cyan-300 border border-cyan-400/20">
+                      {counts[c.id]}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Grid (cards themed already) */}
             <ul className="grid grid-cols-1 gap-y-9 gap-x-4 sm:grid-cols-2 sm:gap-y-10 sm:gap-x-6 lg:grid-cols-3 lg:gap-y-12 lg:gap-x-8">
               {buckets[tab].map((item) => (
                 <li key={item._id} className="h-full">
@@ -446,6 +492,6 @@ export default function AllCompetitionsPage() {
           </div>
         )}
       </div>
-    </main>
+    </PageWrapper>
   )
 }
