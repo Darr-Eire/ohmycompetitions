@@ -662,7 +662,7 @@ function Section({
   title,
   subtitle,
   items = [],
-  viewMoreHref,
+  viewMoreHref,           // can stay; it’s ignored now
   viewMoreText = 'View More',
   extraClass = '',
   category,
@@ -710,20 +710,11 @@ function Section({
         renderItem={(item, i) => renderCard(item, i, { isFree, isPi, cardSize: resolvedCardSize })}
         centerFirstSlide
       />
-
-      {viewMoreHref && (
-        <div className="text-center mt-6">
-          <Link
-            href={viewMoreHref}
-            className="inline-block text-sm font-bold px-3 py-1.5 rounded-md text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow hover:opacity-90 transition"
-          >
-            {t('view_more', viewMoreText)}
-          </Link>
-        </div>
-      )}
+      {/* ⬆️ View More removed */}
     </section>
   );
 }
+
 
 /* ---------------- card resolver ---------------- */
 function renderCard(item, i, { isFree, isPi, cardSize = 'md' }) {

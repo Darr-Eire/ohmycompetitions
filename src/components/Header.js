@@ -58,14 +58,10 @@ export default function Header() {
   }, [menuOpen, showLoginModal]);
 
   const safeT = (key, fallback = key) => (!mounted || !ready ? fallback : t(key));
+const competitionMenu = [
+  [safeT('live_now', 'Live Now'), '/competitions/live-now'],
+];
 
-  // ───────────────────────── Nav data (updated) ─────────────────────────
-  // Removed: Pi Daily / Tech & Gadgets / Launch Week etc.
-  // Only two entries under a single dropdown: Live Now + Active (all comps)
-  const competitionMenu = [
-    [safeT('live_now', 'Live Now'), '/competitions/live-now'],
-    [safeT('all_competitions', 'Active Competitions'), '/competitions/active'],
-  ];
 
   const navItems = [[safeT('home', 'Home'), '/homepage']];
   const miniGames = [[safeT('try_your_skill', 'Try Your Skill'), '/try-your-skill', safeT('coming_soon', 'Coming Soon')]];
