@@ -1,35 +1,34 @@
-import { getAllDescriptions } from 'utils/getDescriptions';
-import React, { useState } from 'react';
-import { useRouter } from 'next/router';
-import AdminSidebar from '../../../components/AdminSidebar';
-import AdminGuard from '../../../components/AdminGuard';
+// pages/admin/competitions/create.jsx
+import { getAllDescriptions } from 'utils/getDescriptions'
+import React, { useState } from 'react'
+import { useRouter } from 'next/router'
+import AdminSidebar from '../../../components/AdminSidebar'
+import AdminGuard from '../../../components/AdminGuard'
 
-// Move ImageOption component definition OUTSIDE of the main component function
+// ───────────────────────────────────────── Image quick-pick option (outside component)
 const ImageOption = ({ label, path, onChange }) => (
   <button
     type="button"
-    onClick={() => onChange({ target: { name: 'imageUrl', value: path } })} // Use the passed onChange
+    onClick={() => onChange({ target: { name: 'imageUrl', value: path } })}
     className="p-2 bg-gray-800 hover:bg-gray-700 rounded text-left transition"
   >
     {label}
   </button>
-);
-
+)
 
 export default function CreateCompetitionPage({ descriptions = [] }) {
-  const router = useRouter();
-  const now = new Date();
-  const sevenDaysLater = new Date();
-  sevenDaysLater.setDate(now.getDate() + 7);
+  const router = useRouter()
+  const now = new Date()
+  const sevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
 
-  const defaultStart = now.toISOString().slice(0, 16);
-  const defaultEnd = sevenDaysLater.toISOString().slice(0, 16);
+  const defaultStart = now.toISOString().slice(0, 16)
+  const defaultEnd = sevenDaysLater.toISOString().slice(0, 16)
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     slug: '',
     title: '',
-    prize: '', // This will be formData.prizes[0]
+    prize: '',
     description: '',
     totalTickets: 100,
     entryFee: 1,
@@ -40,93 +39,79 @@ export default function CreateCompetitionPage({ descriptions = [] }) {
     status: 'active',
     imageUrl: '',
     thumbnail: '',
-    maxPerUser: 1,       // Corrected name
-    winnersCount: 1,     // Corrected name
-    prizes: ['']         // Array for prizeBreakdown
-  });
+    maxPerUser: 1,
+    winnersCount: 1,
+    prizes: [''],
+  })
 
-
-  const generateSlug = (title) => {
-    return title
+  const generateSlug = (title) =>
+    title
       .toLowerCase()
       .replace(/[^a-z0-9\s-]/g, '')
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')
-      .trim('-');
-  };
+      .replace(/^-+|-+$/g, '')
 
   const handlePrizeChange = (index, value) => {
-    const updatedPrizes = [...formData.prizes];
-    updatedPrizes[index] = value;
-    setFormData({ ...formData, prizes: updatedPrizes });
-  };
+    const updatedPrizes = [...formData.prizes]
+    updatedPrizes[index] = value
+    setFormData({ ...formData, prizes: updatedPrizes })
+  }
 
   const addPrize = () => {
     if (formData.prizes.length < 10) {
-      setFormData({ ...formData, prizes: [...formData.prizes, ''] });
+      setFormData({ ...formData, prizes: [...formData.prizes, ''] })
     }
-  };
+  }
 
   const removePrize = (index) => {
-    const updatedPrizes = formData.prizes.filter((_, i) => i !== index);
-    setFormData({ ...formData, prizes: updatedPrizes });
-  };
-
+    const updatedPrizes = formData.prizes.filter((_, i) => i !== index)
+    setFormData({ ...formData, prizes: updatedPrizes })
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+    e.preventDefault()
+    setLoading(true)
 
     try {
       const submitData = {
         ...formData,
         slug: formData.slug || generateSlug(formData.title),
         piAmount: formData.piAmount || formData.entryFee,
-        prize: formData.prizes[0] || '', // Main prize from the first item
-        prizeBreakdown: formData.prizes.filter(p => p.trim() !== '') // Send all non-empty prizes
-      };
+        prize: formData.prizes[0] || '',
+        prizeBreakdown: formData.prizes.filter((p) => p.trim() !== ''),
+      }
 
       const res = await fetch('/api/admin/competitions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(submitData),
-      });
+      })
 
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Failed to create competition');
+        const errorData = await res.json().catch(() => ({}))
+        throw new Error(errorData.message || 'Failed to create competition')
       }
 
-      alert('✅ Competition created successfully!');
-      router.push('/admin/competitions');
+      alert('✅ Competition created successfully!')
+      router.push('/admin/competitions')
     } catch (err) {
-      console.error('Error creating competition:', err);
-      alert('❌ Failed to create competition: ' + err.message);
+      console.error('Error creating competition:', err)
+      alert('❌ Failed to create competition: ' + err.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
-
+  }
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => {
-      const newData = {
-        ...prev,
-        [name]: value
-      };
-      if (name === 'title' && !prev.slug) {
-        newData.slug = generateSlug(value);
-      }
-      // Ensure piAmount updates with entryFee if not manually set
-      if (name === 'entryFee' && !prev.piAmount) { // Added !prev.piAmount to avoid overwriting if user manually set it
-        newData.piAmount = value;
-      }
-      return newData;
-    });
-  };
-
-  // The ImageOption component definition from earlier was here, removed.
+    const { name, value } = e.target
+    setFormData((prev) => {
+      const next = { ...prev, [name]: value }
+      if (name === 'title' && !prev.slug) next.slug = generateSlug(value)
+      if (name === 'entryFee' && !prev.piAmount) next.piAmount = value
+      return next
+    })
+  }
 
   return (
     <AdminGuard>
@@ -171,66 +156,62 @@ export default function CreateCompetitionPage({ descriptions = [] }) {
                   <p className="text-xs text-gray-400 mt-1">Auto-generated from title. Used in competition URL.</p>
                 </div>
 
-            {/* Dynamic Prizes */}
-<div>
-  <label className="block text-cyan-300 text-sm font-bold mb-2">Prizes *</label>
+                {/* Dynamic Prizes */}
+                <div className="md:col-span-2">
+                  <label className="block text-cyan-300 text-sm font-bold mb-2">Prizes *</label>
+                  {formData.prizes.map((prize, index) => (
+                    <div key={index} className="flex items-center gap-2 mb-2">
+                      <input
+                        type="text"
+                        name={`prize-${index}`}
+                        value={prize}
+                        onChange={(e) => handlePrizeChange(index, e.target.value)}
+                        required
+                        className="flex-grow px-4 py-2 bg-black border border-cyan-400 rounded-lg text-white placeholder-gray-400 focus:border-cyan-300 focus:outline-none"
+                        placeholder={`Prize ${index + 1}`}
+                      />
+                      {formData.prizes.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removePrize(index)}
+                          className="text-red-400 hover:text-red-300 text-sm"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  {formData.prizes.length < 10 && (
+                    <button
+                      type="button"
+                      onClick={addPrize}
+                      className="mt-2 text-cyan-400 hover:text-cyan-300 text-sm underline"
+                    >
+                      Add another prize
+                    </button>
+                  )}
+                </div>
 
-  {formData.prizes.map((prize, index) => (
-    <div key={index} className="flex items-center gap-2 mb-2">
-      <input
-        type="text"
-        name={`prize-${index}`}
-        value={prize}
-        onChange={(e) => handlePrizeChange(index, e.target.value)}
-        required
-        className="flex-grow px-4 py-2 bg-black border border-cyan-400 rounded-lg text-white placeholder-gray-400 focus:border-cyan-300 focus:outline-none"
-        placeholder={`Prize ${index + 1}`}
-      />
-      {formData.prizes.length > 1 && (
-        <button
-          type="button"
-          onClick={() => removePrize(index)}
-          className="text-red-400 hover:text-red-300 text-sm"
-        >
-          ✕
-        </button>
-      )}
-    </div>
-  ))}
-
-  {formData.prizes.length < 10 && (
-    <button
-      type="button"
-      onClick={addPrize}
-      className="mt-2 text-cyan-400 hover:text-cyan-300 text-sm underline"
-    >
-       Add another prize
-    </button>
-  )}
-</div>
-
-
-              {/* Theme */}
-<div>
-  <label className="block text-cyan-300 text-sm font-bold mb-2">Category (Theme) *</label>
-  <select
-    name="theme"
-    value={formData.theme}
-    onChange={handleChange}
-    className="w-full px-4 py-2 bg-black border border-cyan-400 rounded-lg text-white focus:border-cyan-300 focus:outline-none"
-  >
-    <option value="tech">💻 Featured / Tech</option>
-    <option value="premium">🌴 Travel & Lifestyle</option>
-    <option value="pi">🟡 Pi Giveaways</option>
-    <option value="daily">📆 Daily Competitions</option>
-    <option value="crypto">💰 Crypto Giveaways</option>
-    <option value="free">🆓 Free</option>
-    <option value="regional">🌍 Regional Giveaways</option>
-    <option value="event">🎉 Special Events</option>
-    <option value="launch">🚀 OMC Launch Week</option>
-  </select>
-</div>
-
+                {/* Theme */}
+                <div>
+                  <label className="block text-cyan-300 text-sm font-bold mb-2">Category (Theme) *</label>
+                  <select
+                    name="theme"
+                    value={formData.theme}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 bg-black border border-cyan-400 rounded-lg text-white focus:border-cyan-300 focus:outline-none"
+                  >
+                    <option value="tech">💻 Featured / Tech</option>
+                    <option value="premium">🌴 Travel & Lifestyle</option>
+                    <option value="pi">🟡 Pi Giveaways</option>
+                    <option value="daily">📆 Daily Competitions</option>
+                    <option value="crypto">💰 Crypto Giveaways</option>
+                    <option value="free">🆓 Free</option>
+                    <option value="regional">🌍 Regional Giveaways</option>
+                    <option value="event">🎉 Special Events</option>
+                    <option value="launch">🚀 OMC Launch Week</option>
+                  </select>
+                </div>
 
                 {/* Total Tickets */}
                 <div>
@@ -251,7 +232,7 @@ export default function CreateCompetitionPage({ descriptions = [] }) {
                   <label className="block text-cyan-300 text-sm font-bold mb-2">Max Tickets per User *</label>
                   <input
                     type="number"
-                    name="maxPerUser" // Corrected name
+                    name="maxPerUser"
                     value={formData.maxPerUser}
                     onChange={handleChange}
                     required
@@ -265,7 +246,7 @@ export default function CreateCompetitionPage({ descriptions = [] }) {
                   <label className="block text-cyan-300 text-sm font-bold mb-2">Number of Winners *</label>
                   <input
                     type="number"
-                    name="winnersCount" // Corrected name
+                    name="winnersCount"
                     value={formData.winnersCount}
                     onChange={handleChange}
                     required
@@ -356,26 +337,24 @@ export default function CreateCompetitionPage({ descriptions = [] }) {
 
                 <select
                   className="w-full px-4 py-2 mb-2 bg-black border border-cyan-400 rounded-lg text-white focus:border-cyan-300 focus:outline-none"
-                  // Optionally, if you want selecting a preset to populate the textarea:
-                  // onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  // value={formData.description} // If you uncomment the line above, uncomment this too
                 >
                   <option value="">Select a preset description (view only)</option>
                   {descriptions.map((desc, idx) => (
-                    <option key={idx} value={desc}>{desc.slice(0, 50)}...</option>
+                    <option key={idx} value={desc}>
+                      {desc.slice(0, 50)}...
+                    </option>
                   ))}
                 </select>
 
                 <textarea
-                  name="description" // Added name
-                  value={formData.description} // Added value binding
-                  onChange={handleChange} // Added onChange handler
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
                   placeholder="Write your own description here..."
                   className="w-full px-4 py-2 bg-black border border-cyan-400 rounded-lg text-white focus:border-cyan-300 focus:outline-none"
                   rows={4}
                 />
               </div>
-
 
               {/* Image URL and buttons */}
               <div>
@@ -414,7 +393,6 @@ export default function CreateCompetitionPage({ descriptions = [] }) {
                     <ImageOption label="Scooter" path="/images/scooter.png" onChange={handleChange} />
                   </div>
 
-
                   {/* Travel */}
                   <p className="text-cyan-300 text-xs font-semibold mt-4 mb-1">🌴 Travel</p>
                   <div className="grid grid-cols-3 gap-2 text-xs">
@@ -442,7 +420,6 @@ export default function CreateCompetitionPage({ descriptions = [] }) {
                   </div>
                 </div>
 
-
                 {/* Image Preview */}
                 {formData.imageUrl && (
                   <div className="mt-3">
@@ -453,14 +430,13 @@ export default function CreateCompetitionPage({ descriptions = [] }) {
                         alt="Competition preview"
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          e.target.style.display = 'none';
+                          e.currentTarget.style.display = 'none'
                         }}
                       />
                     </div>
                   </div>
                 )}
               </div>
-
 
               {/* Action Buttons */}
               <div className="flex gap-4 pt-4">
@@ -498,14 +474,22 @@ export default function CreateCompetitionPage({ descriptions = [] }) {
         </div>
       </AdminSidebar>
     </AdminGuard>
-  );
+  )
 }
 
-export async function getStaticProps() {
-  const descriptions = getAllDescriptions();
-  return {
-    props: {
-      descriptions,
-    },
-  };
+/**
+ * SSR so missing folders don't crash builds on Vercel.
+ * Falls back to [] if utils or directory are unavailable.
+ */
+export async function getServerSideProps() {
+  let descriptions = []
+  try {
+    if (typeof getAllDescriptions === 'function') {
+      const res = await Promise.resolve(getAllDescriptions())
+      if (Array.isArray(res)) descriptions = res
+    }
+  } catch (e) {
+    console.warn('getAllDescriptions failed:', e?.message || e)
+  }
+  return { props: { descriptions } }
 }
