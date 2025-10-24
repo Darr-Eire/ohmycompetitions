@@ -3,61 +3,63 @@
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 
-/* Brand colors */
 const BRAND = { c1: '#00ffd5', c2: '#0077ff' }
 
-/* ───────── helpers ───────── */
+/* helpers */
 const clamp = (n, a, b) => Math.max(a, Math.min(b, n))
-const toNum = (v) => (Number.isFinite(Number(v)) ? Number(v) : null)
+const toNum = (v) => {
+  if (v == null) return null
+  if (typeof v === 'number' && Number.isFinite(v)) return v
+  if (typeof v === 'string') {
+    const n = Number(v.replace(/[^\d.,-]/g, '').replace(',', '.'))
+    return Number.isFinite(n) ? n : null
+  }
+  return null
+}
 const fmtPi = (v) => {
-  if (v == null || v === '') return 'TBA'
-  const n = Number(v)
-  if (Number.isFinite(n)) return `${n % 1 === 0 ? n.toFixed(0) : n.toFixed(2)} π`
-  const s = String(v)
-  return /\bπ\b|[$€£]/.test(s) ? s : `${s} π`
+  const n = toNum(v)
+  if (n == null) return 'TBA'
+  if (n <= 0) return 'TBA'
+  return `${(n % 1 === 0 ? n.toFixed(0) : n.toFixed(2))} π`
 }
 
-/* Normalize prize tiers */
+/* normalize prize tiers from many shapes */
 function normalizeTiers(src, prizeProp) {
-  if (!src || typeof src !== 'object') src = {}
+  const s = src && typeof src === 'object' ? src : {}
   const out = {}
 
-  const f1 = src.firstPrize ?? src.prize1
-  const f2 = src.secondPrize ?? src.prize2
-  const f3 = src.thirdPrize ?? src.prize3
+  const f1 = s.firstPrize ?? s.prize1 ?? s['1st'] ?? s?.prizeBreakdown?.firstPrize
+  const f2 = s.secondPrize ?? s.prize2 ?? s['2nd'] ?? s?.prizeBreakdown?.secondPrize
+  const f3 = s.thirdPrize ?? s.prize3 ?? s['3rd'] ?? s?.prizeBreakdown?.thirdPrize
+
   if (f1 != null) out['1st'] = f1
   if (f2 != null) out['2nd'] = f2
   if (f3 != null) out['3rd'] = f3
 
-  const bd = src.prizeBreakdown
-  if (bd && typeof bd === 'object' && !Array.isArray(bd)) {
-    const map = { '1st': /^(1st|first|grand)/i, '2nd': /^(2nd|second)/i, '3rd': /^(3rd|third)/i }
-    for (const [k, v] of Object.entries(bd)) {
-      if (map['1st'].test(k) && out['1st'] == null) out['1st'] = v
-      if (map['2nd'].test(k) && out['2nd'] == null) out['2nd'] = v
-      if (map['3rd'].test(k) && out['3rd'] == null) out['3rd'] = v
-    }
-  }
-
-  if (Array.isArray(src.prizes)) {
-    if (!out['1st'] && src.prizes[0]) out['1st'] = src.prizes[0]
-    if (!out['2nd'] && src.prizes[1]) out['2nd'] = src.prizes[1]
-    if (!out['3rd'] && src.prizes[2]) out['3rd'] = src.prizes[2]
+  if (Array.isArray(s.prizes)) {
+    if (!out['1st'] && s.prizes[0] != null) out['1st'] = s.prizes[0]
+    if (!out['2nd'] && s.prizes[1] != null) out['2nd'] = s.prizes[1]
+    if (!out['3rd'] && s.prizes[2] != null) out['3rd'] = s.prizes[2]
   }
 
   if (!out['1st'] && prizeProp) out['1st'] = prizeProp
   return out
 }
 
-/* Sum tiers for pool */
-function prizePoolFromTiers(tiers) {
-  const nums = ['1st', '2nd', '3rd']
-    .map((k) => toNum(String(tiers[k] ?? '').replace(/[^\d.,-]/g, '').replace(',', '.')))
-    .filter((n) => n != null)
-  return nums.length ? nums.reduce((a, b) => a + b, 0) : null
+/* pool = prizePi (if >0) else sum of tiers (if >0) */
+function resolvePrizePool(c, tiers) {
+  const direct = toNum(c.prizePi ?? c.totalPrizePi ?? c.poolPi)
+  if (direct != null && direct > 0) return direct
+
+  const tierNums = ['1st', '2nd', '3rd']
+    .map((k) => toNum(tiers[k]))
+    .filter((n) => n != null && n > 0)
+
+  if (tierNums.length) return tierNums.reduce((a, b) => a + b, 0)
+  return null
 }
 
-/* Status logic */
+/* status */
 function statusFromDates(startsAt, endsAt) {
   const now = Date.now()
   const s = startsAt ? new Date(startsAt).getTime() : null
@@ -67,25 +69,35 @@ function statusFromDates(startsAt, endsAt) {
   return 'LIVE'
 }
 
-/* ───────── component ───────── */
-export default function LaunchCompetitionCard({ comp = {}, className = '', title: titleProp, prize: prizeProp }) {
+export default function LaunchCompetitionCard({
+  comp = {},
+  className = '',
+  title: titleProp,
+  prize: prizeProp,
+}) {
   const c = comp?.comp ?? comp ?? {}
 
   const title = titleProp ?? c.title ?? 'Launch Week'
   const slug = c.slug ?? ''
 
-  /* Normalize entry fee & tickets */
+  /* Entry fee & tickets */
   const entryFee =
-    c.pricePi ??
-    c.entryFeePi ??
-    c.feePi ??
-    c.entryFee ??
-    c.ticketPrice ??
-    c.price ??
-    0
+    toNum(
+      c.pricePi ??
+        c.entryFeePi ??
+        c.feePi ??
+        c.entryFee ??
+        c.ticketPrice ??
+        c.price
+    ) ?? 0
 
-  const totalTickets = toNum(c.totalTickets ?? c.ticketsTotal ?? c.capacity) ?? 0
-  const ticketsSold = clamp(toNum(c.ticketsSold ?? c.sold ?? c.entries) ?? 0, 0, Math.max(0, totalTickets))
+  const totalTickets =
+    toNum(c.totalTickets ?? c.ticketsTotal ?? c.capacity) ?? 0
+  const ticketsSold = clamp(
+    toNum(c.ticketsSold ?? c.sold ?? c.entries) ?? 0,
+    0,
+    Math.max(0, totalTickets)
+  )
   const progress = totalTickets > 0 ? Math.round((ticketsSold / totalTickets) * 100) : 0
   const remaining = totalTickets > 0 ? Math.max(0, totalTickets - ticketsSold) : null
 
@@ -99,23 +111,35 @@ export default function LaunchCompetitionCard({ comp = {}, className = '', title
 
   /* Prize logic */
   const tiers = useMemo(() => normalizeTiers(c, prizeProp), [c, prizeProp])
-  const winnersCount = useMemo(() => {
-    const n = Number(c.winners ?? c.totalWinners ?? c.numWinners)
-    if (Number.isFinite(n) && n > 0) return Math.min(3, Math.max(1, Math.floor(n)))
-    return Math.max(1, ['1st', '2nd', '3rd'].filter((k) => tiers[k] != null).length || 1)
-  }, [c, tiers])
 
-  const poolNum = prizePoolFromTiers(tiers)
-  const poolText = poolNum != null ? fmtPi(poolNum) : 'TBA'
+  // winners count: prefer explicit; fallback to how many tier values are >0
+  const winnersExplicit = toNum(c.winners ?? c.totalWinners ?? c.numWinners)
+  const tierCount = ['1st', '2nd', '3rd'].filter((k) => toNum(tiers[k]) > 0).length
+  const winnersCount = winnersExplicit && winnersExplicit > 0
+    ? Math.min(3, winnersExplicit)
+    : Math.max(1, tierCount || 1)
+
+  const pool = resolvePrizePool(c, tiers)
+  const poolText = fmtPi(pool)
 
   const drawText = endsAt
-    ? new Date(endsAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+    ? new Date(endsAt).toLocaleString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
     : 'TBA'
 
-  const entryFeeText = isUpcoming ? 'TBA' : entryFee > 0 ? fmtPi(entryFee) : 'Free Entry'
+  const entryFeeText = isUpcoming
+    ? 'TBA'
+    : entryFee > 0
+    ? fmtPi(entryFee)
+    : 'Free Entry'
+
   const href = slug ? `/ticket-purchase/${encodeURIComponent(slug)}` : '#'
 
-  /* Tick refresh for countdowns */
+  /* live countdown tick */
   const [, setTick] = useState(0)
   useEffect(() => {
     if (!isLive || !endsAt) return
@@ -240,9 +264,7 @@ export default function LaunchCompetitionCard({ comp = {}, className = '', title
             </button>
           ) : (
             <Link href={href}>
-              <span
-                className="block w-full text-center rounded-md py-2 font-bold text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:brightness-110 active:translate-y-px transition-transform"
-              >
+              <span className="block w-full text-center rounded-md py-2 font-bold text-black bg-gradient-to-r from-[#00ffd5] to-[#0077ff] hover:brightness-110 active:translate-y-px transition-transform">
                 More Details
               </span>
             </Link>
@@ -253,7 +275,6 @@ export default function LaunchCompetitionCard({ comp = {}, className = '', title
   )
 }
 
-/* Small helper */
 function Fact({ label, value }) {
   return (
     <div className="rounded-lg border border-cyan-300/25 bg-white/5 px-2 py-1 text-center">

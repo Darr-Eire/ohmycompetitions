@@ -6,14 +6,14 @@ import dynamic from 'next/dynamic'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { RefreshCw, Search, Sparkles } from 'lucide-react'
 
-/* Lazy cards */
+/* ─────────────────────────────── Lazy cards ─────────────────────────────── */
 const DailyCompetitionCard   = dynamic(() => import('components/DailyCompetitionCard').catch(() => null), { ssr:false })
 const LaunchCompetitionCard  = dynamic(() => import('components/LaunchCompetitionCard').catch(() => null), { ssr:false })
 const PiCompetitionCard      = dynamic(() => import('components/PiCompetitionCard').catch(() => null), { ssr:false })
 const FreeCompetitionCard    = dynamic(() => import('components/FreeCompetitionCard').catch(() => null), { ssr:false })
 const TechCompetitionCard    = dynamic(() => import('components/CompetitionCard').catch(() => null), { ssr:false })
 
-/* Config */
+/* ─────────────────────────────── Config ─────────────────────────────── */
 const REFRESH_MS = 20000
 const CATS = [
   { id: 'tech',       label: 'Tech',          emoji: '📱' },
@@ -25,7 +25,7 @@ const CATS = [
 ]
 const CATEGORY_ORDER = CATS.map(c => c.id)
 
-/* Utils */
+/* ─────────────────────────────── Utils ─────────────────────────────── */
 const now = () => new Date().getTime()
 const clamp = (n, a, b) => Math.max(a, Math.min(b, n))
 const toNum = (v, d = 0) => {
@@ -60,8 +60,9 @@ function getStatus(cLike) {
   return 'live'
 }
 
-/* Image fallbacks (tech) */
+/* ─────────────────────────────── Image fallbacks ─────────────────────────────── */
 const TECH_KEYWORDS = [
+  { re:/tv/i,                             img:'/images/tv.jpeg' },
   { re:/iphone|ios|apple/i,               img:'/images/iphone.jpg' },
   { re:/samsung|galaxy/i,                 img:'/images/galaxy.jpg' },
   { re:/ipad|tablet/i,                    img:'/images/tablet.jpg' },
@@ -81,50 +82,48 @@ function techFallbackImage({title='', tags=[]}) {
   return PLACEHOLDER_IMG
 }
 
-/* Normalizer */
+/* ─────────────────────────────── Normalizer ─────────────────────────────── */
 function normalizeComp(raw) {
-  const c0 = raw?.comp ?? raw ?? {};
+  const c0 = raw?.comp ?? raw ?? {}
 
-  // 🔹 Normalize fee and price fields from multiple schema variations
   const pricePi =
     c0.pricePi ??
     c0.entryFeePi ??
     c0.ticketPricePi ??
     c0.piAmount ??
-    toNum(c0.entryFee ?? c0.price ?? c0.ticketPrice ?? c0.feePi ?? 0);
+    toNum(c0.entryFee ?? c0.price ?? c0.ticketPrice ?? c0.feePi ?? 0)
 
   const totalTickets = toNum(
     c0.totalTickets ?? c0.ticketsTotal ?? c0.capacity ?? c0.capacityTotal ?? 0
-  );
+  )
   const ticketsSold = toNum(
     c0.ticketsSold ?? c0.sold ?? c0.entries ?? c0.entriesCount ?? 0
-  );
+  )
   const maxPerUser = toNum(
     c0.maxPerUser ?? c0.limitPerUser ?? c0.maxEntriesPerUser ?? 0
-  );
+  )
 
-  const startsAt = c0.startsAt || c0.startAt || c0.drawOpensAt || null;
-  const endsAt = c0.endsAt || c0.endAt || c0.drawAt || c0.closingAt || null;
+  const startsAt = c0.startsAt || c0.startAt || c0.drawOpensAt || null
+  const endsAt = c0.endsAt || c0.endAt || c0.drawAt || c0.closingAt || null
 
-  const prizePi = c0.prizePi ?? null;
+  const prizePi = c0.prizePi ?? null
   const prizeText =
-    raw.prize ?? c0.prize ?? c0.prizeText ?? (prizePi ? `${prizePi} π` : '');
-  const prize = prizeText;
+    raw.prize ?? c0.prize ?? c0.prizeText ?? (prizePi ? `${prizePi} π` : '')
+  const prize = prizeText
 
-  const title = raw.title ?? c0.title ?? 'Competition';
-  const slug = c0.slug || raw.slug || title;
-  const tags = Array.isArray(c0.tags) ? c0.tags : [];
-  const theme = (c0.theme ?? raw.theme ?? '') || '';
+  const title = raw.title ?? c0.title ?? 'Competition'
+  const slug = c0.slug || raw.slug || title
+  const tags = Array.isArray(c0.tags) ? c0.tags : []
+  const theme = (c0.theme ?? raw.theme ?? '') || ''
 
-  let imageUrl =
-    c0.imageUrl || c0.bannerUrl || c0.cover || c0.thumbnail || '';
+  let imageUrl = c0.imageUrl || c0.bannerUrl || c0.cover || c0.thumbnail || ''
   if (!imageUrl && Array.isArray(c0.images) && c0.images.length) {
-    imageUrl = c0.images[0]?.url || c0.images[0];
+    imageUrl = c0.images[0]?.url || c0.images[0]
   }
-  if (!imageUrl) imageUrl = techFallbackImage({ title, tags });
-  imageUrl = normalizePath(imageUrl);
+  if (!imageUrl) imageUrl = techFallbackImage({ title, tags })
+  imageUrl = normalizePath(imageUrl)
 
-  const freeEntryUrl = c0.freeEntryUrl || c0.freeMethodUrl || null;
+  const freeEntryUrl = c0.freeEntryUrl || c0.freeMethodUrl || null
 
   const comp = {
     ...c0,
@@ -134,7 +133,8 @@ function normalizeComp(raw) {
     prize,
     prizePi: prizePi ?? undefined,
     pricePi: toNum(pricePi, 0),
-    feePi: toNum(pricePi, 0), // 🔹 ensure feePi always set
+    feePi: toNum(pricePi, 0),
+    entryFee: toNum(pricePi, 0), // ✅ ensures entry fee always available
     totalTickets,
     ticketsSold,
     maxPerUser,
@@ -144,7 +144,7 @@ function normalizeComp(raw) {
     tags,
     theme,
     freeEntryUrl,
-  };
+  }
 
   return {
     _id: comp._id,
@@ -164,21 +164,20 @@ function normalizeComp(raw) {
     theme,
     freeEntryUrl,
     comp,
-  };
+  }
 }
 
-
-/* Category classifier */
+/* ─────────────────────────────── Category classifier ─────────────────────────────── */
 const kw = (s = '', re) => re.test(String(s).toLowerCase())
 function getThemeId(c) {
   const raw = String(c.theme ?? c.comp?.theme ?? '').toLowerCase().trim()
   if (!raw) return null
   if (raw === 'launch' || raw === 'launch-week' || raw === 'launchweek') return 'launch'
-  if (raw === 'daily' || raw === 'weekly' || raw === 'dailyweekly')      return 'dailyweekly'
-  if (raw === 'pi' || raw === 'giveaways' || raw === 'pi-giveaways')     return 'pi'
-  if (raw === 'stages' || raw === 'pi-stages')                            return 'stages'
-  if (raw === 'free' || raw === 'no-fee')                                 return 'free'
-  if (raw === 'tech' || raw === 'gadgets' || raw === 'technology')        return 'tech'
+  if (raw === 'daily' || raw === 'weekly' || raw === 'dailyweekly') return 'dailyweekly'
+  if (raw === 'pi' || raw === 'giveaways' || raw === 'pi-giveaways') return 'pi'
+  if (raw === 'stages' || raw === 'pi-stages') return 'stages'
+  if (raw === 'free' || raw === 'no-fee') return 'free'
+  if (raw === 'tech' || raw === 'gadgets' || raw === 'technology') return 'tech'
   return null
 }
 function classifyCategory(c) {
@@ -191,17 +190,17 @@ function classifyCategory(c) {
   const isPi          = tags.includes('pi') || kw(title, /\bpi\b/)
   const isStages      = tags.includes('stages') || kw(title, /\b(stage|stages|qualify)\b/)
   const isFree        = tags.includes('free') || c.pricePi === 0 || kw(title, /\bfree\b/)
-  const isTech        = tags.includes('tech') || kw(title, /(tech|gadget|iphone|ps5|xbox|nintendo|ipad|tablet|laptop|drone|watch|samsung|galaxy|macbook)/)
+  const isTech        = tags.includes('tech') || kw(title, /(tech|gadget|iphone|ps5|xbox|nintendo|ipad|tablet|laptop|drone|watch|samsung|galaxy|macbook|tv)/)
   if (isLaunch)      return 'launch'
   if (isDailyWeekly) return 'dailyweekly'
   if (isPi)          return 'pi'
   if (isStages)      return 'stages'
   if (isFree)        return 'free'
   if (isTech)        return 'tech'
-  return 'tech'
+  return themed || 'launch'
 }
 
-/* ────────────── Next-draw countdown (OMC gradient) ────────────── */
+/* ─────────────────────────────── Next draw countdown bar ─────────────────────────────── */
 function NextDrawBar({ items }) {
   const target = useMemo(() => {
     const list = Array.isArray(items) ? items : []
@@ -247,7 +246,8 @@ function NextDrawBar({ items }) {
           <div className="text-[11px] sm:text-[12px] font-extrabold text-cyan-200 tracking-wide uppercase">
             Next Draw
           </div>
-          <div className="max-w-[56%] truncate text-[12px] sm:text-[13px] font-semibold bg-gradient-to-r from-[var(--from)] to-[var(--to)] bg-clip-text text-transparent"
+          <div
+            className="max-w-[56%] truncate text-[12px] sm:text-[13px] font-semibold bg-gradient-to-r from-[var(--from)] to-[var(--to)] bg-clip-text text-transparent"
             style={{ ['--from']: GRAD_FROM, ['--to']: GRAD_TO }}
           >
             {target.title}
@@ -263,22 +263,17 @@ function NextDrawBar({ items }) {
             </div>
           ))}
         </div>
-        <div className="mt-2 h-[6px] w-full rounded-full" style={{
-          background: `linear-gradient(90deg, ${GRAD_FROM}, ${GRAD_TO})`,
-          boxShadow: '0 0 12px rgba(34,211,238,0.35)',
-        }} />
       </div>
     </Link>
   )
 }
 
-/* Card renderer */
+/* ─────────────────────────────── Card renderer ─────────────────────────────── */
 function renderByCategory(id, common, fallback) {
   if (id === 'tech'        && TechCompetitionCard)   return <TechCompetitionCard {...common} />
   if (id === 'launch'      && LaunchCompetitionCard) return <LaunchCompetitionCard {...common} />
   if (id === 'dailyweekly' && DailyCompetitionCard)  return <DailyCompetitionCard {...common} />
   if (id === 'pi'          && PiCompetitionCard)     return <PiCompetitionCard {...common} />
-  if (id === 'stages'      && StagesCompetitionCard) return <StagesCompetitionCard {...common} />
   if (id === 'free'        && FreeCompetitionCard)   return <FreeCompetitionCard {...common} />
   return fallback ?? null
 }
@@ -288,14 +283,12 @@ function CardPicker({ tab, item }) {
   return renderByCategory(tab, common, <GenericCard data={item} />) || <GenericCard data={item} />
 }
 
-/* Minimal fallback card */
+/* ─────────────────────────────── Generic fallback card ─────────────────────────────── */
 function GenericCard({ data }) {
   const status = getStatus(data)
   const total = toNum(data.totalTickets)
   const sold  = toNum(data.ticketsSold)
   const pct   = total > 0 ? clamp((sold / total) * 100, 0, 100) : 0
-  const endsMs = data.endsAt ? timeTo(data.endsAt) : 0
-  const startsMs = data.startsAt ? timeTo(data.startsAt) : 0
   const href = `/competitions/${data.slug}`
 
   return (
@@ -305,7 +298,7 @@ function GenericCard({ data }) {
       <div className="mt-2 grid grid-cols-3 gap-1.5 text-[11px]">
         <div className="rounded bg-slate-900/70 px-2 py-1"><div className="text-slate-400">Tickets</div><div className="font-bold">{sold} / {total || '∞'}</div></div>
         <div className="rounded bg-slate-900/70 px-2 py-1"><div className="text-slate-400">Fee</div><div className="font-bold">{toNum(data.pricePi, 0)} π</div></div>
-        <div className="rounded bg-slate-900/70 px-2 py-1"><div className="text-slate-400">{status === 'upcoming' ? 'Starts In' : 'Ends In'}</div><div className="font-bold">{msParts(status === 'upcoming' ? startsMs : endsMs).minutes}m</div></div>
+        <div className="rounded bg-slate-900/70 px-2 py-1"><div className="text-slate-400">Status</div><div className="font-bold uppercase">{status}</div></div>
       </div>
       {total > 0 && (<div className="mt-2"><div className="h-1.5 rounded-full bg-slate-800/70 overflow-hidden"><div className="h-full bg-gradient-to-r from-cyan-400 to-blue-600" style={{ width: `${pct}%` }} /></div></div>)}
       <div className="mt-2">
@@ -317,7 +310,7 @@ function GenericCard({ data }) {
   )
 }
 
-/* Page */
+/* ─────────────────────────────── Main page ─────────────────────────────── */
 export default function AllCompetitionsPage() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -331,7 +324,7 @@ export default function AllCompetitionsPage() {
       const res = await fetch('/api/competitions/all', { cache: 'no-store', headers: { Accept: 'application/json' } })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const json = await res.json()
-      const arr = Array.isArray(json) ? json : (json.items || json.data || json.competitions || json.results || [])
+      const arr = json?.data || []
       setItems(arr.map(normalizeComp))
     } catch (e) {
       setError(e?.message || 'Failed to load')
@@ -345,13 +338,6 @@ export default function AllCompetitionsPage() {
     const t = setInterval(fetchAll, REFRESH_MS)
     return () => clearInterval(t)
   }, [fetchAll])
-
-  // refresh every second for countdowns
-  const [, setTick] = useState(0)
-  useEffect(() => {
-    const id = setInterval(() => setTick(t => (t + 1) % 1_000_000), 1000)
-    return () => clearInterval(id)
-  }, [])
 
   // Filter
   const filtered = useMemo(() => {
@@ -371,14 +357,14 @@ export default function AllCompetitionsPage() {
     return acc
   }, [filtered])
 
-  // If tab empty, jump to first with data
+  // Auto-tab switch if empty
   useEffect(() => {
     if (buckets[tab]?.length) return
     const first = CATEGORY_ORDER.find(k => buckets[k].length > 0) || 'tech'
     setTab(first)
   }, [buckets, tab])
 
-  // swipe navigation
+  // Swipe navigation
   const touchStartX = useRef(0)
   const onTouchStart = (e) => { touchStartX.current = e.changedTouches[0].clientX }
   const onTouchEnd = (e) => {
@@ -460,7 +446,7 @@ export default function AllCompetitionsPage() {
   )
 }
 
-/* Skeleton */
+/* ─────────────────────────────── Skeleton & Empty ─────────────────────────────── */
 function ListSkeleton() {
   return (
     <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -471,7 +457,6 @@ function ListSkeleton() {
   )
 }
 
-/* Empty State */
 function EmptyState() {
   return (
     <div className="rounded-xl border border-cyan-400/10 bg-slate-900/60 p-4 text-center">

@@ -722,56 +722,103 @@ function renderCard(item, i, { isFree, isPi, cardSize = 'md' }) {
   if (!item?.comp) return null;
 
   const theme = item.theme || 'tech';
-  const feeNum = toNumber(item?.comp?.entryFee, 0);
-  const feeLabel = `${feeNum.toFixed(2)} π`;
+  const comp = item.comp || {};
+  const feeNum =
+    comp.entryFeePi ??
+    comp.pricePi ??
+    comp.entryFee ??
+    comp.ticketPrice ??
+    comp.feePi ??
+    comp.entryFeeValue ??
+    0;
+  const feeLabel = feeNum > 0 ? `${Number(feeNum).toFixed(2)} π` : 'Free Entry';
 
-  const useDailyCardThemes = ['daily', 'regional', 'launch'];
-  const useCompetitionCardThemes = ['event'];
+  // ✅ merge top-level fields into comp
+  const mergedComp = {
+    ...comp,
+    title: item.title ?? comp.title,
+    prize: item.prize ?? comp.prize ?? comp.prizeLabel,
+    imageUrl: item.imageUrl ?? comp.imageUrl ?? '/pi.jpeg',
+    entryFee: feeNum,
+    comingSoon: comp.comingSoon ?? false,
+    endsAt: comp.endsAt ?? item.endsAt ?? null,
+  };
 
-  if (theme === 'launch') return <LaunchCompetitionCard key={key} {...item} />;
-  if (useDailyCardThemes.includes(theme)) return <DailyCompetitionCard key={key} {...item} />;
+  // ------------------ card type routing ------------------
+  if (theme === 'launch') {
+    return (
+      <LaunchCompetitionCard
+        key={key}
+        comp={mergedComp}
+        title={mergedComp.title}
+        prize={mergedComp.prize}
+        imageUrl={mergedComp.imageUrl}
+        endsAt={mergedComp.endsAt}
+      />
+    );
+  }
 
-  if (useCompetitionCardThemes.includes(theme)) {
+  if (['daily', 'regional'].includes(theme)) {
+    return (
+      <DailyCompetitionCard
+        key={key}
+        comp={mergedComp}
+        title={mergedComp.title}
+        prize={mergedComp.prize}
+        imageUrl={mergedComp.imageUrl}
+        endsAt={mergedComp.endsAt}
+      />
+    );
+  }
+
+  if (theme === 'event') {
     return (
       <CompetitionCard
         key={key}
         size={cardSize}
-        comp={{ ...item.comp, comingSoon: item.comp.comingSoon ?? false }}
-        title={item.title}
-        prize={item.prize}
-        fee={feeLabel}
-        imageUrl={item.imageUrl}
-        endsAt={item.comp.endsAt}
+        comp={mergedComp}
+        title={mergedComp.title}
+        prize={mergedComp.prize}
+        imageUrl={mergedComp.imageUrl}
+        endsAt={mergedComp.endsAt}
         disableGift
       />
     );
   }
 
-  if (isFree) return <FreeCompetitionCard key={key} {...item} />;
+  if (isFree) {
+    return <FreeCompetitionCard key={key} comp={mergedComp} title={mergedComp.title} prize={mergedComp.prize} />;
+  }
 
   if (isPi) {
-    const maxW = cardSize === 'md' ? 320 : 480;
     return (
-      <div key={key} className="mx-auto w-full" style={{ maxWidth: maxW }}>
-        <PiCompetitionCard {...item} className="w-full" />
+      <div key={key} className="mx-auto w-full" style={{ maxWidth: cardSize === 'md' ? 320 : 480 }}>
+        <PiCompetitionCard
+          comp={mergedComp}
+          title={mergedComp.title}
+          prize={mergedComp.prize}
+          imageUrl={mergedComp.imageUrl}
+          endsAt={mergedComp.endsAt}
+        />
       </div>
     );
   }
 
+  // default (tech/gadgets etc.)
   return (
     <CompetitionCard
       key={key}
       size={cardSize}
-      comp={{ ...item.comp, comingSoon: item.comp.comingSoon ?? false }}
-      title={item.title}
-      prize={item.prize}
-      fee={feeLabel}
-      imageUrl={item.imageUrl}
-      endsAt={item.comp.endsAt}
+      comp={mergedComp}
+      title={mergedComp.title}
+      prize={mergedComp.prize}
+      imageUrl={mergedComp.imageUrl}
+      endsAt={mergedComp.endsAt}
       disableGift
     />
   );
 }
+
 
 /* ---------------- misc sections ---------------- */
 function VisionBlock({ t }) {
