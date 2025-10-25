@@ -54,22 +54,26 @@ export default function Header() {
 
   const safeT = (key, fallback = key) => (!mounted || !ready ? fallback : t(key));
 
-  /* ─── NAV DATA ───
-     Keep top-level simple (Home [+ My Account when logged in]).
-     Put Competitions (Live Now + Scheduled) as a static section in the sidebar. */
+  /* ─── NAV DATA ─── */
   const navItems = [[safeT('home', 'Home'), '/homepage']];
+
+  // Competitions section (Results moved here under Scheduled)
   const competitionMenu = [
     [safeT('live_now', 'Live Now'), '/competitions/live-now'],
     [safeT('scheduled', 'Scheduled'), '/competitions/scheduled'],
+    [safeT('results', 'Results'), '/competitions/results'],
   ];
+
   const miniGames = [[safeT('try_your_skill', 'Try Your Skill'), '/try-your-skill', safeT('coming_soon', 'Coming Soon')]];
+
+  // "More" (Results removed from here)
   const navExtras = [
     [safeT('forums', 'Forums'), '/forums'],
-    [safeT('results', 'Results'), '/competitions/results'],
-    [safeT('how_it_works', 'How It Works'), '/how-to-play'],
+    [safeT('how_it_works', 'How To Play'), '/how-to-play'],
     [safeT('about_us', 'About Us'), '/about-us'],
     [safeT('partners_sponsors', 'Partners & Sponsors'), '/partners'],
   ];
+
   const finalNavItems = useMemo(() => {
     const arr = [...navItems];
     if (user) arr.splice(1, 0, [safeT('my_account', 'My Account'), '/account']);
@@ -241,17 +245,27 @@ export default function Header() {
         <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-white/[0.02] backdrop-blur">
           <span className="text-cyan-300 font-orbitron text-lg">{safeT('menu', 'Menu')}</span>
 
-          <div className="flex items-center gap-2">
-            {user && <NotificationsBell username={user.username} />}
-            <button
-              onClick={() => setMenuOpen(false)}
-              className={`${BTN_BASE} ${BTN_GRADIENT} h-8 px-2 rounded-md`}
-              aria-label={safeT('close_menu', 'Close menu')}
-              title={safeT('close_menu', 'Close menu')}
-            >
-              ✕
-            </button>
-          </div>
+<div className="flex items-center gap-2">
+  {user && <NotificationsBell username={user.username} />}
+
+  {/* This X only closes the notifications popover */}
+  <button
+    type="button"
+    onClick={(e) => {
+      e.stopPropagation();
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('omc:notifications:close'));
+      }
+    }}
+    className={`${BTN_BASE} ${BTN_GRADIENT} h-8 px-2 rounded-md`}
+    aria-label="Close notifications"
+    title="Close notifications"
+  >
+    ✕
+  </button>
+</div>
+
+
         </div>
 
         <nav className="p-4 space-y-6">
@@ -262,7 +276,7 @@ export default function Header() {
             ))}
           </div>
 
-          {/* Competitions (static section, NOT a dropdown) */}
+          {/* Competitions (static section) */}
           <Section title={safeT('competitions', 'Competitions')}>
             <div className="pl-1 space-y-1">
               {competitionMenu.map((tuple) => (

@@ -222,7 +222,7 @@ export default function ScheduledCompetitionsPage() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [tab, setTab] = useState('tech')
+  const [tab, setTab] = useState('tech') // will auto-sync to first non-empty
 
   const fetchAll = useCallback(async () => {
     try {
@@ -273,7 +273,7 @@ export default function ScheduledCompetitionsPage() {
     return () => clearInterval(t)
   }, [fetchAll])
 
-  /* Tabs/buckets/counts – identical pattern to All page */
+  /* Tabs/buckets/counts */
   const buckets = useMemo(() => {
     const acc = { tech: [], launch: [], dailyweekly: [], pi: [], stages: [], free: [] }
     for (const c of items) acc[classifyCategory(c)].push(c)
@@ -284,6 +284,23 @@ export default function ScheduledCompetitionsPage() {
     () => Object.fromEntries(CATEGORY_ORDER.map(k => [k, buckets[k].length])),
     [buckets]
   )
+
+  // Only show tabs that have upcoming items
+  const visibleCats = useMemo(
+    () => CATS.filter(c => (counts[c.id] ?? 0) > 0),
+    [counts]
+  )
+
+  // If current tab is empty, pick first non-empty; keeps UI non-blank
+  const activeTab = useMemo(
+    () => (counts[tab] > 0 ? tab : (visibleCats[0]?.id ?? tab)),
+    [tab, counts, visibleCats]
+  )
+
+  // Sync state so highlight + grid align
+  useEffect(() => {
+    if (activeTab && activeTab !== tab) setTab(activeTab)
+  }, [activeTab]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <main className="relative min-h-screen text-white">
@@ -299,9 +316,9 @@ export default function ScheduledCompetitionsPage() {
                 Scheduled Competitions
               </span>
             </h1>
-            {/* NEW: friendly subtitle under title */}
+            {/* friendly subtitle */}
             <p className="mt-1 text-[12px] sm:text-sm text-cyan-100/80">
-              Upcoming & coming soon — we’re lining up fresh draws <span className="font-semibold text-cyan-300">every day</span>.
+              Upcoming & coming soon we’re lining up fresh draws <span className="font-semibold text-cyan-300">every day</span>.
               Check back often and get ready to enter the moment they open.
             </p>
           </div>
@@ -328,24 +345,22 @@ export default function ScheduledCompetitionsPage() {
           </div>
         ) : (
           <div className="space-y-6 sm:space-y-7">
-            {/* Tabs – same look/spacing as your All page */}
+            {/* Tabs – show only non-empty categories */}
             <div className="flex items-center gap-2 overflow-x-auto scrollbar-none -mx-1 px-1
                             snap-x snap-mandatory [--pad:0.375rem] sm:[--pad:0.5rem]">
-              {CATS.map(c => {
-                const active = tab === c.id
+              {visibleCats.map(c => {
+                const isActive = activeTab === c.id
                 return (
                   <button
                     key={c.id}
                     onClick={() => setTab(c.id)}
-                    disabled={!counts[c.id]}
                     className={[
                       'shrink-0 whitespace-nowrap snap-center md:snap-start',
                       'px-3 py-[var(--pad)] text-[12px] sm:px-4 sm:py-[var(--pad)] sm:text-sm',
                       'rounded-full border font-semibold transition-colors',
-                      active
+                      isActive
                         ? 'bg-cyan-500/15 border-cyan-400 text-cyan-200'
-                        : 'border-cyan-400/20 text-slate-200 hover:border-cyan-400/30',
-                      'disabled:opacity-40 disabled:cursor-not-allowed'
+                        : 'border-cyan-400/20 text-slate-200 hover:border-cyan-400/30'
                     ].join(' ')}
                   >
                     <span>{c.label}</span>
@@ -361,7 +376,7 @@ export default function ScheduledCompetitionsPage() {
 
             {/* Grid (same gaps & divider underline) */}
             <ul className="grid grid-cols-1 gap-y-9 gap-x-4 sm:grid-cols-2 sm:gap-y-10 sm:gap-x-6 lg:grid-cols-3 lg:gap-y-12 lg:gap-x-8">
-              {buckets[tab].map((item) => (
+              {buckets[activeTab]?.map((item) => (
                 <li key={item._id || item.slug} className="h-full">
                   <CardPicker item={item} />
                   <div className="mt-5 h-px bg-gradient-to-r from-transparent via-cyan-400/10 to-transparent" />

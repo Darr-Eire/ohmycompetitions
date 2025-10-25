@@ -1,4 +1,4 @@
-// FILE: src/components/NotificationsBell.jsx
+// src/components/NotificationsBell.jsx
 'use client';
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -15,7 +15,7 @@ export default function NotificationsBell({ username }) {
 
   useEffect(() => setMounted(true), []);
 
-  // ---- poll notifications ---------------------------------------------------
+  /* ── Poll notifications ─────────────────────────────────────────────── */
   useEffect(() => {
     async function load() {
       if (!username) return;
@@ -36,7 +36,7 @@ export default function NotificationsBell({ username }) {
 
   const unread = items.filter((i) => !i.read).length;
 
-  // ---- compute & clamp popover position (viewport-safe) ---------------------
+  /* ── Compute & clamp popover position (viewport-safe) ───────────────── */
   const positionPanel = () => {
     if (!btnRef.current) return;
 
@@ -54,8 +54,7 @@ export default function NotificationsBell({ username }) {
       spaceBelow >= Math.min(240, winH * 0.35) || spaceBelow >= spaceAbove;
 
     // Provisional height budget
-    const availableH = placeBelow ? (winH - (b.bottom + margin) - margin)
-                                  : (b.top - margin);
+    const availableH = placeBelow ? winH - (b.bottom + margin) - margin : b.top - margin;
     const maxHpx = Math.max(200, Math.min(availableH, Math.round(winH * 0.7)));
 
     // Align right edge with bell, then clamp
@@ -68,7 +67,7 @@ export default function NotificationsBell({ username }) {
     setPos({ top, left, maxH: `${maxHpx}px`, widthPx });
   };
 
-  // re-position when opened, when items change (height can change), and on resize/scroll
+  // Re-position on open/items/resize/scroll
   useLayoutEffect(() => {
     if (!open || !mounted) return;
     positionPanel();
@@ -85,17 +84,17 @@ export default function NotificationsBell({ username }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, mounted, items.length]);
 
-  // ---- focus first interactive element when opened -------------------------
+  /* ── Focus first interactive element when opened ────────────────────── */
   useEffect(() => {
     if (!open) return;
     const t = setTimeout(() => {
-      panelRef.current?.querySelector('button, a, [tabindex]:not([tabindex="-1"])')?.focus()
-        || panelRef.current?.focus();
+      panelRef.current?.querySelector('button, a, [tabindex]:not([tabindex="-1"])')?.focus() ||
+        panelRef.current?.focus();
     }, 0);
     return () => clearTimeout(t);
   }, [open]);
 
-  // ---- close on Escape ------------------------------------------------------
+  /* ── Close on Escape ────────────────────────────────────────────────── */
   useEffect(() => {
     if (!open) return;
     const onKey = (e) => e.key === 'Escape' && setOpen(false);
@@ -103,7 +102,7 @@ export default function NotificationsBell({ username }) {
     return () => document.removeEventListener('keydown', onKey);
   }, [open]);
 
-  // ---- close on outside click ----------------------------------------------
+  /* ── Close on outside click ─────────────────────────────────────────── */
   useEffect(() => {
     if (!open) return;
     const onDown = (e) => {
@@ -125,7 +124,24 @@ export default function NotificationsBell({ username }) {
     };
   }, [open]);
 
-  // --------- UI --------------------------------------------------------------
+  /* ── Programmatic control (from header ✕) ───────────────────────────── */
+  useEffect(() => {
+    const close = () => setOpen(false);
+    const openEvt = () => setOpen(true);
+    const toggle = () => setOpen((v) => !v);
+
+    window.addEventListener('omc:notifications:close', close);
+    window.addEventListener('omc:notifications:open', openEvt);
+    window.addEventListener('omc:notifications:toggle', toggle);
+
+    return () => {
+      window.removeEventListener('omc:notifications:close', close);
+      window.removeEventListener('omc:notifications:open', openEvt);
+      window.removeEventListener('omc:notifications:toggle', toggle);
+    };
+  }, []);
+
+  /* ── UI ──────────────────────────────────────────────────────────────── */
   return (
     <>
       <div className="relative inline-block shrink-0">
@@ -148,7 +164,8 @@ export default function NotificationsBell({ username }) {
       </div>
 
       {/* Portal ensures no parent can clip/offset the popover */}
-      {mounted && open &&
+      {mounted &&
+        open &&
         createPortal(
           <div
             ref={panelRef}
@@ -217,8 +234,7 @@ export default function NotificationsBell({ username }) {
             </div>
           </div>,
           document.body
-        )
-      }
+        )}
     </>
   );
 }
