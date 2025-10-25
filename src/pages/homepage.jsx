@@ -899,6 +899,48 @@ function TopWinnersCarousel({ t }) {
     const id = setInterval(() => setIndex((p) => (p + 1) % winners.length), 5000);
     return () => clearInterval(id);
   }, [winners.length]);
+// 👇 Listen for purchase completions and update UI immediately
+useEffect(() => {
+  const onTicketsUpdated = (e) => {
+    const { slug, qty } = e?.detail || {};
+    if (!slug || !Number.isFinite(qty)) return;
+
+    // 1) Optimistic bump in the homepage list
+    setLiveCompetitions((prev) =>
+      prev.map((it) => {
+        const itSlug = it?.comp?.slug || it?.slug;
+        if (itSlug !== slug) return it;
+
+        const total = toNumber(it?.comp?.totalTickets, 0);
+        const sold0 = toNumber(it?.comp?.ticketsSold, 0);
+        const sold1 = Math.min(total || Infinity, sold0 + qty);
+
+        return {
+          ...it,
+          comp: { ...it.comp, ticketsSold: sold1 },
+        };
+      })
+    );
+
+    // 2) Soft refetch to reconcile with server (lets backend finish write)
+    const t = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/competitions/all', { cache: 'no-store' });
+        const json = await res.json();
+        const prepared = normalizeAndFilter(json?.data || []);
+        setLiveCompetitions(prepared);
+      } catch {
+        // swallow — UI already optimistically updated
+      }
+    }, 1200);
+
+    // cleanup if the component unmounts before the timeout fires
+    return () => clearTimeout(t);
+  };
+
+  window.addEventListener('omc:tickets:updated', onTicketsUpdated);
+  return () => window.removeEventListener('omc:tickets:updated', onTicketsUpdated);
+}, []);
 
   if (winners.length === 0) {
     return (

@@ -29,11 +29,8 @@ const CATEGORY_ORDER = CATS.map(c => c.id)
 function BackgroundFX() {
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-      {/* aurora swirl */}
       <div className="absolute -inset-32 blur-3xl opacity-35 [background:conic-gradient(from_180deg_at_50%_50%,#00ffd5,rgba(0,255,213,.2),#0077ff,#00ffd5)] animate-[spin_35s_linear_infinite]" />
-      {/* star grid */}
       <div className="absolute inset-0 opacity-20 [background-image:radial-gradient(rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:18px_18px]" />
-      {/* drifting glows */}
       <div className="absolute -top-20 -left-24 h-[420px] w-[420px] rounded-full blur-3xl opacity-25 bg-cyan-400 animate-[float_14s_ease-in-out_infinite]" />
       <div className="absolute -bottom-20 -right-24 h-[420px] w-[420px] rounded-full blur-3xl opacity-20 bg-blue-500 animate-[float2_18s_ease-in-out_infinite]" />
       <style jsx global>{`
@@ -380,6 +377,32 @@ export default function AllCompetitionsPage() {
     return () => clearInterval(t)
   }, [fetchAll])
 
+  /* NEW: live update when tickets are purchased */
+  useEffect(() => {
+    const onTicketsUpdated = (e) => {
+      const { slug, qty } = e?.detail || {}
+      if (slug && qty) {
+        // Optimistic bump
+        setItems((prev) =>
+          prev.map((it) => {
+            const s = it.slug || it.comp?.slug
+            if (s !== slug) return it
+            const inc = Number(qty) || 0
+            const total = toNum(it.totalTickets) || Infinity
+            const current = toNum(it.ticketsSold)
+            const next = Math.min(current + inc, total)
+            const comp = it.comp ? { ...it.comp, ticketsSold: next } : it.comp
+            return { ...it, ticketsSold: next, comp }
+          })
+        )
+      }
+      // Then refetch to stay authoritative
+      fetchAll()
+    }
+    window.addEventListener('omc:tickets:updated', onTicketsUpdated)
+    return () => window.removeEventListener('omc:tickets:updated', onTicketsUpdated)
+  }, [fetchAll])
+
   const filtered = useMemo(() => {
     if (!q.trim()) return items
     const s = q.toLowerCase()
@@ -402,22 +425,19 @@ export default function AllCompetitionsPage() {
       <Head><title>All Competitions • OMC</title></Head>
 
       {/* Sticky header (theme-matched) */}
-   {/* Sticky header (theme-matched) */}
-<div className="sticky top-0 z-40 bg-[#0b1220]/80 backdrop-blur border-b border-white/10">
-  <div className="mx-auto max-w-6xl px-4">
-    <div className="py-3 text-center">
-      <h1 className="font-orbitron font-extrabold text-base text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-500 to-cyan-300">
-        All Competitions
-      </h1>
-      {/* NEW: Subtitle (matches Scheduled style) */}
-      <p className="mt-1 text-[12px] sm:text-sm text-cyan-100/80">
-        All categories in one place use the tabs to filter and search to find your next win.
-        We’re adding and rotating competitions <span className="font-semibold text-cyan-300">every day</span>.
-      </p>
-    </div>
-  </div>
-</div>
-
+      <div className="sticky top-0 z-40 bg-[#0b1220]/80 backdrop-blur border-b border-white/10">
+        <div className="mx-auto max-w-6xl px-4">
+          <div className="py-3 text-center">
+            <h1 className="font-orbitron font-extrabold text-base text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-500 to-cyan-300">
+              All Competitions
+            </h1>
+            <p className="mt-1 text-[12px] sm:text-sm text-cyan-100/80">
+              All categories in one place—use the tabs to filter and the search to find your next win.
+              We’re adding and rotating competitions <span className="font-semibold text-cyan-300">every day</span>.
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Content container */}
       <div className="mx-auto max-w-6xl px-4 py-6 lg:py-10">

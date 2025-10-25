@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 export default function MiniPrizeCarousel() {
   const containerRef = useRef(null);
@@ -8,25 +8,57 @@ export default function MiniPrizeCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const groupSize = 3;
 
-  useEffect(() => {
-    fetch('/api/competitions/all')
-      .then((res) => res.json())
-      .then((result) => {
-        if (!result?.success) throw new Error('Failed to fetch competitions');
-        const live = (result.data || []).filter((item) => item?.comp?.status === 'active');
+  /* -------- fetcher (reusable) -------- */
+  const fetchLive = useCallback(async () => {
+    try {
+      const res = await fetch('/api/competitions/all', { cache: 'no-store' });
+      const result = await res.json();
+      if (!result?.success) throw new Error('Failed to fetch competitions');
 
-        // free first
-        const freeComps = live.filter((item) => Number(item?.comp?.entryFee) === 0);
-        const paidComps = live.filter((item) => Number(item?.comp?.entryFee) > 0);
-        setCompetitions([...freeComps, ...paidComps]);
-      })
-      .catch((err) => console.error('❌ Error loading competitions:', err));
+      const live = (result.data || []).filter((item) => item?.comp?.status === 'active');
+      const freeComps = live.filter((item) => Number(item?.comp?.entryFee) === 0);
+      const paidComps = live.filter((item) => Number(item?.comp?.entryFee) > 0);
+      setCompetitions([...freeComps, ...paidComps]);
+    } catch (err) {
+      console.error('❌ Error loading competitions:', err);
+    }
   }, []);
 
+  useEffect(() => { fetchLive(); }, [fetchLive]);
+
+  /* -------- react to purchases (optimistic + soft refetch) -------- */
+  useEffect(() => {
+    const onTicketsUpdated = (e) => {
+      const { slug, qty } = e?.detail || {};
+      if (!slug || !Number.isFinite(qty)) return;
+
+      setCompetitions((prev) =>
+        prev.map((it) => {
+          const itSlug = it?.slug || it?.comp?.slug;
+          if (itSlug !== slug) return it;
+          const total = Number(it?.comp?.totalTickets) || 0;
+          const sold0 = Number(it?.comp?.ticketsSold) || 0;
+          const sold1 = Math.min(total || Infinity, sold0 + qty);
+          return {
+            ...it,
+            comp: { ...it.comp, ticketsSold: sold1 },
+          };
+        })
+      );
+
+      // server reconcile after a small delay (lets backend finish write)
+      const t = setTimeout(fetchLive, 1200);
+      return () => clearTimeout(t);
+    };
+
+    window.addEventListener('omc:tickets:updated', onTicketsUpdated);
+    return () => window.removeEventListener('omc:tickets:updated', onTicketsUpdated);
+  }, [fetchLive]);
+
+  /* -------- auto-advance -------- */
   useEffect(() => {
     if (competitions.length <= groupSize) return;
 
-    // Respect reduced-motion users
     const media =
       typeof window !== 'undefined' && window.matchMedia
         ? window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -83,7 +115,6 @@ function formatPi(amount) {
 }
 
 function sanitizePrizeString(str) {
-  // Remove existing π or 'pi' tokens to avoid doubling, trim spaces
   return String(str).replace(/π|pi/gi, '').trim();
 }
 
@@ -97,7 +128,6 @@ function coerceNumber(v) {
   return null;
 }
 
-/** Derives whether prize is denominated in Pi and returns { isPi, display, amount } */
 function getPiPrizeDisplay(item) {
   const comp = item?.comp || {};
 
@@ -108,7 +138,6 @@ function getPiPrizeDisplay(item) {
     comp?.prize?.pi,
     item?.prize?.amountPi,
     comp?.prize?.amountPi,
-    // strings like "2200π", "2,200 pi"
     item?.prize,
     comp?.prize,
   ];
@@ -137,10 +166,7 @@ function getPiPrizeDisplay(item) {
 function formatDate(dateStr) {
   if (!dateStr) return 'TBA';
   const date = new Date(dateStr);
-  return date.toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'short',
-  });
+  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 }
 
 function toLocale(n) {
@@ -148,7 +174,6 @@ function toLocale(n) {
   return Number.isFinite(num) ? num.toLocaleString('en-GB') : '0';
 }
 
-/* Detect multiple winners to switch footnote to "1st Prize" */
 function hasMultipleWinners(item) {
   const comp = item?.comp || item || {};
 
@@ -179,11 +204,9 @@ function CompetitionCard({ item }) {
   const baseBg = 'bg-transparent';
   const baseBorder = 'border border-cyan-400 text-cyan-300 opacity-70';
 
-  // --- Prize display (Pi-aware) ---
   const piPrize = getPiPrizeDisplay(item);
   const piPrizeCompact = piPrize.isPi ? (formatPi(piPrize.amount) || piPrize.display) : 'N/A';
 
-  // --- Footer/footnote label ---
   const multiWinners = hasMultipleWinners(item);
   const prizeFootnote = multiWinners ? '1st Prize' : 'Up for Grabs';
 
@@ -196,7 +219,6 @@ function CompetitionCard({ item }) {
       className={`w-[130px] h-[190px] rounded-lg shadow text-center font-orbitron px-2 py-2 text-[10px] leading-tight select-none
                   flex flex-col ${baseBg} ${baseBorder}`}
     >
-      {/* Top section for FREE banner, Image, or Prize block - consistent min-height, flex-grow to fill */}
       <div className="flex flex-col justify-center items-center w-full min-h-[70px] flex-grow">
         {isFree ? (
           <div className="flex flex-col justify-center items-center">
@@ -211,16 +233,9 @@ function CompetitionCard({ item }) {
             </span>
           </div>
         ) : hasImage ? (
-          <img
-            src={imageUrl}
-            alt={title || 'competition'}
-            className="w-full h-full object-cover rounded-md"
-          />
+          <img src={imageUrl} alt={title || 'competition'} className="w-full h-full object-cover rounded-md" />
         ) : (
-          <div
-            className="flex flex-col justify-center items-center w-full h-full rounded-md text-center
-                       px-3 shadow-inner border border-cyan-400 bg-transparent"
-          >
+          <div className="flex flex-col justify-center items-center w-full h-full rounded-md text-center px-3 shadow-inner border border-cyan-400 bg-transparent">
             <span className="text-[14px] text-cyan-300 uppercase tracking-wider font-medium mb-1">Prize</span>
             <span
               className="text-[14px] font-extrabold text-cyan-400 leading-snug animate-pulse whitespace-nowrap max-w-full"
@@ -236,18 +251,15 @@ function CompetitionCard({ item }) {
         )}
       </div>
 
-      {/* Title - fixed height and line-clamp for multiline truncation */}
       <div className="h-[30px] flex items-center justify-center w-full mt-2 mb-1 overflow-hidden">
         <div
-          className="font-bold text-[11px] text-cyan-300 px-1 w-full text-center
-                     line-clamp-2" // Ensures title takes max 2 lines
+          className="font-bold text-[11px] text-cyan-300 px-1 w-full text-center line-clamp-2"
           title={title || 'Untitled'}
         >
           {title || 'Untitled'}
         </div>
       </div>
 
-      {/* Bottom section for details - flex-grow-0 to take only necessary space */}
       <div className="flex flex-col justify-end w-full flex-grow-0">
         <div className="text-white text-[10px]">
           Draw: <span className="text-white">{formatDate(comp?.endsAt)}</span>

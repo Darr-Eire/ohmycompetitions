@@ -266,6 +266,15 @@ export default function ScheduledCompetitionsPage() {
       setLoading(false)
     }
   }, [])
+// Refresh when tickets are purchased elsewhere
+useEffect(() => {
+  const onTicketsUpdated = () => {
+    // simple + safe: refetch from server
+    fetchAll();
+  };
+  window.addEventListener('omc:tickets:updated', onTicketsUpdated);
+  return () => window.removeEventListener('omc:tickets:updated', onTicketsUpdated);
+}, [fetchAll]);
 
   useEffect(() => {
     fetchAll()

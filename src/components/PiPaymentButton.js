@@ -10,6 +10,7 @@ import { usePiAuth } from '../context/PiAuthContext';
  *  - ticketQty: number (defaults 1)
  *  - memoTitle: optional readable title (kept in metadata; memo itself is JSON for server parsing)
  *  - extraMetadata: object merged into metadata
+ *  - onSuccess?: (payload: { paymentId, txid, slug, ticketQty }) => void
  */
 export default function PiPaymentButton({
   amount,
@@ -17,6 +18,7 @@ export default function PiPaymentButton({
   ticketQty = 1,
   memoTitle = 'Competition Ticket',
   extraMetadata = {},
+  onSuccess,
 }) {
   const { user, login } = usePiAuth() || {};
   const [busy, setBusy] = useState(false);
@@ -40,7 +42,8 @@ export default function PiPaymentButton({
     setBusy(true);
     try {
       // Put the important bits BOTH in memo (JSON) and metadata
-      const memoObj = { slug, ticketQty: Number(ticketQty) || 1 };
+      const qty = Number(ticketQty) || 1;
+      const memoObj = { slug, ticketQty: qty };
       const memoJson = JSON.stringify(memoObj);
 
       const metadata = {
@@ -59,7 +62,7 @@ export default function PiPaymentButton({
             const r = await fetch('/api/pi/payments/approve', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ paymentId, slug, ticketQty }),
+              body: JSON.stringify({ paymentId, slug, ticketQty: qty }),
             });
             if (!r.ok) {
               const msg = await r.text();
@@ -72,12 +75,21 @@ export default function PiPaymentButton({
             const r = await fetch('/api/pi/payments/complete', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ paymentId, txid, slug, ticketQty }),
+              body: JSON.stringify({ paymentId, txid, slug, ticketQty: qty }),
             });
             if (!r.ok) {
               const msg = await r.text();
               throw new Error(msg || 'Server completion failed');
             }
+
+            // (A) Let pages that listen refresh immediately
+            window.dispatchEvent(
+              new CustomEvent('omc:tickets:updated', { detail: { slug, qty } })
+            );
+
+            // (B) Optional callback for custom flows
+            onSuccess?.({ paymentId, txid, slug, ticketQty: qty });
+
             alert('🎉 Payment complete! Tickets added.');
             setBusy(false);
           },
@@ -96,7 +108,7 @@ export default function PiPaymentButton({
       alert(err?.message || 'Payment failed.');
       setBusy(false);
     }
-  }, [user, login, amount, slug, ticketQty, memoTitle, extraMetadata]);
+  }, [user, login, amount, slug, ticketQty, memoTitle, extraMetadata, onSuccess]);
 
   return (
     <button
