@@ -1,4 +1,4 @@
-// src/pages/api/pi/payments/approve.js
+console.log('[approve] HIT', req.body);
 import axios from 'axios';
 import { dbConnect } from '../../../../lib/dbConnect';
 import PiPayment from '../../../../models/PiPayment';

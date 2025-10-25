@@ -1,4 +1,5 @@
-// src/pages/api/pi/payments/complete.js
+console.log('[complete] HIT', req.body);
+
 import { dbConnect } from '../../../../lib/dbConnect';
 import PiPayment from '../../../../models/PiPayment';
 import Competition from '../../../../models/Competition';
