@@ -19,16 +19,32 @@ export default function PiPaymentButton({
   );
 
   const start = useCallback(async () => {
-    if (!window?.Pi) return alert('Pi SDK not loaded. Open in Pi Browser.');
+    const say = (msg, obj) => {
+      try {
+        const extra = obj ? `\n${JSON.stringify(obj, null, 2)}` : '';
+        alert(`${msg}${extra}`);
+      } catch {
+        alert(msg);
+      }
+    };
 
-    // auto-login if needed
-    if (!user) {
-      const r = await (login?.().catch(() => null));
-      if (!r || r.ok === false) return;
+    if (!window?.Pi) {
+      say('Pi SDK not loaded. Open in Pi Browser.');
+      return;
     }
 
-    if (!amount || Number.isNaN(+amount)) return alert('Invalid amount');
-    if (!slug) return alert('Missing competition slug');
+    if (!user) {
+      say('Logging in via Pi…');
+      const r = await (login?.().catch(() => null));
+      if (!r || r.ok === false) {
+        say('Login cancelled or failed.');
+        return;
+      }
+      say('Logged in ✅');
+    }
+
+    if (!amount || Number.isNaN(+amount)) { say('Invalid amount'); return; }
+    if (!slug) { say('Missing competition slug'); return; }
 
     setBusy(true);
     try {
@@ -44,85 +60,62 @@ export default function PiPaymentButton({
         userId: user?.uid || user?._id || user?.id || null,
       };
 
+      say('Starting Pi payment…', { amount, memo: memoObj, metadata });
+
       await window.Pi.createPayment(
         { amount, memo: memoJson, metadata },
         {
-          onIncompletePaymentFound: async (payment) => {
-            // Helpful when users refresh; lets you finish an in-flight payment.
-            console.log('[Pi] onIncompletePaymentFound', payment);
-            try {
-              const r = await fetch('/api/pi/payments/complete', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  paymentId: payment.identifier,
-                  txid: payment.transaction?.txID || payment.transaction?.txid || '', // may be empty pre-chain
-                  slug,
-                  ticketQty: qty,
-                }),
-              });
-              console.log('[Pi] recover complete ->', r.status);
-            } catch (e) {
-              console.warn('[Pi] recover complete failed', e);
-            }
-          },
-
           onReadyForServerApproval: async (paymentId) => {
-            console.log('[Pi] onReadyForServerApproval', { paymentId, slug, qty });
+            say('onReadyForServerApproval → calling /api/pi/payments/approve', { paymentId, slug, qty });
             const r = await fetch('/api/pi/payments/approve', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                paymentId,
-                slug,
-                ticketQty: qty,
-                memo: memoJson,       // optional: helps server persist
-                metadata,             // optional: helps server persist
-              }),
+              body: JSON.stringify({ paymentId, slug, ticketQty: qty }),
             });
+            const text = await r.text();
+            let json; try { json = JSON.parse(text); } catch {}
             if (!r.ok) {
-              const msg = await r.text();
-              console.error('[Pi] approve failed', msg);
-              throw new Error(msg || 'Server approval failed');
+              say('❌ Approve failed', { status: r.status, body: text });
+              throw new Error(text || 'Server approval failed');
             }
+            say('✅ Approve ok', json || text);
           },
 
           onReadyForServerCompletion: async (paymentId, txid) => {
-            console.log('[Pi] onReadyForServerCompletion', { paymentId, txid, slug, qty });
+            say('onReadyForServerCompletion → calling /api/pi/payments/complete', { paymentId, txid, slug, qty });
             const r = await fetch('/api/pi/payments/complete', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ paymentId, txid, slug, ticketQty: qty }),
             });
+            const text = await r.text();
+            let json; try { json = JSON.parse(text); } catch {}
             if (!r.ok) {
-              const msg = await r.text();
-              console.error('[Pi] complete failed', msg);
-              throw new Error(msg || 'Server completion failed');
+              say('❌ Complete failed', { status: r.status, body: text });
+              throw new Error(text || 'Server completion failed');
             }
+            say('🎉 Complete ok', json || text);
 
-            // Tell UI to refresh any tickets counters
+            // notify UI
             window.dispatchEvent(new CustomEvent('omc:tickets:updated', { detail: { slug, qty } }));
             onSuccess?.({ paymentId, txid, slug, ticketQty: qty });
-
-            alert('🎉 Payment complete! Tickets added.');
+            say('🎟 Tickets updated locally. If the card doesn’t refresh, try pulling to refresh.');
             setBusy(false);
           },
 
           onCancel: () => {
-            console.log('[Pi] onCancel');
+            say('Payment cancelled by user.');
             setBusy(false);
           },
 
           onError: (err) => {
-            console.error('[Pi] onError', err);
-            alert('❌ Payment failed. Please try again.');
+            say('❌ Pi payment error', { message: err?.message || String(err) });
             setBusy(false);
           },
         }
       );
     } catch (err) {
-      console.error('Payment flow error:', err);
-      alert(err?.message || 'Payment failed.');
+      alert(`❌ Payment flow error: ${err?.message || err}`);
       setBusy(false);
     }
   }, [user, login, amount, slug, ticketQty, memoTitle, extraMetadata, onSuccess]);
