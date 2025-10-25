@@ -1,126 +1,65 @@
 // src/pages/api/pi/payments/complete.js
-'use server';
 
 import { dbConnect } from '../../../../lib/dbConnect';
 import PiPayment from '../../../../models/PiPayment';
-import Competition from '../../../../models/Competition'; // ⬅️ add this
+import Competition from '../../../../models/Competition'; // if you increment tickets here
 import { completePayment } from '../../../../lib/piClient'; // or '@/lib/piClient'
 
-// Safe helpers
-const toInt = (v, d = 0) => {
-  const n = Number(v);
-  return Number.isFinite(n) ? Math.floor(n) : d;
-};
-function extractMeta(rec, body) {
-  // Try body first, then rec.memo (JSON), then rec.meta
-  let meta = { ...(body || {}) };
-
-  // memo may be a JSON string; if so, parse it
-  if (!meta.slug || !meta.ticketQty) {
-    try {
-      if (rec?.memo && typeof rec.memo === 'string' && rec.memo.trim().startsWith('{')) {
-        const memoObj = JSON.parse(rec.memo);
-        meta = { ...memoObj, ...meta };
-      }
-    } catch {}
-  }
-
-  // legacy place
-  if (!meta.slug && rec?.meta?.slug) meta.slug = rec.meta.slug;
-  if (!meta.ticketQty && rec?.meta?.ticketQty) meta.ticketQty = rec.meta.ticketQty;
-
-  // Normalize & defaults
-  meta.slug = String(meta.slug || '').trim();
-  meta.ticketQty = toInt(meta.ticketQty || 1, 1);
-
-  return meta;
-}
-
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ message: 'Method not allowed' });
+  if (req.method !== 'POST') return res.status(405).end();
 
-  const { paymentId, txid, accessToken } = req.body || {};
-  if (!paymentId || !txid || !accessToken) {
+  const { paymentId, txid, accessToken, slug, ticketQty } = req.body || {};
+  if (!paymentId || !txid) {
     return res.status(400).json({ message: 'Missing fields' });
   }
 
   try {
     await dbConnect();
 
-    // 1) Load our recorded payment
     const rec = await PiPayment.findOne({ paymentId });
     if (!rec) return res.status(404).json({ message: 'Unknown paymentId' });
+    if (rec.status === 'completed') return res.json({ ok: true, already: true });
 
-    // 2) If we already completed earlier, return success + current totals (best effort)
-    if (rec.status === 'completed') {
-      // Try to include freshest counter if we can find the competition
-      const { slug } = extractMeta(rec, req.body);
-      let counters = {};
-      if (slug) {
-        const comp = await Competition.findOne({ slug }).select('slug comp.ticketsSold comp.totalTickets');
-        if (comp) {
-          counters = {
-            slug: comp.slug,
-            ticketsSold: comp.comp?.ticketsSold ?? 0,
-            totalTickets: comp.comp?.totalTickets ?? 0,
-          };
-        }
-      }
-      return res.json({ ok: true, already: true, ...counters });
-    }
+    // Complete on Pi Network (optional if you already did this elsewhere)
+    const done = await completePayment(paymentId, txid, accessToken).catch(() => null);
 
-    // 3) Complete with Pi (KEEP your working flow)
-    const done = await completePayment(paymentId, txid, accessToken);
-
-    // 4) Mark our payment row as completed
+    // Persist completion on our side
     rec.status = 'completed';
     rec.txid = txid;
-    rec.raw = done;
+    if (done) rec.raw = done;
+
+    // Get slug/ticketQty from body OR memo/metadata as fallback
+    let compSlug = slug;
+    let qty = Number(ticketQty || 0);
+
+    // Try memo as JSON {"slug":"...","ticketQty":1}
+    if ((!compSlug || !qty) && typeof rec.memo === 'string') {
+      try {
+        const m = JSON.parse(rec.memo);
+        if (!compSlug && m?.slug) compSlug = m.slug;
+        if (!qty && m?.ticketQty) qty = Number(m.ticketQty);
+      } catch {}
+    }
+    // Try metadata/meta on the record
+    const meta = rec.metadata || rec.meta || {};
+    if (!compSlug && meta.slug) compSlug = meta.slug;
+    if (!qty && meta.ticketQty) qty = Number(meta.ticketQty);
+
     await rec.save();
 
-    // 5) Extract competition + qty info from body/memo/meta
-    const { slug, ticketQty } = extractMeta(rec, req.body);
-    if (!slug) {
-      // We completed the payment but don't know which competition to bump.
-      // Return OK so client can still refresh UI; admin logs will show the memo if needed.
-      return res.json({ ok: true, payment: done, warn: 'No competition slug in memo/body' });
+    // Optionally increment tickets on the competition (atomic guard)
+    if (compSlug && Number.isFinite(qty) && qty > 0) {
+      await Competition.findOneAndUpdate(
+        {
+          'comp.slug': compSlug,
+          $expr: { $lte: ['$comp.ticketsSold', { $subtract: ['$comp.totalTickets', qty] }] }
+        },
+        { $inc: { 'comp.ticketsSold': qty } },
+        { new: true }
+      );
     }
 
-    // 6) ATOMICALLY increment comp.ticketsSold (no oversell)
-    //    Only increment if current ticketsSold <= totalTickets - ticketQty
-    const updated = await Competition.findOneAndUpdate(
-      {
-        slug,
-        $expr: {
-          $lte: [
-            '$comp.ticketsSold',
-            { $subtract: ['$comp.totalTickets', ticketQty] }
-          ]
-        }
-      },
-      { $inc: { 'comp.ticketsSold': ticketQty } },
-      { new: true, projection: { slug: 1, 'comp.ticketsSold': 1, 'comp.totalTickets': 1 } }
-    );
-
-    // If no doc matched, we likely hit sold out or slug mismatch.
-    if (!updated) {
-      // Optionally: you could roll back payment here (refund) or just report the condition.
-      return res.status(409).json({
-        ok: false,
-        error: 'Sold out or cannot reserve tickets',
-        slug,
-        ticketQty
-      });
-    }
-
-    // 7) Return fresh counters so the client can update instantly
-    return res.json({
-      ok: true,
-      payment: done,
-      slug: updated.slug,
-      ticketsSold: updated.comp?.ticketsSold ?? 0,
-      totalTickets: updated.comp?.totalTickets ?? 0
-    });
+    return res.json({ ok: true, payment: done || null });
   } catch (e) {
     console.error('[api/pi/payments/complete]', e?.response?.data || e);
     return res.status(500).json({ message: 'Complete failed' });
