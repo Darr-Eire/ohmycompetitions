@@ -1,6 +1,6 @@
 // src/components/PiPaymentButton.jsx
 'use client';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { usePiAuth } from '../context/PiAuthContext';
 
 export default function PiPaymentButton({
@@ -18,16 +18,78 @@ export default function PiPaymentButton({
     []
   );
 
-  const start = useCallback(async () => {
-    const say = (msg, obj) => {
-      try {
-        const extra = obj ? `\n${JSON.stringify(obj, null, 2)}` : '';
-        alert(`${msg}${extra}`);
-      } catch {
-        alert(msg);
-      }
+  /* ------------------ lightweight on-screen debug overlay ------------------ */
+  const ensureDebugBox = () => {
+    if (typeof document === 'undefined') return null;
+    let box = document.getElementById('omc-debug-box');
+    if (box) return box;
+
+    box = document.createElement('div');
+    box.id = 'omc-debug-box';
+    Object.assign(box.style, {
+      position: 'fixed',
+      left: '8px',
+      right: '8px',
+      bottom: '8px',
+      maxHeight: '45vh',
+      overflowY: 'auto',
+      padding: '8px 10px',
+      background: 'rgba(10,16,32,0.85)',
+      color: '#aef',
+      border: '1px solid rgba(0,255,255,0.35)',
+      borderRadius: '10px',
+      zIndex: 2147483647,
+      font: '12px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+      backdropFilter: 'blur(8px)',
+    });
+
+    const head = document.createElement('div');
+    head.textContent = 'OMC Debug (tap to hide/show)';
+    head.style.fontWeight = '700';
+    head.style.marginBottom = '6px';
+    head.style.color = '#7ff';
+    head.style.cursor = 'pointer';
+
+    const body = document.createElement('div');
+    body.id = 'omc-debug-body';
+
+    head.onclick = () => {
+      body.style.display = body.style.display === 'none' ? '' : 'none';
     };
 
+    box.appendChild(head);
+    box.appendChild(body);
+    document.body.appendChild(box);
+    return box;
+  };
+
+  const say = (msg, obj) => {
+    try {
+      const box = ensureDebugBox();
+      const body = document.getElementById('omc-debug-body') || box;
+      const line = document.createElement('div');
+      const ts = new Date().toLocaleTimeString();
+      line.textContent = `[${ts}] ${msg}`;
+      if (obj !== undefined) {
+        const pre = document.createElement('pre');
+        pre.style.whiteSpace = 'pre-wrap';
+        pre.style.margin = '2px 0 0 0';
+        pre.textContent = typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2);
+        line.appendChild(pre);
+      }
+      body.appendChild(line);
+      body.scrollTop = body.scrollHeight;
+    } catch {
+      // swallow overlay errors
+    }
+  };
+
+  useEffect(() => {
+    say('PiPaymentButton mounted', { slug, amount });
+  }, [slug, amount]);
+
+  /* --------------------------------- start -------------------------------- */
+  const start = useCallback(async () => {
     if (!window?.Pi) {
       say('Pi SDK not loaded. Open in Pi Browser.');
       return;
@@ -43,8 +105,14 @@ export default function PiPaymentButton({
       say('Logged in ✅');
     }
 
-    if (!amount || Number.isNaN(+amount)) { say('Invalid amount'); return; }
-    if (!slug) { say('Missing competition slug'); return; }
+    if (!amount || Number.isNaN(+amount)) {
+      say('Invalid amount');
+      return;
+    }
+    if (!slug) {
+      say('Missing competition slug');
+      return;
+    }
 
     setBusy(true);
     try {
@@ -55,7 +123,7 @@ export default function PiPaymentButton({
       const metadata = {
         ...extraMetadata,
         ...memoObj,
-        memoTitle,
+        memoTitle, // human readable label
         username: user?.username || null,
         userId: user?.uid || user?._id || user?.id || null,
       };
@@ -66,40 +134,40 @@ export default function PiPaymentButton({
         { amount, memo: memoJson, metadata },
         {
           onReadyForServerApproval: async (paymentId) => {
-            say('onReadyForServerApproval → calling /api/pi/payments/approve', { paymentId, slug, qty });
+            say('onReadyForServerApproval → POST /api/pi/payments/approve', { paymentId, slug, qty });
             const r = await fetch('/api/pi/payments/approve', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ paymentId, slug, ticketQty: qty }),
             });
-            const text = await r.text();
-            let json; try { json = JSON.parse(text); } catch {}
+            const txt = await r.text();
+            let json; try { json = JSON.parse(txt); } catch {}
             if (!r.ok) {
-              say('❌ Approve failed', { status: r.status, body: text });
-              throw new Error(text || 'Server approval failed');
+              say('❌ Approve failed', { status: r.status, body: txt });
+              throw new Error(txt || 'Server approval failed');
             }
-            say('✅ Approve ok', json || text);
+            say('✅ Approve ok', json || txt);
           },
 
           onReadyForServerCompletion: async (paymentId, txid) => {
-            say('onReadyForServerCompletion → calling /api/pi/payments/complete', { paymentId, txid, slug, qty });
+            say('onReadyForServerCompletion → POST /api/pi/payments/complete', { paymentId, txid, slug, qty });
             const r = await fetch('/api/pi/payments/complete', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ paymentId, txid, slug, ticketQty: qty }),
             });
-            const text = await r.text();
-            let json; try { json = JSON.parse(text); } catch {}
+            const txt = await r.text();
+            let json; try { json = JSON.parse(txt); } catch {}
             if (!r.ok) {
-              say('❌ Complete failed', { status: r.status, body: text });
-              throw new Error(text || 'Server completion failed');
+              say('❌ Complete failed', { status: r.status, body: txt });
+              throw new Error(txt || 'Server completion failed');
             }
-            say('🎉 Complete ok', json || text);
+            say('🎉 Complete ok', json || txt);
 
-            // notify UI
+            // notify UI listeners immediately
             window.dispatchEvent(new CustomEvent('omc:tickets:updated', { detail: { slug, qty } }));
             onSuccess?.({ paymentId, txid, slug, ticketQty: qty });
-            say('🎟 Tickets updated locally. If the card doesn’t refresh, try pulling to refresh.');
+            say('🎟 Tickets updated locally. If the card doesn’t refresh, pull to refresh.');
             setBusy(false);
           },
 
@@ -115,7 +183,7 @@ export default function PiPaymentButton({
         }
       );
     } catch (err) {
-      alert(`❌ Payment flow error: ${err?.message || err}`);
+      say('❌ Payment flow error', { message: err?.message || String(err) });
       setBusy(false);
     }
   }, [user, login, amount, slug, ticketQty, memoTitle, extraMetadata, onSuccess]);
