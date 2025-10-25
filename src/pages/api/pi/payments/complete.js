@@ -1,4 +1,4 @@
-console.log('[complete] HIT', req.body);
+// src/pages/api/pi/payments/complete.js
 
 import { dbConnect } from '../../../../lib/dbConnect';
 import PiPayment from '../../../../models/PiPayment';
@@ -8,22 +8,37 @@ import { completePayment } from '../../../../lib/piClient';
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
+  // ✅ LOG: request body
+  console.log('[complete] HIT body:', req.body);
+
   const { paymentId, txid, accessToken, slug, ticketQty } = req.body || {};
   if (!paymentId || !txid) {
+    console.warn('[complete] missing fields', { paymentId: !!paymentId, txid: !!txid });
     return res.status(400).json({ message: 'Missing fields' });
   }
 
   try {
     await dbConnect();
+    console.log('[complete] DB connected');
 
     const rec = await PiPayment.findOne({ paymentId });
-    if (!rec) return res.status(404).json({ message: 'Unknown paymentId' });
+    if (!rec) {
+      console.warn('[complete] unknown paymentId', paymentId);
+      return res.status(404).json({ message: 'Unknown paymentId' });
+    }
     if (rec.status === 'completed') {
+      console.log('[complete] already completed', paymentId);
       return res.json({ ok: true, already: true });
     }
 
-    // Optional: finalize on Pi if not already done elsewhere
-    const done = await completePayment(paymentId, txid, accessToken).catch(() => null);
+    // Optional: finalize on Pi (fail-safe: don’t block completion)
+    let done = null;
+    try {
+      done = await completePayment(paymentId, txid, accessToken);
+      console.log('[complete] completePayment OK');
+    } catch (e) {
+      console.warn('[complete] completePayment failed (continuing):', e?.response?.data || e?.message || e);
+    }
 
     // Persist completion
     rec.status = 'completed';
@@ -39,38 +54,45 @@ export default async function handler(req, res) {
         const m = JSON.parse(rec.memo);
         if (!compSlug && m?.slug) compSlug = m.slug;
         if (!qty && m?.ticketQty) qty = Number(m.ticketQty);
-      } catch {}
+      } catch (e) {
+        console.warn('[complete] memo JSON parse failed');
+      }
     }
     const meta = rec.metadata || rec.meta || {};
     if (!compSlug && meta.slug) compSlug = meta.slug;
     if (!qty && meta.ticketQty) qty = Number(meta.ticketQty);
 
     await rec.save();
+    console.log('[complete] payment saved', { paymentId, compSlug, qty });
 
+    // Increment competition tickets (atomic, guard oversell)
     let updatedComp = null;
-
     if (compSlug && Number.isFinite(qty) && qty > 0) {
-      // Guard against oversell (atomic)
       updatedComp = await Competition.findOneAndUpdate(
         {
           $or: [{ 'comp.slug': compSlug }, { slug: compSlug }],
           $expr: { $lte: ['$comp.ticketsSold', { $subtract: ['$comp.totalTickets', qty] }] },
         },
-        {
-          $inc: {
-            'comp.ticketsSold': qty,
-            // OPTIONAL: if you maintain a prize pool like in your other handler
-            // 'comp.prizePool': (rec.entryFeePi || rec.amount || 0) * qty
-          },
-        },
+        { $inc: { 'comp.ticketsSold': qty } },
         {
           new: true,
           projection: { _id: 0, 'comp.ticketsSold': 1, 'comp.totalTickets': 1, 'comp.slug': 1, slug: 1 },
         }
       );
+
+      if (!updatedComp) {
+        console.warn('[complete] comp update skipped (guard failed or not found)', { compSlug, qty });
+      } else {
+        console.log('[complete] comp updated', {
+          slug: updatedComp?.comp?.slug || updatedComp?.slug,
+          ticketsSold: updatedComp?.comp?.ticketsSold,
+          totalTickets: updatedComp?.comp?.totalTickets,
+        });
+      }
+    } else {
+      console.warn('[complete] missing compSlug/qty, not updating comp', { compSlug, qty });
     }
 
-    // Return updated counts so the client can update immediately
     return res.json({
       ok: true,
       payment: done || null,
@@ -83,7 +105,7 @@ export default async function handler(req, res) {
         : null,
     });
   } catch (e) {
-    console.error('[api/pi/payments/complete]', e?.response?.data || e);
+    console.error('[api/pi/payments/complete] error:', e?.response?.data || e);
     return res.status(500).json({ message: 'Complete failed' });
   }
 }

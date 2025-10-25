@@ -1,99 +1,93 @@
-console.log('[approve] HIT', req.body);
-import axios from 'axios';
+// src/pages/api/pi/payments/complete.js
 import { dbConnect } from '../../../../lib/dbConnect';
 import PiPayment from '../../../../models/PiPayment';
+import Competition from '../../../../models/Competition';
+import { completePayment } from '../../../../lib/piClient';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  // Allow client to pass slug/ticketQty + optional memo/metadata redundantly
-  const {
-    paymentId,
-    slug: bodySlug,
-    ticketQty: bodyTicketQty,
-    memo: bodyMemo,
-    metadata: bodyMetadata,
-  } = req.body || {};
+  // ✅ safe: inside handler
+  console.log('[complete] HIT body:', req.body);
 
-  if (!paymentId) return res.status(400).json({ ok: false, error: 'Missing paymentId' });
-
-  // Pick correct API key based on environment
-  const base = process.env.PI_BASE_URL || 'https://api.minepi.com';
-  const env = (process.env.NEXT_PUBLIC_PI_ENV || 'testnet').toLowerCase();
-  const apiKey =
-    env === 'mainnet'
-      ? process.env.PI_API_KEY_MAINNET || process.env.PI_API_KEY
-      : process.env.PI_API_KEY_TESTNET || process.env.PI_API_KEY;
-
-  if (!apiKey) {
-    return res.status(500).json({ ok: false, error: 'Missing Pi API key (check env vars)' });
+  const { paymentId, txid, accessToken, slug, ticketQty } = req.body || {};
+  if (!paymentId || !txid) {
+    return res.status(400).json({ message: 'Missing fields' });
   }
 
   try {
     await dbConnect();
 
-    // 1) Fetch payment from Pi to verify basics
-    const { data: pay } = await axios.get(
-      `${base}/v2/payments/${encodeURIComponent(paymentId)}`,
-      { headers: { Authorization: `Key ${apiKey}` }, timeout: 10000 }
-    );
+    const rec = await PiPayment.findOne({ paymentId });
+    if (!rec) return res.status(404).json({ message: 'Unknown paymentId' });
+    if (rec.status === 'completed') {
+      return res.json({ ok: true, already: true });
+    }
 
-    // 2) Approve on Pi
-    await axios.post(
-      `${base}/v2/payments/${encodeURIComponent(paymentId)}/approve`,
-      {},
-      { headers: { Authorization: `Key ${apiKey}` }, timeout: 10000 }
-    );
+    // Optional: finalize on Pi (don’t block local completion if this fails)
+    let done = null;
+    try {
+      done = await completePayment(paymentId, txid, accessToken);
+    } catch (e) {
+      console.warn('[complete] completePayment failed (continuing):', e?.response?.data || e?.message || e);
+    }
 
-    // 3) Persist/merge memo + metadata for robust completion step
-    // Prefer the body values if present; then fall back to Pi's values.
-    const memo = typeof bodyMemo === 'string' && bodyMemo.length ? bodyMemo : (pay?.memo ?? '');
+    // Persist completion
+    rec.status = 'completed';
+    rec.txid = txid;
+    if (done) rec.raw = done;
 
-    // Merge order: Pi metadata → body metadata → explicit slug/ticketQty (body wins)
-    const mergedMeta = {
-      ...(pay?.metadata || {}),
-      ...(bodyMetadata || {}),
-      // Also persist identity hints if present in Pi payload
-      username: (bodyMetadata?.username ?? pay?.metadata?.username ?? pay?.user_username) || null,
-      userId: (bodyMetadata?.userId ?? pay?.metadata?.userId ?? pay?.user_uid ?? pay?.user_uid) || null,
-      // Critical bits for competition fulfillment:
-      slug: bodySlug || (pay?.metadata?.slug ?? null),
-      ticketQty:
-        Number.isFinite(+bodyTicketQty)
-          ? Number(bodyTicketQty)
-          : (Number(pay?.metadata?.ticketQty) || 0),
-    };
+    // Pull slug/ticketQty from body → memo → metadata
+    let compSlug = slug || null;
+    let qty = Number(ticketQty || 0);
 
-    // 4) Upsert payment record
-    await PiPayment.updateOne(
-      { paymentId },
-      {
-        $set: {
-          paymentId,
-          status: 'approved',
-          amount: pay?.amount ?? 0,
-          memo,
-          metadata: mergedMeta,
-          username: mergedMeta.username,
-          raw: pay,
+    if ((!compSlug || !qty) && typeof rec.memo === 'string') {
+      try {
+        const m = JSON.parse(rec.memo);
+        if (!compSlug && m?.slug) compSlug = m.slug;
+        if (!qty && m?.ticketQty) qty = Number(m.ticketQty);
+      } catch {}
+    }
+    const meta = rec.metadata || rec.meta || {};
+    if (!compSlug && meta.slug) compSlug = meta.slug;
+    if (!qty && meta.ticketQty) qty = Number(meta.ticketQty);
+
+    await rec.save();
+
+    // Atomically increment tickets (guard oversell)
+    let updatedComp = null;
+    if (compSlug && Number.isFinite(qty) && qty > 0) {
+      updatedComp = await Competition.findOneAndUpdate(
+        {
+          $or: [{ 'comp.slug': compSlug }, { slug: compSlug }],
+          $expr: { $lte: ['$comp.ticketsSold', { $subtract: ['$comp.totalTickets', qty] }] },
         },
-      },
-      { upsert: true }
-    );
+        { $inc: { 'comp.ticketsSold': qty } },
+        {
+          new: true,
+          projection: { _id: 0, 'comp.ticketsSold': 1, 'comp.totalTickets': 1, 'comp.slug': 1, slug: 1 },
+        }
+      );
+      if (!updatedComp) {
+        console.warn('[complete] comp update skipped (guard failed or not found)', { compSlug, qty });
+      }
+    } else {
+      console.warn('[complete] missing compSlug/qty, not updating comp', { compSlug, qty });
+    }
 
     return res.json({
       ok: true,
-      paymentId,
-      memoStored: memo,
-      metadataStored: {
-        slug: mergedMeta.slug,
-        ticketQty: mergedMeta.ticketQty,
-        username: mergedMeta.username,
-        userId: mergedMeta.userId,
-      },
+      payment: done || null,
+      competition: updatedComp
+        ? {
+            slug: updatedComp?.comp?.slug || updatedComp?.slug || compSlug,
+            ticketsSold: updatedComp?.comp?.ticketsSold ?? null,
+            totalTickets: updatedComp?.comp?.totalTickets ?? null,
+          }
+        : null,
     });
   } catch (e) {
-    console.error('[payments/approve] error:', e?.response?.data || e.message);
-    return res.status(500).json({ ok: false, error: 'approve failed' });
+    console.error('[api/pi/payments/complete]', e?.response?.data || e);
+    return res.status(500).json({ message: 'Complete failed' });
   }
 }
