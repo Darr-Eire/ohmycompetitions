@@ -1,20 +1,29 @@
 // src/pages/api/pi/payments/complete.js
-
 import { dbConnect } from '../../../../lib/dbConnect';
 import PiPayment from '../../../../models/PiPayment';
-import Competition from '../../../../models/Competition';
 import { completePayment } from '../../../../lib/piClient';
+import axios from 'axios';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  // ✅ LOG: request body
   console.log('[complete] HIT body:', req.body);
 
-  const { paymentId, txid, accessToken, slug, ticketQty } = req.body || {};
+  const {
+    paymentId,
+    txid,
+    accessToken,
+    slug: bodySlug,
+    ticketQty: bodyQty,
+    userUid: bodyUserUid,
+    username: bodyUsername,
+    skillQuestion: bodySQ, // { questionId, userAnswer }
+    imageUrl,
+  } = req.body || {};
+
   if (!paymentId || !txid) {
     console.warn('[complete] missing fields', { paymentId: !!paymentId, txid: !!txid });
-    return res.status(400).json({ message: 'Missing fields' });
+    return res.status(400).json({ ok: false, error: 'missing-fields' });
   }
 
   try {
@@ -24,14 +33,14 @@ export default async function handler(req, res) {
     const rec = await PiPayment.findOne({ paymentId });
     if (!rec) {
       console.warn('[complete] unknown paymentId', paymentId);
-      return res.status(404).json({ message: 'Unknown paymentId' });
+      return res.status(404).json({ ok: false, error: 'unknown-paymentId' });
     }
     if (rec.status === 'completed') {
       console.log('[complete] already completed', paymentId);
       return res.json({ ok: true, already: true });
     }
 
-    // Optional: finalize on Pi (fail-safe: don’t block completion)
+    // Finalize on Pi (best effort; don’t block)
     let done = null;
     try {
       done = await completePayment(paymentId, txid, accessToken);
@@ -40,72 +49,117 @@ export default async function handler(req, res) {
       console.warn('[complete] completePayment failed (continuing):', e?.response?.data || e?.message || e);
     }
 
-    // Persist completion
+    // Persist completion locally
     rec.status = 'completed';
     rec.txid = txid;
     if (done) rec.raw = done;
 
-    // Pull slug/ticketQty from body → memo → metadata
-    let compSlug = slug || null;
-    let qty = Number(ticketQty || 0);
+    // ---- Resolve slug & qty from body, memo, or metadata ----
+    let compSlug = bodySlug || null;
+    let qty = Number(bodyQty || 0);
 
-    if ((!compSlug || !qty) && typeof rec.memo === 'string') {
+    const tryReadMemo = (m) => {
       try {
-        const m = JSON.parse(rec.memo);
-        if (!compSlug && m?.slug) compSlug = m.slug;
-        if (!qty && m?.ticketQty) qty = Number(m.ticketQty);
-      } catch (e) {
-        console.warn('[complete] memo JSON parse failed');
+        const j = typeof m === 'string' ? JSON.parse(m) : m;
+        return j || {};
+      } catch {
+        return {};
       }
-    }
-    const meta = rec.metadata || rec.meta || {};
-    if (!compSlug && meta.slug) compSlug = meta.slug;
-    if (!qty && meta.ticketQty) qty = Number(meta.ticketQty);
+    };
+
+    const memoObj = tryReadMemo(rec.memo);
+    const metaObj = tryReadMemo(rec.metadata || rec.meta);
+
+    if (!compSlug) compSlug = memoObj.slug || metaObj.slug || null;
+    if (!qty) qty = Number(memoObj.ticketQty || metaObj.ticketQty || 0);
+
+    // ---- Resolve userUid & username ----
+    const userUid =
+      bodyUserUid ||
+      rec.userUid ||
+      rec.user?.uid ||
+      rec.user?.userUid ||
+      metaObj.userUid ||
+      memoObj.userUid ||
+      null;
+
+    const username =
+      bodyUsername ||
+      rec.username ||
+      rec.user?.username ||
+      metaObj.username ||
+      memoObj.username ||
+      null;
+
+    // ---- Resolve skillQuestion ----
+    const skillQuestion =
+      bodySQ ||
+      metaObj.skillQuestion ||
+      memoObj.skillQuestion ||
+      null;
 
     await rec.save();
-    console.log('[complete] payment saved', { paymentId, compSlug, qty });
+    console.log('[complete] payment saved', { paymentId, compSlug, qty, userUid, username });
 
-    // Increment competition tickets (atomic, guard oversell)
-    let updatedComp = null;
-    if (compSlug && Number.isFinite(qty) && qty > 0) {
-      updatedComp = await Competition.findOneAndUpdate(
-        {
-          $or: [{ 'comp.slug': compSlug }, { slug: compSlug }],
-          $expr: { $lte: ['$comp.ticketsSold', { $subtract: ['$comp.totalTickets', qty] }] },
-        },
-        { $inc: { 'comp.ticketsSold': qty } },
-        {
-          new: true,
-          projection: { _id: 0, 'comp.ticketsSold': 1, 'comp.totalTickets': 1, 'comp.slug': 1, slug: 1 },
-        }
-      );
-
-      if (!updatedComp) {
-        console.warn('[complete] comp update skipped (guard failed or not found)', { compSlug, qty });
-      } else {
-        console.log('[complete] comp updated', {
-          slug: updatedComp?.comp?.slug || updatedComp?.slug,
-          ticketsSold: updatedComp?.comp?.ticketsSold,
-          totalTickets: updatedComp?.comp?.totalTickets,
-        });
-      }
-    } else {
-      console.warn('[complete] missing compSlug/qty, not updating comp', { compSlug, qty });
+    // Validate required downstream inputs
+    if (!compSlug || !qty || !userUid || !username) {
+      return res.status(400).json({
+        ok: false,
+        error: 'missing-required-for-ticketing',
+        detail: { compSlug: !!compSlug, qty: !!qty, userUid: !!userUid, username: !!username },
+      });
+    }
+    if (!skillQuestion?.questionId || !skillQuestion?.userAnswer) {
+      return res.status(400).json({
+        ok: false,
+        error: 'missing-skill-question',
+        detail: 'Provide { questionId, userAnswer }',
+      });
     }
 
-    return res.json({
-      ok: true,
-      payment: done || null,
-      competition: updatedComp
-        ? {
-            slug: updatedComp?.comp?.slug || updatedComp?.slug || compSlug,
-            ticketsSold: updatedComp?.comp?.ticketsSold ?? null,
-            totalTickets: updatedComp?.comp?.totalTickets ?? null,
-          }
-        : null,
+    // ---- Create tickets via our dedicated endpoint ----
+    const proto = String(req.headers['x-forwarded-proto'] || '');
+    const host  = String(req.headers['x-forwarded-host']  || req.headers.host || '');
+    const base  = (proto && host)
+      ? `${proto}://${host}`
+      : (req.headers.origin || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000');
+
+    console.log('[complete] -> calling create-from-payment', {
+      base, compSlug, qty, userUid, username,
+      hasSQ: !!(skillQuestion && skillQuestion.questionId && skillQuestion.userAnswer),
     });
+
+    let ticketing;
+    try {
+      const r = await axios.post(
+        `${base}/api/tickets/create-from-payment`,
+        {
+          paymentId,
+          userUid,
+          username,
+          competitionSlug: compSlug,
+          ticketQuantity: Number(qty),
+          skillQuestionData: {
+            questionId: skillQuestion.questionId,
+            userAnswer: skillQuestion.userAnswer,
+          },
+          imageUrl,
+        },
+        { timeout: 15000 }
+      );
+      ticketing = r.data;
+      console.log('[complete] tickets/create-from-payment OK');
+    } catch (err) {
+      console.error('[complete] tickets/create-from-payment FAILED', err?.response?.data || err?.message || err);
+      return res.status(502).json({ ok: false, error: 'ticketing-failed', detail: err?.response?.data || null });
+    }
+
+    // IMPORTANT: Do NOT manually $inc ticketsSold here.
+    // The writer endpoint handles atomic reservation + increment.
+
+    return res.status(200).json({ ok: true, payment: done || null, ticketing });
   } catch (e) {
     console.error('[api/pi/payments/complete] error:', e?.response?.data || e);
-    return res.status(500).json({ message: 'Complete failed' });
+    return res.status(500).json({ ok: false, error: 'complete-failed' });
   }
 }

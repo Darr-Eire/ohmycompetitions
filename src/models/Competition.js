@@ -36,11 +36,10 @@ const CompetitionSchema = new mongoose.Schema(
 
     prize: { type: String, required: true },
 
-    // Ticket prizes - competitions can give tickets to other competitions as prizes
     ticketPrizes: [{
-      competitionSlug: { type: String, required: true },  // Which competition to give tickets for
-      ticketCount: { type: Number, required: true, min: 1 },  // How many tickets to give
-      position: { type: Number, min: 1 },  // Which position gets this prize (optional)
+      competitionSlug: { type: String, required: true },
+      ticketCount: { type: Number, required: true, min: 1 },
+      position: { type: Number, min: 1 },
     }],
 
     href: String,
@@ -78,54 +77,93 @@ const CompetitionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ---- attach statics (works even with HMR cache) ----
-function attachStatics(Model) {
-  if (Model.reserveTickets) return Model;
+async function reserveTicketsImpl(slug, qty) {
+  qty = Number(qty) || 0;
+  if (qty <= 0) throw new Error('Invalid quantity');
 
-  /**
-   * Atomically reserve `qty` tickets for a competition identified by `slug`.
-   * - Increments comp.ticketsSold only if enough inventory is available.
-   * - Returns the updated document and the issued ticket numbers like T12..T15.
-   */
-  Model.reserveTickets = async function reserveTickets(slug, qty) {
-    qty = Number(qty) || 0;
-    if (qty <= 0) throw new Error('Invalid quantity');
+  const Model = this;
 
-    // Atomic check: available >= qty
-    const updated = await this.findOneAndUpdate(
+  // Single atomic attempt using $expr and $toDouble, first for comp.*, then for root fields.
+  const tryAtomic = async () => {
+    // 1) comp.* (nested) path
+    let updated = await Model.findOneAndUpdate(
       {
         'comp.slug': slug,
         $expr: {
           $gte: [
-            { $subtract: ['$comp.totalTickets', '$comp.ticketsSold'] },
+            {
+              $subtract: [
+                { $toDouble: { $ifNull: ['$comp.totalTickets', 0] } },
+                { $toDouble: { $ifNull: ['$comp.ticketsSold', 0] } },
+              ],
+            },
             qty,
           ],
         },
       },
       { $inc: { 'comp.ticketsSold': qty } },
-      { new: true }
+      { new: true, lean: true }
     );
 
+    // 2) fallback root (legacy) path
     if (!updated) {
-      // Tell caller whether it’s missing or sold out
-      const current = await this.findOne({ 'comp.slug': slug }).select('comp.totalTickets comp.ticketsSold');
-      if (!current) throw new Error('Competition not found');
-      const avail = (current.comp.totalTickets ?? 0) - (current.comp.ticketsSold ?? 0);
-      throw new Error(`Not enough tickets available. Requested ${qty}, available ${Math.max(0, avail)}`);
+      updated = await Model.findOneAndUpdate(
+        {
+          slug,
+          $expr: {
+            $gte: [
+              {
+                $subtract: [
+                  { $toDouble: { $ifNull: ['$totalTickets', 0] } },
+                  { $toDouble: { $ifNull: ['$ticketsSold', 0] } },
+                ],
+              },
+              qty,
+            ],
+          },
+        },
+        { $inc: { ticketsSold: qty } },
+        { new: true, lean: true }
+      );
     }
 
-    const start = (updated.comp.ticketsSold ?? 0) - qty + 1;
-    const ticketNumbers = Array.from({ length: qty }, (_, i) => `T${start + i}`);
-
-    return { updated, ticketNumbers };
+    return updated;
   };
 
-  return Model;
+  const updated = await tryAtomic();
+
+  if (!updated) {
+    // Inspect the doc to return a clear message
+    const current =
+      (await Model.findOne({ 'comp.slug': slug }).lean()) ||
+      (await Model.findOne({ slug }).lean());
+
+    if (!current) throw new Error('Competition not found');
+
+    const total = Number(current.comp?.totalTickets ?? current.totalTickets ?? 0) || 0;
+    const sold  = Number(current.comp?.ticketsSold  ?? current.ticketsSold  ?? 0) || 0;
+    const avail = Math.max(0, total - sold);
+
+    throw new Error(`Not enough tickets available. Requested ${qty}, available ${avail}`);
+  }
+
+  const soldNow = Number(updated.comp?.ticketsSold ?? updated.ticketsSold ?? 0) || 0;
+  const start   = soldNow - qty + 1;
+  const ticketNumbers = Array.from({ length: qty }, (_, i) => `T${start + i}`);
+
+  return { updated, ticketNumbers };
 }
 
-const Competition =
-  mongoose.models.Competition || mongoose.model('Competition', CompetitionSchema);
 
-attachStatics(Competition);
+// Attach on schema (for fresh model compiles)
+CompetitionSchema.statics.reserveTickets = reserveTicketsImpl;
+
+// Create or reuse the model
+const Competition = mongoose.models.Competition || mongoose.model('Competition', CompetitionSchema);
+
+// If model already existed (compiled earlier), ensure the static is present
+if (!Competition.reserveTickets) {
+  Competition.reserveTickets = reserveTicketsImpl.bind(Competition);
+}
 
 export default Competition;

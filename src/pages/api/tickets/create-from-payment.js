@@ -1,131 +1,185 @@
-// src/pages/api/tickets/create-from-payment.js
 import { dbConnect } from '../../../lib/dbConnect';
 import Ticket from '../../../models/Ticket';
 import Competition from '../../../models/Competition';
 import User from '../../../models/User';
-import { getRandomQuestion, isCorrectAnswer } from '../../../data/skill-questions';
+import { getQuestionById, isCorrectAnswer } from '../../../data/skill-questions';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method not allowed' });
+    return res.status(405).json({ ok: false, error: 'method-not-allowed' });
   }
 
   try {
     await dbConnect();
+    console.log('🎯 [create-from-payment] HIT', req.body?.paymentId, 'uid=', req.body?.userUid);
 
-    const { 
-      paymentId, 
-      username, 
-      competitionSlug, 
+    const {
+      paymentId,                // REQUIRED for idempotency
+      userUid,                  // REQUIRED by Ticket schema
+      username,                 // display/lookup
+      competitionSlug,          // REQUIRED
       ticketQuantity = 1,
-      skillQuestionData 
-    } = req.body;
+      skillQuestionData,        // { questionId, userAnswer }
+      imageUrl,                 // optional
+      gifted = false,
+      giftedBy = null,
+    } = req.body || {};
 
-    if (!paymentId || !username || !competitionSlug) {
-      return res.status(400).json({ 
-        message: 'Missing required fields: paymentId, username, competitionSlug' 
+    // ---- Required fields ----
+    if (!paymentId || !userUid || !username || !competitionSlug) {
+      return res.status(400).json({
+        ok: false,
+        error: 'missing-required-fields',
+        missing: {
+          paymentId: !!paymentId,
+          userUid: !!userUid,
+          username: !!username,
+          competitionSlug: !!competitionSlug,
+        },
       });
     }
 
-    // Get competition details
-    const competition = await Competition.findOne({ 'comp.slug': competitionSlug });
-    if (!competition) {
-      return res.status(404).json({ message: 'Competition not found' });
+    // ---- Require a skill answer ----
+    if (!skillQuestionData?.questionId || !skillQuestionData?.userAnswer) {
+      return res.status(400).json({
+        ok: false,
+        error: 'missing-skill-question',
+        detail: 'Provide { questionId, userAnswer }',
+      });
     }
 
-    // Enforce per-user ticket cap
+    // ---- Idempotency ----
+    const already = await Ticket.exists({ 'meta.paymentId': paymentId });
+    if (already) {
+      console.log('ℹ️ [create-from-payment] already-issued for', paymentId);
+      return res.status(200).json({ ok: true, issued: false, reason: 'already-issued' });
+    }
+
+    // ---- Competition ----
+    const competition = await Competition.findOne({ 'comp.slug': competitionSlug });
+    if (!competition) {
+      return res.status(404).json({ ok: false, error: 'competition-not-found' });
+    }
+
+    // ---- Enforce per-user ticket cap ----
     const user = await User.findOne({ username }).lean();
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user) {
+      return res.status(404).json({ ok: false, error: 'user-not-found' });
+    }
+
     const compCap = Number(competition.comp?.maxPerUser || 0);
     const userDefaultCap = Number(user.maxTicketsDefault || 0);
     const overrideMap = user.maxTicketsOverrides || new Map();
-    const overrideCap = typeof overrideMap.get === 'function'
-      ? overrideMap.get(String(competition._id))
-      : (overrideMap[competition._id?.toString()] || null);
+    const overrideCap =
+      typeof overrideMap.get === 'function'
+        ? overrideMap.get(String(competition._id))
+        : overrideMap[competition._id?.toString()] || null;
     const effectiveCap = overrideCap || compCap || userDefaultCap || 0;
 
     if (effectiveCap > 0) {
-      const currentCount = await Ticket.countDocuments({ username, competitionSlug });
+      const currentCount = await Ticket.countDocuments({ userUid, competitionSlug });
       if (currentCount + Number(ticketQuantity) > effectiveCap) {
-        return res.status(400).json({ 
-          message: `Ticket limit reached. Max ${effectiveCap} for this competition. You currently have ${currentCount}.`
+        return res.status(400).json({
+          ok: false,
+          error: 'ticket-cap-reached',
+          detail: `Max ${effectiveCap} for this competition. You currently have ${currentCount}.`,
         });
       }
     }
 
-    // Generate skill question if not provided
-    let questionData = skillQuestionData;
-    if (!questionData) {
-      const randomQuestion = getRandomQuestion();
-      questionData = {
-        questionId: randomQuestion.id,
-        question: randomQuestion.question,
-        answers: randomQuestion.answers,
-        correctAnswer: randomQuestion.answers[0], // First answer is usually correct
-        userAnswer: '', // Will be filled when user answers
-        isCorrect: false,
-        difficulty: randomQuestion.difficulty,
-        tags: randomQuestion.tags
-      };
+    // ---- Validate skill question server-side ----
+    const q = getQuestionById(skillQuestionData.questionId);
+    if (!q) {
+      return res.status(400).json({ ok: false, error: 'invalid-skill-question' });
     }
 
-    // Create tickets for this payment
-    const tickets = [];
-    for (let i = 0; i < ticketQuantity; i++) {
-      const ticket = new Ticket({
-        username,
-        competitionSlug,
-        competitionId: competition._id,
-        competitionTitle: competition.title,
-        imageUrl: competition.imageUrl,
-        quantity: 1,
-        ticketNumbers: [`T${Date.now()}-${i}`], // Generate unique ticket numbers
-        purchasedAt: new Date(),
-        gifted: false,
-        giftedBy: null,
-        skillQuestion: {
-          ...questionData,
-          attemptedAt: new Date()
-        }
-      });
-
-      await ticket.save();
-      tickets.push(ticket);
+    const isCorrect = isCorrectAnswer(q, skillQuestionData.userAnswer);
+    if (!isCorrect) {
+      return res.status(400).json({ ok: false, error: 'skill-incorrect' });
     }
 
-    // Optional: Issue stage ticket(s) for Stage 1 purchases → advance to Stage 2
+    // Build required skillQuestion block
+    const skillQuestion = {
+      questionId: String(q.id),
+      question: q.question,
+      answers: q.answers,
+      correctAnswer: q.answers[0], // first element from SKILL_QUESTIONS list
+      userAnswer: String(skillQuestionData.userAnswer),
+      isCorrect: true,
+      difficulty: q.difficulty || 'easy',
+      tags: q.tags || [],
+      attemptedAt: new Date(),
+    };
+
+    // ---- Reserve ticket numbers atomically ----
+    const { updated, ticketNumbers } = await Competition.reserveTickets(
+      competitionSlug,
+      Number(ticketQuantity)
+    );
+
+    // ---- Create Ticket ----
+    const ticket = await Ticket.create({
+      userUid,
+      username,
+      competitionSlug,
+      competitionId: updated._id,
+      competitionTitle: competition.title,
+      imageUrl: imageUrl || competition.imageUrl,
+      quantity: Number(ticketQuantity),
+      ticketNumbers,
+      purchasedAt: new Date(),
+      gifted,
+      giftedBy,
+      source: 'purchase',
+      meta: { paymentId, piUserUid: userUid },
+      skillQuestion,
+    });
+
+    console.log('✅ Ticket saved', ticket._id, ticket.ticketNumbers);
+
+    // ---- Optional: stage-advance ----
     try {
       const slug = competition.comp?.slug || competitionSlug;
-      const looksLikeStage1 = /(^stage-?1[-_]|\bstage\s*1\b)/i.test(String(slug)) || /\bstage\s*1\b/i.test(String(competition.title || ''));
+      const looksLikeStage1 =
+        /(^stage-?1[-_]|\bstage\s*1\b)/i.test(String(slug)) ||
+        /\bstage\s*1\b/i.test(String(competition.title || ''));
       if (looksLikeStage1) {
         await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/stages/issue`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, stage: 2, count: Number(ticketQuantity) || 1, source: 'payment' })
+          body: JSON.stringify({
+            username,
+            stage: 2,
+            count: Number(ticketQuantity) || 1,
+            source: 'payment',
+          }),
         }).catch(() => {});
       }
     } catch (e) {
       console.warn('Stage issuance skipped:', e?.message || e);
     }
 
-    res.status(201).json({
-      success: true,
-      message: 'Tickets created successfully',
-      tickets: tickets.map(ticket => ({
-        id: ticket._id,
-        ticketNumbers: ticket.ticketNumbers,
-        skillQuestion: ticket.skillQuestion
-      })),
-      paymentId,
-      competitionSlug
-    });
+    const count = await Ticket.countDocuments({});
+    console.log('📊 Ticket count now', count);
 
-  } catch (error) {
-    console.error('Error creating tickets from payment:', error);
-    res.status(500).json({ 
-      message: 'Internal server error',
-      error: error.message 
+    return res.status(201).json({
+      ok: true,
+      issued: true,
+      count: Number(ticketQuantity),
+      paymentId,
+      competitionSlug,
+      tickets: [
+        {
+          id: ticket._id,
+          ticketNumbers: ticket.ticketNumbers,
+          skillQuestion: ticket.skillQuestion,
+        },
+      ],
     });
+  } catch (error) {
+    console.error('❌ Error creating tickets from payment:', error);
+    return res
+      .status(500)
+      .json({ ok: false, error: error?.message || 'server-error' });
   }
 }
-

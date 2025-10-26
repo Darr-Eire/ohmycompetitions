@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import LaunchCompetitionDetailCard from '@components/LaunchCompetitionDetailCard';
 import { usePiAuth } from '../../context/PiAuthContext';
+import PiPaymentButton from '@components/PiPaymentButton'; // ⬅️ added
 
 /* ------------------------------ Utils ------------------------------ */
 const toNum = (v, d = 0) => {
@@ -192,6 +193,8 @@ export default function TicketPurchasePage() {
     );
   }
 
+  const entryFeeNum = Number.isFinite(+comp?.entryFee) ? +comp.entryFee : null;
+
   return (
     <>
       <Head>
@@ -224,6 +227,39 @@ export default function TicketPurchasePage() {
             user={user}
             login={login}
           />
+
+          {/* --------- Purchase box using PiPaymentButton (alerts included) --------- */}
+          <div className="mt-4 rounded-xl border border-cyan-400/30 bg-[#0b1220]/70 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="text-sm">
+                <div className="font-semibold text-cyan-200">Buy Ticket</div>
+                <div className="text-cyan-300/80">
+                  Entry:&nbsp;
+                  {entryFeeNum != null
+                    ? `${entryFeeNum.toFixed(2)} π`
+                    : 'TBA'}
+                </div>
+              </div>
+
+              <div className="w-44">
+                <PiPaymentButton
+                  amount={entryFeeNum ?? 0.01}               // fallback tiny amount for testing
+                  slug={comp?.slug}
+                  ticketQty={1}
+                  memoTitle={comp?.title || 'Competition Ticket'}
+                  extraMetadata={{ page: 'ticket-purchase' }}
+                  onSuccess={({ paymentId, txid, slug, ticketQty }) => {
+                    // optimistic bump + full refetch
+                    setLiveTicketsSold(v => v + (Number(ticketQty) || 0));
+                    handlePaymentSuccess({
+                      paymentId, txid, slug, ticketQuantity: ticketQty, competitionStatus: null
+                    });
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+          {/* ---------------------------------------------------------------------- */}
         </div>
       </main>
     </>
