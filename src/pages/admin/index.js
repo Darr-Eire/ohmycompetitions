@@ -5,6 +5,7 @@ import Link from 'next/link';
 import axios from 'axios';
 import AdminSidebar from '../../components/AdminSidebar';
 import AdminGuard from '../../components/AdminGuard';
+import AdminSystemStatusCard from '@/components/admin/AdminSystemStatusCard';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -16,7 +17,6 @@ export default function AdminDashboard() {
   });
   const [loading, setLoading] = useState(true);
 
-  // NEW: data for added widgets
   const [activityFeed, setActivityFeed] = useState([]);
   const [topReferrals, setTopReferrals] = useState([]);
   const [competitionHealth, setCompetitionHealth] = useState([]);
@@ -46,7 +46,6 @@ export default function AdminDashboard() {
         axios
           .get('/api/admin/voucher-stats', { headers: { 'x-admin': 'true' } })
           .catch(() => ({ data: { active: 0 } })),
-        // NEW endpoints (safe fallbacks)
         axios.get('/api/admin/activity').catch(() => ({ data: [] })),
         axios.get('/api/admin/referrals/top').catch(() => ({ data: [] })),
         axios.get('/api/admin/competitions/health').catch(() => ({ data: [] })),
@@ -55,9 +54,12 @@ export default function AdminDashboard() {
       setStats({
         competitions: competitionsRes.data.length || 0,
         threads: forumsRes.data.length || 0,
-        users: tryYourskillRes.data.userStats?.totalUsers || 0,
+        users: tryYourSkillRes.data.userStats?.totalUsers || 0,
         gameResults:
-          tryYoursSkillRes.data.gameStats?.reduce((total, game) => total + game.totalPlayed, 0) || 0,
+          tryYourSkillRes.data.gameStats?.reduce(
+            (total, game) => total + (game.totalPlayed || 0),
+            0
+          ) || 0,
         vouchersActive: voucherStatsRes.data?.active || 0,
       });
 
@@ -72,7 +74,9 @@ export default function AdminDashboard() {
   };
 
   const Tile = ({ icon, value, label, border }) => (
-    <div className={`bg-[#0f172a] border border-${border}-400 rounded-xl p-6 text-center shadow-sm`}>
+    <div
+      className={`bg-[#0f172a] border border-${border}-400 rounded-xl p-6 text-center shadow-sm`}
+    >
       <div className="text-4xl mb-2">{icon}</div>
       <div className={`text-3xl font-bold text-${border}-400`}>{value}</div>
       <div className="text-sm text-white/60">{label}</div>
@@ -173,7 +177,9 @@ export default function AdminDashboard() {
                 >
                   <div className="flex justify-between items-center mb-4">
                     <div className="text-3xl">{section.icon}</div>
-                    <div className={`text-2xl font-bold text-${section.color}-400`}>{section.stat}</div>
+                    <div className={`text-2xl font-bold text-${section.color}-400`}>
+                      {section.stat}
+                    </div>
                   </div>
                   <h3
                     className={`text-lg font-semibold text-${section.color}-300 group-hover:text-${section.color}-200`}
@@ -189,7 +195,7 @@ export default function AdminDashboard() {
             ))}
           </div>
 
-          {/* Quick Actions (kept) */}
+          {/* Quick Actions */}
           <div className="bg-[#0f172a] border border-cyan-500 rounded-xl p-6 mb-10">
             <h2 className="text-xl font-bold text-cyan-300 mb-4">🚀 Quick Actions</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -215,13 +221,12 @@ export default function AdminDashboard() {
                 href="/admin/vouchers"
                 className="bg-pink-500 hover:bg-pink-600 text-black px-4 py-3 rounded font-semibold text-center"
               >
-                🎟️ Manager Vouchers
+                🎟️ Manage Vouchers
               </Link>
             </div>
           </div>
 
-
-          {/* NEW: Referral Leaderboard */}
+          {/* Top Referrers */}
           <div className="bg-[#0f172a] border border-pink-500 rounded-xl p-6 mb-10">
             <h2 className="text-xl font-bold text-pink-300 mb-4">🏅 Top Referrers</h2>
             {topReferrals.length === 0 ? (
@@ -251,7 +256,7 @@ export default function AdminDashboard() {
             )}
           </div>
 
-          {/* NEW: Recent Activity */}
+          {/* Recent Activity */}
           <div className="bg-[#0f172a] border border-cyan-400 rounded-xl p-6 mb-10">
             <h2 className="text-xl font-bold text-cyan-300 mb-4">📜 Recent Activity</h2>
             {activityFeed.length === 0 ? (
@@ -283,7 +288,7 @@ export default function AdminDashboard() {
             )}
           </div>
 
-          {/* NEW: Competition Health */}
+          {/* Competition Health */}
           <div className="bg-[#0f172a] border border-orange-500 rounded-xl p-6 mb-12">
             <h2 className="text-xl font-bold text-orange-300 mb-4">📊 Competition Health</h2>
             {competitionHealth.length === 0 ? (
@@ -301,7 +306,9 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm text-white/80">
-                      <div>Tickets: {c.ticketsSold} / {c.totalTickets}</div>
+                      <div>
+                        Tickets: {c.ticketsSold} / {c.totalTickets}
+                      </div>
                       <div>Ends: {c.endsAt ? new Date(c.endsAt).toLocaleString() : '—'}</div>
                       <div>Sell-through: {pct(c.ticketsSold, c.totalTickets)}%</div>
                     </div>
@@ -319,60 +326,15 @@ export default function AdminDashboard() {
             )}
           </div>
 
-          {/* System Status (kept) */}
-          <div className="bg-[#0f172a] border border-green-500 rounded-xl p-6">
-            <h2 className="text-xl font-bold text-green-300 mb-4">✅ System Status</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-white/80">
-              <div>
-                <p className="flex justify-between py-1">
-                  <span>Database:</span>
-                  <span className="text-green-400 font-bold">Connected</span>
-                </p>
-                <p className="flex justify-between py-1">
-                  <span>Competitions API:</span>
-                  <span className="text-green-400 font-bold">Operational</span>
-                </p>
-                <p className="flex justify-between py-1">
-                  <span>Forums API:</span>
-                  <span className="text-green-400 font-bold">Operational</span>
-                </p>
-              </div>
-              <div>
-                <p className="flex justify-between py-1">
-                  <span>Try Your Skill API:</span>
-                  <span className="text-green-400 font-bold">Operational</span>
-                </p>
-                <p className="flex justify-between py-1">
-                  <span>Pi Integration:</span>
-                  <span className="text-green-400 font-bold">Active</span>
-                </p>
-                <p className="flex justify-between py-1">
-                  <span>Payment System:</span>
-                  <span className="text-green-400 font-bold">Active</span>
-                </p>
-              </div>
-            </div>
-          </div>
+          {/* ✅ Live System Status Card */}
+          <AdminSystemStatusCard />
         </div>
       </AdminSidebar>
     </AdminGuard>
   );
 }
 
-/* ---------- helpers (UI) ---------- */
-
-function ToolButton({ icon, label, href }) {
-  return (
-    <Link
-      href={href}
-      className="bg-[#1e293b] hover:bg-cyan-800/20 border border-white/10 rounded-lg p-4 flex items-center gap-3 transition"
-    >
-      <span className="text-xl">{icon}</span>
-      <span className="text-white font-medium">{label}</span>
-    </Link>
-  );
-}
-
+/* ---------- helpers ---------- */
 function HealthPill({ label, tone = 'yellow' }) {
   const tones = {
     green: 'bg-green-500/15 text-green-300 border-green-400',
@@ -393,13 +355,21 @@ function pct(a, b) {
 
 function iconForActivity(type) {
   switch (type) {
-    case 'winner': return '🏆';
-    case 'voucher': return '🎟️';
-    case 'payment': return '💸';
-    case 'signup': return '🆕';
-    case 'login': return '🔐';
-    case 'game': return '🎯';
-    case 'error': return '🚨';
-    default: return '📌';
+    case 'winner':
+      return '🏆';
+    case 'voucher':
+      return '🎟️';
+    case 'payment':
+      return '💸';
+    case 'signup':
+      return '🆕';
+    case 'login':
+      return '🔐';
+    case 'game':
+      return '🎯';
+    case 'error':
+      return '🚨';
+    default:
+      return '📌';
   }
 }

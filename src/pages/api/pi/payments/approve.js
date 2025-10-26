@@ -7,7 +7,6 @@ export default async function handler(req, res) {
   if (req.method !== 'POST')
     return res.status(405).json({ ok: false, error: 'method-not-allowed' });
 
-  const log = (...a) => console.log('[approve]', ...a);
 
   try {
     await dbConnect();
@@ -85,7 +84,6 @@ export default async function handler(req, res) {
     if (/^(localhost|127\.0\.0\.1)(:\d+)?$/i.test(hostHeader)) {
       base = `http://${hostHeader}`;
     }
-    console.log('[approve] using base', base);
 
     let ticketing;
     try {
