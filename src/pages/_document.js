@@ -25,7 +25,7 @@ export default function Document() {
               // Mainnet by default; set your App ID from env if present.
               w.Pi.init({
                 version: "2.0",
-                sandbox: false,
+                sandbox: flase,
                 appId: ${JSON.stringify(process.env.NEXT_PUBLIC_PI_APP_ID || "")}
               });
               done = true;

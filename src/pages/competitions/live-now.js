@@ -203,7 +203,7 @@ function classifyCategory(c) {
   return themed || 'launch'
 }
 
-/* ─────────────────────────────── Next draw bar ─────────────────────────────── */
+/* ─────────────────────────────── Next draw bar (centered, mobile-first) ─────────────────────────────── */
 function NextDrawBar({ items }) {
   const target = useMemo(() => {
     const list = Array.isArray(items) ? items : [];
@@ -265,18 +265,27 @@ function NextDrawBar({ items }) {
     : 'bg-amber-500/20 text-amber-300 border-amber-400/30'
 
   return (
-    <Link href={`/ticket-purchase/${encodeURIComponent(target.slug)}`} aria-label={`Go to ${target.title}`} className="group block">
+    <Link
+      href={`/ticket-purchase/${encodeURIComponent(target.slug)}`}
+      aria-label={`Go to ${target.title}`}
+      className="group block mx-auto w-full max-w-[720px]"
+    >
       <div className="relative rounded-2xl p-[1.5px] bg-gradient-to-r from-[#00ffd5] via-[#27b7ff] to-[#0077ff] shadow-[0_0_28px_#22d3ee33]">
-        <div className="rounded-[1rem] bg-[#0f172a]/90 backdrop-blur-sm px-4 py-3 sm:px-5 sm:py-3.5 flex items-center gap-3">
-          <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-black tracking-wide border ${badgeClass}`}>{badgeText}</span>
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
-              <p className="truncate text-xs sm:text-sm font-semibold text-cyan-200/90">
-                Next Draw: <span className="text-cyan-200">{target.title}</span>
-              </p>
-              <p className="text-[10px] sm:text-xs text-cyan-300/70">tap to enter →</p>
-            </div>
-            <div className="mt-1.5 text-center sm:text-left">
+        <div className="rounded-[1rem] bg-[#0f172a]/90 backdrop-blur-sm px-4 py-3 sm:px-5 sm:py-3.5
+                        flex flex-col items-center text-center gap-3 sm:flex-row sm:items-center sm:justify-between sm:text-left">
+          {/* Badge + Title */}
+          <div className="flex items-center gap-2 self-center sm:self-auto">
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black tracking-wide border ${badgeClass}`}>
+              {badgeText}
+            </span>
+            <p className="truncate text-xs sm:text-sm font-semibold text-cyan-200/90 max-w-[70vw] sm:max-w-none">
+              Next Draw: <span className="text-cyan-200">{target.title}</span>
+            </p>
+          </div>
+
+          {/* Countdown */}
+          <div className="w-full sm:w-auto">
+            <div className="text-center">
               <span className="inline-block rounded-md px-2 py-1 bg-slate-900/70 border border-cyan-400/20 shadow-[0_0_20px_#06b6d433]">
                 <span className="font-mono tabular-nums text-sm sm:text-base font-extrabold text-cyan-200 tracking-wide">
                   {days}<span className="opacity-70">D</span>{' '}
@@ -286,12 +295,24 @@ function NextDrawBar({ items }) {
                 </span>
               </span>
             </div>
+
+            {/* Progress */}
             {progressPct != null && (
-              <div className="mt-2 h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                <div className="h-full w-0 transition-[width] duration-500 ease-linear bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow-[0_0_12px_#22d3ee77]" style={{width:`${progressPct}%`}} />
+              <div className="mt-2 h-1.5 rounded-full bg-slate-800 overflow-hidden w-full max-w-[520px] mx-auto sm:mx-0">
+                <div
+                  className="h-full w-0 transition-[width] duration-500 ease-linear bg-gradient-to-r from-[#00ffd5] to-[#0077ff] shadow-[0_0_12px_#22d3ee77]"
+                  style={{ width: `${progressPct}%` }}
+                />
               </div>
             )}
+
+            {/* Tap hint */}
+            <p className="mt-1 text-[10px] sm:text-xs text-cyan-300/70 text-center sm:text-left">
+              tap to enter →
+            </p>
           </div>
+
+          {/* Status dot (desktop only) */}
           <div className="hidden sm:block shrink-0">
             <div className={`h-3 w-3 rounded-full ${isLive ? 'bg-emerald-400' : 'bg-amber-400'} shadow-[0_0_16px_currentColor] animate-pulse`} />
           </div>
@@ -424,8 +445,8 @@ export default function AllCompetitionsPage() {
     <PageWrapper>
       <Head><title>All Competitions • OMC</title></Head>
 
-      {/* Sticky header (theme-matched) */}
-      <div className="sticky top-0 z-40 bg-[#0b1220]/80 backdrop-blur border-b border-white/10">
+      {/* Header (non-sticky) */}
+      <div className="bg-[#0b1220]/80 backdrop-blur border-b border-white/10">
         <div className="mx-auto max-w-6xl px-4">
           <div className="py-3 text-center">
             <h1 className="font-orbitron font-extrabold text-base text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-500 to-cyan-300">
@@ -441,7 +462,7 @@ export default function AllCompetitionsPage() {
 
       {/* Content container */}
       <div className="mx-auto max-w-6xl px-4 py-6 lg:py-10">
-        {/* Next draw */}
+        {/* Next draw (centered) */}
         <div className="mb-6">
           <NextDrawBar items={items}/>
         </div>

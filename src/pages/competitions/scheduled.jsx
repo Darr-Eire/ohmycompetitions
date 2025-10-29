@@ -123,7 +123,7 @@ function classifyCategory(c) {
   return getThemeId(c) || 'launch'
 }
 
-/* ─────────────────────────────── Next to Start banner ─────────────────────────────── */
+/* ─────────────────────────────── Next to Start banner (centered, mobile-first) ─────────────────────────────── */
 function NextStartBar({ items }) {
   const target = useMemo(() => {
     const list = Array.isArray(items) ? items : []
@@ -151,18 +151,29 @@ function NextStartBar({ items }) {
   const seconds = Math.floor((left % 60000) / 1000)
 
   return (
-    <Link href={`/ticket-purchase/${encodeURIComponent(target.slug)}`} aria-label={`Go to ${target.title}`} className="group block">
+    <Link
+      href={`/ticket-purchase/${encodeURIComponent(target.slug)}`}
+      aria-label={`Go to ${target.title}`}
+      className="group block mx-auto w-full max-w-[720px]"
+    >
       <div className="relative rounded-2xl p-[1.5px] bg-gradient-to-r from-[#00ffd5] via-[#27b7ff] to-[#0077ff] shadow-[0_0_28px_#22d3ee33]">
-        <div className="rounded-[1rem] bg-[#0f172a]/90 backdrop-blur-sm px-4 py-3 sm:px-5 sm:py-3.5 flex items-center gap-3">
-          <span className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-black tracking-wide border bg-amber-500/20 text-amber-300 border-amber-400/30">UPCOMING</span>
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-2">
-              <p className="truncate text-xs sm:text-sm font-semibold text-cyan-200/90">
-                Next Start: <span className="text-cyan-200">{target.title}</span>
-              </p>
-              <p className="text-[10px] sm:text-xs text-cyan-300/70">tap to view →</p>
-            </div>
-            <div className="mt-1.5">
+        <div className="rounded-[1rem] bg-[#0f172a]/90 backdrop-blur-sm px-4 py-3 sm:px-5 sm:py-3.5
+                        flex flex-col items-center text-center gap-3
+                        sm:flex-row sm:items-center sm:justify-between sm:text-left">
+          {/* Badge + Title */}
+          <div className="flex items-center gap-2 self-center sm:self-auto">
+           <span className="px-2 py-0.5 rounded-full text-[10px] font-black tracking-wide border bg-orange-500/20 text-orange-300 border-orange-400/30">
+  Coming Soon
+</span>
+
+            <p className="truncate text-xs sm:text-sm font-semibold text-cyan-200/90 max-w-[70vw] sm:max-w-none">
+              Next Start: <span className="text-cyan-200">{target.title}</span>
+            </p>
+          </div>
+
+          {/* Countdown */}
+          <div className="w-full sm:w-auto">
+            <div className="text-center">
               <span className="inline-block rounded-md px-2 py-1 bg-slate-900/70 border border-cyan-400/20 shadow-[0_0_20px_#06b6d433]">
                 <span className="font-mono tabular-nums text-sm sm:text-base font-extrabold text-cyan-200 tracking-wide">
                   {days}<span className="opacity-70">D</span>{' '}
@@ -172,7 +183,12 @@ function NextStartBar({ items }) {
                 </span>
               </span>
             </div>
+            <p className="mt-1 text-[10px] sm:text-xs text-cyan-300/70 text-center sm:text-left">
+              tap to view →
+            </p>
           </div>
+
+          {/* Status dot (desktop only) */}
           <div className="hidden sm:block shrink-0">
             <div className="h-3 w-3 rounded-full bg-amber-400 shadow-[0_0_16px_currentColor] animate-pulse" />
           </div>
@@ -266,15 +282,13 @@ export default function ScheduledCompetitionsPage() {
       setLoading(false)
     }
   }, [])
-// Refresh when tickets are purchased elsewhere
-useEffect(() => {
-  const onTicketsUpdated = () => {
-    // simple + safe: refetch from server
-    fetchAll();
-  };
-  window.addEventListener('omc:tickets:updated', onTicketsUpdated);
-  return () => window.removeEventListener('omc:tickets:updated', onTicketsUpdated);
-}, [fetchAll]);
+
+  // Refresh when tickets are purchased elsewhere
+  useEffect(() => {
+    const onTicketsUpdated = () => { fetchAll() }
+    window.addEventListener('omc:tickets:updated', onTicketsUpdated)
+    return () => window.removeEventListener('omc:tickets:updated', onTicketsUpdated)
+  }, [fetchAll])
 
   useEffect(() => {
     fetchAll()
@@ -294,7 +308,7 @@ useEffect(() => {
     [buckets]
   )
 
-  // Only show tabs that have upcoming items
+  
   const visibleCats = useMemo(
     () => CATS.filter(c => (counts[c.id] ?? 0) > 0),
     [counts]
@@ -316,8 +330,8 @@ useEffect(() => {
       <Head><title>Scheduled Competitions | Oh My Competitions</title></Head>
       <BackgroundFX />
 
-      {/* Sticky header that matches app colors */}
-      <div className="sticky top-0 z-40 bg-[#0b1220]/80 backdrop-blur border-b border-white/10">
+      {/* Header (non-sticky) */}
+      <div className="bg-[#0b1220]/80 backdrop-blur border-b border-white/10">
         <div className="mx-auto max-w-6xl px-4">
           <div className="py-3 text-center">
             <h1 className="font-orbitron font-extrabold text-base">
@@ -327,7 +341,7 @@ useEffect(() => {
             </h1>
             {/* friendly subtitle */}
             <p className="mt-1 text-[12px] sm:text-sm text-cyan-100/80">
-              Upcoming & coming soon we’re lining up fresh draws <span className="font-semibold text-cyan-300">every day</span>.
+              Coming soon, we’re lining up fresh draws <span className="font-semibold text-cyan-300">every day</span>.
               Check back often and get ready to enter the moment they open.
             </p>
           </div>
@@ -336,7 +350,7 @@ useEffect(() => {
 
       {/* Content */}
       <div className="mx-auto max-w-6xl px-4 py-6 lg:py-10">
-        {/* Next to start (same spacing) */}
+        {/* Next to start (centered) */}
         <div className="mb-5">
           <NextStartBar items={items} />
         </div>
